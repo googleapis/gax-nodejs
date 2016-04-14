@@ -1,0 +1,22 @@
+{
+  "name": "gapi-gax-nodejs",
+  "version": "0.1.0",
+  "description": "Google API Extensions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/googleapis/gax-nodejs.git"
+  },
+  "keywords": [
+    "grpc"
+  ],
+  "author": "Google API Authors",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/googleapis/gax-nodejs/issues"
+  },
+  "homepage": "https://github.com/googleapis/gax-nodejs#readme"
+}
