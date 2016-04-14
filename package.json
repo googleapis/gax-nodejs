@@ -8,10 +8,15 @@
   },
   "devDependencies": {
     "chai": "~3.0.0",
+    "codecov": "~1.0",
+    "istanbul": "~0.3.15",
+    "jshint": "~2.5",
     "mocha": "~2.2.5"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
+    "lint": "jshint lib test",
+    "test": "istanbul test _mocha -- --reporter spec --slow 500 --timeout 5000"
   },
   "repository": {
     "type": "git",
