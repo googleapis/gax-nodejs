@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "description": "Google API Extensions",
   "main": "index.js",
+  "dependencies": {
+    "grpc": "~0.13.1"
+  },
+  "devDependencies": {
+    "chai": "~3.0.0",
+    "mocha": "~2.2.5"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
