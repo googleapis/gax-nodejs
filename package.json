@@ -4,7 +4,8 @@
   "description": "Google API Extensions",
   "main": "index.js",
   "dependencies": {
-    "grpc": "~0.13.1"
+    "grpc": "~0.13.1",
+    "jison": "~0.3.10"
   },
   "devDependencies": {
     "chai": "~3.0.0",
