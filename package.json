@@ -5,14 +5,16 @@
   "main": "index.js",
   "dependencies": {
     "grpc": "~0.13.1",
-    "jison": "~0.3.10"
+    "jison": "~0.3.10",
+    "through2": "~2.0.1"
   },
   "devDependencies": {
-    "chai": "~3.0.0",
+    "chai": "*",
     "codecov": "~1.0",
     "istanbul": "~0.3.15",
     "jshint": "~2.5",
-    "mocha": "~2.2.5"
+    "mocha": "~2.2.5",
+    "sinon": "~1.17.3"
   },
   "scripts": {
     "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
