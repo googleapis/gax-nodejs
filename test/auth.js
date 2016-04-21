@@ -32,61 +32,49 @@
  */
 'use strict';
 
-/**
- * CredentialsHolder holds the credentials obtained using getGrpcCredentials.
- *
- * It provides a method, get, that is used to obtain the credentials and store
- * them.
- *
- * @param {function(callback, opts)} getCredentials - the callback used to
- *   obtain the credentials
- *
- * @param {string|string[]} opt_scopes - the scope or scopes to use when
- *   obtaining the credentials.
- *
- * @constructor
- */
-function CredentialsHolder(getCredentials, opt_scopes) {
-  /**
-   * A credentials obtained by getCredentials
-   */
-  this.credentials = null;
+var _ = require('lodash');
+var expect = require('chai').expect;
 
-  /**
-   * The callback used to obtain the credentials
-   */
-  this.getCredentials = getCredentials;
+var CredentialsHolder = require('../lib/auth').CredentialsHolder;
 
-  /**
-   * The scopes to use to create the credentials
-   */
-  this.scopes = opt_scopes;
-}
+describe('CredentialsHolder', function() {
 
-/**
- * get obtains the credential instance to be used.
- *
- * The callback is a standard node callback, i.e it will be called with either
- * - (err) if a problem occurs obtaining the credentials
- * - (null, credentials)
- *
- * @param {function} callback - to be invoked once credentials are obtained.
- */
-CredentialsHolder.prototype.get = function get(callback) {
-  var storeCredentials = function storeCredentials(err, credentials) {
-    if (err) {
-      callback(err);
-    } else {
-      this.credentials = credentials;
-      callback(null, this.credentials);
-    }
-  }.bind(this);
+  describe('constructor', function() {
+    it('credentials starts out null', function() {
+      var holder = new CredentialsHolder(_.noop);
+      expect(holder.credentials).to.eql(null);
+    });
+  });
 
-  if (!this.credentials) {
-    this.getCredentials(storeCredentials, {scopes: this.scopes});
-  } else {
-    callback(null, this.credentials);
-  }
-};
+  describe('method `get`', function() {
+    it('invokes the callback to set the credential', function(done) {
+      var dummyCreds = {};
+      var getCredentials = function(callback) {
+        callback(null, dummyCreds);
+      };
+      var holder = new CredentialsHolder(getCredentials);
 
-exports.CredentialsHolder = CredentialsHolder;
+      var thenCheckHasCreds = function thenCheckHasCreds() {
+        expect(holder.credentials).to.eq(dummyCreds);
+        done();
+      };
+      holder.get(thenCheckHasCreds);
+    });
+
+    it('propagates errors from the credential callback', function(done) {
+      var testError = new Error('this is used in a test');
+      var getCredentials = function(callback) {
+        callback(testError);
+      };
+      var holder = new CredentialsHolder(getCredentials);
+
+      var thenCheckHasCreds = function thenCheckHasCreds(err) {
+        expect(err).to.eq(testError);
+        expect(holder.credentials).to.eq(null);
+        done();
+      };
+      holder.get(thenCheckHasCreds);
+    });
+  });
+
+});

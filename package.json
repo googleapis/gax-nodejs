@@ -4,6 +4,7 @@
   "description": "Google API Extensions",
   "main": "index.js",
   "dependencies": {
+    "google-auth-library": "0.9.7",
     "grpc": "~0.13.1",
     "lodash": "~4.11.1",
     "through2": "~2.0.1"
