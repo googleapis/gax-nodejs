@@ -115,7 +115,7 @@ describe('page streaming', function() {
     var callCount = 0;
     function failingFunc(request, metadata, options, callback) {
       callCount++;
-      if (callCount % 2 == 0) {
+      if (callCount % 2 === 0) {
         fail(request, metadata, options, callback);
       } else {
         func(request, metadata, options, callback);
