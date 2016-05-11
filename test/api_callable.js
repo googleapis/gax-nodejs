@@ -88,15 +88,14 @@ describe('page streaming', function() {
 
   it('returns page-streamable', function(done) {
     var apiCall = apiCallable.createApiCall(func, settings);
-    var counter = 0;
+    var onData = sinon.spy(function(data) {
+      assert(deadline_arg, 'deadline is not set');
+      assert.equal(onData.callCount - 1, data);
+    });
     apiCall({}, null, {})
-      .on('data', function(data) {
-            assert(deadline_arg, 'deadline is not set');
-            assert.equal(data, counter);
-            counter++;
-          })
+      .on('data', onData)
       .on('end', function() {
-            assert.equal(counter, pageSize * pagesToStream);
+            assert.equal(pageSize * pagesToStream, onData.callCount);
             done();
           });
   });
@@ -112,25 +111,59 @@ describe('page streaming', function() {
   });
 
   it('retries on failure', function(done) {
-    var callCount = 0;
-    function failingFunc(request, metadata, options, callback) {
-      callCount++;
-      if (callCount % 2 == 0) {
+    var failingFunc = sinon.spy(function(request, metadata, options, callback) {
+      if (failingFunc.callCount % 2 == 1) {
         fail(request, metadata, options, callback);
       } else {
         func(request, metadata, options, callback);
       }
-    }
+    });
     var apiCall = apiCallable.createApiCall(failingFunc, settings);
-    var dataCount = 0;
+    var onData = sinon.spy(function(data) {
+      assert.equal(onData.callCount - 1, data);
+    });
     apiCall({}, null, {})
-      .on('data', function(data) {
-            assert.equal(data, dataCount);
-            dataCount++;
-          })
+      .on('data', onData)
       .on('end', function() {
-            assert.equal(dataCount, pageSize * pagesToStream);
-            assert.isAbove(callCount, pagesToStream);
+            assert.equal(pageSize * pagesToStream, onData.callCount);
+            assert.isBelow(pagesToStream, failingFunc.callCount);
+            done();
+          });
+  });
+
+  it('iterates over pages', function(done) {
+    var pageSettings = settings.merge(new gax.CallOptions({}));
+    pageSettings.flattenPages = false;
+    var apiCall = apiCallable.createApiCall(func, pageSettings);
+    var onPage = sinon.spy(function(page) {
+      assert(deadline_arg, 'deadline is not set');
+      assert.instanceOf(page, apiCallable.Page);
+      var expectedData = (onPage.callCount - 1) * pageSize;
+      for (var i in page.resources) {
+        assert.equal(expectedData, page.resources[i]);
+        expectedData++;
+      }
+    });
+    apiCall({}, null, {})
+      .on('data', onPage)
+      .on('end', function() {
+            assert.equal(pagesToStream + 1, onPage.callCount);
+            done();
+          });
+  });
+
+  it('resumes from a page', function(done) {
+    var pageSettings = settings.merge(
+        new gax.CallOptions({'pageToken': pageSize}));
+    var apiCall = apiCallable.createApiCall(func, pageSettings);
+    var onPage = sinon.spy(function(page) {
+      assert(deadline_arg, 'deadline is not set');
+      assert.instanceOf(page, apiCallable.Page);
+    });
+    apiCall({}, null, {})
+      .on('data', onPage)
+      .on('end', function() {
+            assert.equal(pagesToStream, onPage.callCount);
             done();
           });
   });
