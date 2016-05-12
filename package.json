@@ -36,5 +36,8 @@
   "bugs": {
     "url": "https://github.com/googleapis/gax-nodejs/issues"
   },
-  "homepage": "https://github.com/googleapis/gax-nodejs#readme"
+  "homepage": "https://github.com/googleapis/gax-nodejs#readme",
+  "engines": {
+    "node": ">=0.12.0"
+  }
 }
