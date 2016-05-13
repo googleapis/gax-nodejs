@@ -34,47 +34,54 @@
 
 var _ = require('lodash');
 var expect = require('chai').expect;
+var sinon = require('sinon');
 
-var CredentialsHolder = require('../lib/auth').CredentialsHolder;
+var createCredPromise = require('../lib/auth').createCredPromise;
 
-describe('CredentialsHolder', function() {
+describe('credential promise', function() {
 
-  describe('constructor', function() {
-    it('credentials starts out null', function() {
-      var holder = new CredentialsHolder(_.noop);
-      expect(holder.credentials).to.eql(null);
+  var dummyCreds = {};
+  var getCredentials = function(callback) {
+    callback(null, dummyCreds);
+  };
+
+  it('resolves the credential', function(done) {
+    var credP = createCredPromise(getCredentials);
+    credP.then(function(cred) {
+      expect(cred).to.eq(dummyCreds);
+      done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
-  describe('method `get`', function() {
-    it('invokes the callback to set the credential', function(done) {
-      var dummyCreds = {};
-      var getCredentials = function(callback) {
-        callback(null, dummyCreds);
-      };
-      var holder = new CredentialsHolder(getCredentials);
-
-      var thenCheckHasCreds = function thenCheckHasCreds() {
-        expect(holder.credentials).to.eq(dummyCreds);
-        done();
-      };
-      holder.get(thenCheckHasCreds);
+  it('keeps credential', function(done) {
+    var getCredentialsSpy = sinon.spy(getCredentials);
+    var credP = createCredPromise(getCredentialsSpy);
+    var checkCredSpy = sinon.spy(function checkCred(cred) {
+      expect(cred).to.eq(dummyCreds);
     });
-
-    it('propagates errors from the credential callback', function(done) {
-      var testError = new Error('this is used in a test');
-      var getCredentials = function(callback) {
-        callback(testError);
-      };
-      var holder = new CredentialsHolder(getCredentials);
-
-      var thenCheckHasCreds = function thenCheckHasCreds(err) {
-        expect(err).to.eq(testError);
-        expect(holder.credentials).to.eq(null);
-        done();
-      };
-      holder.get(thenCheckHasCreds);
+    Promise.all([credP.then(checkCredSpy), credP.then(checkCredSpy)]).then(
+        function() {
+      expect(getCredentialsSpy.callCount).to.eq(1);
+      expect(checkCredSpy.callCount).to.eq(2);
+      done();
+    }).catch(function(err) {
+      done(err);
     });
   });
 
+  it('propagates errors from the credential callback', function(done) {
+    var testError = new Error('this is used in a test');
+    var getCredentials = function(callback) {
+      callback(testError);
+    };
+    var credP = createCredPromise(getCredentials);
+    credP.catch(function(err) {
+      expect(err).to.eq(testError);
+      done();
+    }).catch(function(err) {
+      done(err);
+    });
+  });
 });
