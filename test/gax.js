@@ -137,15 +137,11 @@ describe('gax construct settings', function() {
     var overrides = {'interfaces': {}};
     overrides.interfaces[SERVICE_NAME] = {
       'retry_codes': {
-        'foo_retry': [],
+        'bar_retry': [],
         'baz_retry': ['code_a']
       },
       'retry_params': {
         'default': {
-          'initial_retry_delay_millis': 200,
-          'retry_delay_multiplier': 1.5
-        },
-        '10x': {
           'initial_retry_delay_millis': 1000,
           'retry_delay_multiplier': 1.2,
           'max_retry_delay_millis': 10000,
@@ -156,14 +152,9 @@ describe('gax construct settings', function() {
         }
       },
       'methods': {
-        'PageStreamingMethod': {
-          'retry_codes_name': 'baz_retry'
-        },
         'BundlingMethod': {
-          'retry_params_name': '10x',
-          'bundling': {
-            'element_count_limit': 20
-          }
+          'retry_params_name': 'default',
+          'retry_codes_name': 'baz_retry'
         }
       }
     };
@@ -174,13 +165,17 @@ describe('gax construct settings', function() {
     var settings = defaults.bundlingMethod;
     var backoff = settings.retry.backoffSettings;
     expect(backoff.initialRetryDelayMillis).to.eq(1000);
-    expect(settings.retry.retryCodes).to.eql([]);
+    expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_a]);
     expect(settings.bundler).to.eq(null);
+
+    /* page_streaming_method is unaffected because it's not specified in
+     * overrides. 'bar_retry' or 'default' definitions in overrides should
+     * not affect the methods which are not in the overrides. */
     settings = defaults.pageStreamingMethod;
     backoff = settings.retry.backoffSettings;
-    expect(backoff.initialRetryDelayMillis).to.eq(200);
-    expect(backoff.retryDelayMultiplier).to.eq(1.5);
+    expect(backoff.initialRetryDelayMillis).to.eq(100);
+    expect(backoff.retryDelayMultiplier).to.eq(1.2);
     expect(backoff.maxRetryDelayMillis).to.eq(1000);
-    expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_a]);
+    expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_c]);
   });
 });
