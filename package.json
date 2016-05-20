@@ -1,5 +1,5 @@
 {
-  "name": "gapi-gax-nodejs",
+  "name": "google-gax",
   "version": "0.2.0",
   "description": "Google API Extensions",
   "main": "index.js",
