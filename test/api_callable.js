@@ -57,7 +57,7 @@ describe('createApiCall', function() {
       assert.equal(resp, 42);
       assert(deadline_arg, 'deadline is not set');
       done();
-    }, null, {});
+    });
   });
 });
 
@@ -89,7 +89,7 @@ describe('page streaming', function() {
   it('returns page-streamable', function(done) {
     var apiCall = apiCallable.createApiCall(func, settings);
     var counter = 0;
-    apiCall({}, null, null, {})
+    apiCall({})
       .on('data', function(data) {
             assert(deadline_arg, 'deadline is not set');
             assert.equal(data, counter);
@@ -108,7 +108,7 @@ describe('page streaming', function() {
       assert(deadline_arg, 'deadline is not set');
       assert.deepEqual(resp, {'nums': [0, 1, 2], 'nextPageToken': 3});
       done();
-    }, null, {});
+    });
   });
 
   it('retries on failure', function(done) {
@@ -123,7 +123,7 @@ describe('page streaming', function() {
     }
     var apiCall = apiCallable.createApiCall(failingFunc, settings);
     var dataCount = 0;
-    apiCall({}, null, null, {})
+    apiCall({})
       .on('data', function(data) {
             assert.equal(data, dataCount);
             dataCount++;
@@ -159,7 +159,7 @@ describe('retryable', function() {
       assert.equal(toAttempt, 0);
       assert(deadlineArg);
       done();
-    }, null, {});
+    });
   });
 
   it('doesn\'t retry if no codes', function(done) {
@@ -174,7 +174,7 @@ describe('retryable', function() {
       assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
       assert.equal(spy.callCount, 1);
       done();
-    }, null, {});
+    });
   });
 
   it('aborts retries', function(done) {
@@ -184,7 +184,7 @@ describe('retryable', function() {
       assert(err.cause);
       assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
       done();
-    }, null, {});
+    });
   });
 
   it.skip('times out', function(done) {
@@ -197,7 +197,7 @@ describe('retryable', function() {
       assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
       assert.equal(spy.callCount, toAttempt);
       done();
-    }, null, {});
+    });
   });
 
   it('aborts on unexpected exception', function(done) {
@@ -214,7 +214,7 @@ describe('retryable', function() {
       assert.equal(err.cause.code, FAKE_STATUS_CODE_2);
       assert.equal(spy.callCount, 1);
       done();
-    }, null, {});
+    });
   });
 
   it('does not retry even when no responses', function(done) {
@@ -226,7 +226,7 @@ describe('retryable', function() {
       assert(!err);
       assert.equal(resp, null);
       done();
-    }, null, {});
+    });
   });
 
   it.skip('retries with exponential backoff', function(done) {
@@ -252,6 +252,29 @@ describe('retryable', function() {
       assert.isAbove(spy.callCount, callsLowerBound);
       assert.isBelow(spy.callCount, callsUpperBound);
       done();
-    }, null, {});
+    });
+  });
+
+  it('allows overriding', function(done) {
+    var apiCall = apiCallable.createApiCall(spy, settings);
+    var toAttempt = 3;
+    var deadlineArg;
+    function func(argument, callback, metadata, options) {
+      deadlineArg = options.deadline;
+      toAttempt--;
+      if (toAttempt > 0) {
+        fail(argument, callback, metadata, options);
+        return;
+      }
+      callback(null, 1729);
+    }
+    var spy = sinon.spy(func);
+    var apiCall = apiCallable.createApiCall(spy, settings);
+    // Since 'retry' is disabled in the call options, it does not retry.
+    apiCall(null, function(err, resp) {
+      assert(err);
+      assert.equal(1, spy.callCount);
+      done();
+    }, null, new gax.CallOptions({'retry': null}));
   });
 });
