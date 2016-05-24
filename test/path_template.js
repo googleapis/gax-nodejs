@@ -128,8 +128,8 @@ describe('PathTemplate', function() {
 
   });
 
-  describe('method `instantiate`', function() {
-    it('should instantiate atomic resource', function() {
+  describe('method `render`', function() {
+    it('should render atomic resource', function() {
       var template = new PathTemplate('buckets/*/*/*/objects/*');
       var params = {
         '$0': 'f',
@@ -138,7 +138,7 @@ describe('PathTemplate', function() {
         '$3': 'google.com:a-b'
       };
       var want = 'buckets/f/o/o/objects/google.com:a-b';
-      expect(template.instantiate(params)).to.eql(want);
+      expect(template.render(params)).to.eql(want);
     });
 
     it('should fail when there are too few variables', function() {
@@ -148,7 +148,7 @@ describe('PathTemplate', function() {
         '$1': 'o',
         '$2': 'o'
       };
-      expect(function() {template.instantiate(params); }).to.throw(TypeError);
+      expect(function() {template.render(params); }).to.throw(TypeError);
     });
 
     it('should succeed with an unbound in the middle', function() {
@@ -158,7 +158,7 @@ describe('PathTemplate', function() {
         '$1': '3'
       };
       var want = 'bar/1/2/foo/3';
-      expect(template.instantiate(params)).to.eql(want);
+      expect(template.render(params)).to.eql(want);
     });
   });
 
