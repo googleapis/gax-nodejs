@@ -28,11 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*jshint expr: true*/
+
 'use strict';
 
 var apiCallable = require('../lib/api_callable');
 var gax = require('../lib/gax');
-var assert = require('chai').assert;
+var expect = require('chai').expect;
 var sinon = require('sinon');
 
 var FAKE_STATUS_CODE_1 = 1;
@@ -47,15 +49,15 @@ function fail(argument, callback, metadata, options) {
 describe('createApiCall', function() {
   it('calls api call', function(done) {
     var settings = new gax.CallSettings();
-    var deadline_arg;
+    var deadlineArg;
     function func(argument, callback, metadata, options) {
-      deadline_arg = options.deadline;
+      deadlineArg = options.deadline;
       callback(null, 42);
     }
     var apiCall = apiCallable.createApiCall(func, settings);
     apiCall(null, function(err, resp) {
-      assert.equal(resp, 42);
-      assert(deadline_arg, 'deadline is not set');
+      expect(resp).to.eq(42);
+      expect(deadlineArg).to.be.ok;
       done();
     }, null, {});
   });
@@ -70,10 +72,10 @@ describe('page streaming', function() {
       [FAKE_STATUS_CODE_1], new gax.BackoffSettings(0, 0, 0, 0, 0, 0, 100));
   var settings = new gax.CallSettings({retry: retryOptions,
                                        pageDescriptor: pageDescriptor});
-  var deadline_arg = null;
+  var deadlineArg = null;
 
   function func(request, callback, metadata, options) {
-    deadline_arg = options.deadline;
+    deadlineArg = options.deadline;
     var pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
       callback(null, {'nums': []});
@@ -91,24 +93,89 @@ describe('page streaming', function() {
     var counter = 0;
     apiCall({}, null, null, {})
       .on('data', function(data) {
-            assert(deadline_arg, 'deadline is not set');
-            assert.equal(data, counter);
+            expect(deadlineArg).to.be.ok;
+            expect(data).to.eq(counter);
             counter++;
           })
       .on('end', function() {
-            assert.equal(counter, pageSize * pagesToStream);
+            expect(counter).to.eq(pageSize * pagesToStream);
             done();
           });
   });
 
-  it('returns an object if callback is specified', function(done) {
+  it('stops if in the middle', function(done) {
     var apiCall = apiCallable.createApiCall(func, settings);
-    apiCall({}, function(err, resp) {
-      assert(!err);
-      assert(deadline_arg, 'deadline is not set');
-      assert.deepEqual(resp, {'nums': [0, 1, 2], 'nextPageToken': 3});
+    var counter = 0;
+    var stream = apiCall({}, null, null, {});
+    stream.on('data', function(data) {
+      expect(deadlineArg).to.be.ok;
+      expect(data).to.eq(counter);
+      counter++;
+      if (counter == 4) {
+        stream.end();
+      }
+    }).on('end', function() {
+      expect(counter).to.eq(4);
       done();
-    }, null, {});
+    });
+  });
+
+  it('iterate over pages', function(done) {
+    var mySettings = settings.merge(
+        new gax.CallOptions({pageToken: gax.FIRST_PAGE}));
+    var apiCall = apiCallable.createApiCall(func, mySettings);
+    var counter = 0;
+    apiCall({}, null, null, {})
+      .on('data', function(data) {
+        expect(deadlineArg).to.be.ok;
+        expect(data).to.be.an('object');
+        expect(data.nums).to.be.an('array');
+        counter++;
+        if (counter <= pagesToStream) {
+          expect(data).to.have.any.keys(['nextPageToken']);
+        } else {
+          expect(data).to.not.have.any.keys(['nextPageToken']);
+        }
+      }).on('end', function() {
+        expect(counter).to.eq(pagesToStream + 1);
+        done();
+      });
+  });
+
+  it('stops in the middle of per-page iteration, and resumes it later',
+     function(done) {
+    function takeSingleResponse(pageToken) {
+      return new Promise(function(resolve, reject) {
+        var mySettings = settings.merge(
+            new gax.CallOptions({pageToken: pageToken}));
+        var apiCall = apiCallable.createApiCall(func, mySettings);
+        var stream = apiCall({}, null, null, {});
+        stream.on('data', function(resp) {
+          stream.end();
+          resolve(resp);
+        }).on('error', function(err) {
+          reject(err);
+        });
+      });
+    }
+    takeSingleResponse(gax.FIRST_PAGE).then(function(resp) {
+      expect(deadlineArg).to.be.ok;
+      expect(resp).to.be.an('object');
+      var expected = [];
+      for (var i = 0; i < pageSize; i++) {
+        expected.push(i);
+      }
+      expect(resp).to.eql({'nums': expected, 'nextPageToken': pageSize});
+      return takeSingleResponse(resp.nextPageToken);
+    }).then(function(resp) {
+      expect(resp).to.be.an('object');
+      var expected = [];
+      for (var i = 0; i < pageSize; i++) {
+        expected.push(i + pageSize);
+      }
+      expect(resp).to.eql({'nums': expected, 'nextPageToken': pageSize * 2});
+      done();
+    })['catch'](done);
   });
 
   it('retries on failure', function(done) {
@@ -125,12 +192,12 @@ describe('page streaming', function() {
     var dataCount = 0;
     apiCall({}, null, null, {})
       .on('data', function(data) {
-            assert.equal(data, dataCount);
+            expect(data).to.eq(dataCount);
             dataCount++;
           })
       .on('end', function() {
-            assert.equal(dataCount, pageSize * pagesToStream);
-            assert.isAbove(callCount, pagesToStream);
+            expect(dataCount).to.eq(pageSize * pagesToStream);
+            expect(callCount).to.be.above(pagesToStream);
             done();
           });
   });
@@ -155,9 +222,9 @@ describe('retryable', function() {
     }
     var apiCall = apiCallable.createApiCall(func, settings);
     apiCall(null, function(err, resp) {
-      assert.equal(resp, 1729);
-      assert.equal(toAttempt, 0);
-      assert(deadlineArg);
+      expect(resp).to.eq(1729);
+      expect(toAttempt).to.eq(0);
+      expect(deadlineArg).to.be.ok;
       done();
     }, null, {});
   });
@@ -169,10 +236,10 @@ describe('retryable', function() {
     var spy = sinon.spy(fail);
     var apiCall = apiCallable.createApiCall(spy, settings);
     apiCall(null, function(err, resp) {
-      assert(err);
-      assert(err.cause);
-      assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
-      assert.equal(spy.callCount, 1);
+      expect(err).to.be.ok;
+      expect(err.cause).to.be.an('error');
+      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(spy.callCount).to.eq(1);
       done();
     }, null, {});
   });
@@ -180,9 +247,9 @@ describe('retryable', function() {
   it('aborts retries', function(done) {
     var apiCall = apiCallable.createApiCall(fail, settings);
     apiCall(null, function(err, resp) {
-      assert(err);
-      assert(err.cause);
-      assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
+      expect(err).to.be.ok;
+      expect(err).to.be.an('error');
+      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
       done();
     }, null, {});
   });
@@ -192,10 +259,10 @@ describe('retryable', function() {
     var spy = sinon.spy(fail);
     var apiCall = apiCallable.createApiCall(spy, settings);
     apiCall(null, function(err, resp) {
-      assert(err);
-      assert(err.cause);
-      assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
-      assert.equal(spy.callCount, toAttempt);
+      expect(err).to.be.ok;
+      expect(err.cause).to.be.an('error');
+      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(spy.callCount).to.eq(toAttempt);
       done();
     }, null, {});
   });
@@ -209,10 +276,10 @@ describe('retryable', function() {
     var spy = sinon.spy(func);
     var apiCall = apiCallable.createApiCall(spy, settings);
     apiCall(null, function(err, resp) {
-      assert(err);
-      assert(err.cause);
-      assert.equal(err.cause.code, FAKE_STATUS_CODE_2);
-      assert.equal(spy.callCount, 1);
+      expect(err).to.be.ok;
+      expect(err.cause).to.be.an('error');
+      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_2);
+      expect(spy.callCount).to.eq(1);
       done();
     }, null, {});
   });
@@ -223,8 +290,8 @@ describe('retryable', function() {
     }
     var apiCall = apiCallable.createApiCall(func, settings);
     apiCall(null, function(err, resp) {
-      assert(!err);
-      assert.equal(resp, null);
+      expect(err).to.be.null;
+      expect(resp).to.be.null;
       done();
     }, null, {});
   });
@@ -239,18 +306,18 @@ describe('retryable', function() {
         spy, new gax.CallSettings({timeout: 0, retry: retryOptions}));
 
     apiCall(null, function(err, resp) {
-      assert(err);
-      assert(err.cause);
-      assert.equal(err.cause.code, FAKE_STATUS_CODE_1);
+      expect(err).to.be.ok;
+      expect(err.cause).to.be.an('error');
+      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
       var now = new Date();
-      assert.isAtLeast(now.getTime() - startTime.getTime(),
-                       backoff.totalTimeoutMillis);
+      expect(now.getTime() - startTime.getTime()).to.be.at.least(
+          backoff.totalTimeoutMillis);
       var callsLowerBound = backoff.totalTimeoutMillis / (
           backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis);
       var callsUpperBound = (backoff.totalTimeoutMillis /
           backoff.initialRetryDelayMillis);
-      assert.isAbove(spy.callCount, callsLowerBound);
-      assert.isBelow(spy.callCount, callsUpperBound);
+      expect(spy.callCount).to.be.above(callsLowerBound);
+      expect(spy.callCount).to.be.below(callsUpperBound);
       done();
     }, null, {});
   });
