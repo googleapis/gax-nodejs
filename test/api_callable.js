@@ -142,7 +142,7 @@ describe('page streaming', function() {
       });
   });
 
-  it('stops in the middle of per-page iterfation, and resume it later',
+  it('stops in the middle of per-page iteration, and resumes it later',
      function(done) {
     function takeSingleResponse(pageToken) {
       return new Promise(function(resolve, reject) {
