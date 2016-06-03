@@ -13,6 +13,7 @@
     "chai": "*",
     "codecov": "~1.0",
     "istanbul": "~0.3.15",
+    "jsdoc": "~3.4.0",
     "jshint": "~2.5",
     "mocha": "~2.2.5",
     "pegjs": "~0.9.0",
@@ -20,6 +21,7 @@
   },
   "scripts": {
     "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
+    "doc": "jsdoc lib package.json README.md -c ./jsdoc.conf -d doc",
     "lint": "jshint lib test",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
     "test": "istanbul test _mocha -- --reporter spec --slow 500 --timeout 5000"
