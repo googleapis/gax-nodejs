@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: BundleOptions</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: BundleOptions</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>BundleOptions</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="BundleOptions"><span class="type-signature"></span>new BundleOptions<span class="signature">(options)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Holds values used to configure bundling.</p>
+<p>The xxxThreshold attributes are used to configure when the bundled request
+should be made. All properties default to 0.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object to hold optional parameters. See
+  properties for the content of options.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>elementCountThreshold</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the bundled request will be sent
+  once the count of outstanding elements in the repeated field reaches this
+  value.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>elementCountLimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>represents a hard limit on the
+  number of elements in the repeated field of the bundle; if adding a request
+  to a bundle would exceed this value, the bundle is sent and the new request
+  is added to a fresh bundle. It is invalid for a single request to exceed
+  this limit.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestByteThreshold</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the bundled request will be sent
+  once the count of bytes in the request reaches this value. Note that this
+  value is pessimistically approximated by summing the bytesizes of the
+  elements in the repeated field, and therefore may be an
+  under-approximation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestByteLimit</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>represents a hard limit on the size
+  of the bundled request; if adding a request to a bundle would exceed this
+  value, the bundle is sent and the new request is added to a fresh bundle.
+  It is invalid for a single request to exceed this limit. Note that this
+  value is pessimistically approximated by summing the bytesizes of the
+  elements in the repeated field, with a buffer applied to correspond to
+  the resulting under-approximation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>delayThreshold</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the bundled request will be sent this
+  amount of time after the first element in the bundle was added to it.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line289">line 289</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jun 03 2016 14:08:41 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

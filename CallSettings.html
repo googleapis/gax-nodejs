@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: CallSettings</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: CallSettings</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>CallSettings</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="CallSettings"><span class="type-signature"></span>new CallSettings<span class="signature">(settings)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>settings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>An object containing parameters of this settings.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timeout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The client-side timeout for API calls.
+  This parameter is ignored for retrying calls.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retry</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="RetryOptions.html">RetryOptions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The configuration for retrying upon
+  transient error. If set to null, this call will not retry.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageDescriptor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="PageDescriptor.html">PageDescriptor</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>indicates the structure
+  of page streaming to be performed. If set to null, page streaming
+  is disabled.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>flattenPages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>If there is no <code>pageDescriptor</code>,
+  this attrbute has no meaning. Otherwise, determines whether a page streamed
+  response should make the page structure transparent to the user by
+  flattening the repeated field in the returned generator.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>If there is no <code>pageDescriptor</code>,
+  this attribute has no meaning. Otherwise, determines the page token used in
+  the page streaming request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bundler</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>orchestrates bundling. If null, bundling
+  is not performed.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line75">line 75</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="merge"><span class="type-signature"></span>merge<span class="signature">(options)</span><span class="type-signature"> &rarr; {<a href="CallSettings.html">CallSettings</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Returns a new CallSettings merged from this and a CallOptions object.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CallOptions.html">CallOptions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>an instance whose values override
+  those in this object. If null, <code>merge</code> returns a copy of this
+  object</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line95">line 95</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="CallSettings.html">CallSettings</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jun 03 2016 14:08:41 GMT-0700 (PDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
