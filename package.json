@@ -24,7 +24,8 @@
     "doc": "jsdoc lib package.json README.md -c ./jsdoc.conf -d doc",
     "lint": "jshint lib test",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
-    "test": "istanbul test _mocha -- --reporter spec --slow 500 --timeout 5000"
+    "test": "istanbul test _mocha -- --reporter spec --slow 500 --timeout 5000",
+    "publish-gh-pages": "bash ./publish-gh-pages.sh"
   },
   "repository": {
     "type": "git",
