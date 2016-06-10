@@ -86,8 +86,9 @@ var RETRY_DICT = {
 
 describe('gax construct settings', function() {
   it('creates settings', function() {
+    var otherArgs = { 'key': 'value' };
     var defaults = gax.constructSettings(
-      SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, 30, PAGE_DESCRIPTORS);
+      SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, 30, PAGE_DESCRIPTORS, otherArgs);
     var settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(30);
     /* TODO: uncomment this when bundling is added.
@@ -98,6 +99,7 @@ describe('gax construct settings', function() {
     expect(settings.retry.retryCodes).eql([1, 2]);
     expect(settings.retry.backoffSettings).to.be.an.instanceOf(
       gax.BackoffSettings);
+    expect(settings.otherArgs).eql(otherArgs);
 
     settings = defaults.pageStreamingMethod;
     expect(settings.timeout).to.eq(30);
@@ -107,6 +109,7 @@ describe('gax construct settings', function() {
     expect(settings.retry.retryCodes).eql([3]);
     expect(settings.retry.backoffSettings).to.be.an.instanceOf(
       gax.BackoffSettings);
+    expect(settings.otherArgs).eql(otherArgs);
   });
 
   it('overrides settings', function() {
