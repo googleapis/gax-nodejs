@@ -59,7 +59,23 @@ describe('createApiCall', function() {
       expect(resp).to.eq(42);
       expect(deadlineArg).to.be.ok;
       done();
-    }, null, {});
+    });
+  });
+
+  it('is customized by call options', function(done) {
+    var settings = new gax.CallSettings({'timeout': 100});
+    function func(argument, callback, metadata, options) {
+      callback(null, options.deadline.getTime());
+    }
+    var apiCall = apiCallable.createApiCall(func, settings);
+    apiCall(null, function(err, resp) {
+      var now = new Date();
+      var originalDeadline = now.getTime() + 100;
+      var expectedDeadline = now.getTime() + 200;
+      expect(resp).above(originalDeadline);
+      expect(resp).most(expectedDeadline);
+      done();
+    }, new gax.CallOptions({'timeout': 200}));
   });
 });
 
@@ -91,7 +107,7 @@ describe('page streaming', function() {
   it('returns page-streamable', function(done) {
     var apiCall = apiCallable.createApiCall(func, settings);
     var counter = 0;
-    apiCall({}, null, null, {})
+    apiCall({}, null)
       .on('data', function(data) {
             expect(deadlineArg).to.be.ok;
             expect(data).to.eq(counter);
@@ -106,7 +122,7 @@ describe('page streaming', function() {
   it('stops if in the middle', function(done) {
     var apiCall = apiCallable.createApiCall(func, settings);
     var counter = 0;
-    var stream = apiCall({}, null, null, {});
+    var stream = apiCall({}, null);
     stream.on('data', function(data) {
       expect(deadlineArg).to.be.ok;
       expect(data).to.eq(counter);
@@ -125,7 +141,7 @@ describe('page streaming', function() {
         new gax.CallOptions({pageToken: gax.FIRST_PAGE}));
     var apiCall = apiCallable.createApiCall(func, mySettings);
     var counter = 0;
-    apiCall({}, null, null, {})
+    apiCall({}, null)
       .on('data', function(data) {
         expect(deadlineArg).to.be.ok;
         expect(data).to.be.an('object');
@@ -149,7 +165,7 @@ describe('page streaming', function() {
         var mySettings = settings.merge(
             new gax.CallOptions({pageToken: pageToken}));
         var apiCall = apiCallable.createApiCall(func, mySettings);
-        var stream = apiCall({}, null, null, {});
+        var stream = apiCall({}, null);
         stream.on('data', function(resp) {
           stream.end();
           resolve(resp);
@@ -190,7 +206,7 @@ describe('page streaming', function() {
     }
     var apiCall = apiCallable.createApiCall(failingFunc, settings);
     var dataCount = 0;
-    apiCall({}, null, null, {})
+    apiCall({}, null)
       .on('data', function(data) {
             expect(data).to.eq(dataCount);
             dataCount++;
@@ -226,7 +242,7 @@ describe('retryable', function() {
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
       done();
-    }, null, {});
+    });
   });
 
   it('doesn\'t retry if no codes', function(done) {
@@ -241,7 +257,7 @@ describe('retryable', function() {
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
       expect(spy.callCount).to.eq(1);
       done();
-    }, null, {});
+    });
   });
 
   it('aborts retries', function(done) {
@@ -251,7 +267,7 @@ describe('retryable', function() {
       expect(err).to.be.an('error');
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
       done();
-    }, null, {});
+    });
   });
 
   it.skip('times out', function(done) {
@@ -264,7 +280,7 @@ describe('retryable', function() {
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
       expect(spy.callCount).to.eq(toAttempt);
       done();
-    }, null, {});
+    });
   });
 
   it('aborts on unexpected exception', function(done) {
@@ -281,7 +297,7 @@ describe('retryable', function() {
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_2);
       expect(spy.callCount).to.eq(1);
       done();
-    }, null, {});
+    });
   });
 
   it('does not retry even when no responses', function(done) {
@@ -293,7 +309,7 @@ describe('retryable', function() {
       expect(err).to.be.null;
       expect(resp).to.be.null;
       done();
-    }, null, {});
+    });
   });
 
   it.skip('retries with exponential backoff', function(done) {
@@ -319,6 +335,6 @@ describe('retryable', function() {
       expect(spy.callCount).to.be.above(callsLowerBound);
       expect(spy.callCount).to.be.below(callsUpperBound);
       done();
-    }, null, {});
+    });
   });
 });
