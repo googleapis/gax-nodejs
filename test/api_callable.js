@@ -40,7 +40,7 @@ var sinon = require('sinon');
 var FAKE_STATUS_CODE_1 = 1;
 var FAKE_STATUS_CODE_2 = 2;
 
-function fail(argument, callback, metadata, options) {
+function fail(argument, metadata, options, callback) {
   var error = new Error();
   error.code = FAKE_STATUS_CODE_1;
   callback(error);
@@ -50,7 +50,7 @@ describe('createApiCall', function() {
   it('calls api call', function(done) {
     var settings = new gax.CallSettings();
     var deadlineArg;
-    function func(argument, callback, metadata, options) {
+    function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       callback(null, 42);
     }
@@ -64,7 +64,7 @@ describe('createApiCall', function() {
 
   it('is customized by call options', function(done) {
     var settings = new gax.CallSettings({'timeout': 100});
-    function func(argument, callback, metadata, options) {
+    function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
     var apiCall = apiCallable.createApiCall(func, settings);
@@ -90,7 +90,7 @@ describe('page streaming', function() {
                                        pageDescriptor: pageDescriptor});
   var deadlineArg = null;
 
-  function func(request, callback, metadata, options) {
+  function func(request, metadata, options, callback) {
     deadlineArg = options.deadline;
     var pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
@@ -196,12 +196,12 @@ describe('page streaming', function() {
 
   it('retries on failure', function(done) {
     var callCount = 0;
-    function failingFunc(request, callback, metadata, options) {
+    function failingFunc(request, metadata, options, callback) {
       callCount++;
       if (callCount % 2 === 0) {
-        fail(request, callback, metadata, options);
+        fail(request, metadata, options, callback);
       } else {
-        func(request, callback, metadata, options);
+        func(request, metadata, options, callback);
       }
     }
     var apiCall = apiCallable.createApiCall(failingFunc, settings);
@@ -227,11 +227,11 @@ describe('retryable', function() {
   it('retries the API call', function(done) {
     var toAttempt = 3;
     var deadlineArg;
-    function func(argument, callback, metadata, options) {
+    function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       toAttempt--;
       if (toAttempt > 0) {
-        fail(argument, callback, metadata, options);
+        fail(argument, metadata, options, callback);
         return;
       }
       callback(null, 1729);
@@ -284,7 +284,7 @@ describe('retryable', function() {
   });
 
   it('aborts on unexpected exception', function(done) {
-    function func(argument, callback, metadata, options) {
+    function func(argument, metadata, options, callback) {
       var error = new Error();
       error.code = FAKE_STATUS_CODE_2;
       callback(error);
@@ -301,7 +301,7 @@ describe('retryable', function() {
   });
 
   it('does not retry even when no responses', function(done) {
-    function func(argument, callback, metadata, options) {
+    function func(argument, metadata, options, callback) {
       callback(null, null);
     }
     var apiCall = apiCallable.createApiCall(func, settings);
