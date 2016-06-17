@@ -31,6 +31,7 @@
 'use strict';
 
 var gax = require('../lib/gax');
+var bundling = require('../lib/bundling');
 var expect = require('chai').expect;
 var sinon = require('sinon');
 
@@ -78,6 +79,10 @@ var PAGE_DESCRIPTORS = {
     'page_token', 'next_page_token', 'page_streams')
 };
 
+var BUNDLE_DESCRIPTORS = {
+  'bundlingMethod': new gax.BundleDescriptor('bundled_field', [])
+};
+
 var RETRY_DICT = {
   'code_a': 1,
   'code_b': 2,
@@ -88,12 +93,11 @@ describe('gax construct settings', function() {
   it('creates settings', function() {
     var otherArgs = { 'key': 'value' };
     var defaults = gax.constructSettings(
-      SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, 30, PAGE_DESCRIPTORS, otherArgs);
+        SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, 30, PAGE_DESCRIPTORS,
+        BUNDLE_DESCRIPTORS, otherArgs);
     var settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(30);
-    /* TODO: uncomment this when bundling is added.
-     * expect(settings.bundler).to be_a(Google::Gax::Executor)
-     */
+    expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
     expect(settings.pageDescriptor).to.eq(null);
     expect(settings.retry).to.be.an.instanceOf(gax.RetryOptions);
     expect(settings.retry.retryCodes).eql([1, 2]);
@@ -123,7 +127,8 @@ describe('gax construct settings', function() {
       }
     };
     var defaults = gax.constructSettings(
-      SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, 30, PAGE_DESCRIPTORS);
+        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, 30, PAGE_DESCRIPTORS,
+        BUNDLE_DESCRIPTORS);
 
     var settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(30);
@@ -163,13 +168,14 @@ describe('gax construct settings', function() {
     };
 
     var defaults = gax.constructSettings(
-      SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, 30, PAGE_DESCRIPTORS);
+        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, 30, PAGE_DESCRIPTORS,
+        BUNDLE_DESCRIPTORS);
 
     var settings = defaults.bundlingMethod;
     var backoff = settings.retry.backoffSettings;
     expect(backoff.initialRetryDelayMillis).to.eq(1000);
     expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_a]);
-    expect(settings.bundler).to.eq(null);
+    expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
 
     /* page_streaming_method is unaffected because it's not specified in
      * overrides. 'bar_retry' or 'default' definitions in overrides should
