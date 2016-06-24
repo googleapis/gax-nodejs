@@ -48,7 +48,7 @@ function fail(argument, metadata, options, callback) {
 
 function createApiCall(func, settings) {
   return apiCallable.createApiCall(Promise.resolve(func), settings);
-};
+}
 
 describe('createApiCall', function() {
   it('calls api call', function(done) {
