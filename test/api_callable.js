@@ -36,6 +36,7 @@ var apiCallable = require('../lib/api_callable');
 var gax = require('../lib/gax');
 var expect = require('chai').expect;
 var sinon = require('sinon');
+var eventemitter2 = require('eventemitter2');
 
 var FAKE_STATUS_CODE_1 = 1;
 var FAKE_STATUS_CODE_2 = 2;
@@ -80,6 +81,114 @@ describe('createApiCall', function() {
       expect(resp).most(expectedDeadline);
       done();
     });
+  });
+});
+
+describe('EventEmitter', function() {
+  it('calls api call', function(done) {
+    var deadlineArg;
+    function func(argument, metadata, options, callback) {
+      deadlineArg = options.deadline;
+      callback(null, 42);
+    }
+    var apiCall = createApiCall(func, new gax.CallSettings());
+    apiCall(null).on('data', function(response) {
+      expect(response).to.eq(42);
+      expect(deadlineArg).to.be.ok;
+      done();
+    }).on('error', done);
+  });
+
+  it('cancels api call', function(done) {
+    function func(argument, metadata, options, callback) {
+      setTimeout(function() { callback(null, 42); }, 0);
+      var emitter = new eventemitter2.EventEmitter2();
+      emitter.cancel = done;
+      return emitter;
+    }
+    var apiCall = createApiCall(func, new gax.CallSettings());
+    var eventEmitter = apiCall(null);
+    eventEmitter.on('data', function(response) {
+      done(new Error('should not reach'));
+    }).on('error', done);
+    eventEmitter.cancel();
+  });
+
+  it('cancels with callback', function(done) {
+    function func(argument, metadata, options, callback) {
+      setTimeout(function() { callback(null, 42); }, 0);
+      var emitter = new eventemitter2.EventEmitter2();
+      emitter.cancel = function() {};
+      return emitter;
+    }
+    var apiCall = createApiCall(func, new gax.CallSettings());
+    var eventEmitter = apiCall(null, null, function(err, response) {
+      expect(err).to.be.an.instanceOf(Error);
+      done();
+    });
+    eventEmitter.on('error', done);
+    eventEmitter.cancel();
+  });
+
+  it('resolves the promise', function(done) {
+    var deadlineArg;
+    function func(argument, metadata, options, callback) {
+      deadlineArg = options.deadline;
+      callback(null, 42);
+    }
+    var apiCall = createApiCall(func, new gax.CallSettings());
+    apiCall(null).result.then(function(response) {
+      expect(response).to.eq(42);
+      expect(deadlineArg).to.be.ok;
+      done();
+    });
+  });
+
+  it('rejects the promise on cancel', function(done) {
+    function func(argument, metadata, options, callback) {
+      setTimeout(function() { callback(null, 42); }, 0);
+      var emitter = new eventemitter2.EventEmitter2();
+      emitter.cancel = function() {};
+      return emitter;
+    }
+    var apiCall = createApiCall(func, new gax.CallSettings());
+    var eventEmitter = apiCall(null);
+    eventEmitter.result.then(
+        function(result) { done(new Error('should not reach')); },
+        function(err) {
+          expect(err).to.be.an.instanceOf(Error);
+          done();
+        });
+    eventEmitter.cancel();
+  });
+
+  it('cancels retrying call', function(done) {
+    var retryOptions = new gax.RetryOptions(
+        [FAKE_STATUS_CODE_1], new gax.BackoffSettings(0, 0, 0, 0, 0, 0, 100));
+    var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
+
+    var callCount = 0;
+    function func(argument, metadata, options, callback) {
+      callCount++;
+      var err = null;
+      var response = null;
+      if (callCount <= 3) {
+        err = new Error();
+        err.code = FAKE_STATUS_CODE_1;
+      } else {
+        response = 42;
+      }
+      setTimeout(function() { callback(err, response); }, 10);
+      var emitter = new eventemitter2.EventEmitter2();
+      emitter.cancel = done;
+      return emitter;
+    }
+    var apiCall = createApiCall(func, settings);
+    var eventEmitter = apiCall(null);
+    eventEmitter.on('data', function(response) {
+      done(new Error('should not reach'));
+    }).on('error', done);
+    setTimeout(eventEmitter.cancel.bind(eventEmitter), 15);
   });
 });
 
@@ -245,6 +354,51 @@ describe('retryable', function() {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
+      done();
+    });
+  });
+
+  it('retries the API call with promise', function(done) {
+    var toAttempt = 3;
+    var deadlineArg;
+    function func(argument, metadata, options, callback) {
+      deadlineArg = options.deadline;
+      toAttempt--;
+      if (toAttempt > 0) {
+        fail(argument, metadata, options, callback);
+        return;
+      }
+      callback(null, 1729);
+    }
+    var apiCall = createApiCall(func, settings);
+    apiCall(null, null).result.then(function(resp) {
+      expect(resp).to.eq(1729);
+      expect(toAttempt).to.eq(0);
+      expect(deadlineArg).to.be.ok;
+      done();
+    })['catch'](function(err) { done(err); });
+  });
+
+  it('cancels in the middle of retries', function(done) {
+    var callCount = 0;
+    var deadlineArg;
+    var eventEmitter;
+    function func(argument, metadata, options, callback) {
+      deadlineArg = options.deadline;
+      callCount++;
+      if (callCount <= 2) {
+        fail(argument, metadata, options, callback);
+        return;
+      }
+      setTimeout(eventEmitter.cancel.bind(eventEmitter), 0);
+      setTimeout(callback.bind(null, null, 1729), 10);
+    }
+    var apiCall = createApiCall(func, settings);
+    eventEmitter = apiCall(null, null);
+    eventEmitter.result.then(function(resp) {
+      done(new Error('should not reach'));
+    }, function(err) {
+      expect(err).to.be.an.instanceOf(Error);
       done();
     });
   });
