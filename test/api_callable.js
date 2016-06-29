@@ -46,16 +46,20 @@ function fail(argument, metadata, options, callback) {
   callback(error);
 }
 
+function createApiCall(func, settings) {
+  return apiCallable.createApiCall(Promise.resolve(func), settings);
+}
+
 describe('createApiCall', function() {
   it('calls api call', function(done) {
     var settings = new gax.CallSettings();
     var deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
-      callback(null, 42);
+      callback(null, argument);
     }
-    var apiCall = apiCallable.createApiCall(func, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(func, settings);
+    apiCall(42, null, function(err, resp) {
       expect(resp).to.eq(42);
       expect(deadlineArg).to.be.ok;
       done();
@@ -67,15 +71,15 @@ describe('createApiCall', function() {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
-    var apiCall = apiCallable.createApiCall(func, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(func, settings);
+    apiCall(null, new gax.CallOptions({'timeout': 200}), function(err, resp) {
       var now = new Date();
       var originalDeadline = now.getTime() + 100;
       var expectedDeadline = now.getTime() + 200;
       expect(resp).above(originalDeadline);
       expect(resp).most(expectedDeadline);
       done();
-    }, new gax.CallOptions({'timeout': 200}));
+    });
   });
 });
 
@@ -105,7 +109,7 @@ describe('page streaming', function() {
   }
 
   it('returns page-streamable', function(done) {
-    var apiCall = apiCallable.createApiCall(func, settings);
+    var apiCall = createApiCall(func, settings);
     var counter = 0;
     apiCall({}, null)
       .on('data', function(data) {
@@ -120,7 +124,7 @@ describe('page streaming', function() {
   });
 
   it('stops if in the middle', function(done) {
-    var apiCall = apiCallable.createApiCall(func, settings);
+    var apiCall = createApiCall(func, settings);
     var counter = 0;
     var stream = apiCall({}, null);
     stream.on('data', function(data) {
@@ -139,7 +143,7 @@ describe('page streaming', function() {
   it('iterate over pages', function(done) {
     var mySettings = settings.merge(
         new gax.CallOptions({pageToken: gax.FIRST_PAGE}));
-    var apiCall = apiCallable.createApiCall(func, mySettings);
+    var apiCall = createApiCall(func, mySettings);
     var counter = 0;
     apiCall({}, null)
       .on('data', function(data) {
@@ -164,7 +168,7 @@ describe('page streaming', function() {
       return new Promise(function(resolve, reject) {
         var mySettings = settings.merge(
             new gax.CallOptions({pageToken: pageToken}));
-        var apiCall = apiCallable.createApiCall(func, mySettings);
+        var apiCall = createApiCall(func, mySettings);
         var stream = apiCall({}, null);
         stream.on('data', function(resp) {
           stream.end();
@@ -204,7 +208,7 @@ describe('page streaming', function() {
         func(request, metadata, options, callback);
       }
     }
-    var apiCall = apiCallable.createApiCall(failingFunc, settings);
+    var apiCall = createApiCall(failingFunc, settings);
     var dataCount = 0;
     apiCall({}, null)
       .on('data', function(data) {
@@ -236,8 +240,8 @@ describe('retryable', function() {
       }
       callback(null, 1729);
     }
-    var apiCall = apiCallable.createApiCall(func, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(func, settings);
+    apiCall(null, null, function(err, resp) {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
@@ -250,8 +254,8 @@ describe('retryable', function() {
         [], new gax.BackoffSettings(1, 2, 3, 4, 5, 6, 7));
     var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
     var spy = sinon.spy(fail);
-    var apiCall = apiCallable.createApiCall(spy, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(spy, settings);
+    apiCall(null, null, function(err, resp) {
       expect(err).to.be.ok;
       expect(err.cause).to.be.an('error');
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
@@ -261,8 +265,8 @@ describe('retryable', function() {
   });
 
   it('aborts retries', function(done) {
-    var apiCall = apiCallable.createApiCall(fail, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(fail, settings);
+    apiCall(null, null, function(err, resp) {
       expect(err).to.be.ok;
       expect(err).to.be.an('error');
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
@@ -273,8 +277,8 @@ describe('retryable', function() {
   it.skip('times out', function(done) {
     var toAttempt = 3;
     var spy = sinon.spy(fail);
-    var apiCall = apiCallable.createApiCall(spy, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(spy, settings);
+    apiCall(null, null, function(err, resp) {
       expect(err).to.be.ok;
       expect(err.cause).to.be.an('error');
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
@@ -290,8 +294,8 @@ describe('retryable', function() {
       callback(error);
     }
     var spy = sinon.spy(func);
-    var apiCall = apiCallable.createApiCall(spy, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(spy, settings);
+    apiCall(null, null, function(err, resp) {
       expect(err).to.be.ok;
       expect(err.cause).to.be.an('error');
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_2);
@@ -304,8 +308,8 @@ describe('retryable', function() {
     function func(argument, metadata, options, callback) {
       callback(null, null);
     }
-    var apiCall = apiCallable.createApiCall(func, settings);
-    apiCall(null, function(err, resp) {
+    var apiCall = createApiCall(func, settings);
+    apiCall(null, null, function(err, resp) {
       expect(err).to.be.null;
       expect(resp).to.be.null;
       done();
@@ -318,10 +322,10 @@ describe('retryable', function() {
 
     var backoff = new gax.BackoffSettings(3, 2, 24, 5, 2, 80, 2500);
     var retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
-    var apiCall = apiCallable.createApiCall(
+    var apiCall = createApiCall(
         spy, new gax.CallSettings({timeout: 0, retry: retryOptions}));
 
-    apiCall(null, function(err, resp) {
+    apiCall(null, null, function(err, resp) {
       expect(err).to.be.ok;
       expect(err.cause).to.be.an('error');
       expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
