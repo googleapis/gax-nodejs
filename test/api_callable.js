@@ -99,6 +99,18 @@ describe('EventEmitter', function() {
     }).on('error', done);
   });
 
+  it('emits error on failure', function(done) {
+    var apiCall = createApiCall(fail, new gax.CallSettings());
+    var eventEmitter = apiCall(null, null);
+    eventEmitter.on('data', function(response) {
+      done(new Error('should not reach'));
+    });
+    eventEmitter.on('error', function(err) {
+      expect(err).to.be.an.instanceOf(Error);
+      done();
+    });
+  });
+
   it('cancels api call', function(done) {
     function func(argument, metadata, options, callback) {
       setTimeout(function() { callback(null, 42); }, 0);
@@ -230,6 +242,22 @@ describe('page streaming', function() {
             expect(counter).to.eq(pageSize * pagesToStream);
             done();
           });
+  });
+
+  it('invokes callbacks', function(done) {
+    var apiCall = createApiCall(func, settings);
+    var counter = 0;
+    apiCall({}, null, function(err, data) {
+      expect(err).not.to.be.ok;
+      expect(deadlineArg).to.be.ok;
+      expect(data).to.eq(counter);
+      counter++;
+      if (counter == pageSize * pagesToStream) {
+        done();
+      } else if (counter > pageSize * pagesToStream) {
+        done(new Error('should not reach'));
+      }
+    });
   });
 
   it('stops if in the middle', function(done) {
