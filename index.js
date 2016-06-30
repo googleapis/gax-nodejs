@@ -32,8 +32,10 @@
 'use strict';
 
 var gax = require('./lib/gax');
+var apiCallable = require('./lib/api_callable');
 
-exports.createApiCall = require('./lib/api_callable').createApiCall;
+exports.createApiCall = apiCallable.createApiCall;
+exports.EventEmitter = apiCallable.EventEmitter;
 exports.createStub = require('./lib/grpc').createStub;
 exports.PathTemplate = require('./lib/path_template').PathTemplate;
 exports.CallSettings = gax.CallSettings;
