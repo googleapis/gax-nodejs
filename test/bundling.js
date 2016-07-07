@@ -35,6 +35,7 @@
 var bundling = require('../lib/bundling');
 var gax = require('../lib/gax');
 var event_emitter = require('../lib/event_emitter');
+var eventemitter2 = require('eventemitter2');
 var expect = require('chai').expect;
 var sinon = require('sinon');
 var _ = require('lodash');
@@ -137,6 +138,61 @@ describe('computeBundleId', function() {
   });
 });
 
+describe('deepCopyForResponse', function() {
+  it('copies deeply', function() {
+    var input = {'foo': {'bar': [1, 2]}};
+    var output = bundling.deepCopyForResponse(input, null);
+    expect(output).to.deep.equal(input);
+    expect(output.foo).to.not.equal(input.foo);
+    expect(output.foo.bar).to.not.equal(input.foo.bar);
+  });
+
+  it('respects subresponseInfo', function() {
+    var input = {'foo':[1, 2, 3, 4], 'bar': {'foo': [1, 2, 3, 4]}};
+    var output = bundling.deepCopyForResponse(
+        input, {'field': 'foo', 'start': 0, 'end': 2});
+    expect(output).to.deep.equal({'foo': [1, 2], 'bar': {'foo': [1, 2, 3, 4]}});
+    expect(output.bar).to.not.equal(input.bar);
+
+    var output2 = bundling.deepCopyForResponse(
+        input, {'field': 'foo', 'start': 2, 'end': 4});
+    expect(output2).to.deep.equal({'foo': [3, 4], 'bar': {'foo': [1, 2, 3, 4]}});
+    expect(output2.bar).to.not.equal(input.bar);
+  });
+
+  it('deep copies special values', function() {
+    function Copyable(id) {
+      this.id = id;
+    }
+    Copyable.prototype.copy = function() {
+      return new Copyable(this.id);
+    };
+    var input = {
+      'copyable': new Copyable(0),
+      'arraybuffer': new ArrayBuffer(10),
+      'nullvalue': null,
+      'array': [1, 2, 3],
+      'number': 1,
+      'boolean': false,
+      'obj': {
+        'foo': 1
+      }
+    };
+    var output = bundling.deepCopyForResponse(input, null);
+    expect(output).to.deep.equal(input);
+    expect(output.copyable).to.not.equal(input.copyable);
+    expect(output.arraybuffer).to.not.equal(input.arraybuffer);
+    expect(output.array).to.not.equal(input.array);
+  });
+
+  it('ignores erroneous subresponseInfo', function() {
+    var input = {'foo': 1, 'bar': {'foo': [1, 2, 3, 4]}};
+    var output = bundling.deepCopyForResponse(
+        input, {'field': 'foo', 'start': 0, 'end': 2});
+    expect(output).to.deep.equal(input);
+  });
+});
+
 describe('Task', function() {
   function testTask(apiCall) {
     return new bundling.Task(apiCall, {}, 'field1', null, byteLength);
@@ -151,7 +207,9 @@ describe('Task', function() {
         _callback: callback
       };
     }
-    task.extend(elements, dummyEmitter);
+    var bytes = 0;
+    elements.forEach(function(element) { bytes += byteLength(element); });
+    task.extend(elements, bytes, dummyEmitter);
   }
 
   describe('extend', function() {
@@ -231,7 +289,7 @@ describe('Task', function() {
           var task = testTask(apiCall);
           var callback = sinon.spy(function(err, data) {
             expect(err).to.be.null;
-            expect(data).to.be.null;
+            expect(data).to.be.an.instanceOf(Object);
             if (callback.callCount == t.data.length) {
               expect(apiCall.callCount).to.eq(1);
               done();
@@ -260,7 +318,7 @@ describe('Task', function() {
           t.data.forEach(function(d) {
             extendElements(task, d, function(err, data) {
               expect(err).to.be.null;
-              expect(data.length).to.be.eq(d.length);
+              expect(data.field1.length).to.be.eq(d.length);
               callbackCount++;
               if (callbackCount == t.data.length) {
                 expect(apiCall.callCount).to.eq(1);
@@ -314,7 +372,7 @@ describe('Task', function() {
       }
     });
     extendElements(task, [1, 2, 3], function(err, resp) {
-      expect(resp).to.deep.equal([1, 2, 3]);
+      expect(resp.field1).to.deep.equal([1, 2, 3]);
       callback();
     });
     extendElements(task, [4, 5, 6], function(err, resp) {
@@ -323,7 +381,7 @@ describe('Task', function() {
     var cancelId = task._data[task._data.length - 1].emitter._eventId;
 
     extendElements(task, [7, 8, 9], function(err, resp) {
-      expect(resp).to.deep.equal([7, 8, 9]);
+      expect(resp.field1).to.deep.equal([7, 8, 9]);
       callback();
     });
 
@@ -397,6 +455,20 @@ describe('Executor', function() {
     var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 100}));
     var spyApi;
 
+    function timedAPI(request, callback) {
+      var canceled = false;
+      setTimeout(function() {
+        if (!canceled) {
+          callback(null, request);
+        }
+      }, 10);
+      var emitter = new eventemitter2.EventEmitter2();
+      emitter.cancel = function() {
+        canceled = true;
+      };
+      return emitter;
+    }
+
     beforeEach(function() {
       spyApi = sinon.spy(apiCall);
     });
@@ -409,7 +481,7 @@ describe('Executor', function() {
           callCount++;
           // make sure this callback is called only once.
           expect(callCount).to.eq(1);
-          expect(resp).to.deep.equal([1, 2]);
+          expect(resp.field1).to.deep.equal([1, 2]);
           expect(spyApi.callCount).to.eq(1);
 
           // event1.runNow() does nothing, even though event2 is scheduled
@@ -434,13 +506,28 @@ describe('Executor', function() {
 
           var event2 = schedule(executor, spyApi, createSimple([3, 4], 'id'));
           event2.on('data', function(resp) {
-            expect(resp).to.deep.equal([3, 4]);
+            expect(resp.field1).to.deep.equal([3, 4]);
             expect(spyApi.callCount).to.eq(1);
             setTimeout(done, 0);
           });
           event2.on('error', done);
           event2.runNow();
         }, 0);
+      });
+
+      it('distinguishes a running task and a scheduled task.', function(done) {
+        var event1 = schedule(executor, timedAPI, createSimple([1, 2], 'id'));
+        event1.on('data', function() {
+          // Wait for 20msec to verify that event2 does not finish accidentally.
+          setTimeout(done, 20);
+        });
+        event1.on('error', function() { done(new Error('should not reach')); });
+        event1.runNow();
+
+        var event2 = schedule(executor, timedAPI, createSimple([1, 2], 'id'));
+        event2.on('data', function() { done(new Error('should not reach')); });
+        event2.on('error', function() { done(new Error('should not reach')); });
+        event2.cancel();
       });
     });
 
@@ -452,7 +539,7 @@ describe('Executor', function() {
               callCount++;
               // make sure this callback is called only once.
               expect(callCount).to.eq(1);
-              expect(resp).to.deep.equal([1, 2]);
+              expect(resp.field1).to.deep.equal([1, 2]);
 
               // event1.runNow() does nothing, even though event2 is scheduled
               // with the same bundle id.
@@ -474,7 +561,7 @@ describe('Executor', function() {
               var event2 = schedule(
                   executor, spyApi, createSimple([3, 4], 'id'),
                   function(err, resp) {
-                    expect(resp).to.deep.equal([3, 4]);
+                    expect(resp.field1).to.deep.equal([3, 4]);
                     expect(spyApi.callCount).to.eq(1);
                     done();
                   });
@@ -482,6 +569,27 @@ describe('Executor', function() {
             });
         expect(spyApi.callCount).to.eq(0);
         event1.cancel();
+      });
+
+      it('distinguishes a running task and a scheduled task.', function(done) {
+        var counter = 0;
+        var event1 = schedule(executor, timedAPI, createSimple([1, 2], 'id'),
+                              function(err, resp) {
+          expect(err).to.be.null;
+          counter++;
+          // counter should be 2 because event2 callback should be called
+          // earlier (it should be called immediately on cancel).
+          expect(counter).to.eq(2);
+          done();
+        });
+        event1.runNow();
+
+        var event2 = schedule(executor, timedAPI, createSimple([1, 2], 'id'),
+                              function(err, resp) {
+          expect(err).to.be.an.instanceOf(Error);
+          counter++;
+        });
+        event2.cancel();
       });
     });
 
@@ -492,7 +600,7 @@ describe('Executor', function() {
 
         event.runNow();
         event.result.then(function(result) {
-          expect(result).to.deep.equal([1, 2]);
+          expect(result.field1).to.deep.equal([1, 2]);
           expect(spyApi.callCount).to.eq(1);
           // Invoking event1 does nothing, because it's already over.
           event.runNow();
@@ -520,6 +628,28 @@ describe('Executor', function() {
           expect(spyApi.callCount).to.eq(1);
           done();
         }, function(err) { done(err); });
+      });
+
+      it('distinguishes a running task and a scheduled task.', function(done) {
+        var counter = 0;
+        var event1 = schedule(executor, timedAPI, createSimple([1, 2], 'id'));
+        event1.result.then(function(resp) {
+          counter++;
+          // counter should be 2 because event2 failure should be called
+          // earlier (it should be called immediately on cancel).
+          expect(counter).to.eq(2);
+          done();
+        }, function(err) { done(err); });
+        event1.runNow();
+
+        var event2 = schedule(executor, timedAPI, createSimple([1, 2], 'id'));
+        event2.result.then(function(resp) {
+          done(new Error('should not reach'));
+        }, function(err) {
+          expect(err).to.be.an.instanceOf(Error);
+          counter++;
+        })['catch'](done);
+        event2.cancel();
       });
     });
   });
@@ -572,6 +702,72 @@ describe('Executor', function() {
     expect(spy.callCount).to.eq(2);
 
     expect(_.size(executor._tasks)).to.eq(0);
+  });
+
+  it('respects element limit', function(done) {
+    var threshold = 5;
+    var limit = 7;
+    var executor = newExecutor(new gax.BundleOptions(
+        {'elementCountThreshold': threshold, 'elementCountLimit': limit}));
+    var spy = sinon.spy(function(request, callback) {
+      expect(request.field1).to.be.an.instanceOf(Array);
+      callback(null, request);
+    });
+    schedule(executor, spy, createSimple([1, 2], 'id'));
+    schedule(executor, spy, createSimple([3, 4], 'id'));
+    expect(spy.callCount).to.eq(0);
+    expect(_.size(executor._tasks)).to.eq(1);
+
+    schedule(executor, spy, createSimple([5, 6, 7], 'id'));
+    expect(spy.callCount).to.eq(1);
+    expect(_.size(executor._tasks)).to.eq(1);
+
+    schedule(executor, spy, createSimple([8, 9, 10, 11, 12], 'id'));
+    expect(spy.callCount).to.eq(3);
+    expect(_.size(executor._tasks)).to.eq(0);
+
+    var emitter = schedule(
+        executor, spy, createSimple([1, 2, 3, 4, 5, 6, 7], 'id'));
+    emitter.on('data', function() {
+      done(new Error('not reached'));
+    }).on('error', function(err) {
+      expect(err).to.be.an.instanceOf(Error);
+      done();
+    });
+  });
+
+  it('respects bytes limit', function(done) {
+    var unitSize = byteLength(1);
+    var threshold = 5;
+    var limit = 7;
+    var executor = newExecutor(new gax.BundleOptions(
+        {'requestByteThreshold': threshold * unitSize,
+         'requestByteLimit': limit * unitSize}));
+    var spy = sinon.spy(function(request, callback) {
+      expect(request.field1).to.be.an.instanceOf(Array);
+      callback(null, request);
+    });
+    schedule(executor, spy, createSimple([1, 2], 'id'));
+    schedule(executor, spy, createSimple([3, 4], 'id'));
+    expect(spy.callCount).to.eq(0);
+    expect(_.size(executor._tasks)).to.eq(1);
+
+    schedule(executor, spy, createSimple([5, 6, 7], 'id'));
+    expect(spy.callCount).to.eq(1);
+    expect(_.size(executor._tasks)).to.eq(1);
+
+    schedule(executor, spy, createSimple([8, 9, 0, 1, 2], 'id'));
+    expect(spy.callCount).to.eq(3);
+    expect(_.size(executor._tasks)).to.eq(0);
+
+    var emitter = schedule(
+        executor, spy, createSimple([1, 2, 3, 4, 5, 6, 7], 'id'));
+    emitter.on('data', function() {
+      done(new Error('not reached'));
+    }).on('error', function(err) {
+      expect(err).to.be.an.instanceOf(Error);
+      done();
+    });
   });
 
   describe('timer', function() {

@@ -545,6 +545,7 @@ describe('bundleable', function() {
   it('bundles requests', function(done) {
     var spy = sinon.spy(func);
     var callback = sinon.spy(function(err, obj) {
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
       if (callback.callCount === 2) {
         expect(spy.callCount).to.eq(1);
         done();
@@ -560,6 +561,7 @@ describe('bundleable', function() {
     var callbackCount = 0;
     function bundledCallback(err, obj) {
       callbackCount++;
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
       if (callbackCount === 3) {
         expect(spy.callCount).to.eq(2);
         done();
