@@ -455,6 +455,9 @@ describe('Executor', function() {
     var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 100}));
     var spyApi;
 
+    // This waits 10 msec and then invokes the callback, which means to take
+    // the actual clock. Ideally this should be mocked and avoid using the real
+    // clock. See: https://github.com/googleapis/gax-nodejs/issues/1
     function timedAPI(request, callback) {
       var canceled = false;
       setTimeout(function() {
@@ -508,7 +511,7 @@ describe('Executor', function() {
           event2.on('data', function(resp) {
             expect(resp.field1).to.deep.equal([3, 4]);
             expect(spyApi.callCount).to.eq(1);
-            setTimeout(done, 0);
+            done();
           });
           event2.on('error', done);
           event2.runNow();
@@ -798,18 +801,6 @@ describe('Executor', function() {
           new gax.BundleOptions({'delayThreshold': 50}));
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
-      function onEnd() {
-        expect(spy.callCount).to.eq(1);
-        var now = (new Date()).getTime();
-        expect(now - start).to.be.least(50);
-        done();
-      }
-      var tasks = 5;
-      var callback = sinon.spy(function(err, resp) {
-        if (callback.callCount == tasks) {
-          onEnd();
-        }
-      });
       schedule(executor, spy, createSimple([0], 'id'), function() {
         expect(spy.callCount).to.eq(1);
         var firstEnded = (new Date()).getTime();
