@@ -225,7 +225,7 @@ describe('Task', function() {
         'want': 1
       }, {
         'data': [data, data, data, data, data],
-        'message': 'a 5 messages added',
+        'message': '5 messages added',
         'want': 5
       }
     ];
@@ -410,7 +410,7 @@ describe('Executor', function() {
   }
 
   it('groups api calls by the id', function() {
-    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 100}));
+    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 10}));
     schedule(executor, apiCall, createSimple([1, 2], 'id1'));
     schedule(executor, apiCall, createSimple([3], 'id2'));
     schedule(executor, apiCall, createSimple([4, 5], 'id1'));
@@ -436,7 +436,7 @@ describe('Executor', function() {
   });
 
   it('emits errors when the api call fails', function(done) {
-    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 100}));
+    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 10}));
     var callback = sinon.spy(function(err, resp) {
       expect(err).to.be.an.instanceOf(Error);
       if (callback.callCount == 2) {
@@ -452,19 +452,19 @@ describe('Executor', function() {
   });
 
   describe('with events', function() {
-    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 100}));
+    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 10}));
     var spyApi;
 
-    // This waits 10 msec and then invokes the callback, which means to take
-    // the actual clock. Ideally this should be mocked and avoid using the real
-    // clock. See: https://github.com/googleapis/gax-nodejs/issues/1
     function timedAPI(request, callback) {
       var canceled = false;
+      // This invokes callback asynchronously by using setTimeout with 0msec, so
+      // the callback invocation can be canceled in the same event loop of this
+      // API is called.
       setTimeout(function() {
         if (!canceled) {
           callback(null, request);
         }
-      }, 10);
+      }, 0);
       var emitter = new eventemitter2.EventEmitter2();
       emitter.cancel = function() {
         canceled = true;
@@ -521,8 +521,13 @@ describe('Executor', function() {
       it('distinguishes a running task and a scheduled task.', function(done) {
         var event1 = schedule(executor, timedAPI, createSimple([1, 2], 'id'));
         event1.on('data', function() {
-          // Wait for 20msec to verify that event2 does not finish accidentally.
-          setTimeout(done, 20);
+          expect(_.size(executor._tasks)).to.eq(
+              0, 'The task for event2 should not remain in the executor.');
+          // Even if the task for event2 does not remain in the executor, this
+          // needs to verify that its API isn't invoked and its callback isn't
+          // scheduled. Thus use setTimeout(done, 0); instead of done(),
+          // so some errors can be reported if callback is called meanwhile.
+          setTimeout(done, 0);
         });
         event1.on('error', function() { done(new Error('should not reach')); });
         event1.runNow();

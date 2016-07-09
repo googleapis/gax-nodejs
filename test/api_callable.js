@@ -536,7 +536,7 @@ describe('bundleable', function() {
   function createRequest(field1, field2) {
     return {'field1': field1, 'field2': field2};
   }
-  var bundleOptions = new gax.BundleOptions({'delayThreshold': 10});
+  var bundleOptions = new gax.BundleOptions({'elementCountThreshold': 6});
   var bundleDescriptor = new gax.BundleDescriptor(
       'field1', ['field2'], 'field1', byteLength);
   var settings = new gax.CallSettings({bundler: new bundling.BundleExecutor(
@@ -573,11 +573,9 @@ describe('bundleable', function() {
       expect(obj.field1).to.deep.equal([1, 2, 3]);
     }
     var apiCall = createApiCall(spy, settings);
-    var emitter = apiCall(
-        createRequest([1, 2, 3], 'id'), null, bundledCallback);
+    apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
     apiCall(createRequest([1, 2, 3], 'id'),
             new gax.CallOptions({'isBundling': false}), unbundledCallback);
     apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
-    emitter.runNow();
   });
 });
