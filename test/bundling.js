@@ -271,7 +271,7 @@ describe('Task', function() {
         'expected': [data, data, data, data, data]
       }, {
         'data': [[data, data, data, data, data]],
-        'message': 'a 5 messages added',
+        'message': '5 messages added',
         'expected': [data, data, data, data, data]
       }
     ];
