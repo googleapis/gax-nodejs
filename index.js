@@ -32,11 +32,15 @@
 'use strict';
 
 var gax = require('./lib/gax');
-var apiCallable = require('./lib/api_callable');
+var grpc = require('./lib/grpc');
+var eventEmitter = require('./lib/event_emitter');
+var bundling = require('./lib/bundling');
 
-exports.createApiCall = apiCallable.createApiCall;
-exports.EventEmitter = apiCallable.EventEmitter;
-exports.createStub = require('./lib/grpc').createStub;
+exports.createApiCall = require('./lib/api_callable').createApiCall;
+exports.EventEmitter = eventEmitter.EventEmitter;
+exports.BundleEventEmitter = eventEmitter.BundleEventEmitter;
+exports.createStub = grpc.createStub;
+exports.createByteLengthFunction = grpc.createByteLengthFunction;
 exports.PathTemplate = require('./lib/path_template').PathTemplate;
 exports.CallSettings = gax.CallSettings;
 exports.CallOptions = gax.CallOptions;
@@ -45,3 +49,4 @@ exports.RetryOptions = gax.RetryOptions;
 exports.BackoffSettings = gax.BackoffSettings;
 exports.BundleOptions = gax.BundleOptions;
 exports.constructSettings = gax.constructSettings;
+exports.BundleExecutor = require('./lib/bundling').BundleExecutor;

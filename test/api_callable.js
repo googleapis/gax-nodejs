@@ -33,6 +33,7 @@
 'use strict';
 
 var apiCallable = require('../lib/api_callable');
+var bundling = require('../lib/bundling');
 var gax = require('../lib/gax');
 var expect = require('chai').expect;
 var sinon = require('sinon');
@@ -522,5 +523,59 @@ describe('retryable', function() {
       expect(spy.callCount).to.be.below(callsUpperBound);
       done();
     });
+  });
+});
+
+describe('bundleable', function() {
+  function byteLength(obj) {
+    return JSON.stringify(obj).length;
+  }
+  function func(argument, metadata, options, callback) {
+    callback(null, argument);
+  }
+  function createRequest(field1, field2) {
+    return {'field1': field1, 'field2': field2};
+  }
+  var bundleOptions = new gax.BundleOptions({'elementCountThreshold': 6});
+  var bundleDescriptor = new gax.BundleDescriptor(
+      'field1', ['field2'], 'field1', byteLength);
+  var settings = new gax.CallSettings({bundler: new bundling.BundleExecutor(
+      bundleOptions, bundleDescriptor)});
+
+  it('bundles requests', function(done) {
+    var spy = sinon.spy(func);
+    var callback = sinon.spy(function(err, obj) {
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      if (callback.callCount === 2) {
+        expect(spy.callCount).to.eq(1);
+        done();
+      }
+    });
+    var apiCall = createApiCall(spy, settings);
+    apiCall(createRequest([1, 2, 3], 'id'), null, callback);
+    apiCall(createRequest([1, 2, 3], 'id'), null, callback);
+  });
+
+  it('suppresses bundling behavior by call options', function(done) {
+    var spy = sinon.spy(func);
+    var callbackCount = 0;
+    function bundledCallback(err, obj) {
+      callbackCount++;
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      if (callbackCount === 3) {
+        expect(spy.callCount).to.eq(2);
+        done();
+      }
+    }
+    function unbundledCallback(err, obj) {
+      callbackCount++;
+      expect(callbackCount).to.eq(1);
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
+    }
+    var apiCall = createApiCall(spy, settings);
+    apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
+    apiCall(createRequest([1, 2, 3], 'id'),
+            new gax.CallOptions({'isBundling': false}), unbundledCallback);
+    apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
   });
 });
