@@ -7,7 +7,7 @@
     "chai": "*",
     "eventemitter2": "1.0.2",
     "google-auth-library": "0.9.8",
-    "grpc": "~0.14.1",
+    "grpc": "~0.15.0",
     "lodash": "~4.11.1",
     "through2": "~2.0.1"
   },
