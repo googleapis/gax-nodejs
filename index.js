@@ -48,5 +48,6 @@ exports.PageDescriptor = gax.PageDescriptor;
 exports.RetryOptions = gax.RetryOptions;
 exports.BackoffSettings = gax.BackoffSettings;
 exports.BundleOptions = gax.BundleOptions;
+exports.BundleDescriptor = gax.BundleDescriptor;
 exports.constructSettings = gax.constructSettings;
 exports.BundleExecutor = require('./lib/bundling').BundleExecutor;
