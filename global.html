@@ -140,7 +140,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line52">line 52</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -205,7 +205,7 @@ settings.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line47">line 47</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line49">line 49</a>
     </li></ul></dd>
     
 
@@ -232,7 +232,7 @@ settings.</p>
 
     
 
-    <h4 class="name" id="constructSettings"><span class="type-signature"></span>constructSettings<span class="signature">(serviceName, clientConfig, configOverrides, retryNames, timeout, pageDescriptors)</span><span class="type-signature"> &rarr; (nullable) {<a href="CallSettings.html">CallSettings</a>}</span></h4>
+    <h4 class="name" id="constructSettings"><span class="type-signature"></span>constructSettings<span class="signature">(serviceName, clientConfig, configOverrides, retryNames, timeout, pageDescriptors, otherArgs)</span><span class="type-signature"> &rarr; (nullable) {<a href="CallSettings.html">CallSettings</a>}</span></h4>
 
     
 
@@ -458,6 +458,30 @@ file of the form:</p>
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>otherArgs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the non-request arguments to be passed to the API
+  calls.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -495,7 +519,7 @@ file of the form:</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line484">line 484</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line543">line 543</a>
     </li></ul></dd>
     
 
@@ -549,7 +573,7 @@ file of the form:</p>
 
     
 
-    <h4 class="name" id="createApiCall"><span class="type-signature"></span>createApiCall<span class="signature">(func, settings)</span><span class="type-signature"> &rarr; {<a href="global.html#APIFunc">APIFunc</a>}</span></h4>
+    <h4 class="name" id="createApiCall"><span class="type-signature"></span>createApiCall<span class="signature">(funcWithAuth, settings)</span><span class="type-signature"> &rarr; {<a href="global.html#APICall">APICall</a>}</span></h4>
 
     
 
@@ -557,15 +581,12 @@ file of the form:</p>
 
 <div class="description">
     <p>Converts an rpc call into an API call governed by the settings.</p>
-<p>In typical usage, <code>func</code> will be a callable used to make an rpc request.
-This will mostly likely be a bound method from a request stub used to make
-an rpc call.</p>
-<p>The result is created by applying a series of function decorators defined
-in this module to <code>func</code>.  <code>settings</code> is used to determine which function
-decorators to apply.</p>
-<p>The result is another callable which for most values of <code>settings</code> has
-has the same signature as the original. Only when <code>settings</code> configures
-bundling does the signature change.</p>
+<p>In typical usage, <code>func</code> will be a promsie to a callable used to make an rpc
+request. This will mostly likely be a bound method from a request stub used
+to make an rpc call. It is not a direct function but a Promise instance,
+because of its asynchronism (typically, obtaining the auth information).</p>
+<p>The result is a function which manages the API call with the given settings
+and the options on the invocation.</p>
 </div>
 
 
@@ -601,13 +622,13 @@ bundling does the signature change.</p>
 
         <tr>
             
-                <td class="name"><code>func</code></td>
+                <td class="name"><code>funcWithAuth</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#APIFunc">APIFunc</a></span>
+<span class="param-type">Promise.&lt;<a href="global.html#APIFunc">APIFunc</a>></span>
 
 
             
@@ -617,7 +638,9 @@ bundling does the signature change.</p>
 
             
 
-            <td class="description last"><p>is used to make a bare rpc call</p></td>
+            <td class="description last"><p>is a promise to be used to make
+  a bare rpc call. This is a Promise instead of a bare function because
+  the rpc call will be involeved with asynchronous authentications.</p></td>
         </tr>
 
     
@@ -681,7 +704,7 @@ bundling does the signature change.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line231">line 231</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line289">line 289</a>
     </li></ul></dd>
     
 
@@ -710,7 +733,7 @@ bundling does the signature change.</p>
     
         <ul>
 <li>if <code>settings</code> has incompatible values, e.g, if bundling
-and page_streaming are both configured</li>
+and page_streaming are both configured.</li>
 </ul>
     
     </div>
@@ -724,7 +747,7 @@ and page_streaming are both configured</li>
         
 <div class="param-desc">
     <p>func - a bound method on a request stub used
-  to make an rpc call</p>
+  to make an rpc call.</p>
 </div>
 
 
@@ -735,7 +758,165 @@ and page_streaming are both configured</li>
     </dt>
     <dd>
         
-<span class="param-type"><a href="global.html#APIFunc">APIFunc</a></span>
+<span class="param-type"><a href="global.html#APICall">APICall</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createByteLengthFunction"><span class="type-signature"></span>createByteLengthFunction<span class="signature">(message)</span><span class="type-signature"> &rarr; {function}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Creates a 'bytelength' function for a given proto message class.</p>
+<p>See <a href="BundleDescriptor.html">BundleDescriptor</a> about the meaning of the return value.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>a constructor function that is generated by
+  protobuf.js. Assumes 'encoder' field in the message.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="grpc.js.html">grpc.js</a>, <a href="grpc.js.html#line115">line 115</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>a function to compute the byte length
+for an object.</li>
+</ul>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
 
 
     </dd>
@@ -1209,6 +1390,200 @@ and page_streaming are both configured</li>
 
     
 
+    <h4 class="name" id="APICall"><span class="type-signature"></span>APICall<span class="signature">(argument, callOptions, callback)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>|Stream}</span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>argument</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="CallOptions.html">CallOptions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#APICallback">APICallback</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line58">line 58</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="EventEmitter.html">EventEmitter</a></span>
+|
+
+<span class="param-type">Stream</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            
+                
+
+    
+
     <h4 class="name" id="APICallback"><span class="type-signature"></span>APICallback<span class="signature">(error<span class="signature-attributes">nullable</span>, response<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
 
     
@@ -1350,7 +1725,7 @@ and page_streaming are both configured</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line43">line 43</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line44">line 44</a>
     </li></ul></dd>
     
 
@@ -1381,7 +1756,7 @@ and page_streaming are both configured</li>
 
     
 
-    <h4 class="name" id="APIFunc"><span class="type-signature"></span>APIFunc<span class="signature">(argument, callback, metadata, options)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="APIFunc"><span class="type-signature"></span>APIFunc<span class="signature">(argument, metadata, options, callback)</span><span class="type-signature"></span></h4>
 
     
 
@@ -1443,29 +1818,6 @@ and page_streaming are both configured</li>
 
         <tr>
             
-                <td class="name"><code>callback</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#APICallback">APICallback</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>metadata</code></td>
             
 
@@ -1496,6 +1848,29 @@ and page_streaming are both configured</li>
             
                 
 <span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#APICallback">APICallback</a></span>
 
 
             
@@ -1546,7 +1921,7 @@ and page_streaming are both configured</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line49">line 49</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -1985,13 +2360,13 @@ and page_streaming are both configured</li>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createByteLengthFunction">createByteLengthFunction</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jun 03 2016 14:32:30 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 15 2016 15:47:17 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -65,6 +65,7 @@
 
 var assert = require('chai').assert;
 var gax = require('./gax');
+var event_emitter = require('./event_emitter');
 var through2 = require('through2');
 var setTimeout = require('timers').setTimeout;
 
@@ -77,9 +78,17 @@ var setTimeout = require('timers').setTimeout;
 /**
  * @callback APIFunc
  * @param {Object} argument
- * @param {APICallback} callback
  * @param {grpc.Metadata} metadata
  * @param {Object} options
+ * @param {APICallback} callback
+ */
+
+/**
+ * @callback APICall
+ * @param {Object} argument
+ * @param {CallOptions} callOptions
+ * @param {APICallback} callback
+ * @returns {EventEmitter|Stream}
  */
 
 /**
@@ -92,13 +101,17 @@ var setTimeout = require('timers').setTimeout;
  * @param {APIFunc} aFunc - a function to be updated
  * @param {number} timeout - to be added to the original function as it final
  *   positional arg.
- * @returns {APIFunc} the original function updated to the timeout arg
+ * @param {Object} otherArgs - the additional arguments to be passed to aFunc.
+ * @returns {function()} the function with other arguments and the timeout.
  */
-function addTimeoutArg(aFunc, timeout) {
-  return function timeoutFunc(argument, callback, metadata, options) {
+function addTimeoutArg(aFunc, timeout, otherArgs) {
+  // TODO: this assumes the other arguments consist of metadata and options,
+  // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
+  return function timeoutFunc(argument, callback) {
     var now = new Date();
+    var options = otherArgs.options || {};
     options.deadline = new Date(now.getTime() + timeout);
-    aFunc(argument, callback, metadata, options);
+    return aFunc(argument, otherArgs.metadata, options, callback);
   };
 }
 
@@ -112,9 +125,10 @@ function addTimeoutArg(aFunc, timeout) {
  * @param {RetryOptions} retry - Configures the exceptions upon which the
  *   function eshould retry, and the parameters to the exponential backoff retry
  *   algorithm.
- * @returns {APIFunc} A function that will retry on exception.
+ * @param {Object} otherArgs - the additional arguments to be passed to aFunc.
+ * @returns {function()} A function that will retry.
  */
-function retryable(aFunc, retry) {
+function retryable(aFunc, retry, otherArgs) {
   var delayMult = retry.backoffSettings.retryDelayMultiplier;
   var maxDelay = retry.backoffSettings.maxRetryDelayMillis;
   var timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
@@ -132,147 +146,206 @@ function retryable(aFunc, retry) {
    * Retrying is done through an exponential backoff algorithm configured
    * by the options in ``retry``.
    */
-  return function retryingFunc(argument, callback, metadata, options) {
-    if (now.getTime() >= deadline) {
-      callback(error);
-      return;
-    }
-    var toCall = addTimeoutArg(aFunc, timeout);
-    toCall(argument, function(err, response) {
-      if (!err) {
-        callback(null, response);
+  return function retryingFunc(argument, callback) {
+    var eventEmitter = new event_emitter.EventEmitter();
+
+    function repeat(err, response) {
+      // Canceled or cancel scheduled.
+      if (eventEmitter._state != event_emitter.EventEmitter.States.STARTED) {
         return;
       }
-      if (retry.retryCodes.indexOf(err.code) &lt; 0) {
-        error = new Error('Exception occurred in retry method that was ' +
-            'not classified as transient');
-        error.cause = err;
+
+      if (now.getTime() >= deadline) {
         callback(error);
-      } else {
-        error = new Error('Retry total timeout exceeded with exception');
-        error.cause = err;
-        var toSleep = Math.random() * delay;
-        setTimeout(function() {
-                     now = new Date();
-                     delay = Math.min(delay * delayMult, maxDelay);
-                     timeout = Math.min(timeout * timeoutMult, maxTimeout,
-                                        deadline - now.getTime());
-                     retryingFunc(argument, callback, metadata, options);
-                   }, toSleep);
+        return;
       }
-    }, metadata, options);
+
+      var toCall = addTimeoutArg(aFunc, timeout, otherArgs);
+      eventEmitter._setEventHandler(toCall(argument, function(err, response) {
+        if (!err) {
+          callback(null, response);
+          return;
+        }
+        if (retry.retryCodes.indexOf(err.code) &lt; 0) {
+          error = new Error('Exception occurred in retry method that was ' +
+              'not classified as transient');
+          error.cause = err;
+          callback(error);
+        } else {
+          error = new Error('Retry total timeout exceeded with exception');
+          error.cause = err;
+          var toSleep = Math.random() * delay;
+          setTimeout(function() {
+                       now = new Date();
+                       delay = Math.min(delay * delayMult, maxDelay);
+                       timeout = Math.min(timeout * timeoutMult, maxTimeout,
+                                          deadline - now.getTime());
+                       repeat(argument, callback);
+                     }, toSleep);
+        }
+      }));
+    }
+    repeat();
+    return eventEmitter;
   };
 }
 
 /**
- * Creates a function that returns a stream to performs page-streaming.
+ * Creates an API caller for normal methods.
  *
  * @private
  *
- * @param {APIFunc} aFunc - an API call that is page streaming.
- * @param {gax.PageDescriptor} pageDescriptor - indicates the structure
- *   of page streaming to be performed.
- * @param {Object} pageToken - If set and page streaming is over pages of
- *   the response, indicates the page_token to be passed to the API call.
- * @param {boolean} flattenPages - If true, the returned iterable is over
- *   `resourceField`; otherwise the returned iterable is over the pages
- *   of the response, each of which is an iterable over `resourceField`.
- * @returns {APIFunc} A function for the page streaming. By default, it returns
- *   a stream over the specified field, but if callback function  is specified
- *   at the end, it invokes the callback function with the response object and
- *   returns null.
+ * @returns {Object} a caller to handle individual APIs.
  */
-function pageStreamable(aFunc,
-                        pageDescriptor,
-                        pageToken,
-                        flattenPages) {
-  return function pageStreaming(argument, callback, metadata, options) {
-    if (callback) {
-      console.warn('callback is specified, but callbacks are ignored for ' +
-                   'page streaming API calls.');
+function normalApiCall() {
+  return {
+    init: function(callback) {
+      return new event_emitter.EventEmitter(callback);
+    },
+    call: function(apiCall, argument, settings, emitter) {
+      emitter._setEventHandler(apiCall(argument, emitter._callback));
     }
+  };
+}
 
-    var stream = through2.obj();
-    if (!flattenPages &amp;&amp; pageToken != gax.FIRST_PAGE) {
-      argument[pageDescriptor.requestPageTokenField] = pageToken;
-    }
+/**
+ * Creates an API caller that returns a stream to performs page-streaming.
+ *
+ * @private
+ *
+ * @param {PageDescriptor} pageDescriptor - indicates the structure
+ *   of page streaming to be performed.
+ * @returns {Object} A caller which creates a stream and handles the streaming.
+ */
+function pageStreamable(pageDescriptor) {
+  return {
+    init: function createStream(callback) {
+      var stream = through2.obj();
+      if (callback) {
+        stream.on('data', function(data) { callback(null, data); });
+        stream.on('error', callback);
+      }
+      return stream;
+    },
+    call: function pageStreaming(apiCall, argument, settings, stream) {
+      if (!settings.flattenPages &amp;&amp; settings.pageToken != gax.FIRST_PAGE) {
+        argument[pageDescriptor.requestPageTokenField] = settings.pageToken;
+      }
 
-    function streaming() {
-      aFunc(argument, function(err, response) {
-        if (err) {
-          stream.emit('error', err);
-          stream.end();
-          return;
-        }
-        if (!stream.writable) {
-          return;
-        }
-        if (flattenPages) {
-          var resources = response[pageDescriptor.resourceField];
-          for (var i in resources) {
-            if (!stream.writable) {
-              break;
-            }
-            stream.write(resources[i]);
+      function streaming() {
+        apiCall(argument, function(err, response) {
+          if (err) {
+            stream.emit('error', err);
+            stream.end();
+            return;
           }
-        } else {
-          stream.write(response);
-        }
-        if (!stream.writable) {
-          return;
-        }
-        var nextPageToken = response[pageDescriptor.responsePageTokenField];
-        if (!nextPageToken) {
-          stream.end();
-          return;
-        }
-        argument[pageDescriptor.requestPageTokenField] = nextPageToken;
-        setTimeout(streaming, 0);
-      }, metadata, options);
+          if (!stream.writable) {
+            return;
+          }
+          if (settings.flattenPages) {
+            var resources = response[pageDescriptor.resourceField];
+            for (var i in resources) {
+              if (!stream.writable) {
+                break;
+              }
+              stream.write(resources[i]);
+            }
+          } else {
+            stream.write(response);
+          }
+          if (!stream.writable) {
+            return;
+          }
+          var nextPageToken = response[pageDescriptor.responsePageTokenField];
+          if (!nextPageToken) {
+            stream.end();
+            return;
+          }
+          argument[pageDescriptor.requestPageTokenField] = nextPageToken;
+          setTimeout(streaming, 0);
+        });
+      }
+      setTimeout(streaming, 0);
     }
-    setTimeout(streaming, 0);
-    return stream;
+  };
+}
+
+/**
+ * Creates an API caller that bundles requests.
+ *
+ * @private
+ *
+ * @param {BundleExecutor} bundler - bundles requests and schedules the events.
+ * @returns {Object} A caller which bundles requests.
+ */
+function bundleable(bundler) {
+  return {
+    init: function(callback) {
+      return new event_emitter.BundleEventEmitter(bundler, callback);
+    },
+    call: function(apiCall, request, settings, emitter) {
+      if (settings.bundler) {
+        settings.bundler.schedule(apiCall, request, emitter);
+      } else {
+        emitter._start();
+        emitter._setEventHandler(apiCall(request, emitter._callback));
+      }
+    }
   };
 }
 
 /**
  * Converts an rpc call into an API call governed by the settings.
  *
- * In typical usage, `func` will be a callable used to make an rpc request.
- * This will mostly likely be a bound method from a request stub used to make
- * an rpc call.
+ * In typical usage, `func` will be a promsie to a callable used to make an rpc
+ * request. This will mostly likely be a bound method from a request stub used
+ * to make an rpc call. It is not a direct function but a Promise instance,
+ * because of its asynchronism (typically, obtaining the auth information).
  *
- * The result is created by applying a series of function decorators defined
- * in this module to `func`.  `settings` is used to determine which function
- * decorators to apply.
+ * The result is a function which manages the API call with the given settings
+ * and the options on the invocation.
  *
- * The result is another callable which for most values of `settings` has
- * has the same signature as the original. Only when `settings` configures
- * bundling does the signature change.
- * @param {APIFunc} func - is used to make a bare rpc call
+ * @param {Promise.&lt;APIFunc>} funcWithAuth - is a promise to be used to make
+ *   a bare rpc call. This is a Promise instead of a bare function because
+ *   the rpc call will be involeved with asynchronous authentications.
  * @param {CallSettings} settings - provides the settings for this call
- * @returns {APIFunc} func - a bound method on a request stub used
- *   to make an rpc call
+ * @returns {APICall} func - a bound method on a request stub used
+ *   to make an rpc call.
  * @throws - if `settings` has incompatible values, e.g, if bundling
- *   and page_streaming are both configured
+ *   and page_streaming are both configured.
  */
-exports.createApiCall = function createApiCall(func, settings) {
-  var apiCall;
-  if (settings.retry &amp;&amp; settings.retry.retryCodes) {
-    apiCall = retryable(func, settings.retry);
-  } else {
-    apiCall = addTimeoutArg(func, settings.timeout);
-  }
+exports.createApiCall = function createApiCall(funcWithAuth, settings) {
+  var apiCaller;
   if (settings.pageDescriptor) {
     assert(!settings.bundler, 'The API call has incompatible settings: ' +
         'bundling and page streaming');
-    return pageStreamable(apiCall,
-                          settings.pageDescriptor,
-                          settings.pageToken,
-                          settings.flattenPages);
+    apiCaller = pageStreamable(settings.pageDescriptor);
+  } else if (settings.bundler) {
+    apiCaller = bundleable(settings.bundler);
+  } else {
+    apiCaller = normalApiCall();
   }
-  // TODO: support bundling
-  return apiCall;
+
+  return function apiCallInner(request, callOptions, callback) {
+    var thisSettings = settings.merge(callOptions);
+    var result = apiCaller.init(callback);
+    funcWithAuth.then(function(func) {
+      if (thisSettings.retry &amp;&amp; thisSettings.retry.retryCodes) {
+        return retryable(func, thisSettings.retry, thisSettings.otherArgs);
+      } else {
+        return addTimeoutArg(
+            func, thisSettings.timeout, thisSettings.otherArgs);
+      }
+    }).then(function (apiCall) {
+      apiCaller.call(apiCall, request, thisSettings, result);
+    })['catch'](function(err) {
+      // setTimeout is necessary to raise an error outside of the promise.
+      // Otherwise the error won't be thrown to the outer environment but
+      // used for rejecting the promise itself.
+      setTimeout(function() { result.emit('error', err); }, 0);
+    });
+    return result;
+  };
 };
 </code></pre>
         </article>
@@ -284,13 +357,13 @@ exports.createApiCall = function createApiCall(func, settings) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createByteLengthFunction">createByteLengthFunction</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jun 03 2016 14:32:30 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 15 2016 15:47:17 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -65,6 +65,8 @@
 
 var assert = require('chai').assert;
 
+var bundling = require('./bundling');
+
 /**
  * Global constant.
  *
@@ -97,6 +99,8 @@ var FIRST_PAGE = exports.FIRST_PAGE = {};
  *   the page streaming request.
  * @param {Object} settings.bundler - orchestrates bundling. If null, bundling
  *   is not performed.
+ * @param {Object} settings.otherArgs - Additional arguments to be passed to
+ *   the API calls.
  *
  * @constructor
  */
@@ -109,6 +113,7 @@ function CallSettings(settings) {
       ('flattenPages' in settings) ? settings.flattenPages : true;
   this.pageToken = settings.pageToken;
   this.bundler = settings.bundler;
+  this.otherArgs = settings.otherArgs || {};
 }
 exports.CallSettings = CallSettings;
 
@@ -124,27 +129,36 @@ CallSettings.prototype.merge = function merge(options) {
   if (!options) {
     return new CallSettings(this);
   }
-  var timeout;
-  var retry;
-  var flattenPages;
-  var pageToken;
-  if (options.timeout === OPTION_INHERIT) {
-    timeout = this.timeout;
-  } else {
+  var timeout = this.timeout;
+  var retry = this.retry;
+  var flattenPages = this.flattenPages;
+  var pageToken = this.pageToken;
+  var otherArgs = this.otherArgs;
+  var bundler = this.bundler;
+  if (options.timeout !== OPTION_INHERIT) {
     timeout = options.timeout;
   }
-  if (options.retry === OPTION_INHERIT) {
-    retry = this.retry;
-  } else {
+  if (options.retry !== OPTION_INHERIT) {
     retry = options.retry;
   }
 
-  if (options.pageToken === OPTION_INHERIT) {
-    flattenPages = this.flattenPages;
-    pageToken = this.pageToken;
-  } else {
+  if (options.pageToken !== OPTION_INHERIT) {
     flattenPages = false;
     pageToken = options.pageToken;
+  }
+
+  if (options.otherArgs !== OPTION_INHERIT) {
+    otherArgs = {};
+    for (var key in this.otherArgs) {
+      otherArgs[key] = this.otherArgs[key];
+    }
+    for (var optionsKey in options.otherArgs) {
+      otherArgs[optionsKey] = options.otherArgs[optionsKey];
+    }
+  }
+
+  if (options.isBundling !== OPTION_INHERIT &amp;&amp; !options.isBundling) {
+    bundler = null;
   }
 
   return new CallSettings({
@@ -153,7 +167,8 @@ CallSettings.prototype.merge = function merge(options) {
     pageDescriptor: this.pageDescriptor,
     flattenPages: flattenPages,
     pageToken: pageToken,
-    bundler: this.bundler});
+    bundler: bundler,
+    otherArgs: otherArgs});
 };
 
 /**
@@ -183,6 +198,7 @@ CallSettings.prototype.merge = function merge(options) {
  *   pageToken. Use {@link FIRST_PAGE} for the first request.  If unset and
  *   the call is configured for page streaming, page streaming is performed
  *   per-resource.
+ * @param {boolean} options.isBundling
  *
  * @constructor
  */
@@ -201,6 +217,16 @@ function CallOptions(options) {
     this.pageToken = options.pageToken;
   } else {
     this.pageToken = OPTION_INHERIT;
+  }
+  if ('otherArgs' in options) {
+    this.otherArgs = options.otherArgs;
+  } else {
+    this.otherArgs = OPTION_INHERIT;
+  }
+  if ('isBundling' in options) {
+    this.isBundling = options.isBundling;
+  } else {
+    this.isBundling = OPTION_INHERIT;
   }
 }
 exports.CallOptions = CallOptions;
@@ -325,8 +351,8 @@ function BundleOptions(options) {
   assert(typeof requestByteThreshold === 'number', 'should be a number');
   assert(typeof requestByteLimit === 'number', 'should be a number');
   assert(typeof delayThreshold === 'number', 'should be a number');
-  assert(elementCountThreshold > 0 || requestByteLimit > 0 ||
-         delayThreshold > 0, 'one threashold should be > 0');
+  assert(elementCountThreshold > 0 || requestByteThreshold > 0 ||
+         delayThreshold > 0, 'one threshold should be > 0');
   this.elementCountThreshold = elementCountThreshold;
   this.elementCountLimit = elementCountLimit;
   this.requestByteThreshold = requestByteThreshold;
@@ -335,34 +361,65 @@ function BundleOptions(options) {
 }
 exports.BundleOptions = BundleOptions;
 
+/**
+ * Describes the structure of bundled call.
+ *
+ * requestDiscriminatorFields may include '.' as a separator, which is used to
+ * indicate object traversal. This allows fields in nested objects to be used
+ * to determine what request to bundle.
+ *
+ * @property {String} bundledField - the repeated field in the request message
+ *   that will have its elements aggregated by bundling.
+ * @property {String} requestDiscriminatorFields - a list of fields in the
+ *   target request message class that are used to detemrine which request
+ *   messages should be bundled together.
+ * @property {String} subresponseField - an optional field, when present it
+ *   indicates the field in the response message that should be used to
+ *   demultiplex the response into multiple response messages.
+ * @property {Function} byteLengthFunction - a function to obtain the byte
+ *   length to be consumed for the bundled field messages. Because Node.JS
+ *   protobuf.js/gRPC uses builtin Objects for the user-visible data and
+ *   internally they are encoded/decoded in protobuf manner, this function
+ *   is actually necessary to calculate the byte length.
+ * @constructor
+ */
+function BundleDescriptor(bundledField,
+                          requestDiscriminatorFields,
+                          subresponseField,
+                          byteLengthFunction) {
+  if (!byteLengthFunction &amp;&amp; typeof subresponseField === 'function') {
+    byteLengthFunction = subresponseField;
+    subresponseField = null;
+  }
+  this.bundledField = bundledField;
+  this.requestDiscriminatorFields = requestDiscriminatorFields;
+  this.subresponseField = subresponseField;
+  this.byteLengthFunction = byteLengthFunction;
+}
+exports.BundleDescriptor = BundleDescriptor;
 
 /**
  * Helper for {@link constructSettings}
  *
  * @private
  *
- * @param {Object} methodConfig - A dictionary representing a single
+ * @param {Object} bundleConfig - A dictionary representing a single
  *   `methods` entry of the standard API client config file. (See
  *   {@link constructSettings} for information on this yaml.)
- * @param {BundleOptions|OPTION_INHERIT} methodRetryOverride -
- *   If set to {@link OPTION_INHERIT}, the retry settings are derived from
- *   method config. Otherwise, this parameter overrides
- *   methodConfig.
+ * @param {BundleDescriptor} bundleDescriptor - The bundle descriptor
+ *   to determine the structure of request bundling for the method.
  * @returns An Executor that configures bundling, or null if this
  *   method should not bundle.
  */
-function constructBundling(bundleConfig) {
-  if (bundleConfig) {
+function constructBundling(bundleConfig, bundleDescriptor) {
+  if (bundleConfig &amp;&amp; bundleDescriptor) {
     var options = new BundleOptions({
       'elementCountThreshold': bundleConfig.element_count_threshold,
       'elementCountLimit': bundleConfig.element_count_limit,
       'requestByteThreshold': bundleConfig.request_byte_threshold,
       'requestByteLimit': bundleConfig.request_byte_limit,
       'delayThreshold': bundleConfig.delay_threshold_millis});
-    /*
-     * TODO: comment-out when bundling is supported.
-     * return new Executor(options)
-     */
+    return new bundling.BundleExecutor(options, bundleDescriptor);
   }
   return null;
 }
@@ -506,13 +563,17 @@ function mergeRetryOptions(retry, overrides) {
  *   in this dictionary.
  * @param {Object} pageDescriptors - A dictionary of method names to
  *   {@link PageDescriptor} objects for methods that are page streaming-enabled.
+ * @param {Object} otherArgs - the non-request arguments to be passed to the API
+ *   calls.
  * @returns {?CallSettings} A CallSettings, or null if the service is not found
  *   in the config.
  */
 exports.constructSettings = function constructSettings(
     serviceName, clientConfig, configOverrides,
-    retryNames, timeout, pageDescriptors) {
+    retryNames, timeout, pageDescriptors, bundleDescriptors, otherArgs) {
   pageDescriptors = pageDescriptors || {};
+  bundleDescriptors = bundleDescriptors || {};
+  otherArgs = otherArgs || {};
   var defaults = {};
 
   var serviceConfig = (clientConfig.interfaces || {})[serviceName];
@@ -548,7 +609,8 @@ exports.constructSettings = function constructSettings(
       'timeout': timeout,
       'retry': retry,
       'pageDescriptor': pageDescriptors[jsName] || null,
-      'bundler': constructBundling(bundlingConfig)
+      'bundler': constructBundling(bundlingConfig, bundleDescriptors[jsName]),
+      'otherArgs': otherArgs
     });
   }
   return defaults;
@@ -563,13 +625,13 @@ exports.constructSettings = function constructSettings(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createByteLengthFunction">createByteLengthFunction</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jun 03 2016 14:32:30 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 15 2016 15:47:17 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
