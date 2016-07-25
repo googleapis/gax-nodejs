@@ -30,6 +30,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+/* eslint-disable no-undef */
+
 'use strict';
 
 var expect = require('chai').expect;
@@ -70,6 +73,5 @@ describe('The PathTemplate parser', function() {
       };
       expect(shouldFail).to.throw();
     });
-
   });
 });
