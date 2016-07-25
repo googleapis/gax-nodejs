@@ -28,12 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* eslint-disable no-undef */
+/* eslint-disable brace-style */
+/* eslint-disable quote-props */
+
 'use strict';
 
 var gax = require('../lib/gax');
 var bundling = require('../lib/bundling');
 var expect = require('chai').expect;
-var sinon = require('sinon');
 
 var SERVICE_NAME = 'test.interface.v1.api';
 
@@ -91,7 +94,7 @@ var RETRY_DICT = {
 
 describe('gax construct settings', function() {
   it('creates settings', function() {
-    var otherArgs = { 'key': 'value' };
+    var otherArgs = {'key': 'value'};
     var defaults = gax.constructSettings(
         SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, 30, PAGE_DESCRIPTORS,
         BUNDLE_DESCRIPTORS, otherArgs);
