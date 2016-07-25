@@ -47,7 +47,7 @@ describe('PathTemplate', function() {
 
     it('should fail on multiple path wildcards', function() {
       var shouldFail = function() {
-        new PathTemplate('buckets/*/**/**/objects/*');
+        return new PathTemplate('buckets/*/**/**/objects/*');
       };
       expect(shouldFail).to.throw(TypeError);
     });
@@ -82,23 +82,23 @@ describe('PathTemplate', function() {
           path: 'buckets/f/o/objects/bar',
           template: 'buckets/*/*/objects/*',
           want: {
-            '$0': 'f',
-            '$1': 'o',
-            '$2': 'bar'
+            $0: 'f',
+            $1: 'o',
+            $2: 'bar'
           }
         },
         {
           path: 'buckets/world',
           template: 'buckets/{hello}',
           want: {
-            'hello': 'world'
+            hello: 'world'
           }
         },
         {
           path: 'buckets/world',
           template: 'buckets/{hello=*}',
           want: {
-            'hello': 'world'
+            hello: 'world'
           }
         }
       ];
@@ -110,32 +110,31 @@ describe('PathTemplate', function() {
 
     it('should match escaped chars', function() {
       var template = new PathTemplate('buckets/*/objects');
-      var want = { '$0': 'hello%2F%2Bworld' };
+      var want = {$0: 'hello%2F%2Bworld'};
       expect(template.match('buckets/hello%2F%2Bworld/objects')).to.eql(want);
     });
 
     it('should match template with unbounded wildcard', function() {
       var template = new PathTemplate('buckets/*/objects/**');
-      var want = { '$0': 'foo', '$1': 'bar/baz' };
+      var want = {$0: 'foo', $1: 'bar/baz'};
       expect(template.match('buckets/foo/objects/bar/baz')).to.eql(want);
     });
 
     it('should match template with unbound in the middle', function() {
       var template = new PathTemplate('bar/**/foo/*');
-      var want = { '$0': 'foo/foo', '$1': 'bar' };
+      var want = {$0: 'foo/foo', $1: 'bar'};
       expect(template.match('bar/foo/foo/foo/bar')).to.eql(want);
     });
-
   });
 
   describe('method `render`', function() {
     it('should render atomic resource', function() {
       var template = new PathTemplate('buckets/*/*/*/objects/*');
       var params = {
-        '$0': 'f',
-        '$1': 'o',
-        '$2': 'o',
-        '$3': 'google.com:a-b'
+        $0: 'f',
+        $1: 'o',
+        $2: 'o',
+        $3: 'google.com:a-b'
       };
       var want = 'buckets/f/o/o/objects/google.com:a-b';
       expect(template.render(params)).to.eql(want);
@@ -144,9 +143,9 @@ describe('PathTemplate', function() {
     it('should fail when there are too few variables', function() {
       var template = new PathTemplate('buckets/*/*/*/objects/*');
       var params = {
-        '$0': 'f',
-        '$1': 'o',
-        '$2': 'o'
+        $0: 'f',
+        $1: 'o',
+        $2: 'o'
       };
       expect(function() {template.render(params); }).to.throw(TypeError);
     });
@@ -154,8 +153,8 @@ describe('PathTemplate', function() {
     it('should succeed with an unbound in the middle', function() {
       var template = new PathTemplate('bar/**/foo/*');
       var params = {
-        '$0': '1/2',
-        '$1': '3'
+        $0: '1/2',
+        $1: '3'
       };
       var want = 'bar/1/2/foo/3';
       expect(template.render(params)).to.eql(want);
@@ -172,11 +171,10 @@ describe('PathTemplate', function() {
     };
 
     _.forEach(tests, function(want, template) {
-      it ('should render template ' + template + ' ok', function() {
+      it('should render template ' + template + ' ok', function() {
         var t = new PathTemplate(template);
         expect(t.inspect()).to.eql(want);
       });
     });
   });
-
 });
