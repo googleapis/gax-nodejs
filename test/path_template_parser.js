@@ -70,6 +70,5 @@ describe('The PathTemplate parser', function() {
       };
       expect(shouldFail).to.throw();
     });
-
   });
 });

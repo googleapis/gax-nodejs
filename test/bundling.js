@@ -28,13 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*jshint expr: true*/
-
 'use strict';
 
 var bundling = require('../lib/bundling');
 var gax = require('../lib/gax');
-var event_emitter = require('../lib/event_emitter');
+var BundleEventEmitter = require('../lib/event_emitter').BundleEventEmitter;
 var eventemitter2 = require('eventemitter2');
 var expect = require('chai').expect;
 var sinon = require('sinon');
@@ -44,14 +42,14 @@ function createSimple(value, otherValue) {
   if (otherValue === undefined) {
     otherValue = null;
   }
-  return {'field1': value, 'field2':  otherValue};
+  return {field1: value, field2: otherValue};
 }
 
 function createOuter(value, otherValue) {
   if (otherValue === undefined) {
     otherValue = value;
   }
-  return {'inner': createSimple(value, otherValue), 'field1': value};
+  return {inner: createSimple(value, otherValue), field1: value};
 }
 
 function byteLength(obj) {
@@ -62,45 +60,45 @@ describe('computeBundleId', function() {
   describe('computes the bundle identifier', function() {
     var testCases = [
       {
-        'message': 'single field value',
-        'object': createSimple('dummy_value'),
-        'fields': ['field1'],
-        'want': 'dummy_value'
+        message: 'single field value',
+        object: createSimple('dummy_value'),
+        fields: ['field1'],
+        want: 'dummy_value'
       }, {
-        'message': 'composite value with null',
-        'object': createSimple('dummy_value'),
-        'fields': ['field1', 'field2'],
-        'want': 'dummy_value,'
+        message: 'composite value with null',
+        object: createSimple('dummy_value'),
+        fields: ['field1', 'field2'],
+        want: 'dummy_value,'
       }, {
-        'message': 'a composite value',
-        'object': createSimple('dummy_value', 'other_value'),
-        'fields': ['field1', 'field2'],
-        'want': 'dummy_value,other_value'
+        message: 'a composite value',
+        object: createSimple('dummy_value', 'other_value'),
+        fields: ['field1', 'field2'],
+        want: 'dummy_value,other_value'
       }, {
-        'message': 'empty discriminator fields',
-        'object': createSimple('dummy_value'),
-        'fields': [],
-        'want': ''
+        message: 'empty discriminator fields',
+        object: createSimple('dummy_value'),
+        fields: [],
+        want: ''
       }, {
-        'message': 'null',
-        'object': createSimple(null),
-        'fields': ['field1'],
-        'want': ''
+        message: 'null',
+        object: createSimple(null),
+        fields: ['field1'],
+        want: ''
       }, {
-        'message': 'numeric',
-        'object': createSimple(42),
-        'fields': ['field1'],
-        'want': '42'
+        message: 'numeric',
+        object: createSimple(42),
+        fields: ['field1'],
+        want: '42'
       }, {
-        'message': 'a simple dotted value',
-        'object': createOuter('this is dotty'),
-        'fields': ['inner.field1'],
-        'want': 'this is dotty'
+        message: 'a simple dotted value',
+        object: createOuter('this is dotty'),
+        fields: ['inner.field1'],
+        want: 'this is dotty'
       }, {
-        'message': 'a complex case',
-        'object': createOuter('what!?'),
-        'fields': ['inner.field1', 'inner.field2', 'field1'],
-        'want': 'what!?,what!?,what!?'
+        message: 'a complex case',
+        object: createOuter('what!?'),
+        fields: ['inner.field1', 'inner.field2', 'field1'],
+        want: 'what!?,what!?,what!?'
       }
     ];
     testCases.forEach(function(t) {
@@ -113,21 +111,21 @@ describe('computeBundleId', function() {
   describe('returns undefined if failed', function() {
     var testCases = [
       {
-        'message': 'nonexisting fields',
-        'object': createSimple('dummy_value'),
-        'fields': ['field3']
+        message: 'nonexisting fields',
+        object: createSimple('dummy_value'),
+        fields: ['field3']
       }, {
-        'message': 'partially nonexisting fields',
-        'object': createSimple('dummy_value'),
-        'fields': ['field1', 'field3']
+        message: 'partially nonexisting fields',
+        object: createSimple('dummy_value'),
+        fields: ['field1', 'field3']
       }, {
-        'message': 'partially nonexisting fields with field2',
-        'object': createSimple('dummy_value', 'other_value'),
-        'fields': ['field1', 'field3']
+        message: 'partially nonexisting fields with field2',
+        object: createSimple('dummy_value', 'other_value'),
+        fields: ['field1', 'field3']
       }, {
-        'message': 'fails to look up in the middle',
-        'object': createOuter('this is dotty'),
-        'fields': ['inner.field3']
+        message: 'fails to look up in the middle',
+        object: createOuter('this is dotty'),
+        fields: ['inner.field3']
       }
     ];
     testCases.forEach(function(t) {
@@ -140,7 +138,7 @@ describe('computeBundleId', function() {
 
 describe('deepCopyForResponse', function() {
   it('copies deeply', function() {
-    var input = {'foo': {'bar': [1, 2]}};
+    var input = {foo: {bar: [1, 2]}};
     var output = bundling.deepCopyForResponse(input, null);
     expect(output).to.deep.equal(input);
     expect(output.foo).to.not.equal(input.foo);
@@ -148,15 +146,15 @@ describe('deepCopyForResponse', function() {
   });
 
   it('respects subresponseInfo', function() {
-    var input = {'foo':[1, 2, 3, 4], 'bar': {'foo': [1, 2, 3, 4]}};
+    var input = {foo: [1, 2, 3, 4], bar: {foo: [1, 2, 3, 4]}};
     var output = bundling.deepCopyForResponse(
-        input, {'field': 'foo', 'start': 0, 'end': 2});
-    expect(output).to.deep.equal({'foo': [1, 2], 'bar': {'foo': [1, 2, 3, 4]}});
+        input, {field: 'foo', start: 0, end: 2});
+    expect(output).to.deep.equal({foo: [1, 2], bar: {foo: [1, 2, 3, 4]}});
     expect(output.bar).to.not.equal(input.bar);
 
     var output2 = bundling.deepCopyForResponse(
-        input, {'field': 'foo', 'start': 2, 'end': 4});
-    expect(output2).to.deep.equal({'foo': [3, 4], 'bar': {'foo': [1, 2, 3, 4]}});
+        input, {field: 'foo', start: 2, end: 4});
+    expect(output2).to.deep.equal({foo: [3, 4], bar: {foo: [1, 2, 3, 4]}});
     expect(output2.bar).to.not.equal(input.bar);
   });
 
@@ -168,14 +166,14 @@ describe('deepCopyForResponse', function() {
       return new Copyable(this.id);
     };
     var input = {
-      'copyable': new Copyable(0),
-      'arraybuffer': new ArrayBuffer(10),
-      'nullvalue': null,
-      'array': [1, 2, 3],
-      'number': 1,
-      'boolean': false,
-      'obj': {
-        'foo': 1
+      copyable: new Copyable(0),
+      arraybuffer: new ArrayBuffer(10),
+      nullvalue: null,
+      array: [1, 2, 3],
+      number: 1,
+      boolean: false,
+      obj: {
+        foo: 1
       }
     };
     var output = bundling.deepCopyForResponse(input, null);
@@ -186,9 +184,9 @@ describe('deepCopyForResponse', function() {
   });
 
   it('ignores erroneous subresponseInfo', function() {
-    var input = {'foo': 1, 'bar': {'foo': [1, 2, 3, 4]}};
+    var input = {foo: 1, bar: {foo: [1, 2, 3, 4]}};
     var output = bundling.deepCopyForResponse(
-        input, {'field': 'foo', 'start': 0, 'end': 2});
+        input, {field: 'foo', start: 0, end: 2});
     expect(output).to.deep.equal(input);
   });
 });
@@ -216,17 +214,17 @@ describe('Task', function() {
     var data = 'a simple msg';
     var testCases = [
       {
-        'data': [],
-        'message': 'no messages added',
-        'want': 0
+        data: [],
+        message: 'no messages added',
+        want: 0
       }, {
-        'data': [data],
-        'message': 'a single message added',
-        'want': 1
+        data: [data],
+        message: 'a single message added',
+        want: 1
       }, {
-        'data': [data, data, data, data, data],
-        'message': '5 messages added',
-        'want': 5
+        data: [data, data, data, data, data],
+        message: '5 messages added',
+        want: 5
       }
     ];
     describe('increases the element count', function() {
@@ -258,21 +256,21 @@ describe('Task', function() {
     var data = 'test message';
     var testCases = [
       {
-        'data': [],
-        'message': 'no messages added',
-        'expected': null
+        data: [],
+        message: 'no messages added',
+        expected: null
       }, {
-        'data': [[data]],
-        'message': 'a single message added',
-        'expected': [data]
+        data: [[data]],
+        message: 'a single message added',
+        expected: [data]
       }, {
-        'data': [[data, data], [data, data, data]],
-        'message': 'a single message added',
-        'expected': [data, data, data, data, data]
+        data: [[data, data], [data, data, data]],
+        message: 'a single message added',
+        expected: [data, data, data, data, data]
       }, {
-        'data': [[data, data, data, data, data]],
-        'message': '5 messages added',
-        'expected': [data, data, data, data, data]
+        data: [[data, data, data, data, data]],
+        message: '5 messages added',
+        expected: [data, data, data, data, data]
       }
     ];
     function createApiCall(expected) {
@@ -290,7 +288,7 @@ describe('Task', function() {
           var callback = sinon.spy(function(err, data) {
             expect(err).to.be.null;
             expect(data).to.be.an.instanceOf(Object);
-            if (callback.callCount == t.data.length) {
+            if (callback.callCount === t.data.length) {
               expect(apiCall.callCount).to.eq(1);
               done();
             }
@@ -320,7 +318,7 @@ describe('Task', function() {
               expect(err).to.be.null;
               expect(data.field1.length).to.be.eq(d.length);
               callbackCount++;
-              if (callbackCount == t.data.length) {
+              if (callbackCount === t.data.length) {
                 expect(apiCall.callCount).to.eq(1);
                 done();
               }
@@ -348,7 +346,7 @@ describe('Task', function() {
           var callback = sinon.spy(function(e, data) {
             expect(e).to.equal(err);
             expect(data).to.be.null;
-            if (callback.callCount == t.data.length) {
+            if (callback.callCount === t.data.length) {
               expect(apiCall.callCount).to.eq(1);
               done();
             }
@@ -367,7 +365,7 @@ describe('Task', function() {
     var task = testTask(apiCall);
     task._subresponseField = 'field1';
     var callback = sinon.spy(function() {
-      if (callback.callCount == 2) {
+      if (callback.callCount === 2) {
         done();
       }
     });
@@ -404,13 +402,13 @@ describe('Executor', function() {
   }
 
   function schedule(executor, func, request, callback) {
-    var emitter = new event_emitter.BundleEventEmitter(executor, callback);
+    var emitter = new BundleEventEmitter(executor, callback);
     executor.schedule(func, request, emitter);
     return emitter;
   }
 
   it('groups api calls by the id', function() {
-    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 10}));
+    var executor = newExecutor(new gax.BundleOptions({delayThreshold: 10}));
     schedule(executor, apiCall, createSimple([1, 2], 'id1'));
     schedule(executor, apiCall, createSimple([3], 'id2'));
     schedule(executor, apiCall, createSimple([4, 5], 'id1'));
@@ -436,23 +434,22 @@ describe('Executor', function() {
   });
 
   it('emits errors when the api call fails', function(done) {
-    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 10}));
+    var executor = newExecutor(new gax.BundleOptions({delayThreshold: 10}));
     var callback = sinon.spy(function(err, resp) {
       expect(err).to.be.an.instanceOf(Error);
-      if (callback.callCount == 2) {
+      if (callback.callCount === 2) {
         done();
       }
     });
     var emitter = schedule(
         executor, failing, createSimple([1], 'id'), callback);
-    var emitter2 = schedule(
-        executor, failing, createSimple([2], 'id'), callback);
+    schedule(executor, failing, createSimple([2], 'id'), callback);
 
     emitter.runNow();
   });
 
   describe('with events', function() {
-    var executor = newExecutor(new gax.BundleOptions({'delayThreshold': 10}));
+    var executor = newExecutor(new gax.BundleOptions({delayThreshold: 10}));
     var spyApi;
 
     function timedAPI(request, callback) {
@@ -581,22 +578,24 @@ describe('Executor', function() {
 
       it('distinguishes a running task and a scheduled task.', function(done) {
         var counter = 0;
-        var event1 = schedule(executor, timedAPI, createSimple([1, 2], 'id'),
-                              function(err, resp) {
-          expect(err).to.be.null;
-          counter++;
-          // counter should be 2 because event2 callback should be called
-          // earlier (it should be called immediately on cancel).
-          expect(counter).to.eq(2);
-          done();
-        });
+        var event1 = schedule(
+            executor, timedAPI, createSimple([1, 2], 'id'),
+            function(err, resp) {
+              expect(err).to.be.null;
+              counter++;
+              // counter should be 2 because event2 callback should be called
+              // earlier (it should be called immediately on cancel).
+              expect(counter).to.eq(2);
+              done();
+            });
         event1.runNow();
 
-        var event2 = schedule(executor, timedAPI, createSimple([1, 2], 'id'),
-                              function(err, resp) {
-          expect(err).to.be.an.instanceOf(Error);
-          counter++;
-        });
+        var event2 = schedule(
+            executor, timedAPI, createSimple([1, 2], 'id'),
+            function(err, resp) {
+              expect(err).to.be.an.instanceOf(Error);
+              counter++;
+            });
         event2.cancel();
       });
     });
@@ -656,7 +655,7 @@ describe('Executor', function() {
         }, function(err) {
           expect(err).to.be.an.instanceOf(Error);
           counter++;
-        })['catch'](done);
+        }).catch(done);
         event2.cancel();
       });
     });
@@ -665,7 +664,7 @@ describe('Executor', function() {
   it('respects element count', function() {
     var threshold = 5;
     var executor = newExecutor(
-        new gax.BundleOptions({'elementCountThreshold': threshold}));
+        new gax.BundleOptions({elementCountThreshold: threshold}));
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1.length).to.eq(threshold);
       callback(null, request);
@@ -691,7 +690,7 @@ describe('Executor', function() {
     var threshold = unitSize * count;
 
     var executor = newExecutor(
-        new gax.BundleOptions({'requestByteThreshold': threshold}));
+        new gax.BundleOptions({requestByteThreshold: threshold}));
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1.length).to.eq(count);
       expect(byteLength(request.field1)).to.be.least(threshold);
@@ -716,7 +715,7 @@ describe('Executor', function() {
     var threshold = 5;
     var limit = 7;
     var executor = newExecutor(new gax.BundleOptions(
-        {'elementCountThreshold': threshold, 'elementCountLimit': limit}));
+        {elementCountThreshold: threshold, elementCountLimit: limit}));
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1).to.be.an.instanceOf(Array);
       callback(null, request);
@@ -749,8 +748,8 @@ describe('Executor', function() {
     var threshold = 5;
     var limit = 7;
     var executor = newExecutor(new gax.BundleOptions(
-        {'requestByteThreshold': threshold * unitSize,
-         'requestByteLimit': limit * unitSize}));
+        {requestByteThreshold: threshold * unitSize,
+         requestByteLimit: limit * unitSize}));
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1).to.be.an.instanceOf(Array);
       callback(null, request);
@@ -780,8 +779,7 @@ describe('Executor', function() {
 
   describe('timer', function() {
     it('waits on the timer', function(done) {
-      var executor = newExecutor(
-          new gax.BundleOptions({'delayThreshold': 50}));
+      var executor = newExecutor(new gax.BundleOptions({delayThreshold: 50}));
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
       function onEnd() {
@@ -792,7 +790,7 @@ describe('Executor', function() {
       }
       var tasks = 5;
       var callback = sinon.spy(function(err, resp) {
-        if (callback.callCount == tasks) {
+        if (callback.callCount === tasks) {
           onEnd();
         }
       });
@@ -802,8 +800,7 @@ describe('Executor', function() {
     });
 
     it('reschedules after timer', function(done) {
-      var executor = newExecutor(
-          new gax.BundleOptions({'delayThreshold': 50}));
+      var executor = newExecutor(new gax.BundleOptions({delayThreshold: 50}));
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
       schedule(executor, spy, createSimple([0], 'id'), function() {

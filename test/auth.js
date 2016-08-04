@@ -32,14 +32,12 @@
  */
 'use strict';
 
-var _ = require('lodash');
 var expect = require('chai').expect;
 var sinon = require('sinon');
 
 var createCredPromise = require('../lib/auth').createCredPromise;
 
 describe('credential promise', function() {
-
   var dummyCreds = {};
   var getCredentials = function(callback) {
     callback(null, dummyCreds);
@@ -63,12 +61,12 @@ describe('credential promise', function() {
     });
     Promise.all([credP.then(checkCredSpy), credP.then(checkCredSpy)]).then(
         function() {
-      expect(getCredentialsSpy.callCount).to.eq(1);
-      expect(checkCredSpy.callCount).to.eq(2);
-      done();
-    }).catch(function(err) {
-      done(err);
-    });
+          expect(getCredentialsSpy.callCount).to.eq(1);
+          expect(checkCredSpy.callCount).to.eq(2);
+          done();
+        }).catch(function(err) {
+          done(err);
+        });
   });
 
   it('propagates errors from the credential callback', function(done) {

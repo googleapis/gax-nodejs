@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*jshint expr: true*/
+/* jshint expr: true*/
 
 'use strict';
 
@@ -69,12 +69,12 @@ describe('createApiCall', function() {
   });
 
   it('is customized by call options', function(done) {
-    var settings = new gax.CallSettings({'timeout': 100});
+    var settings = new gax.CallSettings({timeout: 100});
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
     var apiCall = createApiCall(func, settings);
-    apiCall(null, new gax.CallOptions({'timeout': 200}), function(err, resp) {
+    apiCall(null, new gax.CallOptions({timeout: 200}), function(err, resp) {
       var now = new Date();
       var originalDeadline = now.getTime() + 100;
       var expectedDeadline = now.getTime() + 200;
@@ -220,13 +220,13 @@ describe('page streaming', function() {
     deadlineArg = options.deadline;
     var pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
-      callback(null, {'nums': []});
+      callback(null, {nums: []});
     } else {
       var nums = new Array(pageSize);
       for (var i = 0; i < pageSize; i++) {
         nums[i] = pageToken + i;
       }
-      callback(null, {'nums': nums, 'nextPageToken': pageToken + pageSize});
+      callback(null, {nums: nums, nextPageToken: pageToken + pageSize});
     }
   }
 
@@ -235,14 +235,14 @@ describe('page streaming', function() {
     var counter = 0;
     apiCall({}, null)
       .on('data', function(data) {
-            expect(deadlineArg).to.be.ok;
-            expect(data).to.eq(counter);
-            counter++;
-          })
+        expect(deadlineArg).to.be.ok;
+        expect(data).to.eq(counter);
+        counter++;
+      })
       .on('end', function() {
-            expect(counter).to.eq(pageSize * pagesToStream);
-            done();
-          });
+        expect(counter).to.eq(pageSize * pagesToStream);
+        done();
+      });
   });
 
   it('invokes callbacks', function(done) {
@@ -253,7 +253,7 @@ describe('page streaming', function() {
       expect(deadlineArg).to.be.ok;
       expect(data).to.eq(counter);
       counter++;
-      if (counter == pageSize * pagesToStream) {
+      if (counter === pageSize * pagesToStream) {
         done();
       } else if (counter > pageSize * pagesToStream) {
         done(new Error('should not reach'));
@@ -269,7 +269,7 @@ describe('page streaming', function() {
       expect(deadlineArg).to.be.ok;
       expect(data).to.eq(counter);
       counter++;
-      if (counter == 4) {
+      if (counter === 4) {
         stream.end();
       }
     }).on('end', function() {
@@ -302,39 +302,39 @@ describe('page streaming', function() {
 
   it('stops in the middle of per-page iteration, and resumes it later',
      function(done) {
-    function takeSingleResponse(pageToken) {
-      return new Promise(function(resolve, reject) {
-        var mySettings = settings.merge(
+       function takeSingleResponse(pageToken) {
+         return new Promise(function(resolve, reject) {
+           var mySettings = settings.merge(
             new gax.CallOptions({pageToken: pageToken}));
-        var apiCall = createApiCall(func, mySettings);
-        var stream = apiCall({}, null);
-        stream.on('data', function(resp) {
-          stream.end();
-          resolve(resp);
-        }).on('error', function(err) {
-          reject(err);
-        });
-      });
-    }
-    takeSingleResponse(gax.FIRST_PAGE).then(function(resp) {
-      expect(deadlineArg).to.be.ok;
-      expect(resp).to.be.an('object');
-      var expected = [];
-      for (var i = 0; i < pageSize; i++) {
-        expected.push(i);
-      }
-      expect(resp).to.eql({'nums': expected, 'nextPageToken': pageSize});
-      return takeSingleResponse(resp.nextPageToken);
-    }).then(function(resp) {
-      expect(resp).to.be.an('object');
-      var expected = [];
-      for (var i = 0; i < pageSize; i++) {
-        expected.push(i + pageSize);
-      }
-      expect(resp).to.eql({'nums': expected, 'nextPageToken': pageSize * 2});
-      done();
-    })['catch'](done);
-  });
+           var apiCall = createApiCall(func, mySettings);
+           var stream = apiCall({}, null);
+           stream.on('data', function(resp) {
+             stream.end();
+             resolve(resp);
+           }).on('error', function(err) {
+             reject(err);
+           });
+         });
+       }
+       takeSingleResponse(gax.FIRST_PAGE).then(function(resp) {
+         expect(deadlineArg).to.be.ok;
+         expect(resp).to.be.an('object');
+         var expected = [];
+         for (var i = 0; i < pageSize; i++) {
+           expected.push(i);
+         }
+         expect(resp).to.eql({nums: expected, nextPageToken: pageSize});
+         return takeSingleResponse(resp.nextPageToken);
+       }).then(function(resp) {
+         expect(resp).to.be.an('object');
+         var expected = [];
+         for (var i = 0; i < pageSize; i++) {
+           expected.push(i + pageSize);
+         }
+         expect(resp).to.eql({nums: expected, nextPageToken: pageSize * 2});
+         done();
+       }).catch(done);
+     });
 
   it('retries on failure', function(done) {
     var callCount = 0;
@@ -350,14 +350,14 @@ describe('page streaming', function() {
     var dataCount = 0;
     apiCall({}, null)
       .on('data', function(data) {
-            expect(data).to.eq(dataCount);
-            dataCount++;
-          })
+        expect(data).to.eq(dataCount);
+        dataCount++;
+      })
       .on('end', function() {
-            expect(dataCount).to.eq(pageSize * pagesToStream);
-            expect(callCount).to.be.above(pagesToStream);
-            done();
-          });
+        expect(dataCount).to.eq(pageSize * pagesToStream);
+        expect(callCount).to.be.above(pagesToStream);
+        done();
+      });
   });
 });
 
@@ -405,15 +405,13 @@ describe('retryable', function() {
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
       done();
-    })['catch'](function(err) { done(err); });
+    }).catch(function(err) { done(err); });
   });
 
   it('cancels in the middle of retries', function(done) {
     var callCount = 0;
-    var deadlineArg;
     var eventEmitter;
     function func(argument, metadata, options, callback) {
-      deadlineArg = options.deadline;
       callCount++;
       if (callCount <= 2) {
         fail(argument, metadata, options, callback);
@@ -534,9 +532,9 @@ describe('bundleable', function() {
     callback(null, argument);
   }
   function createRequest(field1, field2) {
-    return {'field1': field1, 'field2': field2};
+    return {field1: field1, field2: field2};
   }
-  var bundleOptions = new gax.BundleOptions({'elementCountThreshold': 6});
+  var bundleOptions = new gax.BundleOptions({elementCountThreshold: 6});
   var bundleDescriptor = new gax.BundleDescriptor(
       'field1', ['field2'], 'field1', byteLength);
   var settings = new gax.CallSettings({bundler: new bundling.BundleExecutor(
@@ -575,7 +573,7 @@ describe('bundleable', function() {
     var apiCall = createApiCall(spy, settings);
     apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
     apiCall(createRequest([1, 2, 3], 'id'),
-            new gax.CallOptions({'isBundling': false}), unbundledCallback);
+            new gax.CallOptions({isBundling: false}), unbundledCallback);
     apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
   });
 });

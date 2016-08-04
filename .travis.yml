@@ -7,7 +7,7 @@ node_js:
   - 0.12
 script:
   - npm test
-  - npm run lint
+  - bash ./verify_lint.sh
   - bash ./verify_build.sh
 after_success:
   - npm run codecov
