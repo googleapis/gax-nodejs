@@ -1,0 +1,17 @@
+extends: google
+parserOptions:
+  ecmaVersion: 6
+env:
+ node:
+  true
+rules:
+ guard-for-in:
+   off
+ no-warning-comments:
+   off
+ no-implicit-coercion:
+   - error
+   - boolean: false
+ # require-jsdoc is disabled for now, it causes too many warnings.
+ require-jsdoc:
+   off

@@ -1,0 +1,17 @@
+env:
+  mocha: true
+rules:
+  max-nested-callbacks: off
+  max-statements-per-line: off
+
+  # allowing single line.
+  brace-style:
+    - error
+    - 1tbs
+    - allowSingleLine: true
+
+  # Allowing 'expect(err).to.be.null' style.
+  no-unused-expressions: off
+
+  # Sometimes tests don't verify errors on the callback but that's fine.
+  handle-callback-err: off
