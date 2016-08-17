@@ -1,12 +1,12 @@
 {
   "name": "google-gax",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "description": "Google API Extensions",
   "main": "index.js",
   "dependencies": {
     "chai": "*",
-    "eventemitter2": "1.0.2",
-    "google-auth-library": "0.9.8",
+    "eventemitter2": "~1.0.2",
+    "google-auto-auth": "~0.2.4",
     "grpc": "~0.15.0",
     "lodash": "~4.11.1",
     "through2": "~2.0.1"
