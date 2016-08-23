@@ -60,74 +60,132 @@
  */
 'use strict';
 
-var grpc = require('grpc');
-var GoogleAuth = require('google-auth-library');
-var AuthFactory = new GoogleAuth();
+var autoAuth = require('google-auto-auth');
 
-var createCredPromise = require('./auth').createCredPromise;
+var gax = require('./gax');
 
 /**
- * @callback CredentialsCallback
- * @param {?Error} err - An error if authentication failed.
- * @param {?grpc.ChannelCredentials} creds - A gRPC credentials if succeeded.
- */
-
-/**
- * To authorize requests through gRPC, we must get the raw google-auth-library
- * auth client object.
+ * A class which keeps the context of gRPC and auth for the gRPC.
  *
- * @private
- *
- * @param {CredentialsCallback} callback - The callback function.
- * @param {Object} opts - options values for configuring auth
- * @param {(String|String[])} opts.scopes - the scope or scopes to use when
- *   obtaining the credentials.
- * @param {Object} opts.sslCreds - when specified, this is used instead
- *   of default credentials.
+ * @param {Object=} options - The optional parameters. It will be directly
+ *   passed to google-auto-auth library, so parameters like keyFile or
+ *   credentials will be valid.
+ * @param {Object=} options.auth - An instance of google-auto-auth.
+ *   When specified, this auth instance will be used instead of creating
+ *   a new one.
+ * @param {Object=} options.grpc - When specified, this will be used
+ *   for the 'grpc' module in this context. By default, it will load the grpc
+ *   module in the standard way.
+ * @constructor
  */
-function getCredentials(callback, opts) {
-  AuthFactory.getApplicationDefault(function(err, auth) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
-    /* Apply any provided scope if there are required */
-    if (opts.scopes &amp;&amp; auth.createScopedRequired &amp;&amp;
-        auth.createScopedRequired()) {
-      auth = auth.createScoped(opts.scopes);
-    }
-    var sslCreds = opts.sslCreds || grpc.credentials.createSsl();
-    var credentials = grpc.credentials.combineChannelCredentials(
-      sslCreds,
-      grpc.credentials.createFromGoogleCredential(auth)
-    );
-
-    callback(null, credentials);
-  });
+function GrpcClient(options) {
+  if (!(this instanceof GrpcClient)) {
+    return new GrpcClient(options);
+  }
+  options = options || {};
+  this.auth = options.auth || autoAuth(options);
+  this.grpc = options.grpc || require('grpc');
 }
+module.exports = GrpcClient;
 
 /**
- * Creates a promise which resolves to an rpc stub.
- *
- * @param {String} servicePath - The domain name of the API remote host.
- * @param {Number} port - The port on which to connect to the remote host.
- * @param {function()} createStub - The constructor used to create a grpc stub
- *   instance.
- * @param {Object} options - optional settings. This options will be passed
- *   to `getCredentials`.
- * @param {GetCredentialsFunc} options.getCredentials - the callback used
- *   to obtain the credentials. If not specified, use the default
- *   implementation.
- * @returns {Promise} A promise which resolves to an rpc stub.
+ * Creates a gRPC credentials from the authentications.
+ * @private
+ * @param {Object} opts - options values for configuring credentials.
+ * @param {Object=} opts.sslCreds - when specified, this is used instead
+ *   of default channel credentials.
+ * @param {Object} auth - the authentication object.
+ * @return {Object} The gRPC credential object.
  */
-exports.createStub = function createStub(
+GrpcClient.prototype._getCredentials = function _getCredentials(opts, auth) {
+  var sslCreds = opts.sslCreds || this.grpc.credentials.createSsl();
+  var credentials = this.grpc.credentials.combineChannelCredentials(
+      sslCreds,
+      this.grpc.credentials.createFromGoogleCredential(auth)
+  );
+  return credentials;
+};
+
+/**
+ * Load grpc proto services with the specific arguments.
+ * @param {Array=} args - The argument list to be passed to grpc.load().
+ * @return {Object} The gRPC loaded result (the toplevel namespace object).
+ */
+GrpcClient.prototype.load = function(args) {
+  if (!args) {
+    args = [];
+  } else if (!Array.isArray(args)) {
+    args = [args];
+  }
+  return this.grpc.load.apply(this.grpc, args);
+};
+
+/**
+ * A wrapper of {@link constructSettings} function with under the gRPC context.
+ *
+ * Most of parameters are common among constructSettings, please take a look.
+ * @param {string} serviceName - The fullly-qualified name of the service.
+ * @param {Object} clientConfig - A dictionary of the client config.
+ * @param {Object} configOverrides - A dictionary of overriding configs.
+ * @param {number} timeout - The timeout parameter.
+ * @param {Object} pageDescriptors - A dictionary of method names to page
+ *   descriptor instances.
+ * @param {Object} bundleDescriptors - A dictionary of method names to bundle
+ *   descriptor instances.
+ * @param {Object} headers - A dictionary of additional HTTP header name to
+ *   its value.
+ * @return {Object} A mapping of method names to CallSettings.
+ */
+GrpcClient.prototype.constructSettings = function constructSettings(
+    serviceName,
+    clientConfig,
+    configOverrides,
+    timeout,
+    pageDescriptors,
+    bundleDescriptors,
+    headers) {
+  var metadata = new this.grpc.Metadata();
+  for (var key in headers) {
+    metadata.set(key, headers[key]);
+  }
+  return gax.constructSettings(
+      serviceName,
+      clientConfig,
+      configOverrides,
+      this.grpc.status,
+      timeout,
+      pageDescriptors,
+      bundleDescriptors,
+      {metadata: metadata});
+};
+
+/**
+ * Creates a gRPC stub with current gRPC and auth.
+ * @param {string} servicePath - The name of the server of the service.
+ * @param {number} port - The port of the service.
+ * @param {function} CreateStub - The constructor function of the stub.
+ * @param {Object=} options - The optional arguments to customize
+ *   gRpc connection.
+ * @param {grpc.ClientCredentials} options.sslCreds - The credentials to be used
+ *   to set up gRPC connection.
+ * @return {Promise} A promse which resolves to a gRPC stub instance.
+ */
+GrpcClient.prototype.createStub = function(
     servicePath, port, CreateStub, options) {
-  var creds = createCredPromise(options.getCredentials || getCredentials,
-                                options);
-  return creds.then(function buildStub(credentials) {
-    return new CreateStub(servicePath + ':' + port, credentials);
-  });
+  options = options || {};
+  var serviceAddress = servicePath + ':' + port;
+  return new Promise(function(resolve, reject) {
+    this.auth.getAuthClient(function(err, auth) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(auth);
+      }
+    });
+  }.bind(this)).then(this._getCredentials.bind(this, options))
+    .then(function buildStub(credentials) {
+      return new CreateStub(serviceAddress, credentials);
+    });
 };
 
 /**
@@ -137,14 +195,15 @@ exports.createStub = function createStub(
  *
  * @param {function} message - a constructor function that is generated by
  *   protobuf.js. Assumes 'encoder' field in the message.
- * @returns {function(Object):number} - a function to compute the byte length
+ * @return {function(Object):number} - a function to compute the byte length
  *   for an object.
  */
-exports.createByteLengthFunction = function createByteLengthFunction(message) {
-  return function getByteLength(obj) {
-    return message.encode(obj).buffer.length;
-  };
-};
+GrpcClient.createByteLengthFunction =
+    function createByteLengthFunction(message) {
+      return function getByteLength(obj) {
+        return message.encode(obj).buffer.length;
+      };
+    };
 </code></pre>
         </article>
     </section>
@@ -155,13 +214,13 @@ exports.createByteLengthFunction = function createByteLengthFunction(message) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createByteLengthFunction">createByteLengthFunction</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 15 2016 15:47:17 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 23 2016 14:20:49 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

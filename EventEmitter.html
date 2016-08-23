@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: RetryOptions</title>
+    <title>JSDoc: Class: EventEmitter</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: RetryOptions</h1>
+    <h1 class="page-title">Class: EventEmitter</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>RetryOptions</h2>
+        <h2>EventEmitter</h2>
         
     
 </header>
@@ -40,14 +40,16 @@
 
     
 
-    <h4 class="name" id="RetryOptions"><span class="type-signature"></span>new RetryOptions<span class="signature">(retryCodes, backoffSettings)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="EventEmitter"><span class="type-signature"></span>new EventEmitter<span class="signature">(callback<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Per-call configurable settings for retrying upon transient failure.</p>
+    <p>EventEmitter is a custom version of event emitter for the API call.</p>
+<p>In addition to normal events, it has a method 'cancel' to stop an
+ongoing event.</p>
 </div>
 
 
@@ -71,6 +73,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -83,48 +87,34 @@
 
         <tr>
             
-                <td class="name"><code>retryCodes</code></td>
+                <td class="name"><code>callback</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;String></span>
+<span class="param-type"><a href="global.html#APICallback">APICallback</a></span>
 
 
             
             </td>
 
             
-
-            
-
-            <td class="description last"><p>a list of Google API canonical error codes
-  upon which a retry should be attempted.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>backoffSettings</code></td>
-            
-
-            <td class="type">
-            
+                <td class="attributes">
                 
-<span class="param-type"><a href="BackoffSettings.html">BackoffSettings</a></span>
 
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
 
             
-            </td>
 
-            
-
-            
-
-            <td class="description last"><p>configures the retry
-  exponential backoff algorithm.</p></td>
+            <td class="description last"><p>the callback to be called when
+  the API call ends.</p></td>
         </tr>
 
     
@@ -162,13 +152,13 @@
 
         <tr>
             
-                <td class="name"><code>retryCodes</code></td>
+                <td class="name"><code>result</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;String></span>
+<span class="param-type">Promise</span>
 
 
             
@@ -178,30 +168,8 @@
 
             
 
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>backoffSettings</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="BackoffSettings.html">BackoffSettings</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
+            <td class="description last"><p>A promise resolves to the result value
+  of the API (or fails when API call fails or is canceled).</p></td>
         </tr>
 
     
@@ -240,7 +208,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line243">line 243</a>
+        <a href="event_emitter.js.html">event_emitter.js</a>, <a href="event_emitter.js.html#line46">line 46</a>
     </li></ul></dd>
     
 
@@ -281,6 +249,92 @@
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="cancel"><span class="type-signature"></span>cancel<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Cancels the ongoing API call.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="event_emitter.js.html">event_emitter.js</a>, <a href="event_emitter.js.html#line132">line 132</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 
     

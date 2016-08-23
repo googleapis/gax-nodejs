@@ -60,7 +60,6 @@
  */
 'use strict';
 
-
 /*
  * Path template utility.
  */
@@ -70,7 +69,6 @@ var extras = require('./parser_extras');
 var util = require('util');
 
 exports.PathTemplate = PathTemplate;
-
 
 /**
  * @param {String} data the of the template
@@ -82,11 +80,15 @@ function PathTemplate(data) {
   var parseResult = extras.finishParse(parser.parse(data));
 
   Object.defineProperty(this, 'size', {
-    get: function() {  return parseResult.size; }
+    get: function() {
+      return parseResult.size;
+    }
   });
 
   Object.defineProperty(this, 'segments', {
-    get: function() { return parseResult.segments; }
+    get: function() {
+      return parseResult.segments;
+    }
   });
 }
 
@@ -94,7 +96,7 @@ function PathTemplate(data) {
  * Matches a fully-qualified path template string.
  *
  * @param {String} path a fully-qualified path template string
- * @returns {Object} contains var names matched to binding values
+ * @return {Object} contains var names matched to binding values
  * @throws {TypeError} if path can't be matched to this template
  */
 PathTemplate.prototype.match = function match(path) {
@@ -107,29 +109,29 @@ PathTemplate.prototype.match = function match(path) {
     if (index > pathSegments.length) {
       return;
     }
-    if (segment.kind == extras.BINDING) {
+    if (segment.kind === extras.BINDING) {
       current = segment.literal;
-    } else if (segment.kind == extras.TERMINAL) {
-      if (segment.literal == '*') {
+    } else if (segment.kind === extras.TERMINAL) {
+      if (segment.literal === '*') {
         bindings[current] = pathSegments[index];
         index += 1;
-      } else if (segment.literal == '**') {
+      } else if (segment.literal === '**') {
         var size = pathSegments.length - segmentCount + 1;
         segmentCount += size - 1;
         bindings[current] = pathSegments.slice(index, index + size).join('/');
         index += size;
-      } else if (segment.literal != pathSegments[index]) {
+      } else if (segment.literal === pathSegments[index]) {
+        index += 1;
+      } else {
         var msg = util.format("mismatched literal (index=%d): '%s' != '%s'",
                               index,
                               segment.literal,
                               pathSegments[index]);
-         throw new TypeError(msg);
-      } else {
-        index += 1;
+        throw new TypeError(msg);
       }
     }
   });
-  if (index != pathSegments.length || index != segmentCount) {
+  if (index !== pathSegments.length || index !== segmentCount) {
     var msg = util.format(
         'match error: could not instantiate a path template from %s',
         path);
@@ -142,7 +144,7 @@ PathTemplate.prototype.match = function match(path) {
  * Renders a path template using the provided bindings.
  *
  * @param {Object} bindings a mapping of var names to binding strings
- * @returns {String} a rendered representation of the path template
+ * @return {String} a rendered representation of the path template
  * @throws {TypeError} if a key is missing, or if a sub-template cannot be
  *   parsed
  */
@@ -176,12 +178,18 @@ PathTemplate.prototype.render = function render(bindings) {
 /**
  * Renders the path template.
  *
- * @returns {string} contains var names matched to binding values
+ * @return {string} contains var names matched to binding values
  */
 PathTemplate.prototype.inspect = function inspect() {
   return formatSegments(this.segments);
 };
 
+/**
+ * Creates the string representattion for the segments.
+ * @param {Object[]} segments - The array of segments.
+ * @return {string} - A string representing segments in the path template
+ *   format.
+ */
 function formatSegments(segments) {
   var out = '';
   var slash = true;
@@ -213,13 +221,13 @@ function formatSegments(segments) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createByteLengthFunction">createByteLengthFunction</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createStub">createStub</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 15 2016 15:47:17 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 23 2016 14:20:49 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

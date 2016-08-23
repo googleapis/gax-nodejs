@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: BundleOptions</title>
+    <title>JSDoc: Class: BundleDescriptor</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: BundleOptions</h1>
+    <h1 class="page-title">Class: BundleDescriptor</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>BundleOptions</h2>
+        <h2>BundleDescriptor</h2>
         
     
 </header>
@@ -40,16 +40,17 @@
 
     
 
-    <h4 class="name" id="BundleOptions"><span class="type-signature"></span>new BundleOptions<span class="signature">(options)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="BundleDescriptor"><span class="type-signature"></span>new BundleDescriptor<span class="signature">(bundledField, requestDiscriminatorFields, subresponseField, byteLengthFunction)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Holds values used to configure bundling.</p>
-<p>The xxxThreshold attributes are used to configure when the bundled request
-should be made. All properties default to 0.</p>
+    <p>Describes the structure of bundled call.</p>
+<p>requestDiscriminatorFields may include '.' as a separator, which is used to
+indicate object traversal. This allows fields in nested objects to be used
+to determine what request to bundle.</p>
 </div>
 
 
@@ -85,13 +86,13 @@ should be made. All properties default to 0.</p>
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>bundledField</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">String</span>
 
 
             
@@ -101,8 +102,85 @@ should be made. All properties default to 0.</p>
 
             
 
-            <td class="description last"><p>An object to hold optional parameters. See
-  properties for the content of options.</p></td>
+            <td class="description last"><p>the repeated field in the request message
+  that will have its elements aggregated by bundling.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestDiscriminatorFields</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>a list of fields in the
+  target request message class that are used to detemrine which request
+  messages should be bundled together.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>subresponseField</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>an optional field, when present it
+  indicates the field in the response message that should be used to
+  demultiplex the response into multiple response messages.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>byteLengthFunction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>a function to obtain the byte
+  length to be consumed for the bundled field messages. Because Node.JS
+  protobuf.js/gRPC uses builtin Objects for the user-visible data and
+  internally they are encoded/decoded in protobuf manner, this function
+  is actually necessary to calculate the byte length.</p></td>
         </tr>
 
     
@@ -140,13 +218,13 @@ should be made. All properties default to 0.</p>
 
         <tr>
             
-                <td class="name"><code>elementCountThreshold</code></td>
+                <td class="name"><code>bundledField</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">String</span>
 
 
             
@@ -156,22 +234,20 @@ should be made. All properties default to 0.</p>
 
             
 
-            <td class="description last"><p>the bundled request will be sent
-  once the count of outstanding elements in the repeated field reaches this
-  value.</p></td>
+            <td class="description last"></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>elementCountLimit</code></td>
+                <td class="name"><code>requestDiscriminatorFields</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">String</span>
 
 
             
@@ -181,24 +257,20 @@ should be made. All properties default to 0.</p>
 
             
 
-            <td class="description last"><p>represents a hard limit on the
-  number of elements in the repeated field of the bundle; if adding a request
-  to a bundle would exceed this value, the bundle is sent and the new request
-  is added to a fresh bundle. It is invalid for a single request to exceed
-  this limit.</p></td>
+            <td class="description last"></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>requestByteThreshold</code></td>
+                <td class="name"><code>subresponseField</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">String</span>
 
 
             
@@ -208,24 +280,20 @@ should be made. All properties default to 0.</p>
 
             
 
-            <td class="description last"><p>the bundled request will be sent
-  once the count of bytes in the request reaches this value. Note that this
-  value is pessimistically approximated by summing the bytesizes of the
-  elements in the repeated field, and therefore may be an
-  under-approximation.</p></td>
+            <td class="description last"></td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>requestByteLimit</code></td>
+                <td class="name"><code>byteLengthFunction</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">function</span>
 
 
             
@@ -235,37 +303,7 @@ should be made. All properties default to 0.</p>
 
             
 
-            <td class="description last"><p>represents a hard limit on the size
-  of the bundled request; if adding a request to a bundle would exceed this
-  value, the bundle is sent and the new request is added to a fresh bundle.
-  It is invalid for a single request to exceed this limit. Note that this
-  value is pessimistically approximated by summing the bytesizes of the
-  elements in the repeated field, with a buffer applied to correspond to
-  the resulting under-approximation.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>delayThreshold</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the bundled request will be sent this
-  amount of time after the first element in the bundle was added to it.</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -304,7 +342,7 @@ should be made. All properties default to 0.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line332">line 332</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line380">line 380</a>
     </li></ul></dd>
     
 

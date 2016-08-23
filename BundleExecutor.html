@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: BundleOptions</title>
+    <title>JSDoc: Class: BundleExecutor</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: BundleOptions</h1>
+    <h1 class="page-title">Class: BundleExecutor</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>BundleOptions</h2>
+        <h2>BundleExecutor</h2>
         
     
 </header>
@@ -40,16 +40,14 @@
 
     
 
-    <h4 class="name" id="BundleOptions"><span class="type-signature"></span>new BundleOptions<span class="signature">(options)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="BundleExecutor"><span class="type-signature"></span>new BundleExecutor<span class="signature">(bundleOptions, bundleDescriptor)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Holds values used to configure bundling.</p>
-<p>The xxxThreshold attributes are used to configure when the bundled request
-should be made. All properties default to 0.</p>
+    <p>Organizes requests for an api service that requires to bundle them.</p>
 </div>
 
 
@@ -85,13 +83,13 @@ should be made. All properties default to 0.</p>
 
         <tr>
             
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>bundleOptions</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type"><a href="BundleOptions.html">BundleOptions</a></span>
 
 
             
@@ -101,8 +99,31 @@ should be made. All properties default to 0.</p>
 
             
 
-            <td class="description last"><p>An object to hold optional parameters. See
-  properties for the content of options.</p></td>
+            <td class="description last"><p>configures strategy this instance
+  uses when executing bundled functions.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>bundleDescriptor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="BundleDescriptor.html">BundleDescriptor</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the description of the bundling.</p></td>
         </tr>
 
     
@@ -110,167 +131,6 @@ should be made. All properties default to 0.</p>
 </table>
 
 
-
-
-
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    
-
-<table class="props">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>elementCountThreshold</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the bundled request will be sent
-  once the count of outstanding elements in the repeated field reaches this
-  value.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>elementCountLimit</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>represents a hard limit on the
-  number of elements in the repeated field of the bundle; if adding a request
-  to a bundle would exceed this value, the bundle is sent and the new request
-  is added to a fresh bundle. It is invalid for a single request to exceed
-  this limit.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>requestByteThreshold</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the bundled request will be sent
-  once the count of bytes in the request reaches this value. Note that this
-  value is pessimistically approximated by summing the bytesizes of the
-  elements in the repeated field, and therefore may be an
-  under-approximation.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>requestByteLimit</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>represents a hard limit on the size
-  of the bundled request; if adding a request to a bundle would exceed this
-  value, the bundle is sent and the new request is added to a fresh bundle.
-  It is invalid for a single request to exceed this limit. Note that this
-  value is pessimistically approximated by summing the bytesizes of the
-  elements in the repeated field, with a buffer applied to correspond to
-  the resulting under-approximation.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>delayThreshold</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>the bundled request will be sent this
-  amount of time after the first element in the bundle was added to it.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -304,7 +164,7 @@ should be made. All properties default to 0.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line332">line 332</a>
+        <a href="bundling.js.html">bundling.js</a>, <a href="bundling.js.html#line263">line 263</a>
     </li></ul></dd>
     
 
@@ -345,6 +205,187 @@ should be made. All properties default to 0.</p>
 
     
 
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    <h4 class="name" id="schedule"><span class="type-signature"></span>schedule<span class="signature">(apiCall, request, emitter)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Schedule a method call.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>apiCall</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">function</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the function for an API call.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the request object to be bundled with others.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>emitter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="BundleEventEmitter.html">BundleEventEmitter</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the event emitter.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="bundling.js.html">bundling.js</a>, <a href="bundling.js.html#line280">line 280</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 
     
