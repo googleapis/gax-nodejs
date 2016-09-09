@@ -51,3 +51,4 @@ exports.BundleOptions = gax.BundleOptions;
 exports.BundleDescriptor = gax.BundleDescriptor;
 exports.constructSettings = gax.constructSettings;
 exports.BundleExecutor = require('./lib/bundling').BundleExecutor;
+exports.version = require('./package').version;
