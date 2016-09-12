@@ -298,7 +298,7 @@ describe('page streaming', function() {
       if (nextPageToken) {
         apiCall({}, {pageToken: nextPageToken}, callback);
       } else {
-        expect(counter).to.eq(pagesToStream+1);
+        expect(counter).to.eq(pagesToStream + 1);
         done();
       }
     }
