@@ -94,6 +94,25 @@ var RETRY_DICT = {
   'code_c': 3
 };
 
+function expectRetryOptions(obj) {
+  expect(obj).to.be.an.instanceOf(Object);
+  expect(obj).to.have.all.keys('retryCodes', 'backoffSettings');
+  expect(obj.retryCodes).to.be.an.instanceOf(Array);
+  expectBackoffSettings(obj.backoffSettings);
+}
+
+function expectBackoffSettings(obj) {
+  expect(obj).to.be.an.instanceOf(Object);
+  expect(obj).to.have.all.keys(
+      'initialRetryDelayMillis',
+      'retryDelayMultiplier',
+      'maxRetryDelayMillis',
+      'initialRpcTimeoutMillis',
+      'rpcTimeoutMultiplier',
+      'maxRpcTimeoutMillis',
+      'totalTimeoutMillis');
+}
+
 describe('gax construct settings', function() {
   it('creates settings', function() {
     var otherArgs = {'key': 'value'};
@@ -104,20 +123,16 @@ describe('gax construct settings', function() {
     expect(settings.timeout).to.eq(30);
     expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
     expect(settings.pageDescriptor).to.eq(null);
-    expect(settings.retry).to.be.an.instanceOf(gax.RetryOptions);
+    expectRetryOptions(settings.retry);
     expect(settings.retry.retryCodes).eql([1, 2]);
-    expect(settings.retry.backoffSettings).to.be.an.instanceOf(
-      gax.BackoffSettings);
     expect(settings.otherArgs).eql(otherArgs);
 
     settings = defaults.pageStreamingMethod;
     expect(settings.timeout).to.eq(30);
     expect(settings.bundler).to.eq(null);
     expect(settings.pageDescriptor).to.be.an.instanceOf(gax.PageDescriptor);
-    expect(settings.retry).to.be.an.instanceOf(gax.RetryOptions);
+    expectRetryOptions(settings.retry);
     expect(settings.retry.retryCodes).eql([3]);
-    expect(settings.retry.backoffSettings).to.be.an.instanceOf(
-      gax.BackoffSettings);
     expect(settings.otherArgs).eql(otherArgs);
   });
 

@@ -74,7 +74,7 @@ describe('createApiCall', function() {
       callback(null, options.deadline.getTime());
     }
     var apiCall = createApiCall(func, settings);
-    apiCall(null, new gax.CallOptions({timeout: 200}), function(err, resp) {
+    apiCall(null, {timeout: 200}, function(err, resp) {
       var now = new Date();
       var originalDeadline = now.getTime() + 100;
       var expectedDeadline = now.getTime() + 200;
@@ -176,8 +176,8 @@ describe('EventEmitter', function() {
   });
 
   it('cancels retrying call', function(done) {
-    var retryOptions = new gax.RetryOptions(
-        [FAKE_STATUS_CODE_1], new gax.BackoffSettings(0, 0, 0, 0, 0, 0, 100));
+    var retryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
     var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
 
     var callCount = 0;
@@ -210,8 +210,8 @@ describe('page streaming', function() {
   var pagesToStream = 5;
   var pageDescriptor = new gax.PageDescriptor(
       'pageToken', 'nextPageToken', 'nums');
-  var retryOptions = new gax.RetryOptions(
-      [FAKE_STATUS_CODE_1], new gax.BackoffSettings(0, 0, 0, 0, 0, 0, 100));
+  var retryOptions = gax.createRetryOptions(
+      [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
   var settings = new gax.CallSettings({retry: retryOptions,
                                        pageDescriptor: pageDescriptor});
   var deadlineArg = null;
@@ -245,22 +245,6 @@ describe('page streaming', function() {
       });
   });
 
-  it('invokes callbacks', function(done) {
-    var apiCall = createApiCall(func, settings);
-    var counter = 0;
-    apiCall({}, null, function(err, data) {
-      expect(err).not.to.be.ok;
-      expect(deadlineArg).to.be.ok;
-      expect(data).to.eq(counter);
-      counter++;
-      if (counter === pageSize * pagesToStream) {
-        done();
-      } else if (counter > pageSize * pagesToStream) {
-        done(new Error('should not reach'));
-      }
-    });
-  });
-
   it('stops if in the middle', function(done) {
     var apiCall = createApiCall(func, settings);
     var counter = 0;
@@ -278,63 +262,48 @@ describe('page streaming', function() {
     });
   });
 
-  it('iterate over pages', function(done) {
-    var mySettings = settings.merge(
-        new gax.CallOptions({pageToken: gax.FIRST_PAGE}));
-    var apiCall = createApiCall(func, mySettings);
-    var counter = 0;
-    apiCall({}, null)
-      .on('data', function(data) {
-        expect(deadlineArg).to.be.ok;
-        expect(data).to.be.an('object');
-        expect(data.nums).to.be.an('array');
-        counter++;
-        if (counter <= pagesToStream) {
-          expect(data).to.have.any.keys(['nextPageToken']);
-        } else {
-          expect(data).to.not.have.any.keys(['nextPageToken']);
-        }
-      }).on('end', function() {
-        expect(counter).to.eq(pagesToStream + 1);
-        done();
-      });
+  it('fetch the page', function(done) {
+    var apiCall = createApiCall(func, settings);
+    apiCall({}, {flattenPages: false}, function(err, data) {
+      expect(err).to.be.null;
+      expect(deadlineArg).to.be.ok;
+      expect(data).to.be.an('object');
+      expect(data.nums).to.be.an('array');
+      done();
+    });
   });
 
-  it('stops in the middle of per-page iteration, and resumes it later',
-     function(done) {
-       function takeSingleResponse(pageToken) {
-         return new Promise(function(resolve, reject) {
-           var mySettings = settings.merge(
-            new gax.CallOptions({pageToken: pageToken}));
-           var apiCall = createApiCall(func, mySettings);
-           var stream = apiCall({}, null);
-           stream.on('data', function(resp) {
-             stream.end();
-             resolve(resp);
-           }).on('error', function(err) {
-             reject(err);
-           });
-         });
-       }
-       takeSingleResponse(gax.FIRST_PAGE).then(function(resp) {
-         expect(deadlineArg).to.be.ok;
-         expect(resp).to.be.an('object');
-         var expected = [];
-         for (var i = 0; i < pageSize; i++) {
-           expected.push(i);
-         }
-         expect(resp).to.eql({nums: expected, nextPageToken: pageSize});
-         return takeSingleResponse(resp.nextPageToken);
-       }).then(function(resp) {
-         expect(resp).to.be.an('object');
-         var expected = [];
-         for (var i = 0; i < pageSize; i++) {
-           expected.push(i + pageSize);
-         }
-         expect(resp).to.eql({nums: expected, nextPageToken: pageSize * 2});
-         done();
-       }).catch(done);
-     });
+  it('switches to callback mode if callback is supplied', function(done) {
+    var apiCall = createApiCall(func, settings);
+    apiCall({}, null, function(err, data) {
+      expect(err).to.be.null;
+      expect(deadlineArg).to.be.ok;
+      expect(data).to.be.an('object');
+      expect(data.nums).to.be.an('array');
+      done();
+    });
+  });
+
+  it('fetches the next page through the third callback', function(done) {
+    var counter = 0;
+    var apiCall = createApiCall(func, settings);
+    function callback(err, response, nextPageToken) {
+      if (err) {
+        done(err);
+        return;
+      }
+      counter++;
+      expect(response).to.be.an('object');
+      expect(response.nums).to.be.an('array');
+      if (nextPageToken) {
+        apiCall({}, {pageToken: nextPageToken}, callback);
+      } else {
+        expect(counter).to.eq(pagesToStream + 1);
+        done();
+      }
+    }
+    apiCall({}, null, callback);
+  });
 
   it('retries on failure', function(done) {
     var callCount = 0;
@@ -362,8 +331,8 @@ describe('page streaming', function() {
 });
 
 describe('retryable', function() {
-  var retryOptions = new gax.RetryOptions(
-      [FAKE_STATUS_CODE_1], new gax.BackoffSettings(0, 0, 0, 0, 0, 0, 100));
+  var retryOptions = gax.createRetryOptions(
+      [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
   var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
 
   it('retries the API call', function(done) {
@@ -431,8 +400,8 @@ describe('retryable', function() {
   });
 
   it('doesn\'t retry if no codes', function(done) {
-    var retryOptions = new gax.RetryOptions(
-        [], new gax.BackoffSettings(1, 2, 3, 4, 5, 6, 7));
+    var retryOptions = gax.createRetryOptions(
+        [], gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7));
     var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
@@ -501,7 +470,7 @@ describe('retryable', function() {
     var startTime = new Date();
     var spy = sinon.spy(fail);
 
-    var backoff = new gax.BackoffSettings(3, 2, 24, 5, 2, 80, 2500);
+    var backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
     var retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
     var apiCall = createApiCall(
         spy, new gax.CallSettings({timeout: 0, retry: retryOptions}));
@@ -573,7 +542,7 @@ describe('bundleable', function() {
     var apiCall = createApiCall(spy, settings);
     apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
     apiCall(createRequest([1, 2, 3], 'id'),
-            new gax.CallOptions({isBundling: false}), unbundledCallback);
+            {isBundling: false}, unbundledCallback);
     apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
   });
 });
