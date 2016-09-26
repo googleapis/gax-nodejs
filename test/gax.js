@@ -65,6 +65,7 @@ A_CONFIG.interfaces[SERVICE_NAME] = {
   },
   'methods': {
     'BundlingMethod': {
+      'timeout_millis': 40000,
       'retry_codes_name': 'foo_retry',
       'retry_params_name': 'default',
       'bundling': {
@@ -117,10 +118,10 @@ describe('gax construct settings', function() {
   it('creates settings', function() {
     var otherArgs = {'key': 'value'};
     var defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, 30, PAGE_DESCRIPTORS,
+        SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, PAGE_DESCRIPTORS,
         BUNDLE_DESCRIPTORS, otherArgs);
     var settings = defaults.bundlingMethod;
-    expect(settings.timeout).to.eq(30);
+    expect(settings.timeout).to.eq(40000);
     expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
     expect(settings.pageDescriptor).to.eq(null);
     expectRetryOptions(settings.retry);
@@ -128,7 +129,7 @@ describe('gax construct settings', function() {
     expect(settings.otherArgs).eql(otherArgs);
 
     settings = defaults.pageStreamingMethod;
-    expect(settings.timeout).to.eq(30);
+    expect(settings.timeout).to.eq(30000);
     expect(settings.bundler).to.eq(null);
     expect(settings.pageDescriptor).to.be.an.instanceOf(gax.PageDescriptor);
     expectRetryOptions(settings.retry);
@@ -147,16 +148,16 @@ describe('gax construct settings', function() {
       }
     };
     var defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, 30, PAGE_DESCRIPTORS,
+        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, PAGE_DESCRIPTORS,
         BUNDLE_DESCRIPTORS);
 
     var settings = defaults.bundlingMethod;
-    expect(settings.timeout).to.eq(30);
+    expect(settings.timeout).to.eq(40000);
     expect(settings.bundler).to.eq(null);
     expect(settings.pageDescriptor).to.eq(null);
 
     settings = defaults.pageStreamingMethod;
-    expect(settings.timeout).to.eq(30);
+    expect(settings.timeout).to.eq(30000);
     expect(settings.pageDescriptor).to.be.an.instanceOf(gax.PageDescriptor);
     expect(settings.retry).to.eq(null);
   });
@@ -182,13 +183,14 @@ describe('gax construct settings', function() {
       'methods': {
         'BundlingMethod': {
           'retry_params_name': 'default',
-          'retry_codes_name': 'baz_retry'
+          'retry_codes_name': 'baz_retry',
+          'timeout_millis': 50000
         }
       }
     };
 
     var defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, 30, PAGE_DESCRIPTORS,
+        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, PAGE_DESCRIPTORS,
         BUNDLE_DESCRIPTORS);
 
     var settings = defaults.bundlingMethod;
@@ -196,6 +198,7 @@ describe('gax construct settings', function() {
     expect(backoff.initialRetryDelayMillis).to.eq(1000);
     expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_a]);
     expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
+    expect(settings.timeout).to.eq(50000);
 
     /* page_streaming_method is unaffected because it's not specified in
      * overrides. 'bar_retry' or 'default' definitions in overrides should
