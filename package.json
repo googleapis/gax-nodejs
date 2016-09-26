@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "chai": "*",
-    "eventemitter2": "~1.0.2",
+    "eventemitter2": "~2.0.2",
     "google-auto-auth": "~0.2.4",
     "grpc": "~0.15.0",
     "lodash": "~4.11.1",
