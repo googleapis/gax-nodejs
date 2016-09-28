@@ -3,6 +3,9 @@
   "version": "0.7.0",
   "description": "Google API Extensions",
   "main": "index.js",
+  "files": [
+    "lib"
+  ],
   "dependencies": {
     "chai": "*",
     "eventemitter2": "~2.0.2",
