@@ -92,137 +92,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id="FIRST_PAGE"><span class="type-signature"></span>FIRST_PAGE<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>A placeholder for the page token passed into an initial paginated request.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line54">line 54</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id="OPTION_INHERIT"><span class="type-signature"></span>OPTION_INHERIT<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    <p>Global constant.</p>
-<p>If a CallOptions field is set to OPTION_INHERIT, the call to which that
-CallOptions belongs will attempt to inherit that field from its default
-settings.</p>
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line49">line 49</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -418,7 +287,7 @@ fields do not exist.</li>
 
     
 
-    <h4 class="name" id="constructSettings"><span class="type-signature"></span>constructSettings<span class="signature">(serviceName, clientConfig, configOverrides, retryNames, timeout, pageDescriptors, bundleDescriptors, otherArgs)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="constructSettings"><span class="type-signature"></span>constructSettings<span class="signature">(serviceName, clientConfig, configOverrides, retryNames, pageDescriptors, bundleDescriptors, otherArgs)</span><span class="type-signature"> &rarr; {Object}</span></h4>
 
     
 
@@ -599,30 +468,6 @@ file of the form:</p>
 
         <tr>
             
-                <td class="name"><code>timeout</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>The timeout parameter for all API calls
-  in this dictionary.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
                 <td class="name"><code>pageDescriptors</code></td>
             
 
@@ -729,7 +574,7 @@ file of the form:</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line567">line 567</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line556">line 556</a>
     </li></ul></dd>
     
 
@@ -914,7 +759,7 @@ and the options on the invocation.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line298">line 298</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line306">line 306</a>
     </li></ul></dd>
     
 
@@ -969,6 +814,309 @@ and page_streaming are both configured.</li>
     <dd>
         
 <span class="param-type"><a href="global.html#APICall">APICall</a></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createBackoffSettings"><span class="type-signature"></span>createBackoffSettings<span class="signature">(initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis, initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis, totalTimeoutMillis)</span><span class="type-signature"> &rarr; {<a href="global.html#BackoffSettings">BackoffSettings</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Parameters to the exponential backoff algorithm for retrying.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>initialRetryDelayMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the initial delay time,
+  in milliseconds, between the completion of the first failed request and the
+  initiation of the first retrying request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retryDelayMultiplier</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the multiplier by which to
+  increase the delay time between the completion of failed requests, and the
+  initiation of the subsequent retrying request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxRetryDelayMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the maximum delay time, in
+  milliseconds, between requests. When this value is reached,
+  <code>retryDelayMultiplier</code> will no longer be used to increase delay time.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>initialRpcTimeoutMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the initial timeout parameter
+  to the request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rpcTimeoutMultiplier</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the multiplier by which to
+  increase the timeout parameter between failed requests.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxRpcTimeoutMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the maximum timeout parameter, in
+  milliseconds, for a request. When this value is reached,
+  <code>rpcTimeoutMultiplier</code> will no longer be used to increase the timeout.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalTimeoutMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the total time, in milliseconds,
+  starting from when the initial request is sent, after which an error will
+  be returned, regardless of the retrying attempts made meanwhile.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line271">line 271</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>a new settings.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#BackoffSettings">BackoffSettings</a></span>
 
 
     </dd>
@@ -1147,6 +1295,184 @@ and page_streaming are both configured.</li>
     <dd>
         
 <span class="param-type">Promise</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="createRetryOptions"><span class="type-signature"></span>createRetryOptions<span class="signature">(retryCodes, backoffSettings)</span><span class="type-signature"> &rarr; {<a href="global.html#RetryOptions">RetryOptions</a>}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Per-call configurable settings for retrying upon transient failure.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>retryCodes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;String></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>a list of Google API canonical error codes
+  upon which a retry should be attempted.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>backoffSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#BackoffSettings">BackoffSettings</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>configures the retry
+  exponential backoff algorithm.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line238">line 238</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>A new RetryOptions object.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="global.html#RetryOptions">RetryOptions</a></span>
 
 
     </dd>
@@ -1391,7 +1717,7 @@ format.</li>
             <td class="type">
             
                 
-<span class="param-type"><a href="CallOptions.html">CallOptions</a></span>
+<span class="param-type"><a href="global.html#CallOptions">CallOptions</a></span>
 
 
             
@@ -1465,7 +1791,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line59">line 59</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line58">line 58</a>
     </li></ul></dd>
     
 
@@ -1658,7 +1984,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line45">line 45</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line44">line 44</a>
     </li></ul></dd>
     
 
@@ -1854,7 +2180,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line51">line 51</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line50">line 50</a>
     </li></ul></dd>
     
 
@@ -1877,6 +2203,541 @@ format.</li>
 
 
 
+
+
+
+            
+                
+<h4 class="name" id="BackoffSettings">BackoffSettings</h4>
+
+
+
+
+<div class="description">
+    <p>Parameters to the exponential backoff algorithm for retrying.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>initialRetryDelayMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the initial delay time,
+  in milliseconds, between the completion of the first failed request and the
+  initiation of the first retrying request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retryDelayMultiplier</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the multiplier by which to
+  increase the delay time between the completion of failed requests, and the
+  initiation of the subsequent retrying request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxRetryDelayMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the maximum delay time, in
+  milliseconds, between requests. When this value is reached,
+  <code>retryDelayMultiplier</code> will no longer be used to increase delay time.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>initialRpcTimeoutMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the initial timeout parameter
+  to the request.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>maxRpcTimeoutMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the maximum timeout parameter, in
+  milliseconds, for a request. When this value is reached,
+  <code>rpcTimeoutMultiplier</code> will no longer be used to increase the timeout.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>totalTimeoutMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>the total time, in milliseconds,
+  starting from when the initial request is sent, after which an error will
+  be returned, regardless of the retrying attempts made meanwhile.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line122">line 122</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
+                
+<h4 class="name" id="CallOptions">CallOptions</h4>
+
+
+
+
+<div class="description">
+    <p>Encapsulates the overridable settings for a particular API call.</p>
+<p><code>CallOptions</code> is an optional arg for all GAX API calls.  It is used to
+configure the settings of a specific API call.</p>
+<p>When provided, its values override the GAX service defaults for that
+particular call.</p>
+<p>Typically the API clients will accept this as the second to the last
+argument. See the examples below.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timeout</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The client-side timeout for API calls.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>retry</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#RetryOptions">RetryOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>determines whether and how to retry
+  on transient errors. When set to null, the call will not retry.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>flattenPages</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>If set to false and the call is
+  configured for page streaming, page streaming is not performed, instead
+  the callback will be called with the response object.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageToken</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>If set and the call is configured for
+  page streaming, page streaming is not performed and requested with this
+  pageToken.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isBundling</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>If set to false and the call is configured
+  for bundling, bundling is not performed.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line78">line 78</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+    <h5>Examples</h5>
+    
+    <pre class="prettyprint"><code>// suppress bundling for bundled method.
+api.bundlingMethod(
+    param, {optParam: aValue, isBundling: false}, function(err, response) {
+  // handle response.
+});</code></pre>
+
+    <pre class="prettyprint"><code>// suppress streaming for page-streaming method.
+api.pageStreamingMethod(
+    param, {optParam: aValue, flattenPages: false}, function(err, page) {
+  // not returning a stream, but callback is called with the paged response.
+});</code></pre>
 
 
 
@@ -2108,6 +2969,153 @@ format.</li>
 
 
             
+                
+<h4 class="name" id="RetryOptions">RetryOptions</h4>
+
+
+
+
+<div class="description">
+    <p>Per-call configurable settings for retrying upon transient failure.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Object</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>retryCodes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;String></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>backoffSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#BackoffSettings">BackoffSettings</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line115">line 115</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+            
     
 
     
@@ -2121,13 +3129,13 @@ format.</li>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 23 2016 14:20:49 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.1</a> on Tue Sep 27 2016 17:10:32 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

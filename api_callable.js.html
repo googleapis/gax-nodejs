@@ -64,7 +64,6 @@
 'use strict';
 
 var assert = require('chai').assert;
-var gax = require('./gax');
 var EventEmitter = require('./event_emitter').EventEmitter;
 var BundleEventEmitter = require('./event_emitter').BundleEventEmitter;
 var through2 = require('through2');
@@ -205,7 +204,7 @@ function retryable(aFunc, retry, otherArgs) {
  */
 function normalApiCall() {
   return {
-    init: function(callback) {
+    init: function(settings, callback) {
       return new EventEmitter(callback);
     },
     call: function(apiCall, argument, settings, emitter) {
@@ -224,20 +223,33 @@ function normalApiCall() {
  * @return {Object} A caller which creates a stream and handles the streaming.
  */
 function pageStreamable(pageDescriptor) {
-  return {
-    init: function createStream(callback) {
-      var stream = through2.obj();
-      if (callback) {
-        stream.on('data', function(data) {
-          callback(null, data);
-        });
-        stream.on('error', callback);
+  function createActualCallback(callback) {
+    return function fetchNextPageToken(err, response) {
+      if (err) {
+        callback(err);
       }
-      return stream;
+      callback(err, response, response[pageDescriptor.responsePageTokenField]);
+    };
+  }
+  return {
+    init: function createStream(settings, callback) {
+      if (callback) {
+        settings.flattenPages = false;
+        callback = createActualCallback(callback);
+      }
+      if (!settings.flattenPages) {
+        return new EventEmitter(callback);
+      }
+      return through2.obj();
     },
     call: function pageStreaming(apiCall, argument, settings, stream) {
-      if (!settings.flattenPages &amp;&amp; settings.pageToken !== gax.FIRST_PAGE) {
+      if (settings.pageToken) {
         argument[pageDescriptor.requestPageTokenField] = settings.pageToken;
+      }
+      if (!settings.flattenPages) {
+        // stream is an emitter, calling as a normal API call.
+        stream._setEventHandler(apiCall(argument, stream._callback));
+        return;
       }
 
       /** Execute apiCall as long as necessary or to the end of the stream. */
@@ -251,16 +263,12 @@ function pageStreamable(pageDescriptor) {
           if (!stream.writable) {
             return;
           }
-          if (settings.flattenPages) {
-            var resources = response[pageDescriptor.resourceField];
-            for (var i in resources) {
-              if (!stream.writable) {
-                break;
-              }
-              stream.write(resources[i]);
+          var resources = response[pageDescriptor.resourceField];
+          for (var i in resources) {
+            if (!stream.writable) {
+              break;
             }
-          } else {
-            stream.write(response);
+            stream.write(resources[i]);
           }
           if (!stream.writable) {
             return;
@@ -289,7 +297,7 @@ function pageStreamable(pageDescriptor) {
  */
 function bundleable(bundler) {
   return {
-    init: function(callback) {
+    init: function(settings, callback) {
       return new BundleEventEmitter(bundler, callback);
     },
     call: function(apiCall, request, settings, emitter) {
@@ -337,7 +345,7 @@ exports.createApiCall = function createApiCall(funcWithAuth, settings) {
 
   return function apiCallInner(request, callOptions, callback) {
     var thisSettings = settings.merge(callOptions);
-    var result = apiCaller.init(callback);
+    var result = apiCaller.init(thisSettings, callback);
     funcWithAuth.then(function(func) {
       if (thisSettings.retry &amp;&amp; thisSettings.retry.retryCodes) {
         return retryable(func, thisSettings.retry, thisSettings.otherArgs);
@@ -366,13 +374,13 @@ exports.createApiCall = function createApiCall(funcWithAuth, settings) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 23 2016 14:20:49 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.1</a> on Tue Sep 27 2016 17:10:32 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>

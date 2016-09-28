@@ -68,20 +68,6 @@ var assert = require('chai').assert;
 var bundling = require('./bundling');
 
 /**
- * Global constant.
- *
- * If a CallOptions field is set to OPTION_INHERIT, the call to which that
- * CallOptions belongs will attempt to inherit that field from its default
- * settings.
- */
-var OPTION_INHERIT = exports.OPTION_INHERIT = {};
-
-/**
- * A placeholder for the page token passed into an initial paginated request.
- */
-exports.FIRST_PAGE = {};
-
-/**
  * @param {Object} settings - An object containing parameters of this settings.
  * @param {number} settings.timeout - The client-side timeout for API calls.
  *   This parameter is ignored for retrying calls.
@@ -106,7 +92,7 @@ exports.FIRST_PAGE = {};
  */
 function CallSettings(settings) {
   settings = settings || {};
-  this.timeout = settings.timeout || 30;
+  this.timeout = settings.timeout || 30 * 1000;
   this.retry = settings.retry;
   this.pageDescriptor = settings.pageDescriptor;
   this.flattenPages =
@@ -116,6 +102,74 @@ function CallSettings(settings) {
   this.otherArgs = settings.otherArgs || {};
 }
 exports.CallSettings = CallSettings;
+
+/**
+ * Encapsulates the overridable settings for a particular API call.
+ *
+ * ``CallOptions`` is an optional arg for all GAX API calls.  It is used to
+ * configure the settings of a specific API call.
+ *
+ * When provided, its values override the GAX service defaults for that
+ * particular call.
+ *
+ * Typically the API clients will accept this as the second to the last
+ * argument. See the examples below.
+ * @typedef {Object} CallOptions
+ * @property {number=} timeout - The client-side timeout for API calls.
+ * @property {RetryOptions=} retry - determines whether and how to retry
+ *   on transient errors. When set to null, the call will not retry.
+ * @property {boolean=} flattenPages - If set to false and the call is
+ *   configured for page streaming, page streaming is not performed, instead
+ *   the callback will be called with the response object.
+ * @property {Object=} pageToken - If set and the call is configured for
+ *   page streaming, page streaming is not performed and requested with this
+ *   pageToken.
+ * @property {boolean=} isBundling - If set to false and the call is configured
+ *   for bundling, bundling is not performed.
+ * @example
+ * // suppress bundling for bundled method.
+ * api.bundlingMethod(
+ *     param, {optParam: aValue, isBundling: false}, function(err, response) {
+ *   // handle response.
+ * });
+ * @example
+ * // suppress streaming for page-streaming method.
+ * api.pageStreamingMethod(
+ *     param, {optParam: aValue, flattenPages: false}, function(err, page) {
+ *   // not returning a stream, but callback is called with the paged response.
+ * });
+ */
+
+/**
+ * Per-call configurable settings for retrying upon transient failure.
+ * @typedef {Object} RetryOptions
+ * @property {String[]} retryCodes
+ * @property {BackoffSettings} backoffSettings
+ */
+
+/**
+ * Parameters to the exponential backoff algorithm for retrying.
+ * @typedef {Object} BackoffSettings
+ * @property {number} initialRetryDelayMillis - the initial delay time,
+ *   in milliseconds, between the completion of the first failed request and the
+ *   initiation of the first retrying request.
+ * @property {number} retryDelayMultiplier - the multiplier by which to
+ *   increase the delay time between the completion of failed requests, and the
+ *   initiation of the subsequent retrying request.
+ * @property {number} maxRetryDelayMillis - the maximum delay time, in
+ *   milliseconds, between requests. When this value is reached,
+ *   ``retryDelayMultiplier`` will no longer be used to increase delay time.
+ * @property {number} initialRpcTimeoutMillis - the initial timeout parameter
+ *   to the request.
+ * @propetry {number} rpcTimeoutMultiplier - the multiplier by which to
+ *   increase the timeout parameter between failed requests.
+ * @property {number} maxRpcTimeoutMillis - the maximum timeout parameter, in
+ *   milliseconds, for a request. When this value is reached,
+ *   ``rpcTimeoutMultiplier`` will no longer be used to increase the timeout.
+ * @property {number} totalTimeoutMillis - the total time, in milliseconds,
+ *   starting from when the initial request is sent, after which an error will
+ *   be returned, regardless of the retrying attempts made meanwhile.
+ */
 
 /**
  * Returns a new CallSettings merged from this and a CallOptions object.
@@ -135,19 +189,23 @@ CallSettings.prototype.merge = function merge(options) {
   var pageToken = this.pageToken;
   var otherArgs = this.otherArgs;
   var bundler = this.bundler;
-  if (options.timeout !== OPTION_INHERIT) {
+  if ('timeout' in options) {
     timeout = options.timeout;
   }
-  if (options.retry !== OPTION_INHERIT) {
+  if ('retry' in options) {
     retry = options.retry;
   }
 
-  if (options.pageToken !== OPTION_INHERIT) {
+  if ('flattenPages' in options &amp;&amp; !options.flattenPages) {
+    flattenPages = false;
+  }
+
+  if ('pageToken' in options) {
     flattenPages = false;
     pageToken = options.pageToken;
   }
 
-  if (options.otherArgs !== OPTION_INHERIT) {
+  if ('otherArgs' in options) {
     otherArgs = {};
     for (var key in this.otherArgs) {
       otherArgs[key] = this.otherArgs[key];
@@ -157,7 +215,7 @@ CallSettings.prototype.merge = function merge(options) {
     }
   }
 
-  if (options.isBundling !== OPTION_INHERIT &amp;&amp; !options.isBundling) {
+  if ('isBundling' in options &amp;&amp; !options.isBundling) {
     bundler = null;
   }
 
@@ -170,66 +228,6 @@ CallSettings.prototype.merge = function merge(options) {
     bundler: bundler,
     otherArgs: otherArgs});
 };
-
-/**
- * Encapsulates the overridable settings for a particular API call.
- *
- * ``CallOptions`` is an optional arg for all GAX API calls.  It is used to
- * configure the settings of a specific API call.
- *
- * When provided, its values override the GAX service defaults for that
- * particular call.
- *
- * @example &lt;caption>change an api call's timeout&lt;/caption>
- * new CallOptions({timeout: 30})  // make the timeout 30 seconds
- * @example
- * &lt;caption>disable page streaming on an api call that normally supports it&lt;/caption>
- * new CallOptions({pageStreaming: false})
- * @example
- * &lt;caption>disable retrying on an api call that normally retries&lt;/caption>
- * o3 = new CallOptions({retry: null})
- *
- * @param {Object} options The optional parameters.
- * @param {number} options.timeout - The client-side timeout for API calls.
- * @param {RetryOptions} options.retry - determines whether and how to retry
- *   on transient errors. When set to null, the call will not retry.
- * @param {Object} options.pageToken - If set and the call is configured for
- *   page streaming, page streaming is performed per-page, starting with this
- *   pageToken. Use {@link FIRST_PAGE} for the first request.  If unset and
- *   the call is configured for page streaming, page streaming is performed
- *   per-resource.
- * @param {boolean} options.isBundling - Whether bundling is used or not.
- *
- * @constructor
- */
-function CallOptions(options) {
-  if ('timeout' in options) {
-    this.timeout = options.timeout;
-  } else {
-    this.timeout = OPTION_INHERIT;
-  }
-  if ('retry' in options) {
-    this.retry = options.retry;
-  } else {
-    this.retry = OPTION_INHERIT;
-  }
-  if ('pageToken' in options) {
-    this.pageToken = options.pageToken;
-  } else {
-    this.pageToken = OPTION_INHERIT;
-  }
-  if ('otherArgs' in options) {
-    this.otherArgs = options.otherArgs;
-  } else {
-    this.otherArgs = OPTION_INHERIT;
-  }
-  if ('isBundling' in options) {
-    this.isBundling = options.isBundling;
-  } else {
-    this.isBundling = OPTION_INHERIT;
-  }
-}
-exports.CallOptions = CallOptions;
 
 /**
  * Describes the structure of a page-streaming call.
@@ -258,32 +256,23 @@ exports.PageDescriptor = PageDescriptor;
 /**
  * Per-call configurable settings for retrying upon transient failure.
  *
- * @property {String[]} retryCodes
- * @property {BackoffSettings} backoffSettings
- *
  * @param {String[]} retryCodes - a list of Google API canonical error codes
  *   upon which a retry should be attempted.
  * @param {BackoffSettings} backoffSettings - configures the retry
  *   exponential backoff algorithm.
+ * @return {RetryOptions} A new RetryOptions object.
  *
- * @constructor
  */
-function RetryOptions(retryCodes, backoffSettings) {
-  this.retryCodes = retryCodes;
-  this.backoffSettings = backoffSettings;
+function createRetryOptions(retryCodes, backoffSettings) {
+  return {
+    retryCodes: retryCodes,
+    backoffSettings: backoffSettings
+  };
 }
-exports.RetryOptions = RetryOptions;
+exports.createRetryOptions = createRetryOptions;
 
 /**
  * Parameters to the exponential backoff algorithm for retrying.
- *
- * @property {number} initialRetryDelayMillis
- * @property {number} retryDelayMultiplier
- * @property {number} maxRetryDelayMillis
- * @property {number} initialRpcTimeoutMillis
- * @property {number} rpcTimeoutMultiplier
- * @property {number} maxRpcTimeoutMillis
- * @property {number} totalTimeoutMillis
  *
  * @param {number} initialRetryDelayMillis - the initial delay time,
  *   in milliseconds, between the completion of the first failed request and the
@@ -304,25 +293,27 @@ exports.RetryOptions = RetryOptions;
  * @param {number} totalTimeoutMillis - the total time, in milliseconds,
  *   starting from when the initial request is sent, after which an error will
  *   be returned, regardless of the retrying attempts made meanwhile.
+ * @return {BackoffSettings} a new settings.
  *
- * @constructor
  */
-function BackoffSettings(initialRetryDelayMillis,
-                         retryDelayMultiplier,
-                         maxRetryDelayMillis,
-                         initialRpcTimeoutMillis,
-                         rpcTimeoutMultiplier,
-                         maxRpcTimeoutMillis,
-                         totalTimeoutMillis) {
-  this.initialRetryDelayMillis = initialRetryDelayMillis;
-  this.retryDelayMultiplier = retryDelayMultiplier;
-  this.maxRetryDelayMillis = maxRetryDelayMillis;
-  this.initialRpcTimeoutMillis = initialRpcTimeoutMillis;
-  this.rpcTimeoutMultiplier = rpcTimeoutMultiplier;
-  this.maxRpcTimeoutMillis = maxRpcTimeoutMillis;
-  this.totalTimeoutMillis = totalTimeoutMillis;
+function createBackoffSettings(initialRetryDelayMillis,
+                               retryDelayMultiplier,
+                               maxRetryDelayMillis,
+                               initialRpcTimeoutMillis,
+                               rpcTimeoutMultiplier,
+                               maxRpcTimeoutMillis,
+                               totalTimeoutMillis) {
+  return {
+    initialRetryDelayMillis: initialRetryDelayMillis,
+    retryDelayMultiplier: retryDelayMultiplier,
+    maxRetryDelayMillis: maxRetryDelayMillis,
+    initialRpcTimeoutMillis: initialRpcTimeoutMillis,
+    rpcTimeoutMultiplier: rpcTimeoutMultiplier,
+    maxRpcTimeoutMillis: maxRpcTimeoutMillis,
+    totalTimeoutMillis: totalTimeoutMillis
+  };
 }
-exports.BackoffSettings = BackoffSettings;
+exports.createBackoffSettings = createBackoffSettings;
 
 /**
  * Holds values used to configure bundling.
@@ -481,7 +472,7 @@ function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
   var backoffSettings = null;
   if (retryParams &amp;&amp; 'retry_params_name' in methodConfig) {
     var params = retryParams[methodConfig.retry_params_name];
-    backoffSettings = new BackoffSettings(
+    backoffSettings = createBackoffSettings(
         params.initial_retry_delay_millis,
         params.retry_delay_multiplier,
         params.max_retry_delay_millis,
@@ -490,7 +481,7 @@ function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
         params.max_rpc_timeout_millis,
         params.total_timeout_millis);
   }
-  return new RetryOptions(codes, backoffSettings);
+  return createRetryOptions(codes, backoffSettings);
 }
 
 /**
@@ -523,7 +514,7 @@ function mergeRetryOptions(retry, overrides) {
   if (overrides.backoffSettings) {
     backoffSettings = overrides.backoffSettings;
   }
-  return new RetryOptions(codes, backoffSettings);
+  return createRetryOptions(codes, backoffSettings);
 }
 
 /**
@@ -581,8 +572,6 @@ function mergeRetryOptions(retry, overrides) {
  * @param {Object} retryNames - A dictionary mapping the strings
  *   referring to response status codes to objects representing
  *   those codes.
- * @param {number} timeout - The timeout parameter for all API calls
- *   in this dictionary.
  * @param {Object} pageDescriptors - A dictionary of method names to
  *   {@link PageDescriptor} objects for methods that are page streaming-enabled.
  * @param {Object} bundleDescriptors - A dictionary of method names to
@@ -594,7 +583,7 @@ function mergeRetryOptions(retry, overrides) {
  */
 exports.constructSettings = function constructSettings(
     serviceName, clientConfig, configOverrides,
-    retryNames, timeout, pageDescriptors, bundleDescriptors, otherArgs) {
+    retryNames, pageDescriptors, bundleDescriptors, otherArgs) {
   pageDescriptors = pageDescriptors || {};
   bundleDescriptors = bundleDescriptors || {};
   otherArgs = otherArgs || {};
@@ -618,10 +607,16 @@ exports.constructSettings = function constructSettings(
                                serviceConfig.retry_params,
                                retryNames);
     var bundlingConfig = methodConfig.bundling;
+    var timeout = methodConfig.timeout_millis;
     if (methodName in overridingMethods) {
       var overridingMethod = overridingMethods[methodName];
-      if (overridingMethod &amp;&amp; 'bundling' in overridingMethod) {
-        bundlingConfig = overridingMethod.bundling;
+      if (overridingMethod) {
+        if ('bundling' in overridingMethod) {
+          bundlingConfig = overridingMethod.bundling;
+        }
+        if ('timeout_millis' in overridingMethod) {
+          timeout = overridingMethod.timeout_millis;
+        }
       }
       retry = mergeRetryOptions(
           retry,
@@ -649,13 +644,13 @@ exports.constructSettings = function constructSettings(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BackoffSettings.html">BackoffSettings</a></li><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallOptions.html">CallOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="RetryOptions.html">RetryOptions</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#FIRST_PAGE">FIRST_PAGE</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#OPTION_INHERIT">OPTION_INHERIT</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Aug 23 2016 14:20:49 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.1</a> on Tue Sep 27 2016 17:10:32 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
