@@ -33,12 +33,9 @@
 
 var gax = require('./lib/gax');
 var grpc = require('./lib/grpc');
-var eventEmitter = require('./lib/event_emitter');
 var bundling = require('./lib/bundling');
 
 exports.createApiCall = require('./lib/api_callable').createApiCall;
-exports.EventEmitter = eventEmitter.EventEmitter;
-exports.BundleEventEmitter = eventEmitter.BundleEventEmitter;
 exports.grpc = grpc;
 exports.createByteLengthFunction = grpc.createByteLengthFunction;
 exports.PathTemplate = require('./lib/path_template').PathTemplate;
