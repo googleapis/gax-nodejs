@@ -381,6 +381,71 @@ describe('Task', function() {
     task.cancel(cancelId);
     task.run();
   });
+
+  it('cancels ongoing API call', function(done) {
+    var apiCall = sinon.spy(function(resp, callback) {
+      var timeoutId = setTimeout(function() {
+        callback(null, resp);
+      }, 100);
+      return function() {
+        clearTimeout(timeoutId);
+        callback(new Error('cancelled'));
+      }
+    });
+
+    var task = testTask(apiCall);
+    var callback = sinon.spy(function() {
+      if (callback.callCount === 2) {
+        done();
+      }
+    });
+    extendElements(task, [1, 2, 3], function(err, resp) {
+      expect(err).to.be.an.instanceOf(Error);
+      callback();
+    });
+    extendElements(task, [1, 2, 3], function(err, resp) {
+      expect(err).to.be.an.instanceOf(Error);
+      callback();
+    });
+    task.run();
+    var cancelIds = _.map(task._data, function(data) {
+      return data.callback.id;
+    });
+    cancelIds.forEach(function(id) {
+      task.cancel(id);
+    });
+  });
+
+  it('partially cancels ongoing API call', function(done) {
+    var apiCall = sinon.spy(function(resp, callback) {
+      var timeoutId = setTimeout(function() {
+        callback(null, resp);
+      }, 100);
+      return function() {
+        clearTimeout(timeoutId);
+        callback(new Error('cancelled'));
+      }
+    });
+
+    var task = testTask(apiCall);
+    task._subresponseField = 'field1';
+    var callback = sinon.spy(function() {
+      if (callback.callCount === 2) {
+        done();
+      }
+    });
+    extendElements(task, [1, 2, 3], function(err, resp) {
+      expect(err).to.be.an.instanceOf(Error);
+      callback();
+    });
+    var cancelId = task._data[task._data.length - 1].callback.id;
+    extendElements(task, [4, 5, 6], function(err, resp) {
+      expect(resp.field1).to.deep.equal([4, 5, 6]);
+      callback();
+    });
+    task.run();
+    task.cancel(cancelId);
+  });
 });
 
 describe('Executor', function() {
