@@ -161,7 +161,6 @@ describe('Promise', function() {
     promise.then(function(response) {
       done(new Error('should not reach'));
     }).catch(function(err) {
-      console.log(err);
       expect(callCount).to.be.below(4);
       done();
     }).catch(done);

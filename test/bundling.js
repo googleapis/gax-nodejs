@@ -390,7 +390,7 @@ describe('Task', function() {
       return function() {
         clearTimeout(timeoutId);
         callback(new Error('cancelled'));
-      }
+      };
     });
 
     var task = testTask(apiCall);
@@ -424,7 +424,7 @@ describe('Task', function() {
       return function() {
         clearTimeout(timeoutId);
         callback(new Error('cancelled'));
-      }
+      };
     });
 
     var task = testTask(apiCall);
