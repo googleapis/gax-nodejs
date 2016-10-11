@@ -356,6 +356,45 @@ describe('retryable', function() {
     });
   });
 
+  it('retries the API call with maxRetries set', function(done) {
+    var toAttempt = 3;
+    var deadlineArg;
+    function func(argument, metadata, options, callback) {
+      deadlineArg = options.deadline;
+      toAttempt--;
+      if (toAttempt > 0) {
+        fail(argument, metadata, options, callback);
+        return;
+      }
+      callback(null, 1729);
+    }
+    var apiCall = createApiCall(func, settings);
+    apiCall(null, {maxRetries: 3}, function(err, resp) {
+      expect(resp).to.eq(1729);
+      expect(toAttempt).to.eq(0);
+      expect(deadlineArg).to.be.ok;
+      done();
+    });
+  });
+
+  it('fails on maxRetries the API call', function(done) {
+    var toAttempt = 3;
+    function func(argument, metadata, options, callback) {
+      toAttempt--;
+      if (toAttempt > 0) {
+        fail(argument, metadata, options, callback);
+        return;
+      }
+      callback(null, 1729);
+    }
+    var apiCall = createApiCall(func, settings);
+    apiCall(null, {maxRetries: 2}, function(err, resp) {
+      expect(err).to.be.ok;
+      expect(toAttempt).to.eq(1);
+      done();
+    });
+  });
+
   it('retries the API call with promise', function(done) {
     var toAttempt = 3;
     var deadlineArg;
