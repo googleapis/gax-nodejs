@@ -208,19 +208,21 @@ describe('page streaming', function() {
       });
   });
 
-  it('stops if in the middle', function(done) {
-    var apiCall = createApiCall(func, settings);
+  it('stops in the middle', function(done) {
+    var spy = sinon.spy(func);
+    var apiCall = createApiCall(spy, settings);
     var counter = 0;
     var stream = apiCall({}, null);
     stream.on('data', function(data) {
       expect(deadlineArg).to.be.ok;
       expect(data).to.eq(counter);
       counter++;
-      if (counter === 4) {
+      if (counter === pageSize + 1) {
         stream.end();
       }
     }).on('end', function() {
-      expect(counter).to.eq(4);
+      expect(counter).to.eq(pageSize + 1);
+      expect(spy.callCount).to.eq(2);
       done();
     });
   });
