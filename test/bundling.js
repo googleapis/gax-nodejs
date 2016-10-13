@@ -697,7 +697,7 @@ describe('Executor', function() {
       }
     });
 
-    it('reexecutor.scheduleser', function(done) {
+    it('reschedules after timer', function(done) {
       var executor = newExecutor(new gax.BundleOptions({delayThreshold: 50}));
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
