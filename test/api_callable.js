@@ -37,7 +37,6 @@ var bundling = require('../lib/bundling');
 var gax = require('../lib/gax');
 var expect = require('chai').expect;
 var sinon = require('sinon');
-var eventemitter2 = require('eventemitter2');
 
 var FAKE_STATUS_CODE_1 = 1;
 var FAKE_STATUS_CODE_2 = 2;
@@ -48,8 +47,19 @@ function fail(argument, metadata, options, callback) {
   callback(error);
 }
 
-function createApiCall(func, settings) {
-  return apiCallable.createApiCall(Promise.resolve(func), settings);
+function createApiCall(func, settings, canceller) {
+  return apiCallable.createApiCall(Promise.resolve(
+    function(argument, metadata, options, callback) {
+      if (canceller && canceller.returnCancelFunc) {
+        return {
+          cancel: func(argument, metadata, options, callback)
+        };
+      }
+      func(argument, metadata, options, callback);
+      return canceller || {
+        cancel: function() { callback(new Error('canceled')); }
+      };
+    }), settings);
 }
 
 describe('createApiCall', function() {
@@ -85,7 +95,7 @@ describe('createApiCall', function() {
   });
 });
 
-describe('EventEmitter', function() {
+describe('Promise', function() {
   it('calls api call', function(done) {
     var deadlineArg;
     function func(argument, metadata, options, callback) {
@@ -93,86 +103,35 @@ describe('EventEmitter', function() {
       callback(null, 42);
     }
     var apiCall = createApiCall(func, new gax.CallSettings());
-    apiCall(null).on('data', function(response) {
+    apiCall(null).then(function(response) {
       expect(response).to.eq(42);
       expect(deadlineArg).to.be.ok;
       done();
-    }).on('error', done);
+    }).catch(done);
   });
 
   it('emits error on failure', function(done) {
     var apiCall = createApiCall(fail, new gax.CallSettings());
-    var eventEmitter = apiCall(null, null);
-    eventEmitter.on('data', function(response) {
+    apiCall(null, null).then(function(response) {
       done(new Error('should not reach'));
-    });
-    eventEmitter.on('error', function(err) {
+    }).catch(function(err) {
       expect(err).to.be.an.instanceOf(Error);
       done();
     });
   });
 
-  it('cancels api call', function(done) {
+  it('has cancel method', function(done) {
     function func(argument, metadata, options, callback) {
       setTimeout(function() { callback(null, 42); }, 0);
-      var emitter = new eventemitter2.EventEmitter2();
-      emitter.cancel = done;
-      return emitter;
     }
-    var apiCall = createApiCall(func, new gax.CallSettings());
-    var eventEmitter = apiCall(null);
-    eventEmitter.on('data', function(response) {
+    var apiCall = createApiCall(func, new gax.CallSettings(), {cancel: done});
+    var promise = apiCall(null);
+    promise.then(function(response) {
       done(new Error('should not reach'));
-    }).on('error', done);
-    eventEmitter.cancel();
-  });
-
-  it('cancels with callback', function(done) {
-    function func(argument, metadata, options, callback) {
-      setTimeout(function() { callback(null, 42); }, 0);
-      var emitter = new eventemitter2.EventEmitter2();
-      emitter.cancel = function() {};
-      return emitter;
-    }
-    var apiCall = createApiCall(func, new gax.CallSettings());
-    var eventEmitter = apiCall(null, null, function(err, response) {
-      expect(err).to.be.an.instanceOf(Error);
+    }).catch(function(err) {
       done();
     });
-    eventEmitter.on('error', done);
-    eventEmitter.cancel();
-  });
-
-  it('resolves the promise', function(done) {
-    var deadlineArg;
-    function func(argument, metadata, options, callback) {
-      deadlineArg = options.deadline;
-      callback(null, 42);
-    }
-    var apiCall = createApiCall(func, new gax.CallSettings());
-    apiCall(null).result.then(function(response) {
-      expect(response).to.eq(42);
-      expect(deadlineArg).to.be.ok;
-      done();
-    });
-  });
-
-  it('rejects the promise on cancel', function(done) {
-    function func(argument, metadata, options, callback) {
-      setTimeout(function() { callback(null, 42); }, 0);
-      var emitter = new eventemitter2.EventEmitter2();
-      emitter.cancel = function() {};
-      return emitter;
-    }
-    var apiCall = createApiCall(func, new gax.CallSettings());
-    var eventEmitter = apiCall(null);
-    eventEmitter.result.then(
-        function(result) { done(new Error('should not reach')); },
-        function(err) {
-          expect(err).to.be.an.instanceOf(Error);
-          done();
-        });
-    eventEmitter.cancel();
+    promise.cancel();
   });
 
   it('cancels retrying call', function(done) {
@@ -191,17 +150,21 @@ describe('EventEmitter', function() {
       } else {
         response = 42;
       }
-      setTimeout(function() { callback(err, response); }, 10);
-      var emitter = new eventemitter2.EventEmitter2();
-      emitter.cancel = done;
-      return emitter;
+      var timeoutId = setTimeout(function() { callback(err, response); }, 10);
+      return function cancelFunc() {
+        clearTimeout(timeoutId);
+        callback(new Error('canceled'));
+      };
     }
-    var apiCall = createApiCall(func, settings);
-    var eventEmitter = apiCall(null);
-    eventEmitter.on('data', function(response) {
+    var apiCall = createApiCall(func, settings, {returnCancelFunc: true});
+    var promise = apiCall(null);
+    promise.then(function(response) {
       done(new Error('should not reach'));
-    }).on('error', done);
-    setTimeout(eventEmitter.cancel.bind(eventEmitter), 15);
+    }).catch(function(err) {
+      expect(callCount).to.be.below(4);
+      done();
+    }).catch(done);
+    setTimeout(promise.cancel.bind(promise), 15);
   });
 });
 
@@ -245,24 +208,26 @@ describe('page streaming', function() {
       });
   });
 
-  it('stops if in the middle', function(done) {
-    var apiCall = createApiCall(func, settings);
+  it('stops in the middle', function(done) {
+    var spy = sinon.spy(func);
+    var apiCall = createApiCall(spy, settings);
     var counter = 0;
     var stream = apiCall({}, null);
     stream.on('data', function(data) {
       expect(deadlineArg).to.be.ok;
       expect(data).to.eq(counter);
       counter++;
-      if (counter === 4) {
+      if (counter === pageSize + 1) {
         stream.end();
       }
     }).on('end', function() {
-      expect(counter).to.eq(4);
+      expect(counter).to.eq(pageSize + 1);
+      expect(spy.callCount).to.eq(2);
       done();
     });
   });
 
-  it('fetch the page', function(done) {
+  it('fetches the page', function(done) {
     var apiCall = createApiCall(func, settings);
     apiCall({}, {flattenPages: false}, function(err, data) {
       expect(err).to.be.null;
@@ -369,7 +334,7 @@ describe('retryable', function() {
       callback(null, 1729);
     }
     var apiCall = createApiCall(func, settings);
-    apiCall(null, null).result.then(function(resp) {
+    apiCall(null, null).then(function(resp) {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
@@ -379,21 +344,21 @@ describe('retryable', function() {
 
   it('cancels in the middle of retries', function(done) {
     var callCount = 0;
-    var eventEmitter;
+    var promise;
     function func(argument, metadata, options, callback) {
       callCount++;
       if (callCount <= 2) {
         fail(argument, metadata, options, callback);
         return;
       }
-      setTimeout(eventEmitter.cancel.bind(eventEmitter), 0);
+      setTimeout(promise.cancel.bind(promise), 0);
       setTimeout(callback.bind(null, null, 1729), 10);
     }
     var apiCall = createApiCall(func, settings);
-    eventEmitter = apiCall(null, null);
-    eventEmitter.result.then(function(resp) {
+    promise = apiCall(null, null);
+    promise.then(function(resp) {
       done(new Error('should not reach'));
-    }, function(err) {
+    }).catch(function(err) {
       expect(err).to.be.an.instanceOf(Error);
       done();
     });
@@ -511,7 +476,7 @@ describe('bundleable', function() {
 
   it('bundles requests', function(done) {
     var spy = sinon.spy(func);
-    var callback = sinon.spy(function(err, obj) {
+    var callback = sinon.spy(function(obj) {
       expect(obj.field1).to.deep.equal([1, 2, 3]);
       if (callback.callCount === 2) {
         expect(spy.callCount).to.eq(1);
@@ -519,14 +484,20 @@ describe('bundleable', function() {
       }
     });
     var apiCall = createApiCall(spy, settings);
-    apiCall(createRequest([1, 2, 3], 'id'), null, callback);
-    apiCall(createRequest([1, 2, 3], 'id'), null, callback);
+    apiCall(createRequest([1, 2, 3], 'id'), null, function(err, obj) {
+      if (err) {
+        done(err);
+      } else {
+        callback(obj);
+      }
+    });
+    apiCall(createRequest([1, 2, 3], 'id'), null).then(callback).catch(done);
   });
 
   it('suppresses bundling behavior by call options', function(done) {
     var spy = sinon.spy(func);
     var callbackCount = 0;
-    function bundledCallback(err, obj) {
+    function bundledCallback(obj) {
       callbackCount++;
       expect(obj.field1).to.deep.equal([1, 2, 3]);
       if (callbackCount === 3) {
@@ -534,15 +505,19 @@ describe('bundleable', function() {
         done();
       }
     }
-    function unbundledCallback(err, obj) {
+    function unbundledCallback(obj) {
       callbackCount++;
       expect(callbackCount).to.eq(1);
       expect(obj.field1).to.deep.equal([1, 2, 3]);
     }
     var apiCall = createApiCall(spy, settings);
-    apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
-    apiCall(createRequest([1, 2, 3], 'id'),
-            {isBundling: false}, unbundledCallback);
-    apiCall(createRequest([1, 2, 3], 'id'), null, bundledCallback);
+    apiCall(createRequest([1, 2, 3], 'id'), null)
+        .then(bundledCallback)
+        .catch(done);
+    apiCall(createRequest([1, 2, 3], 'id'), {isBundling: false})
+        .then(unbundledCallback);
+    apiCall(createRequest([1, 2, 3], 'id'), null)
+        .then(bundledCallback)
+        .catch(done);
   });
 });
