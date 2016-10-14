@@ -387,9 +387,11 @@ describe('Task', function() {
       var timeoutId = setTimeout(function() {
         callback(null, resp);
       }, 100);
-      return function() {
-        clearTimeout(timeoutId);
-        callback(new Error('cancelled'));
+      return {
+        cancel: function() {
+          clearTimeout(timeoutId);
+          callback(new Error('cancelled'));
+        }
       };
     });
 
@@ -421,9 +423,11 @@ describe('Task', function() {
       var timeoutId = setTimeout(function() {
         callback(null, resp);
       }, 100);
-      return function() {
-        clearTimeout(timeoutId);
-        callback(new Error('cancelled'));
+      return {
+        cancel: function() {
+          clearTimeout(timeoutId);
+          callback(new Error('cancelled'));
+        }
       };
     });
 

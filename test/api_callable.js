@@ -37,6 +37,7 @@ var bundling = require('../lib/bundling');
 var gax = require('../lib/gax');
 var expect = require('chai').expect;
 var sinon = require('sinon');
+var through2 = require('through2');
 
 var FAKE_STATUS_CODE_1 = 1;
 var FAKE_STATUS_CODE_2 = 2;
@@ -519,5 +520,98 @@ describe('bundleable', function() {
     apiCall(createRequest([1, 2, 3], 'id'), null)
         .then(bundledCallback)
         .catch(done);
+  });
+});
+
+describe('streaming', function() {
+  function createStreamingCall(func, settings) {
+    return apiCallable.createApiCall(Promise.resolve(func), settings);
+  }
+
+  it('handles server streaming', function(done) {
+    var spy = sinon.spy(function(argument, metadata, options) {
+      var s = through2.obj();
+      s.push({resources: [1, 2]});
+      s.push({resources: [3, 4, 5]});
+      s.push(null);
+      return s;
+    });
+
+    var settings = new gax.CallSettings({streaming: new gax.StreamDescriptor(
+      gax.StreamType.SERVER_STREAMING
+    )});
+    var apiCall = createStreamingCall(spy, settings);
+    var s = apiCall(null, null);
+    var callback = sinon.spy(function(data) {
+      if (callback.callCount === 1) {
+        expect(data).to.deep.equal({resources: [1, 2]});
+      } else {
+        expect(data).to.deep.equal({resources: [3, 4, 5]});
+      }
+    });
+    expect(s.readable).to.be.true;
+    expect(s.writable).to.be.false;
+    s.on('data', callback);
+    s.on('end', function() {
+      expect(callback.callCount).to.eq(2);
+      done();
+    });
+  });
+
+  it('handles client streaming', function(done) {
+    function func(metadata, options, callback) {
+      var s = through2.obj();
+      var written = [];
+      s.on('end', function() {
+        callback(null, written);
+      });
+      s.on('error', callback);
+      s.on('data', function(data) {
+        written.push(data);
+      });
+      return s;
+    }
+
+    var settings = new gax.CallSettings({streaming: new gax.StreamDescriptor(
+      gax.StreamType.CLIENT_STREAMING
+    )});
+    var apiCall = createStreamingCall(func, settings);
+    var s = apiCall(null, null, function(err, response) {
+      expect(err).to.be.null;
+      expect(response).to.deep.eq(['foo', 'bar']);
+      done();
+    });
+    expect(s.readable).to.be.false;
+    expect(s.writable).to.be.true;
+    s.write('foo');
+    s.write('bar');
+    s.end();
+  });
+
+  it('handles bidi streaming', function(done) {
+    function func(metadata, options) {
+      var s = through2.obj();
+      return s;
+    }
+
+    var settings = new gax.CallSettings({streaming: new gax.StreamDescriptor(
+      gax.StreamType.BIDI_STREAMING
+    )});
+    var apiCall = createStreamingCall(func, settings);
+    var s = apiCall(null, null);
+    var arg = {foo: 'bar'};
+    var callback = sinon.spy(function(data) {
+      expect(data).to.eq(arg);
+    });
+    s.on('data', callback);
+    s.on('end', function() {
+      expect(callback.callCount).to.eq(2);
+      done();
+    });
+    expect(s.readable).to.be.true;
+    expect(s.writable).to.be.true;
+    s.write(arg);
+    s.write(arg);
+    s.end();
   });
 });

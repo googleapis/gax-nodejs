@@ -76,6 +76,10 @@ A_CONFIG.interfaces[SERVICE_NAME] = {
     'PageStreamingMethod': {
       'retry_codes_name': 'bar_retry',
       'retry_params_name': 'default'
+    },
+    'StreamingMethod': {
+      'retry_codes_name': 'bar_retry',
+      'retry_params_name': 'default'
     }
   }
 };
@@ -87,6 +91,10 @@ var PAGE_DESCRIPTORS = {
 
 var BUNDLE_DESCRIPTORS = {
   'bundlingMethod': new gax.BundleDescriptor('bundled_field', [])
+};
+
+var STREAM_DESCRIPTORS = {
+  'streamingMethod': new gax.StreamDescriptor(gax.StreamType.BIDI_STREAMING)
 };
 
 var RETRY_DICT = {
@@ -119,7 +127,7 @@ describe('gax construct settings', function() {
     var otherArgs = {'key': 'value'};
     var defaults = gax.constructSettings(
         SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, PAGE_DESCRIPTORS,
-        BUNDLE_DESCRIPTORS, otherArgs);
+        BUNDLE_DESCRIPTORS, otherArgs, STREAM_DESCRIPTORS);
     var settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
     expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
@@ -135,6 +143,10 @@ describe('gax construct settings', function() {
     expectRetryOptions(settings.retry);
     expect(settings.retry.retryCodes).eql([3]);
     expect(settings.otherArgs).eql(otherArgs);
+
+    settings = defaults.streamingMethod;
+    expect(settings.streaming.type).to.eq(gax.StreamType.BIDI_STREAMING);
+    expect(settings.retry).to.be.falsy;
   });
 
   it('overrides settings', function() {
