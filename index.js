@@ -31,10 +31,23 @@
 
 'use strict';
 
+var bundling = require('./lib/bundling');
 var gax = require('./lib/gax');
 var grpc = require('./lib/grpc');
-var bundling = require('./lib/bundling');
+var extend = require('extend');
+var operationsApi = require('./lib/operations_api');
 
+function lro(options) {
+  options = extend({
+    scopes: lro.ALL_SCOPES
+  }, options);
+  var gaxGrpc = gax.grpc(options);
+  return operationsApi(gaxGrpc);
+}
+lro.SERVICE_ADDRESS = operationsApi.SERVICE_ADDRESS;
+lro.ALL_SCOPES = operationsApi.ALL_SCOPES;
+
+exports.lro = lro;
 exports.createApiCall = require('./lib/api_callable').createApiCall;
 exports.grpc = grpc;
 exports.createByteLengthFunction = grpc.createByteLengthFunction;

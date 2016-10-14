@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Google API Extensions",
   "main": "index.js",
   "files": [
@@ -8,6 +8,7 @@
   ],
   "dependencies": {
     "chai": "*",
+    "extend": "^3.0.0",
     "google-auto-auth": "~0.2.4",
     "grpc": "~1.0",
     "lodash": "~4.11.1",
@@ -27,8 +28,8 @@
   "scripts": {
     "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
     "doc": "jsdoc lib package.json README.md -c ./jsdoc.conf -d doc",
-    "lint": "eslint lib test",
-    "lint-fix": "eslint --fix lib test",
+    "lint": "eslint --ignore-path .jshintignore lib test",
+    "lint-fix": "eslint --ignore-path .jshintignore --fix lib test",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
     "test": "istanbul test _mocha -- --reporter spec --slow 500 --timeout 5000",
     "publish-gh-pages": "bash ./publish-gh-pages.sh"
