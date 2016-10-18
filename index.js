@@ -41,7 +41,7 @@ function lro(options) {
   options = extend({
     scopes: lro.ALL_SCOPES
   }, options);
-  var gaxGrpc = gax.grpc(options);
+  var gaxGrpc = grpc(options);
   return operationsApi(gaxGrpc);
 }
 lro.SERVICE_ADDRESS = operationsApi.SERVICE_ADDRESS;
