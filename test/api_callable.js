@@ -371,9 +371,9 @@ describe('retryable', function() {
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err, resp) {
-      expect(err).to.be.ok;
-      expect(err.cause).to.be.an('error');
-      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err).to.be.an('error');
+      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
       done();
     });
@@ -382,9 +382,9 @@ describe('retryable', function() {
   it('aborts retries', function(done) {
     var apiCall = createApiCall(fail, settings);
     apiCall(null, null, function(err, resp) {
-      expect(err).to.be.ok;
       expect(err).to.be.an('error');
-      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err.note).to.be.ok;
       done();
     });
   });
@@ -394,9 +394,9 @@ describe('retryable', function() {
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err, resp) {
-      expect(err).to.be.ok;
-      expect(err.cause).to.be.an('error');
-      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err).to.be.an('error');
+      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
       done();
     });
@@ -411,9 +411,9 @@ describe('retryable', function() {
     var spy = sinon.spy(func);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err, resp) {
-      expect(err).to.be.ok;
-      expect(err.cause).to.be.an('error');
-      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_2);
+      expect(err).to.be.an('error');
+      expect(err.code).to.eq(FAKE_STATUS_CODE_2);
+      expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
       done();
     });
@@ -441,9 +441,9 @@ describe('retryable', function() {
         spy, new gax.CallSettings({timeout: 0, retry: retryOptions}));
 
     apiCall(null, null, function(err, resp) {
-      expect(err).to.be.ok;
-      expect(err.cause).to.be.an('error');
-      expect(err.cause.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err).to.be.an('error');
+      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err.note).to.be.ok;
       var now = new Date();
       expect(now.getTime() - startTime.getTime()).to.be.at.least(
           backoff.totalTimeoutMillis);
