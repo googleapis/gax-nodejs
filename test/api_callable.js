@@ -33,8 +33,9 @@
 'use strict';
 
 var apiCallable = require('../lib/api_callable');
-var bundling = require('../lib/bundling');
 var gax = require('../lib/gax');
+var PageDescriptor = require('../lib/page_streaming').PageDescriptor;
+var BundleDescriptor = require('../lib/bundling').BundleDescriptor;
 var expect = require('chai').expect;
 var sinon = require('sinon');
 
@@ -47,30 +48,32 @@ function fail(argument, metadata, options, callback) {
   callback(error);
 }
 
-function createApiCall(func, settings, canceller) {
+function createApiCall(func, opts) {
+  opts = opts || {};
+  var settings = new gax.CallSettings(opts.settings || {});
+  var descriptor = opts.descriptor;
   return apiCallable.createApiCall(Promise.resolve(
     function(argument, metadata, options, callback) {
-      if (canceller && canceller.returnCancelFunc) {
+      if (opts.returnCancelFunc) {
         return {
           cancel: func(argument, metadata, options, callback)
         };
       }
       func(argument, metadata, options, callback);
-      return canceller || {
-        cancel: function() { callback(new Error('canceled')); }
+      return {
+        cancel: opts.cancel || function() { callback(new Error('canceled')); }
       };
-    }), settings);
+    }), settings, descriptor);
 }
 
 describe('createApiCall', function() {
   it('calls api call', function(done) {
-    var settings = new gax.CallSettings();
     var deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       callback(null, argument);
     }
-    var apiCall = createApiCall(func, settings);
+    var apiCall = createApiCall(func);
     apiCall(42, null, function(err, resp) {
       expect(resp).to.eq(42);
       expect(deadlineArg).to.be.ok;
@@ -79,11 +82,10 @@ describe('createApiCall', function() {
   });
 
   it('is customized by call options', function(done) {
-    var settings = new gax.CallSettings({timeout: 100});
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
-    var apiCall = createApiCall(func, settings);
+    var apiCall = createApiCall(func, {settings: {timeout: 100}});
     apiCall(null, {timeout: 200}, function(err, resp) {
       var now = new Date();
       var originalDeadline = now.getTime() + 100;
@@ -102,7 +104,7 @@ describe('Promise', function() {
       deadlineArg = options.deadline;
       callback(null, 42);
     }
-    var apiCall = createApiCall(func, new gax.CallSettings());
+    var apiCall = createApiCall(func);
     apiCall(null).then(function(response) {
       expect(response).to.eq(42);
       expect(deadlineArg).to.be.ok;
@@ -111,7 +113,7 @@ describe('Promise', function() {
   });
 
   it('emits error on failure', function(done) {
-    var apiCall = createApiCall(fail, new gax.CallSettings());
+    var apiCall = createApiCall(fail);
     apiCall(null, null).then(function(response) {
       done(new Error('should not reach'));
     }).catch(function(err) {
@@ -124,7 +126,7 @@ describe('Promise', function() {
     function func(argument, metadata, options, callback) {
       setTimeout(function() { callback(null, 42); }, 0);
     }
-    var apiCall = createApiCall(func, new gax.CallSettings(), {cancel: done});
+    var apiCall = createApiCall(func, {cancel: done});
     var promise = apiCall(null);
     promise.then(function(response) {
       done(new Error('should not reach'));
@@ -137,7 +139,6 @@ describe('Promise', function() {
   it('cancels retrying call', function(done) {
     var retryOptions = gax.createRetryOptions(
         [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
-    var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
 
     var callCount = 0;
     function func(argument, metadata, options, callback) {
@@ -156,7 +157,8 @@ describe('Promise', function() {
         callback(new Error('canceled'));
       };
     }
-    var apiCall = createApiCall(func, settings, {returnCancelFunc: true});
+    var apiCall = createApiCall(
+        func, {settings: {retry: retryOptions}, returnCancelFunc: true});
     var promise = apiCall(null);
     promise.then(function(response) {
       done(new Error('should not reach'));
@@ -171,13 +173,12 @@ describe('Promise', function() {
 describe('page streaming', function() {
   var pageSize = 3;
   var pagesToStream = 5;
-  var pageDescriptor = new gax.PageDescriptor(
+  var descriptor = new PageDescriptor(
       'pageToken', 'nextPageToken', 'nums');
   var retryOptions = gax.createRetryOptions(
       [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
-  var settings = new gax.CallSettings({retry: retryOptions,
-                                       pageDescriptor: pageDescriptor});
   var deadlineArg = null;
+  var createOptions = {settings: {retry: retryOptions}, descriptor: descriptor};
 
   function func(request, metadata, options, callback) {
     deadlineArg = options.deadline;
@@ -194,7 +195,7 @@ describe('page streaming', function() {
   }
 
   it('returns page-streamable', function(done) {
-    var apiCall = createApiCall(func, settings);
+    var apiCall = createApiCall(func, createOptions);
     var counter = 0;
     apiCall({}, null)
       .on('data', function(data) {
@@ -210,7 +211,7 @@ describe('page streaming', function() {
 
   it('stops in the middle', function(done) {
     var spy = sinon.spy(func);
-    var apiCall = createApiCall(spy, settings);
+    var apiCall = createApiCall(spy, createOptions);
     var counter = 0;
     var stream = apiCall({}, null);
     stream.on('data', function(data) {
@@ -228,7 +229,7 @@ describe('page streaming', function() {
   });
 
   it('fetches the page', function(done) {
-    var apiCall = createApiCall(func, settings);
+    var apiCall = createApiCall(func, createOptions);
     apiCall({}, {flattenPages: false}, function(err, data) {
       expect(err).to.be.null;
       expect(deadlineArg).to.be.ok;
@@ -239,7 +240,7 @@ describe('page streaming', function() {
   });
 
   it('switches to callback mode if callback is supplied', function(done) {
-    var apiCall = createApiCall(func, settings);
+    var apiCall = createApiCall(func, createOptions);
     apiCall({}, null, function(err, data) {
       expect(err).to.be.null;
       expect(deadlineArg).to.be.ok;
@@ -251,7 +252,7 @@ describe('page streaming', function() {
 
   it('fetches the next page through the third callback', function(done) {
     var counter = 0;
-    var apiCall = createApiCall(func, settings);
+    var apiCall = createApiCall(func, createOptions);
     function callback(err, response, nextPageToken) {
       if (err) {
         done(err);
@@ -280,7 +281,7 @@ describe('page streaming', function() {
         func(request, metadata, options, callback);
       }
     }
-    var apiCall = createApiCall(failingFunc, settings);
+    var apiCall = createApiCall(failingFunc, createOptions);
     var dataCount = 0;
     apiCall({}, null)
       .on('data', function(data) {
@@ -298,7 +299,7 @@ describe('page streaming', function() {
 describe('retryable', function() {
   var retryOptions = gax.createRetryOptions(
       [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
-  var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
+  var settings = {settings: {timeout: 0, retry: retryOptions}};
 
   it('retries the API call', function(done) {
     var toAttempt = 3;
@@ -367,7 +368,7 @@ describe('retryable', function() {
   it('doesn\'t retry if no codes', function(done) {
     var retryOptions = gax.createRetryOptions(
         [], gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7));
-    var settings = new gax.CallSettings({timeout: 0, retry: retryOptions});
+    var settings = {settings: {timeout: 0, retry: retryOptions}};
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err, resp) {
@@ -438,7 +439,7 @@ describe('retryable', function() {
     var backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
     var retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
     var apiCall = createApiCall(
-        spy, new gax.CallSettings({timeout: 0, retry: retryOptions}));
+        spy, {settings: {timeout: 0, retry: retryOptions}});
 
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
@@ -468,11 +469,11 @@ describe('bundleable', function() {
   function createRequest(field1, field2) {
     return {field1: field1, field2: field2};
   }
-  var bundleOptions = new gax.BundleOptions({elementCountThreshold: 6});
-  var bundleDescriptor = new gax.BundleDescriptor(
+  var bundleOptions = {elementCountThreshold: 6};
+  var descriptor = new BundleDescriptor(
       'field1', ['field2'], 'field1', byteLength);
-  var settings = new gax.CallSettings({bundler: new bundling.BundleExecutor(
-      bundleOptions, bundleDescriptor)});
+  var settings = {settings: {bundleOptions: bundleOptions},
+                  descriptor: descriptor};
 
   it('bundles requests', function(done) {
     var spy = sinon.spy(func);
