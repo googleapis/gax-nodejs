@@ -92,6 +92,73 @@
     
 
     
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="ALL_SCOPES"><span class="type-signature"></span>ALL_SCOPES<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    <p>The scopes needed to make gRPC calls to all of the methods defined in
+this service.</p>
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line55">line 55</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -227,7 +294,7 @@ will be bundled together.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="bundling.js.html">bundling.js</a>, <a href="bundling.js.html#line52">line 52</a>
+        <a href="bundling.js.html">bundling.js</a>, <a href="bundling.js.html#line59">line 59</a>
     </li></ul></dd>
     
 
@@ -759,7 +826,7 @@ and the options on the invocation.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line306">line 306</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line399">line 399</a>
     </li></ul></dd>
     
 
@@ -1639,6 +1706,376 @@ format.</li>
 
 
         
+            
+
+    
+
+    <h4 class="name" id="operationsApi"><span class="type-signature"></span>operationsApi<span class="signature">(opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Build a new instance of <a href="OperationsApi.html">OperationsApi</a>.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The optional parameters.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>servicePath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The domain name of the API remote host.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>port</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The port on which to connect to the remote host.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>sslCreds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">grpc.ClientCredentials</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>A ClientCredentials for use with an SSL-enabled channel.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>clientConfig</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The customized config to build the call settings. See
+  gax.constructSettings for the format.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>appName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The codename of the calling service.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>appVersion</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The version of the calling service.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line375">line 375</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
     
 
     
@@ -1649,7 +2086,7 @@ format.</li>
 
     
 
-    <h4 class="name" id="APICall"><span class="type-signature"></span>APICall<span class="signature">(argument, callOptions, callback)</span><span class="type-signature"> &rarr; {<a href="EventEmitter.html">EventEmitter</a>|Stream}</span></h4>
+    <h4 class="name" id="APICall"><span class="type-signature"></span>APICall<span class="signature">(argument, callOptions, callback)</span><span class="type-signature"> &rarr; {Promise|Stream}</span></h4>
 
     
 
@@ -1791,7 +2228,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line58">line 58</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line55">line 55</a>
     </li></ul></dd>
     
 
@@ -1825,7 +2262,7 @@ format.</li>
     </dt>
     <dd>
         
-<span class="param-type"><a href="EventEmitter.html">EventEmitter</a></span>
+<span class="param-type">Promise</span>
 |
 
 <span class="param-type">Stream</span>
@@ -1984,7 +2421,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line44">line 44</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line41">line 41</a>
     </li></ul></dd>
     
 
@@ -2180,7 +2617,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line50">line 50</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line47">line 47</a>
     </li></ul></dd>
     
 
@@ -3129,13 +3566,13 @@ api.pageStreamingMethod(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleEventEmitter.html">BundleEventEmitter</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="EventEmitter.html">EventEmitter</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.1</a> on Tue Sep 27 2016 17:10:32 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Fri Oct 21 2016 13:10:05 GMT-0700 (PDT)
 </footer>
 
 <script> prettyPrint(); </script>
