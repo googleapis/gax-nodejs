@@ -31,7 +31,6 @@
 'use strict';
 
 var bundling = require('../lib/bundling');
-var gax = require('../lib/gax');
 var expect = require('chai').expect;
 var sinon = require('sinon');
 var _ = require('lodash');
@@ -461,12 +460,13 @@ describe('Executor', function() {
   }
 
   function newExecutor(options) {
-    return new bundling.BundleExecutor(options, new gax.BundleDescriptor(
-      'field1', ['field2'], 'field1', byteLength));
+    var descriptor = new bundling.BundleDescriptor(
+        'field1', ['field2'], 'field1', byteLength);
+    return new bundling.BundleExecutor(options, descriptor);
   }
 
   it('groups api calls by the id', function() {
-    var executor = newExecutor(new gax.BundleOptions({delayThreshold: 10}));
+    var executor = newExecutor({delayThreshold: 10});
     executor.schedule(apiCall, createSimple([1, 2], 'id1'));
     executor.schedule(apiCall, createSimple([3], 'id2'));
     executor.schedule(apiCall, createSimple([4, 5], 'id1'));
@@ -492,7 +492,7 @@ describe('Executor', function() {
   });
 
   it('emits errors when the api call fails', function(done) {
-    var executor = newExecutor(new gax.BundleOptions({delayThreshold: 10}));
+    var executor = newExecutor({delayThreshold: 10});
     var callback = sinon.spy(function(err, resp) {
       expect(err).to.be.an.instanceOf(Error);
       if (callback.callCount === 2) {
@@ -504,7 +504,7 @@ describe('Executor', function() {
   });
 
   describe('callback', function() {
-    var executor = newExecutor(new gax.BundleOptions({delayThreshold: 10}));
+    var executor = newExecutor({delayThreshold: 10});
     var spyApi = sinon.spy(apiCall);
 
     function timedAPI(request, callback) {
@@ -571,8 +571,7 @@ describe('Executor', function() {
 
   it('respects element count', function() {
     var threshold = 5;
-    var executor = newExecutor(
-        new gax.BundleOptions({elementCountThreshold: threshold}));
+    var executor = newExecutor({elementCountThreshold: threshold});
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1.length).to.eq(threshold);
       callback(null, request);
@@ -597,8 +596,7 @@ describe('Executor', function() {
     var count = 5;
     var threshold = unitSize * count;
 
-    var executor = newExecutor(
-        new gax.BundleOptions({requestByteThreshold: threshold}));
+    var executor = newExecutor({requestByteThreshold: threshold});
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1.length).to.eq(count);
       expect(byteLength(request.field1)).to.be.least(threshold);
@@ -622,8 +620,8 @@ describe('Executor', function() {
   it('respects element limit', function(done) {
     var threshold = 5;
     var limit = 7;
-    var executor = newExecutor(new gax.BundleOptions(
-        {elementCountThreshold: threshold, elementCountLimit: limit}));
+    var executor = newExecutor(
+        {elementCountThreshold: threshold, elementCountLimit: limit});
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1).to.be.an.instanceOf(Array);
       callback(null, request);
@@ -652,9 +650,9 @@ describe('Executor', function() {
     var unitSize = byteLength(1);
     var threshold = 5;
     var limit = 7;
-    var executor = newExecutor(new gax.BundleOptions(
+    var executor = newExecutor(
         {requestByteThreshold: threshold * unitSize,
-         requestByteLimit: limit * unitSize}));
+         requestByteLimit: limit * unitSize});
     var spy = sinon.spy(function(request, callback) {
       expect(request.field1).to.be.an.instanceOf(Array);
       callback(null, request);
@@ -681,7 +679,7 @@ describe('Executor', function() {
 
   describe('timer', function() {
     it('waits on the timer', function(done) {
-      var executor = newExecutor(new gax.BundleOptions({delayThreshold: 50}));
+      var executor = newExecutor({delayThreshold: 50});
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
       function onEnd() {
@@ -702,7 +700,7 @@ describe('Executor', function() {
     });
 
     it('reschedules after timer', function(done) {
-      var executor = newExecutor(new gax.BundleOptions({delayThreshold: 50}));
+      var executor = newExecutor({delayThreshold: 50});
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
       executor.schedule(spy, createSimple([0], 'id'), function() {
