@@ -35,7 +35,7 @@ var bundling = require('./lib/bundling');
 var gax = require('./lib/gax');
 var grpc = require('./lib/grpc');
 var extend = require('extend');
-var streaming = requrie('./lib/streaming');
+var streaming = require('./lib/streaming');
 var operationsApi = require('./lib/operations_api');
 
 function lro(options) {
