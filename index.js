@@ -35,6 +35,7 @@ var bundling = require('./lib/bundling');
 var gax = require('./lib/gax');
 var grpc = require('./lib/grpc');
 var extend = require('extend');
+var streaming = require('./lib/streaming');
 var operationsApi = require('./lib/operations_api');
 
 function lro(options) {
@@ -52,8 +53,10 @@ exports.createApiCall = require('./lib/api_callable').createApiCall;
 exports.grpc = grpc;
 exports.createByteLengthFunction = grpc.createByteLengthFunction;
 exports.PathTemplate = require('./lib/path_template').PathTemplate;
-exports.PageDescriptor = gax.PageDescriptor;
-exports.BundleDescriptor = gax.BundleDescriptor;
+exports.PageDescriptor = require('./lib/page_streaming').PageDescriptor;
+exports.BundleDescriptor = bundling.BundleDescriptor;
+exports.StreamType = streaming.StreamType;
+exports.StreamDescriptor = streaming.StreamDescriptor;
 exports.constructSettings = gax.constructSettings;
-exports.BundleExecutor = require('./lib/bundling').BundleExecutor;
+exports.BundleExecutor = bundling.BundleExecutor;
 exports.version = require('./package').version;

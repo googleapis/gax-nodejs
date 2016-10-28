@@ -7,12 +7,12 @@
     "lib"
   ],
   "dependencies": {
-    "chai": "*",
     "extend": "^3.0.0",
     "google-auto-auth": "~0.2.4",
     "google-proto-files": "^0.8.3",
     "grpc": "~1.0",
     "lodash": "~4.11.1",
+    "readable-stream": "~2.0.6",
     "through2": "~2.0.1"
   },
   "devDependencies": {

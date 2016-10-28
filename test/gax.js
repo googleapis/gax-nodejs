@@ -37,7 +37,6 @@
 'use strict';
 
 var gax = require('../lib/gax');
-var bundling = require('../lib/bundling');
 var expect = require('chai').expect;
 
 var SERVICE_NAME = 'test.interface.v1.api';
@@ -80,15 +79,6 @@ A_CONFIG.interfaces[SERVICE_NAME] = {
   }
 };
 
-var PAGE_DESCRIPTORS = {
-  'pageStreamingMethod': new gax.PageDescriptor(
-    'page_token', 'next_page_token', 'page_streams')
-};
-
-var BUNDLE_DESCRIPTORS = {
-  'bundlingMethod': new gax.BundleDescriptor('bundled_field', [])
-};
-
 var RETRY_DICT = {
   'code_a': 1,
   'code_b': 2,
@@ -118,20 +108,15 @@ describe('gax construct settings', function() {
   it('creates settings', function() {
     var otherArgs = {'key': 'value'};
     var defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, PAGE_DESCRIPTORS,
-        BUNDLE_DESCRIPTORS, otherArgs);
+        SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, otherArgs);
     var settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
-    expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
-    expect(settings.pageDescriptor).to.eq(null);
     expectRetryOptions(settings.retry);
     expect(settings.retry.retryCodes).eql([1, 2]);
     expect(settings.otherArgs).eql(otherArgs);
 
     settings = defaults.pageStreamingMethod;
     expect(settings.timeout).to.eq(30000);
-    expect(settings.bundler).to.eq(null);
-    expect(settings.pageDescriptor).to.be.an.instanceOf(gax.PageDescriptor);
     expectRetryOptions(settings.retry);
     expect(settings.retry.retryCodes).eql([3]);
     expect(settings.otherArgs).eql(otherArgs);
@@ -148,17 +133,13 @@ describe('gax construct settings', function() {
       }
     };
     var defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, PAGE_DESCRIPTORS,
-        BUNDLE_DESCRIPTORS);
+        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT);
 
     var settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
-    expect(settings.bundler).to.eq(null);
-    expect(settings.pageDescriptor).to.eq(null);
 
     settings = defaults.pageStreamingMethod;
     expect(settings.timeout).to.eq(30000);
-    expect(settings.pageDescriptor).to.be.an.instanceOf(gax.PageDescriptor);
     expect(settings.retry).to.eq(null);
   });
 
@@ -190,14 +171,12 @@ describe('gax construct settings', function() {
     };
 
     var defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT, PAGE_DESCRIPTORS,
-        BUNDLE_DESCRIPTORS);
+        SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT);
 
     var settings = defaults.bundlingMethod;
     var backoff = settings.retry.backoffSettings;
     expect(backoff.initialRetryDelayMillis).to.eq(1000);
     expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_a]);
-    expect(settings.bundler).to.be.an.instanceOf(bundling.BundleExecutor);
     expect(settings.timeout).to.eq(50000);
 
     /* page_streaming_method is unaffected because it's not specified in
