@@ -405,6 +405,39 @@ describe('retryable', function() {
     });
   });
 
+  it('errors on maxRetries', function(done) {
+    var maxRetriesRetryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
+            0, 0, 0, 0, 0, 0, 5));
+    var maxRetrySettings = {
+        settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+    var spy = sinon.spy(fail);
+    var apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, function(err, resp) {
+      expect(err).to.be.an('error');
+      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err.note).to.be.ok;
+      expect(spy.callCount).to.eq(5);
+      done();
+    });
+  });
+
+  it('errors when totalTimeoutMillis and maxRetries set', function(done) {
+    var maxRetriesRetryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
+            0, 0, 0, 0, 0, 0, 5));
+    maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
+    var maxRetrySettings = {
+        settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+    var spy = sinon.spy(fail);
+    var apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, function(err, resp) {
+      expect(err).to.be.an('error');
+      expect(spy.callCount).to.eq(0);
+      done();
+    });
+  });
+
   it('aborts on unexpected exception', function(done) {
     function func(argument, metadata, options, callback) {
       var error = new Error();
