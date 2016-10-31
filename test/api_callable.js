@@ -172,18 +172,16 @@ describe('Promise', function() {
   });
 });
 
-describe('page streaming', function() {
+describe('paged iteration', function() {
   var pageSize = 3;
   var pagesToStream = 5;
   var descriptor = new PageDescriptor(
       'pageToken', 'nextPageToken', 'nums');
   var retryOptions = gax.createRetryOptions(
       [FAKE_STATUS_CODE_1], gax.createBackoffSettings(0, 0, 0, 0, 0, 0, 100));
-  var deadlineArg = null;
   var createOptions = {settings: {retry: retryOptions}, descriptor: descriptor};
 
   function func(request, metadata, options, callback) {
-    deadlineArg = options.deadline;
     var pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
       callback(null, {nums: []});
@@ -196,63 +194,56 @@ describe('page streaming', function() {
     }
   }
 
-  it('returns page-streamable', function(done) {
+  it('returns an Array of results', function(done) {
     var apiCall = createApiCall(func, createOptions);
-    var counter = 0;
-    apiCall({}, null)
-      .on('data', function(data) {
-        expect(deadlineArg).to.be.ok;
-        expect(data).to.eq(counter);
-        counter++;
-      })
-      .on('end', function() {
-        expect(counter).to.eq(pageSize * pagesToStream);
-        done();
-      });
+    var expected = [];
+    for (var i = 0; i < pageSize * pagesToStream; ++i) {
+      expected.push(i);
+    }
+    apiCall({}, null).then(function(results) {
+      expect(results).to.deep.equal(expected);
+      done();
+    }).catch(done);
   });
 
-  it('stops in the middle', function(done) {
-    var spy = sinon.spy(func);
-    var apiCall = createApiCall(spy, createOptions);
-    var counter = 0;
-    var stream = apiCall({}, null);
-    stream.on('data', function(data) {
-      expect(deadlineArg).to.be.ok;
-      expect(data).to.eq(counter);
-      counter++;
-      if (counter === pageSize + 1) {
-        stream.end();
+  it('calls callback with an Array', function(done) {
+    var apiCall = createApiCall(func, createOptions);
+    var expected = [];
+    for (var i = 0; i < pageSize * pagesToStream; ++i) {
+      expected.push(i);
+    }
+    apiCall({}, null, function(err, results) {
+      expect(err).to.be.null;
+      expect(results).to.deep.equal(expected);
+      done();
+    }).catch(done);
+  });
+
+  it('returns a response when autoPaginate is false', function(done) {
+    var apiCall = createApiCall(func, createOptions);
+    var expected = 0;
+    var req = {};
+    apiCall(req, {autoPaginate: false}).then(function(response) {
+      expect(response.nums).to.be.an('array');
+      expect(response.nums.length).to.eq(pageSize);
+      for (var i = 0; i < pageSize; ++i) {
+        expect(response.nums[i]).to.eq(expected);
+        expected++;
       }
-    }).on('end', function() {
-      expect(counter).to.eq(pageSize + 1);
-      expect(spy.callCount).to.eq(2);
+      return apiCall(req, {pageToken: response.nextPageToken});
+    }).then(function(response) {
+      expect(response.nums).to.be.an('array');
+      expect(response.nums.length).to.eq(pageSize);
+      for (var i = 0; i < pageSize; ++i) {
+        expect(response.nums[i]).to.eq(expected);
+        expected++;
+      }
       done();
-    });
+    }).catch(done);
   });
 
-  it('fetches the page', function(done) {
-    var apiCall = createApiCall(func, createOptions);
-    apiCall({}, {flattenPages: false}, function(err, data) {
-      expect(err).to.be.null;
-      expect(deadlineArg).to.be.ok;
-      expect(data).to.be.an('object');
-      expect(data.nums).to.be.an('array');
-      done();
-    });
-  });
-
-  it('switches to callback mode if callback is supplied', function(done) {
-    var apiCall = createApiCall(func, createOptions);
-    apiCall({}, null, function(err, data) {
-      expect(err).to.be.null;
-      expect(deadlineArg).to.be.ok;
-      expect(data).to.be.an('object');
-      expect(data.nums).to.be.an('array');
-      done();
-    });
-  });
-
-  it('fetches the next page through the third callback', function(done) {
+  it('sets the next page token as the third argument to the callback', function(
+      done) {
     var counter = 0;
     var apiCall = createApiCall(func, createOptions);
     function callback(err, response, nextPageToken) {
@@ -270,7 +261,7 @@ describe('page streaming', function() {
         done();
       }
     }
-    apiCall({}, null, callback);
+    apiCall({}, {autoPaginate: false}, callback);
   });
 
   it('retries on failure', function(done) {
@@ -284,17 +275,57 @@ describe('page streaming', function() {
       }
     }
     var apiCall = createApiCall(failingFunc, createOptions);
-    var dataCount = 0;
-    apiCall({}, null)
-      .on('data', function(data) {
-        expect(data).to.eq(dataCount);
-        dataCount++;
-      })
-      .on('end', function() {
-        expect(dataCount).to.eq(pageSize * pagesToStream);
-        expect(callCount).to.be.above(pagesToStream);
+    apiCall({}, null).then(function(resources) {
+      expect(resources.length).to.eq(pageSize * pagesToStream);
+      done();
+    }).catch(done);
+  });
+
+  describe('stream conversion', function() {
+    var spy;
+    var apiCall;
+    beforeEach(function() {
+      spy = sinon.spy(func);
+      apiCall = createApiCall(spy, createOptions);
+    });
+
+    function streamChecker(stream, onEnd, done, start) {
+      var counter = start;
+      stream.on('data', function(data) {
+        expect(data).to.eq(counter);
+        counter++;
+      }).on('end', function() {
+        onEnd();
         done();
+      }).on('error', done);
+    }
+
+    it('returns a stream', function(done) {
+      streamChecker(descriptor.createStream(apiCall, {}, null), function() {
+        expect(spy.callCount).to.eq(pagesToStream + 1);
+      }, done, 0);
+    });
+
+    it('stops in the middle', function(done) {
+      var stream = descriptor.createStream(apiCall, {}, null);
+      stream.on('data', function(data) {
+        if (data === pageSize + 1) {
+          stream.end();
+        }
       });
+      streamChecker(stream, function() {
+        expect(spy.callCount).to.eq(2);
+      }, done, 0);
+    });
+
+    it('ignores autoPaginate options, but respects others', function(done) {
+      // Specifies autoPaginate: false, which will be ignored, and pageToken: pageSize
+      // which will be used so that the stream will start from the specified token.
+      var options = {pageToken: pageSize, autoPaginate: false};
+      streamChecker(descriptor.createStream(apiCall, {}, options), function() {
+        expect(spy.callCount).to.eq(pagesToStream);
+      }, done, pageSize);
+    });
   });
 });
 
