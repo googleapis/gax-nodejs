@@ -543,7 +543,7 @@ describe('Executor', function() {
                 });
           });
       expect(spyApi.callCount).to.eq(0);
-      canceller();
+      canceller.cancel();
     });
 
     it('distinguishes a running task and a scheduled one', function(done) {
@@ -565,7 +565,7 @@ describe('Executor', function() {
             expect(err).to.be.an.instanceOf(Error);
             counter++;
           });
-      canceller();
+      canceller.cancel();
     });
   });
 

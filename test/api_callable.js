@@ -471,7 +471,7 @@ describe('bundleable', function() {
   function createRequest(field1, field2) {
     return {field1: field1, field2: field2};
   }
-  var bundleOptions = {elementCountThreshold: 6};
+  var bundleOptions = {elementCountThreshold: 12, delayThreshold: 10};
   var descriptor = new BundleDescriptor(
       'field1', ['field2'], 'field1', byteLength);
   var settings = {settings: {bundleOptions: bundleOptions},
@@ -522,6 +522,29 @@ describe('bundleable', function() {
     apiCall(createRequest([1, 2, 3], 'id'), null)
         .then(bundledCallback)
         .catch(done);
+  });
+
+  it('cancels partially on bundling method', function(done) {
+    var apiCall = createApiCall(func, settings);
+    var expectedSuccess = false;
+    var expectedFailure = false;
+    apiCall(createRequest([1, 2, 3], 'id'), null).then(function(obj) {
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      expectedSuccess = true;
+      if (expectedSuccess && expectedFailure) {
+        done();
+      }
+    }).catch(done);
+    var p = apiCall(createRequest([1, 2, 3], 'id'), null);
+    p.then(function(obj) {
+      done(new Error('should not succeed'));
+    }).catch(function(err) {
+      expectedFailure = true;
+      if (expectedSuccess && expectedFailure) {
+        done();
+      }
+    });
+    p.cancel();
   });
 });
 
