@@ -386,8 +386,6 @@ describe('retryable', function() {
     var apiCall = createApiCall(fail, settings);
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err.note).to.be.ok;
       done();
     });
   });
@@ -410,13 +408,11 @@ describe('retryable', function() {
         [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
             0, 0, 0, 0, 0, 0, 5));
     var maxRetrySettings = {
-        settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+      settings: {timeout: 0, retry: maxRetriesRetryOptions}};
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(5);
       done();
     });
@@ -428,7 +424,7 @@ describe('retryable', function() {
             0, 0, 0, 0, 0, 0, 5));
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
     var maxRetrySettings = {
-        settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+      settings: {timeout: 0, retry: maxRetriesRetryOptions}};
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, function(err, resp) {
