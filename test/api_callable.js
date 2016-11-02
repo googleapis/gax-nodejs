@@ -404,24 +404,27 @@ describe('retryable', function() {
   });
 
   it('errors on maxRetries', function(done) {
+    var toAttempt = 5;
     var maxRetriesRetryOptions = gax.createRetryOptions(
         [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
-            0, 0, 0, 0, 0, 0, 5));
+            0, 0, 0, 0, 0, 0, toAttempt));
+
     var maxRetrySettings = {
       settings: {timeout: 0, retry: maxRetriesRetryOptions}};
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
-      expect(spy.callCount).to.eq(5);
+      expect(spy.callCount).to.eq(toAttempt);
       done();
     });
   });
 
   it('errors when totalTimeoutMillis and maxRetries set', function(done) {
+    var maxRetries = 5;
     var maxRetriesRetryOptions = gax.createRetryOptions(
         [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
-            0, 0, 0, 0, 0, 0, 5));
+            0, 0, 0, 0, 0, 0, maxRetries));
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
     var maxRetrySettings = {
       settings: {timeout: 0, retry: maxRetriesRetryOptions}};
