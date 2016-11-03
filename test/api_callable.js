@@ -403,7 +403,7 @@ describe('retryable', function() {
     });
   });
 
-  /** maxRetries is unsupported, and intended for internal use only. */
+  // maxRetries is unsupported, and intended for internal use only.
   it('errors on maxRetries', function(done) {
     var toAttempt = 5;
     var maxRetriesRetryOptions = gax.createRetryOptions(
@@ -421,7 +421,7 @@ describe('retryable', function() {
     });
   });
 
-  /** maxRetries is unsupported, and intended for internal use only. */
+  // maxRetries is unsupported, and intended for internal use only.
   it('errors when totalTimeoutMillis and maxRetries set', function(done) {
     var maxRetries = 5;
     var maxRetriesRetryOptions = gax.createRetryOptions(
