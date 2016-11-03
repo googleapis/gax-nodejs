@@ -386,8 +386,6 @@ describe('retryable', function() {
     var apiCall = createApiCall(fail, settings);
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err.note).to.be.ok;
       done();
     });
   });
@@ -401,6 +399,42 @@ describe('retryable', function() {
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
+      done();
+    });
+  });
+
+  // maxRetries is unsupported, and intended for internal use only.
+  it('errors on maxRetries', function(done) {
+    var toAttempt = 5;
+    var maxRetriesRetryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
+            0, 0, 0, 0, 0, 0, toAttempt));
+
+    var maxRetrySettings = {
+      settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+    var spy = sinon.spy(fail);
+    var apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, function(err, resp) {
+      expect(err).to.be.an('error');
+      expect(spy.callCount).to.eq(toAttempt);
+      done();
+    });
+  });
+
+  // maxRetries is unsupported, and intended for internal use only.
+  it('errors when totalTimeoutMillis and maxRetries set', function(done) {
+    var maxRetries = 5;
+    var maxRetriesRetryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
+            0, 0, 0, 0, 0, 0, maxRetries));
+    maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
+    var maxRetrySettings = {
+      settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+    var spy = sinon.spy(fail);
+    var apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, function(err, resp) {
+      expect(err).to.be.an('error');
+      expect(spy.callCount).to.eq(0);
       done();
     });
   });
