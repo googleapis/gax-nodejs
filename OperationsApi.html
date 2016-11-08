@@ -134,7 +134,7 @@ See the following example of how to initialize the module and how to access to t
 
     <h5>Example</h5>
     
-    <pre class="prettyprint"><code>var googleLongrunning = require('google-gax').lro({
+    <pre class="prettyprint"><code>var googleLongrunning = require('gax-google-longrunning')({
   // optional auth parameters.
 });
 var api = googleLongrunning.operationsApi();</code></pre>
@@ -399,7 +399,7 @@ corresponding to <code>Code.CANCELLED</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line294">line 294</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line293">line 293</a>
     </li></ul></dd>
     
 
@@ -693,7 +693,7 @@ operation. If the server doesn't support this method, it returns
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line331">line 331</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line330">line 330</a>
     </li></ul></dd>
     
 
@@ -987,7 +987,7 @@ service.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line181">line 181</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line180">line 180</a>
     </li></ul></dd>
     
 
@@ -1362,7 +1362,7 @@ server doesn't support this method, it returns <code>UNIMPLEMENTED</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line251">line 251</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line250">line 250</a>
     </li></ul></dd>
     
 
@@ -1551,7 +1551,7 @@ api.listOperations(request, {flattenPages: false}, callback);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line146">line 146</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line145">line 145</a>
     </li></ul></dd>
     
 
@@ -1606,7 +1606,7 @@ api.listOperations(request, {flattenPages: false}, callback);</code></pre>
 
     
 
-    <h4 class="name" id="operationPathPath"><span class="type-signature"></span>operationPathPath<span class="signature">(operation_path)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    <h4 class="name" id="operationPathPath"><span class="type-signature"></span>operationPathPath<span class="signature">(operationPath)</span><span class="type-signature"> &rarr; {String}</span></h4>
 
     
 
@@ -1649,7 +1649,7 @@ api.listOperations(request, {flattenPages: false}, callback);</code></pre>
 
         <tr>
             
-                <td class="name"><code>operation_path</code></td>
+                <td class="name"><code>operationPath</code></td>
             
 
             <td class="type">
@@ -1706,7 +1706,7 @@ api.listOperations(request, {flattenPages: false}, callback);</code></pre>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line134">line 134</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line133">line 133</a>
     </li></ul></dd>
     
 
@@ -1766,13 +1766,13 @@ api.listOperations(request, {flattenPages: false}, callback);</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Fri Oct 21 2016 13:10:05 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Nov 07 2016 17:31:51 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>

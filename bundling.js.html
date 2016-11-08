@@ -64,6 +64,8 @@
 'use strict';
 
 var _ = require('lodash');
+var util = require('util');
+var NormalApiCaller = require('./api_callable').NormalApiCaller;
 
 /**
  * A function which does nothing. Used for an empty cancellation funciton.
@@ -281,7 +283,7 @@ Task.prototype.cancel = function(id) {
       }
     });
     if (allCancelled) {
-      this.callCanceller();
+      this.callCanceller.cancel();
     }
     return allCancelled;
   }
@@ -328,13 +330,15 @@ BundleExecutor.prototype.schedule = function(
   var bundleId = computeBundleId(
       request, this._descriptor.requestDiscriminatorFields);
   if (!callback) {
-    callback = function() {};
+    callback = noop;
   }
   if (bundleId === undefined) {
     err = new Error('request object ' + JSON.stringify(request) +
                     ' is not compatible with discriminator fields');
     callback(err);
-    return noop;
+    return {
+      cancel: noop
+    };
   }
 
   if (!(bundleId in this._tasks)) {
@@ -367,7 +371,9 @@ BundleExecutor.prototype.schedule = function(
           ' exceeds the limit ' + this._options.requestByteLimit;
     }
     callback(new Error(message));
-    return noop;
+    return {
+      cancel: noop
+    };
   }
 
   var existingCount = task.getElementCount();
@@ -398,7 +404,9 @@ BundleExecutor.prototype.schedule = function(
     }.bind(this), this._options.delayThreshold);
   }
 
-  return this._cancel.bind(this, callback.id);
+  return {
+    cancel: this._cancel.bind(this, callback.id)
+  };
 };
 
 /**
@@ -458,6 +466,81 @@ BundleExecutor.prototype._runNow = function(bundleId) {
     delete this._invocations[id];
   }.bind(this));
 };
+
+/**
+ * Creates an API caller that bundles requests.
+ *
+ * @private
+ * @constructor
+ * @param {BundleExecutor} bundler - bundles API calls.
+ */
+function Bundleable(bundler) {
+  this.bundler = bundler;
+  NormalApiCaller.call(this);
+}
+
+util.inherits(Bundleable, NormalApiCaller);
+
+Bundleable.prototype.call = function(apiCall, argument, settings, status) {
+  if (settings.isBundling) {
+    status.call(this.bundler.schedule.bind(this.bundler, apiCall), argument);
+  } else {
+    NormalApiCaller.prototype.call.call(
+        this, apiCall, argument, settings, status);
+  }
+};
+
+/**
+ * Describes the structure of bundled call.
+ *
+ * requestDiscriminatorFields may include '.' as a separator, which is used to
+ * indicate object traversal. This allows fields in nested objects to be used
+ * to determine what request to bundle.
+ *
+ * @property {String} bundledField
+ * @property {String} requestDiscriminatorFields
+ * @property {String} subresponseField
+ * @property {Function} byteLengthFunction
+ *
+ * @param {String} bundledField - the repeated field in the request message
+ *   that will have its elements aggregated by bundling.
+ * @param {String} requestDiscriminatorFields - a list of fields in the
+ *   target request message class that are used to detemrine which request
+ *   messages should be bundled together.
+ * @param {String} subresponseField - an optional field, when present it
+ *   indicates the field in the response message that should be used to
+ *   demultiplex the response into multiple response messages.
+ * @param {Function} byteLengthFunction - a function to obtain the byte
+ *   length to be consumed for the bundled field messages. Because Node.JS
+ *   protobuf.js/gRPC uses builtin Objects for the user-visible data and
+ *   internally they are encoded/decoded in protobuf manner, this function
+ *   is actually necessary to calculate the byte length.
+ * @constructor
+ */
+function BundleDescriptor(bundledField,
+                          requestDiscriminatorFields,
+                          subresponseField,
+                          byteLengthFunction) {
+  if (!byteLengthFunction &amp;&amp; typeof subresponseField === 'function') {
+    byteLengthFunction = subresponseField;
+    subresponseField = null;
+  }
+  this.bundledField = bundledField;
+  this.requestDiscriminatorFields = requestDiscriminatorFields;
+  this.subresponseField = subresponseField;
+  this.byteLengthFunction = byteLengthFunction;
+}
+exports.BundleDescriptor = BundleDescriptor;
+
+/**
+ * @private
+ * Returns a new API caller.
+ * @param {CallSettings} settings - the current settings.
+ * @return {Bundleable} - the new bundling API caller.
+ */
+BundleDescriptor.prototype.apiCaller = function(settings) {
+  return new Bundleable(new BundleExecutor(settings.bundleOptions, this));
+};
 </code></pre>
         </article>
     </section>
@@ -468,13 +551,13 @@ BundleExecutor.prototype._runNow = function(bundleId) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Fri Oct 21 2016 13:10:05 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Nov 07 2016 17:31:51 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>

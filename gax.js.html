@@ -63,46 +63,6 @@
 
 'use strict';
 
-var assert = require('chai').assert;
-
-var bundling = require('./bundling');
-
-/**
- * @param {Object} settings - An object containing parameters of this settings.
- * @param {number} settings.timeout - The client-side timeout for API calls.
- *   This parameter is ignored for retrying calls.
- * @param {RetryOptions} settings.retry - The configuration for retrying upon
- *   transient error. If set to null, this call will not retry.
- * @param {PageDescriptor} settings.pageDescriptor - indicates the structure
- *   of page streaming to be performed. If set to null, page streaming
- *   is disabled.
- * @param {boolean} settings.flattenPages - If there is no `pageDescriptor`,
- *   this attrbute has no meaning. Otherwise, determines whether a page streamed
- *   response should make the page structure transparent to the user by
- *   flattening the repeated field in the returned generator.
- * @param {number} settings.pageToken - If there is no `pageDescriptor`,
- *   this attribute has no meaning. Otherwise, determines the page token used in
- *   the page streaming request.
- * @param {Object} settings.bundler - orchestrates bundling. If null, bundling
- *   is not performed.
- * @param {Object} settings.otherArgs - Additional arguments to be passed to
- *   the API calls.
- *
- * @constructor
- */
-function CallSettings(settings) {
-  settings = settings || {};
-  this.timeout = settings.timeout || 30 * 1000;
-  this.retry = settings.retry;
-  this.pageDescriptor = settings.pageDescriptor;
-  this.flattenPages =
-      ('flattenPages' in settings) ? settings.flattenPages : true;
-  this.pageToken = settings.pageToken;
-  this.bundler = settings.bundler;
-  this.otherArgs = settings.otherArgs || {};
-}
-exports.CallSettings = CallSettings;
-
 /**
  * Encapsulates the overridable settings for a particular API call.
  *
@@ -172,6 +132,66 @@ exports.CallSettings = CallSettings;
  */
 
 /**
+ * Parameter to configure bundling behavior.
+ * @typedef {Object} BundleOptions
+ * @property {number} elementCountThreshold -
+ *   the bundled request will be sent once the count of outstanding elements
+ *   in the repeated field reaches this value.
+ * @property {number} elementCountLimit -
+ *   represents a hard limit on the number of elements in the repeated field
+ *   of the bundle; if adding a request to a bundle would exceed this value,
+ *   the bundle is sent and the new request is added to a fresh bundle. It is
+ *   invalid for a single request to exceed this limit.
+ * @property {number} requestByteThreshold -
+ *   the bundled request will be sent once the count of bytes in the request
+ *   reaches this value. Note that this value is pessimistically approximated
+ *   by summing the bytesizes of the elements in the repeated field, and
+ *   therefore may be an under-approximation.
+ * @property {number} requestByteLimit -
+ *   represents a hard limit on the size of the bundled request; if adding
+ *   a request to a bundle would exceed this value, the bundle is sent and
+ *   the new request is added to a fresh bundle. It is invalid for a single
+ *   request to exceed this limit. Note that this value is pessimistically
+ *   approximated by summing the bytesizes of the elements in the repeated
+ *   field, with a buffer applied to correspond to the resulting
+ *   under-approximation.
+ * @property {number} delayThreshold -
+ *   the bundled request will be sent this amount of time after the first
+ *   element in the bundle was added to it.
+ */
+
+/**
+ * @param {Object} settings - An object containing parameters of this settings.
+ * @param {number} settings.timeout - The client-side timeout for API calls.
+ *   This parameter is ignored for retrying calls.
+ * @param {RetryOptions} settings.retry - The configuration for retrying upon
+ *   transient error. If set to null, this call will not retry.
+ * @param {boolean} settings.flattenPages - If there is no `pageDescriptor`,
+ *   this attrbute has no meaning. Otherwise, determines whether a page streamed
+ *   response should make the page structure transparent to the user by
+ *   flattening the repeated field in the returned generator.
+ * @param {number} settings.pageToken - If there is no `pageDescriptor`,
+ *   this attribute has no meaning. Otherwise, determines the page token used in
+ *   the page streaming request.
+ * @param {Object} settings.otherArgs - Additional arguments to be passed to
+ *   the API calls.
+ *
+ * @constructor
+ */
+function CallSettings(settings) {
+  settings = settings || {};
+  this.timeout = settings.timeout || 30 * 1000;
+  this.retry = settings.retry;
+  this.flattenPages =
+      ('flattenPages' in settings) ? settings.flattenPages : true;
+  this.pageToken = settings.pageToken;
+  this.otherArgs = settings.otherArgs || {};
+  this.bundleOptions = settings.bundleOptions;
+  this.isBundling = ('isBundling' in settings) ? settings.isBundling : true;
+}
+exports.CallSettings = CallSettings;
+
+/**
  * Returns a new CallSettings merged from this and a CallOptions object.
  *
  * @param {CallOptions} options - an instance whose values override
@@ -188,7 +208,7 @@ CallSettings.prototype.merge = function merge(options) {
   var flattenPages = this.flattenPages;
   var pageToken = this.pageToken;
   var otherArgs = this.otherArgs;
-  var bundler = this.bundler;
+  var isBundling = this.isBundling;
   if ('timeout' in options) {
     timeout = options.timeout;
   }
@@ -215,43 +235,24 @@ CallSettings.prototype.merge = function merge(options) {
     }
   }
 
-  if ('isBundling' in options &amp;&amp; !options.isBundling) {
-    bundler = null;
+  if ('isBundling' in options) {
+    isBundling = options.isBundling;
+  }
+
+  if ('maxRetries' in options) {
+    retry.backoffSettings.maxRetries = options.maxRetries;
+    delete retry.backoffSettings.totalTimeoutMillis;
   }
 
   return new CallSettings({
     timeout: timeout,
     retry: retry,
-    pageDescriptor: this.pageDescriptor,
+    bundleOptions: this.bundleOptions,
     flattenPages: flattenPages,
     pageToken: pageToken,
-    bundler: bundler,
-    otherArgs: otherArgs});
+    otherArgs: otherArgs,
+    isBundling: isBundling});
 };
-
-/**
- * Describes the structure of a page-streaming call.
- *
- * @property {String} requestPageTokenField
- * @property {String} responsePageTokenField
- * @property {String} resourceField
- *
- * @param {String} requestPageTokenField - The field name of the page token in
- *   the request.
- * @param {String} responsePageTokenField - The field name of the page token in
- *   the response.
- * @param {String} resourceField - The resource field name.
- *
- * @constructor
- */
-function PageDescriptor(requestPageTokenField,
-                        responsePageTokenField,
-                        resourceField) {
-  this.requestPageTokenField = requestPageTokenField;
-  this.responsePageTokenField = responsePageTokenField;
-  this.resourceField = resourceField;
-}
-exports.PageDescriptor = PageDescriptor;
 
 /**
  * Per-call configurable settings for retrying upon transient failure.
@@ -316,126 +317,85 @@ function createBackoffSettings(initialRetryDelayMillis,
 exports.createBackoffSettings = createBackoffSettings;
 
 /**
- * Holds values used to configure bundling.
+ * Parameters to the exponential backoff algorithm for retrying.
+ * This function is unsupported, and intended for internal use only.
  *
- * The xxxThreshold attributes are used to configure when the bundled request
- * should be made. All properties default to 0.
+ * @param {number} initialRetryDelayMillis - the initial delay time,
+ *   in milliseconds, between the completion of the first failed request and the
+ *   initiation of the first retrying request.
+ * @param {number} retryDelayMultiplier - the multiplier by which to
+ *   increase the delay time between the completion of failed requests, and the
+ *   initiation of the subsequent retrying request.
+ * @param {number} maxRetryDelayMillis - the maximum delay time, in
+ *   milliseconds, between requests. When this value is reached,
+ *   ``retryDelayMultiplier`` will no longer be used to increase delay time.
+ * @param {number} initialRpcTimeoutMillis - the initial timeout parameter
+ *   to the request.
+ * @param {number} rpcTimeoutMultiplier - the multiplier by which to
+ *   increase the timeout parameter between failed requests.
+ * @param {number} maxRpcTimeoutMillis - the maximum timeout parameter, in
+ *   milliseconds, for a request. When this value is reached,
+ *   ``rpcTimeoutMultiplier`` will no longer be used to increase the timeout.
+ * @param {number} maxRetries - the maximum number of retrying attempts that
+ *   will be made. If reached, an error will be returned.
+ * @return {BackoffSettings} a new settings.
  *
- * @param {Object} options - An object to hold optional parameters. See
- *   properties for the content of options.
- * @property {number} elementCountThreshold - the bundled request will be sent
- *   once the count of outstanding elements in the repeated field reaches this
- *   value.
- * @property {number} elementCountLimit - represents a hard limit on the
- *   number of elements in the repeated field of the bundle; if adding a request
- *   to a bundle would exceed this value, the bundle is sent and the new request
- *   is added to a fresh bundle. It is invalid for a single request to exceed
- *   this limit.
- * @property {number} requestByteThreshold - the bundled request will be sent
- *   once the count of bytes in the request reaches this value. Note that this
- *   value is pessimistically approximated by summing the bytesizes of the
- *   elements in the repeated field, and therefore may be an
- *   under-approximation.
- * @property {number} requestByteLimit - represents a hard limit on the size
- *   of the bundled request; if adding a request to a bundle would exceed this
- *   value, the bundle is sent and the new request is added to a fresh bundle.
- *   It is invalid for a single request to exceed this limit. Note that this
- *   value is pessimistically approximated by summing the bytesizes of the
- *   elements in the repeated field, with a buffer applied to correspond to
- *   the resulting under-approximation.
- * @property {number} delayThreshold - the bundled request will be sent this
- *   amount of time after the first element in the bundle was added to it.
- *
- * @constructor
  */
-function BundleOptions(options) {
-  var elementCountThreshold = options.elementCountThreshold || 0;
-  var elementCountLimit = options.elementCountLimit || 0;
-  var requestByteThreshold = options.requestByteThreshold || 0;
-  var requestByteLimit = options.requestByteLimit || 0;
-  var delayThreshold = options.delayThreshold || 0;
-  assert(typeof elementCountThreshold === 'number', 'should be a number');
-  assert(typeof elementCountLimit === 'number', 'should be a number');
-  assert(typeof requestByteThreshold === 'number', 'should be a number');
-  assert(typeof requestByteLimit === 'number', 'should be a number');
-  assert(typeof delayThreshold === 'number', 'should be a number');
-  assert(elementCountThreshold > 0 || requestByteThreshold > 0 ||
-         delayThreshold > 0, 'one threshold should be > 0');
-  this.elementCountThreshold = elementCountThreshold;
-  this.elementCountLimit = elementCountLimit;
-  this.requestByteThreshold = requestByteThreshold;
-  this.requestByteLimit = requestByteLimit;
-  this.delayThreshold = delayThreshold;
+function createMaxRetriesBackoffSettings(initialRetryDelayMillis,
+                                         retryDelayMultiplier,
+                                         maxRetryDelayMillis,
+                                         initialRpcTimeoutMillis,
+                                         rpcTimeoutMultiplier,
+                                         maxRpcTimeoutMillis,
+                                         maxRetries) {
+  return {
+    initialRetryDelayMillis: initialRetryDelayMillis,
+    retryDelayMultiplier: retryDelayMultiplier,
+    maxRetryDelayMillis: maxRetryDelayMillis,
+    initialRpcTimeoutMillis: initialRpcTimeoutMillis,
+    rpcTimeoutMultiplier: rpcTimeoutMultiplier,
+    maxRpcTimeoutMillis: maxRpcTimeoutMillis,
+    maxRetries: maxRetries
+  };
 }
-exports.BundleOptions = BundleOptions;
+exports.createMaxRetriesBackoffSettings = createMaxRetriesBackoffSettings;
 
 /**
- * Describes the structure of bundled call.
- *
- * requestDiscriminatorFields may include '.' as a separator, which is used to
- * indicate object traversal. This allows fields in nested objects to be used
- * to determine what request to bundle.
- *
- * @property {String} bundledField
- * @property {String} requestDiscriminatorFields
- * @property {String} subresponseField
- * @property {Function} byteLengthFunction
- *
- * @param {String} bundledField - the repeated field in the request message
- *   that will have its elements aggregated by bundling.
- * @param {String} requestDiscriminatorFields - a list of fields in the
- *   target request message class that are used to detemrine which request
- *   messages should be bundled together.
- * @param {String} subresponseField - an optional field, when present it
- *   indicates the field in the response message that should be used to
- *   demultiplex the response into multiple response messages.
- * @param {Function} byteLengthFunction - a function to obtain the byte
- *   length to be consumed for the bundled field messages. Because Node.JS
- *   protobuf.js/gRPC uses builtin Objects for the user-visible data and
- *   internally they are encoded/decoded in protobuf manner, this function
- *   is actually necessary to calculate the byte length.
- * @constructor
- */
-function BundleDescriptor(bundledField,
-                          requestDiscriminatorFields,
-                          subresponseField,
-                          byteLengthFunction) {
-  if (!byteLengthFunction &amp;&amp; typeof subresponseField === 'function') {
-    byteLengthFunction = subresponseField;
-    subresponseField = null;
-  }
-  this.bundledField = bundledField;
-  this.requestDiscriminatorFields = requestDiscriminatorFields;
-  this.subresponseField = subresponseField;
-  this.byteLengthFunction = byteLengthFunction;
-}
-exports.BundleDescriptor = BundleDescriptor;
-
-/**
- * Helper for {@link constructSettings}
+ * Creates a new {@link BundleOptions}.
  *
  * @private
- *
- * @param {Object} bundleConfig - A dictionary representing a single
- *   `methods` entry of the standard API client config file. (See
- *   {@link constructSettings} for information on this yaml.)
- * @param {BundleDescriptor} bundleDescriptor - The bundle descriptor
- *   to determine the structure of request bundling for the method.
- * @return {?BundleExecutor} An Executor that configures bundling, or null if
- *   this method should not bundle.
+ * @param {Object} options - An object to hold optional parameters. See
+ *   properties for the content of options.
+ * @return {BundleOptions} - A new options.
  */
-function constructBundling(bundleConfig, bundleDescriptor) {
-  if (bundleConfig &amp;&amp; bundleDescriptor) {
-    var options = new BundleOptions({
-      elementCountThreshold: bundleConfig.element_count_threshold,
-      elementCountLimit: bundleConfig.element_count_limit,
-      requestByteThreshold: bundleConfig.request_byte_threshold,
-      requestByteLimit: bundleConfig.request_byte_limit,
-      delayThreshold: bundleConfig.delay_threshold_millis});
-    return new bundling.BundleExecutor(options, bundleDescriptor);
+function createBundleOptions(options) {
+  var params = ['element_count_threshold', 'element_count_limit',
+    'request_byte_threshold', 'request_byte_limit', 'delay_threshold_millis'];
+  params.forEach(function(param) {
+    if (param in options &amp;&amp; typeof options[param] !== 'number') {
+      throw new Error(param + ' should be a number');
+    }
+  });
+
+  var elementCountThreshold = options.element_count_threshold || 0;
+  var elementCountLimit = options.element_count_limit || 0;
+  var requestByteThreshold = options.request_byte_threshold || 0;
+  var requestByteLimit = options.request_byte_limit || 0;
+  var delayThreshold = options.delay_threshold_millis || 0;
+
+  if (elementCountThreshold === 0 &amp;&amp; requestByteThreshold === 0 &amp;&amp;
+      delayThreshold === 0) {
+    throw new Error('one threshold should be > 0');
   }
-  return null;
+  return {
+    elementCountThreshold: elementCountThreshold,
+    elementCountLimit: elementCountLimit,
+    requestByteThreshold: requestByteThreshold,
+    requestByteLimit: requestByteLimit,
+    delayThreshold: delayThreshold
+  };
 }
+exports.createBundleOptions = createBundleOptions;
 
 /**
  * Helper for {@link constructSettings}
@@ -569,13 +529,9 @@ function mergeRetryOptions(retry, overrides) {
  *   standard API client config file.
  * @param {Object} configOverrides - A dictionary in the same structure of
  *   client_config to override the settings.
- * @param {Object} retryNames - A dictionary mapping the strings
+ * @param {Object.&lt;string, string[]>} retryNames - A dictionary mapping the strings
  *   referring to response status codes to objects representing
  *   those codes.
- * @param {Object} pageDescriptors - A dictionary of method names to
- *   {@link PageDescriptor} objects for methods that are page streaming-enabled.
- * @param {Object} bundleDescriptors - A dictionary of method names to
- *   {@link BundleDescriptor} objects for methods that are bundling-enabled.
  * @param {Object} otherArgs - the non-request arguments to be passed to the API
  *   calls.
  * @return {Object} A mapping from method name to CallSettings, or null if the
@@ -583,9 +539,7 @@ function mergeRetryOptions(retry, overrides) {
  */
 exports.constructSettings = function constructSettings(
     serviceName, clientConfig, configOverrides,
-    retryNames, pageDescriptors, bundleDescriptors, otherArgs) {
-  pageDescriptors = pageDescriptors || {};
-  bundleDescriptors = bundleDescriptors || {};
+    retryNames, otherArgs) {
   otherArgs = otherArgs || {};
   var defaults = {};
 
@@ -627,8 +581,8 @@ exports.constructSettings = function constructSettings(
     defaults[jsName] = new CallSettings({
       timeout: timeout,
       retry: retry,
-      pageDescriptor: pageDescriptors[jsName] || null,
-      bundler: constructBundling(bundlingConfig, bundleDescriptors[jsName]),
+      bundleOptions:
+        bundlingConfig ? createBundleOptions(bundlingConfig) : null,
       otherArgs: otherArgs
     });
   }
@@ -644,13 +598,13 @@ exports.constructSettings = function constructSettings(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="BundleOptions.html">BundleOptions</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Fri Oct 21 2016 13:10:05 GMT-0700 (PDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Nov 07 2016 17:31:51 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>
