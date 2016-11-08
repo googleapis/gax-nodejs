@@ -671,8 +671,8 @@ describe('streaming', function() {
   });
 
   it('forwards metadata and status', function(done) {
-    var responseMetadata = {'metadata': true};
-    var status = {'code': 0, 'metadata': responseMetadata};
+    var responseMetadata = {metadata: true};
+    var status = {code: 0, metadata: responseMetadata};
     function func(metadata, options) {
       var s = through2.obj();
       setTimeout(s.emit.bind(s, 'metadata', responseMetadata), 10);
@@ -715,7 +715,6 @@ describe('streaming', function() {
         schedulePush(s, c + 1);
       }, 10);
     }
-    var cancelCalled = false;
     var cancelError = new Error('cancelled');
     function func(metadata, options) {
       var s = through2.obj();
@@ -730,12 +729,13 @@ describe('streaming', function() {
         func, streaming.StreamType.SERVER_STREAMING);
     var s = apiCall(null, null);
     var counter = 0;
+    var expectedCount = 5;
     s.on('data', function(data) {
       expect(data).to.eq(counter);
       counter++;
-      if (counter == 5) {
+      if (counter === expectedCount) {
         s.cancel();
-      } else if (counter > 5) {
+      } else if (counter > expectedCount) {
         done(new Error('should not reach'));
       }
     });
@@ -743,5 +743,5 @@ describe('streaming', function() {
       expect(err).to.eq(cancelError);
       done();
     });
-  })
+  });
 });
