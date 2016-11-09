@@ -673,6 +673,12 @@ describe('streaming', function() {
   it('forwards metadata and status', function(done) {
     var responseMetadata = {metadata: true};
     var status = {code: 0, metadata: responseMetadata};
+    var expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+      metadata: responseMetadata
+    };
     function func(metadata, options) {
       var s = through2.obj();
       setTimeout(s.emit.bind(s, 'metadata', responseMetadata), 10);
@@ -697,7 +703,7 @@ describe('streaming', function() {
     s.on('end', function() {
       expect(receivedMetadata).to.deep.eq(responseMetadata);
       expect(receivedStatus).to.deep.eq(status);
-      expect(receivedResponse).to.deep.eq(status);
+      expect(receivedResponse).to.deep.eq(expectedResponse);
       done();
     });
     expect(s.readable).to.be.true;
