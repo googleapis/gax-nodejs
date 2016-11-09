@@ -669,4 +669,85 @@ describe('streaming', function() {
     s.write(arg);
     s.end();
   });
+
+  it('forwards metadata and status', function(done) {
+    var responseMetadata = {metadata: true};
+    var status = {code: 0, metadata: responseMetadata};
+    var expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+      metadata: responseMetadata
+    };
+    function func(metadata, options) {
+      var s = through2.obj();
+      setTimeout(s.emit.bind(s, 'metadata', responseMetadata), 10);
+      s.on('end', s.emit.bind(s, 'status', status));
+      return s;
+    }
+    var apiCall = createStreamingCall(
+        func, streaming.StreamType.BIDI_STREAMING);
+    var s = apiCall(null, null);
+    var receivedMetadata;
+    var receivedStatus;
+    var receivedResponse;
+    s.on('metadata', function(data) {
+      receivedMetadata = data;
+    });
+    s.on('status', function(data) {
+      receivedStatus = data;
+    });
+    s.on('response', function(data) {
+      receivedResponse = data;
+    });
+    s.on('end', function() {
+      expect(receivedMetadata).to.deep.eq(responseMetadata);
+      expect(receivedStatus).to.deep.eq(status);
+      expect(receivedResponse).to.deep.eq(expectedResponse);
+      done();
+    });
+    expect(s.readable).to.be.true;
+    expect(s.writable).to.be.true;
+    setTimeout(s.end.bind(s), 50);
+  });
+
+  it('cancels in the middle', function(done) {
+    function schedulePush(s, c) {
+      if (!s.readable) {
+        return;
+      }
+      setTimeout(function() {
+        s.push(c);
+        schedulePush(s, c + 1);
+      }, 10);
+    }
+    var cancelError = new Error('cancelled');
+    function func(metadata, options) {
+      var s = through2.obj();
+      schedulePush(s, 0);
+      s.cancel = function() {
+        s.end();
+        s.emit('error', cancelError);
+      };
+      return s;
+    }
+    var apiCall = createStreamingCall(
+        func, streaming.StreamType.SERVER_STREAMING);
+    var s = apiCall(null, null);
+    var counter = 0;
+    var expectedCount = 5;
+    s.on('data', function(data) {
+      expect(data).to.eq(counter);
+      counter++;
+      if (counter === expectedCount) {
+        s.cancel();
+      } else if (counter > expectedCount) {
+        done(new Error('should not reach'));
+      }
+    });
+    s.on('error', function(err) {
+      expect(err).to.eq(cancelError);
+      done();
+    });
+  });
 });
