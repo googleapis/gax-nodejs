@@ -417,8 +417,6 @@ describe('retryable', function() {
     var apiCall = createApiCall(fail, settings);
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err.note).to.be.ok;
       done();
     });
   });
@@ -432,6 +430,42 @@ describe('retryable', function() {
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
+      done();
+    });
+  });
+
+  // maxRetries is unsupported, and intended for internal use only.
+  it('errors on maxRetries', function(done) {
+    var toAttempt = 5;
+    var maxRetriesRetryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
+            0, 0, 0, 0, 0, 0, toAttempt));
+
+    var maxRetrySettings = {
+      settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+    var spy = sinon.spy(fail);
+    var apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, function(err, resp) {
+      expect(err).to.be.an('error');
+      expect(spy.callCount).to.eq(toAttempt);
+      done();
+    });
+  });
+
+  // maxRetries is unsupported, and intended for internal use only.
+  it('errors when totalTimeoutMillis and maxRetries set', function(done) {
+    var maxRetries = 5;
+    var maxRetriesRetryOptions = gax.createRetryOptions(
+        [FAKE_STATUS_CODE_1], gax.createMaxRetriesBackoffSettings(
+            0, 0, 0, 0, 0, 0, maxRetries));
+    maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
+    var maxRetrySettings = {
+      settings: {timeout: 0, retry: maxRetriesRetryOptions}};
+    var spy = sinon.spy(fail);
+    var apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, function(err, resp) {
+      expect(err).to.be.an('error');
+      expect(spy.callCount).to.eq(0);
       done();
     });
   });
@@ -502,7 +536,7 @@ describe('bundleable', function() {
   function createRequest(field1, field2) {
     return {field1: field1, field2: field2};
   }
-  var bundleOptions = {elementCountThreshold: 6};
+  var bundleOptions = {elementCountThreshold: 12, delayThreshold: 10};
   var descriptor = new BundleDescriptor(
       'field1', ['field2'], 'field1', byteLength);
   var settings = {settings: {bundleOptions: bundleOptions},
@@ -553,6 +587,29 @@ describe('bundleable', function() {
     apiCall(createRequest([1, 2, 3], 'id'), null)
         .then(bundledCallback)
         .catch(done);
+  });
+
+  it('cancels partially on bundling method', function(done) {
+    var apiCall = createApiCall(func, settings);
+    var expectedSuccess = false;
+    var expectedFailure = false;
+    apiCall(createRequest([1, 2, 3], 'id'), null).then(function(obj) {
+      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      expectedSuccess = true;
+      if (expectedSuccess && expectedFailure) {
+        done();
+      }
+    }).catch(done);
+    var p = apiCall(createRequest([1, 2, 3], 'id'), null);
+    p.then(function(obj) {
+      done(new Error('should not succeed'));
+    }).catch(function(err) {
+      expectedFailure = true;
+      if (expectedSuccess && expectedFailure) {
+        done();
+      }
+    });
+    p.cancel();
   });
 });
 
@@ -642,5 +699,86 @@ describe('streaming', function() {
     s.write(arg);
     s.write(arg);
     s.end();
+  });
+
+  it('forwards metadata and status', function(done) {
+    var responseMetadata = {metadata: true};
+    var status = {code: 0, metadata: responseMetadata};
+    var expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+      metadata: responseMetadata
+    };
+    function func(metadata, options) {
+      var s = through2.obj();
+      setTimeout(s.emit.bind(s, 'metadata', responseMetadata), 10);
+      s.on('end', s.emit.bind(s, 'status', status));
+      return s;
+    }
+    var apiCall = createStreamingCall(
+        func, streaming.StreamType.BIDI_STREAMING);
+    var s = apiCall(null, null);
+    var receivedMetadata;
+    var receivedStatus;
+    var receivedResponse;
+    s.on('metadata', function(data) {
+      receivedMetadata = data;
+    });
+    s.on('status', function(data) {
+      receivedStatus = data;
+    });
+    s.on('response', function(data) {
+      receivedResponse = data;
+    });
+    s.on('end', function() {
+      expect(receivedMetadata).to.deep.eq(responseMetadata);
+      expect(receivedStatus).to.deep.eq(status);
+      expect(receivedResponse).to.deep.eq(expectedResponse);
+      done();
+    });
+    expect(s.readable).to.be.true;
+    expect(s.writable).to.be.true;
+    setTimeout(s.end.bind(s), 50);
+  });
+
+  it('cancels in the middle', function(done) {
+    function schedulePush(s, c) {
+      if (!s.readable) {
+        return;
+      }
+      setTimeout(function() {
+        s.push(c);
+        schedulePush(s, c + 1);
+      }, 10);
+    }
+    var cancelError = new Error('cancelled');
+    function func(metadata, options) {
+      var s = through2.obj();
+      schedulePush(s, 0);
+      s.cancel = function() {
+        s.end();
+        s.emit('error', cancelError);
+      };
+      return s;
+    }
+    var apiCall = createStreamingCall(
+        func, streaming.StreamType.SERVER_STREAMING);
+    var s = apiCall(null, null);
+    var counter = 0;
+    var expectedCount = 5;
+    s.on('data', function(data) {
+      expect(data).to.eq(counter);
+      counter++;
+      if (counter === expectedCount) {
+        s.cancel();
+      } else if (counter > expectedCount) {
+        done(new Error('should not reach'));
+      }
+    });
+    s.on('error', function(err) {
+      expect(err).to.eq(cancelError);
+      done();
+    });
   });
 });
