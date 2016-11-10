@@ -108,7 +108,8 @@ describe('Promise', function() {
     }
     var apiCall = createApiCall(func);
     apiCall(null).then(function(response) {
-      expect(response).to.eq(42);
+      expect(response).to.be.an('array');
+      expect(response[0]).to.eq(42);
       expect(deadlineArg).to.be.ok;
       done();
     }).catch(done);
@@ -201,7 +202,8 @@ describe('paged iteration', function() {
       expected.push(i);
     }
     apiCall({}, null).then(function(results) {
-      expect(results).to.deep.equal(expected);
+      expect(results).to.be.an('array');
+      expect(results[0]).to.deep.equal(expected);
       done();
     }).catch(done);
   });
@@ -224,44 +226,49 @@ describe('paged iteration', function() {
     var expected = 0;
     var req = {};
     apiCall(req, {autoPaginate: false}).then(function(response) {
-      expect(response.nums).to.be.an('array');
-      expect(response.nums.length).to.eq(pageSize);
+      expect(response).to.be.an('array');
+      expect(response[0]).to.be.an('array');
+      expect(response[0].length).to.eq(pageSize);
       for (var i = 0; i < pageSize; ++i) {
-        expect(response.nums[i]).to.eq(expected);
+        expect(response[0][i]).to.eq(expected);
         expected++;
       }
-      return apiCall(req, {pageToken: response.nextPageToken});
+      expect(response[1]).to.be.an('object');
+      expect(response[1]).to.have.property('pageToken');
+      expect(response[2]).to.be.an('object');
+      expect(response[2]).to.have.property('nums');
+      return apiCall(response[1], {autoPaginate: false});
     }).then(function(response) {
-      expect(response.nums).to.be.an('array');
-      expect(response.nums.length).to.eq(pageSize);
+      expect(response).to.be.an('array');
+      expect(response[0]).to.be.an('array');
+      expect(response[0].length).to.eq(pageSize);
       for (var i = 0; i < pageSize; ++i) {
-        expect(response.nums[i]).to.eq(expected);
+        expect(response[0][i]).to.eq(expected);
         expected++;
       }
       done();
     }).catch(done);
   });
 
-  it('sets the next page token as the third argument to the callback', function(
+  it('sets the next request as the third argument to the callback', function(
       done) {
     var counter = 0;
     var apiCall = createApiCall(func, createOptions);
-    function callback(err, response, nextPageToken) {
+    function callback(err, resources, next) {
       if (err) {
         done(err);
         return;
       }
       counter++;
-      expect(response).to.be.an('object');
-      expect(response.nums).to.be.an('array');
-      if (nextPageToken) {
-        apiCall({}, {pageToken: nextPageToken}, callback);
+      expect(resources).to.be.an('array');
+      if (next) {
+        apiCall(next, {autoPaginate: false}, callback);
       } else {
         expect(counter).to.eq(pagesToStream + 1);
         done();
       }
     }
-    apiCall({}, {autoPaginate: false}, callback);
+    apiCall({}, {autoPaginate: false}, callback).catch(done);
   });
 
   it('retries on failure', function(done) {
@@ -276,7 +283,8 @@ describe('paged iteration', function() {
     }
     var apiCall = createApiCall(failingFunc, createOptions);
     apiCall({}, null).then(function(resources) {
-      expect(resources.length).to.eq(pageSize * pagesToStream);
+      expect(resources).to.be.an('array');
+      expect(resources[0].length).to.eq(pageSize * pagesToStream);
       done();
     }).catch(done);
   });
@@ -369,7 +377,8 @@ describe('retryable', function() {
     }
     var apiCall = createApiCall(func, settings);
     apiCall(null, null).then(function(resp) {
-      expect(resp).to.eq(1729);
+      expect(resp).to.be.an('array');
+      expect(resp[0]).to.eq(1729);
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
       done();
@@ -545,7 +554,8 @@ describe('bundleable', function() {
   it('bundles requests', function(done) {
     var spy = sinon.spy(func);
     var callback = sinon.spy(function(obj) {
-      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      expect(obj).to.be.an('array');
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
       if (callback.callCount === 2) {
         expect(spy.callCount).to.eq(1);
         done();
@@ -556,9 +566,9 @@ describe('bundleable', function() {
       if (err) {
         done(err);
       } else {
-        callback(obj);
+        callback([obj]);
       }
-    });
+    }).catch(done);
     apiCall(createRequest([1, 2, 3], 'id'), null).then(callback).catch(done);
   });
 
@@ -566,24 +576,27 @@ describe('bundleable', function() {
     var spy = sinon.spy(func);
     var callbackCount = 0;
     function bundledCallback(obj) {
+      expect(obj).to.be.an('array');
       callbackCount++;
-      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
       if (callbackCount === 3) {
         expect(spy.callCount).to.eq(2);
         done();
       }
     }
     function unbundledCallback(obj) {
+      expect(obj).to.be.an('array');
       callbackCount++;
       expect(callbackCount).to.eq(1);
-      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
     }
     var apiCall = createApiCall(spy, settings);
     apiCall(createRequest([1, 2, 3], 'id'), null)
         .then(bundledCallback)
         .catch(done);
     apiCall(createRequest([1, 2, 3], 'id'), {isBundling: false})
-        .then(unbundledCallback);
+        .then(unbundledCallback)
+        .catch(done);
     apiCall(createRequest([1, 2, 3], 'id'), null)
         .then(bundledCallback)
         .catch(done);
@@ -594,7 +607,8 @@ describe('bundleable', function() {
     var expectedSuccess = false;
     var expectedFailure = false;
     apiCall(createRequest([1, 2, 3], 'id'), null).then(function(obj) {
-      expect(obj.field1).to.deep.equal([1, 2, 3]);
+      expect(obj).to.be.an('array');
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
       expectedSuccess = true;
       if (expectedSuccess && expectedFailure) {
         done();
