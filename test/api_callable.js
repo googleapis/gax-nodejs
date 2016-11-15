@@ -250,17 +250,20 @@ describe('paged iteration', function() {
     }).catch(done);
   });
 
-  it('sets the next request as the third argument to the callback', function(
+  it('sets additional arguments to the callback', function(
       done) {
     var counter = 0;
     var apiCall = createApiCall(func, createOptions);
-    function callback(err, resources, next) {
+    function callback(err, resources, next, rawResponse) {
       if (err) {
         done(err);
         return;
       }
       counter++;
       expect(resources).to.be.an('array');
+      expect(rawResponse).to.be.an('object');
+      expect(rawResponse).to.have.property('nums');
+      expect(rawResponse.nums).to.eq(resources);
       if (next) {
         apiCall(next, {autoPaginate: false}, callback);
       } else {
