@@ -36,6 +36,7 @@ var apiCallable = require('../lib/api_callable');
 var gax = require('../lib/gax');
 var PageDescriptor = require('../lib/page_streaming').PageDescriptor;
 var BundleDescriptor = require('../lib/bundling').BundleDescriptor;
+var longrunningDescriptor = require('../lib/lro').longrunningDescriptor;
 var streaming = require('../lib/streaming');
 var expect = require('chai').expect;
 var sinon = require('sinon');
@@ -798,4 +799,14 @@ describe('streaming', function() {
       done();
     });
   });
+});
+
+describe('longrunning', function() {
+  function createLongrunningCall(func, operationsApi, protoDescriptorPool) {
+    var settings = new gax.CallSettings();
+    var longrunningDescriptor =
+        new LongrunningDescriptor(operationsApi, protoDescriptorPool);
+    return apiCallable.createApiCall(
+        Promise.resolve(func), settings, new streaming.StreamDescriptor(type));
+  }
 });
