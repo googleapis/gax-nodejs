@@ -12,8 +12,7 @@
     "google-proto-files": "^0.8.3",
     "grpc": "~1.0",
     "lodash": "~4.11.1",
-    "readable-stream": "~2.0.6",
-    "through2": "~2.0.1"
+    "readable-stream": "~2.0.6"
   },
   "devDependencies": {
     "chai": "*",
@@ -24,7 +23,8 @@
     "jsdoc": "~3.4.0",
     "mocha": "~2.2.5",
     "pegjs": "~0.9.0",
-    "sinon": "~1.17.3"
+    "sinon": "~1.17.3",
+    "through2": "~2.0.1"
   },
   "scripts": {
     "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
