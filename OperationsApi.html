@@ -399,7 +399,7 @@ corresponding to <code>Code.CANCELLED</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line293">line 293</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line373">line 373</a>
     </li></ul></dd>
     
 
@@ -427,7 +427,7 @@ corresponding to <code>Code.CANCELLED</code>.</p>
         
 <div class="param-desc">
     <ul>
-<li>The promise which resolves to the response object.
+<li>The promise which resolves when API call finishes.
 The promise has a method named &quot;cancel&quot; which cancels the ongoing API call.</li>
 </ul>
 </div>
@@ -693,7 +693,7 @@ operation. If the server doesn't support this method, it returns
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line330">line 330</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line411">line 411</a>
     </li></ul></dd>
     
 
@@ -721,7 +721,7 @@ operation. If the server doesn't support this method, it returns
         
 <div class="param-desc">
     <ul>
-<li>The promise which resolves to the response object.
+<li>The promise which resolves when API call finishes.
 The promise has a method named &quot;cancel&quot; which cancels the ongoing API call.</li>
 </ul>
 </div>
@@ -946,7 +946,7 @@ service.</p>
             
 
             <td class="description last"><p>The function which will be called with the result of the API call.</p>
-<p>  The second parameter to the callback is an object representing google.longrunning.Operation</p></td>
+<p>  The second parameter to the callback is an object representing google.longrunning.Operation.</p></td>
         </tr>
 
     
@@ -987,7 +987,7 @@ service.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line180">line 180</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line182">line 182</a>
     </li></ul></dd>
     
 
@@ -1015,7 +1015,8 @@ service.</p>
         
 <div class="param-desc">
     <ul>
-<li>The promise which resolves to the response object.
+<li>The promise which resolves to an array.
+The first element of the array is an object representing google.longrunning.Operation.
 The promise has a method named &quot;cancel&quot; which cancels the ongoing API call.</li>
 </ul>
 </div>
@@ -1041,7 +1042,8 @@ The promise has a method named &quot;cancel&quot; which cancels the ongoing API 
     
     <pre class="prettyprint"><code>var api = googleLongrunning.operationsApi();
 var formattedName = api.operationPathPath("[OPERATION_PATH]");
-api.getOperation({name: formattedName}).then(function(response) {
+api.getOperation({name: formattedName}).then(function(responses) {
+    var response = responses[0];
     // doThingsWith(response)
 }).catch(function(err) {
     console.error(err);
@@ -1054,7 +1056,7 @@ api.getOperation({name: formattedName}).then(function(response) {
 
     
 
-    <h4 class="name" id="listOperations"><span class="type-signature"></span>listOperations<span class="signature">(request, options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Stream|Promise}</span></h4>
+    <h4 class="name" id="listOperations"><span class="type-signature"></span>listOperations<span class="signature">(request, options<span class="signature-attributes">opt</span>, callback<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 
     
 
@@ -1318,10 +1320,12 @@ server doesn't support this method, it returns <code>UNIMPLEMENTED</code>.</p>
 
             
 
-            <td class="description last"><p>When specified, the results are not streamed but this callback
-  will be called with the response object representing google.longrunning.ListOperationsResponse.
-  The third item will be set if the response contains the token for the further results
-  and can be reused to <code>pageToken</code> field in the options in the next request.</p></td>
+            <td class="description last"><p>The function which will be called with the result of the API call.</p>
+<p>  The second parameter to the callback is Array of google.longrunning.Operation.</p>
+<p>  When autoPaginate: false is specified through options, it contains the result
+  in a single response. If the response indicates the next page exists, the third
+  parameter is set to be used for the next request object. The fourth parameter keeps
+  the raw response object of an object representing google.longrunning.ListOperationsResponse.</p></td>
         </tr>
 
     
@@ -1362,7 +1366,7 @@ server doesn't support this method, it returns <code>UNIMPLEMENTED</code>.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line250">line 250</a>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line275">line 275</a>
     </li></ul></dd>
     
 
@@ -1389,11 +1393,17 @@ server doesn't support this method, it returns <code>UNIMPLEMENTED</code>.</p>
 
         
 <div class="param-desc">
-    <p>An object stream which emits an object representing
-  google.longrunning.Operation on 'data' event.
-  When the callback is specified or streaming is suppressed through options,
-  it will return a promise that resolves to the response object. The promise
-  has a method named &quot;cancel&quot; which cancels the ongoing API call.</p>
+    <ul>
+<li><p>The promise which resolves to an array.
+The first element of the array is Array of google.longrunning.Operation.</p>
+<p>When autoPaginate: false is specified through options, the array has three elements.
+The first element is Array of google.longrunning.Operation in a single response.
+The second element is the next request object if the response
+indicates the next page exists, or null. The third element is
+an object representing google.longrunning.ListOperationsResponse.</p>
+<p>The promise has a method named &quot;cancel&quot; which cancels the ongoing API call.</p>
+</li>
+</ul>
 </div>
 
 
@@ -1404,9 +1414,6 @@ server doesn't support this method, it returns <code>UNIMPLEMENTED</code>.</p>
     </dt>
     <dd>
         
-<span class="param-type">Stream</span>
-|
-
 <span class="param-type">Promise</span>
 
 
@@ -1426,23 +1433,389 @@ var request = {
     filter: filter
 };
 // Iterate over all elements.
-api.listOperations(request).on('data', function(element) {
-    // doThingsWith(element)
+api.listOperations(request).then(function(responses) {
+    var resources = responses[0];
+    for (var i = 0; i &lt; resources.length; ++i) {
+        // doThingsWith(resources[i])
+    }
+}).catch(function(err) {
+    console.error(err);
 });
 
-// Or obtain the paged response through the callback.
-function callback(err, response, nextPageToken) {
-    if (err) {
-        console.error(err);
-        return;
+// Or obtain the paged response.
+var options = {autoPaginate: false};
+function callback(responses) {
+    // The actual resources in a response.
+    var resources = responses[0];
+    // The next request if the response shows there's more responses.
+    var nextRequest = responses[1];
+    // The actual response object, if necessary.
+    // var rawResponse = responses[2];
+    for (var i = 0; i &lt; resources.length; ++i) {
+        // doThingsWith(resources[i]);
     }
-    // doThingsWith(response)
-    if (nextPageToken) {
-        // fetch the next page.
-        api.listOperations(request, {pageToken: nextPageToken}, callback);
+    if (nextRequest) {
+        // Fetch the next page.
+        return api.listOperations(nextRequest, options).then(callback);
     }
 }
-api.listOperations(request, {flattenPages: false}, callback);</code></pre>
+api.listOperations(request, options)
+    .then(callback)
+    .catch(function(err) {
+        console.error(err);
+    });</code></pre>
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="listOperationsStream"><span class="type-signature"></span>listOperationsStream<span class="signature">(request, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Stream}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>Equivalent to listOperations, but returns a NodeJS Stream object.</p>
+<p>This fetches the paged responses for listOperations continuously
+and invokes the callback registered for 'data' event for each element in the
+responses.</p>
+<p>The returned object has 'end' method when no more elements are required.</p>
+<p>autoPaginate option will be ignored.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>request</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The request object that will be sent.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The name of the operation collection.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The standard list filter.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>pageSize</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The maximum number of resources contained in the underlying API
+  response. If page streaming is performed per-resource, this
+  parameter does not affect the return value. If page streaming is
+  performed per-page, this determines the maximum number of
+  resources in a page.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Optional parameters. You can override the default settings for this call, e.g, timeout,
+  retries, paginations, etc. See <a href="https://googleapis.github.io/gax-nodejs/global.html#CallOptions">gax.CallOptions</a> for the details.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line333">line 333</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://nodejs.org/api/stream.html">https://nodejs.org/api/stream.html</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>An object stream which emits an object representing google.longrunning.Operation on 'data' event.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Stream</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+    <h5>Example</h5>
+    
+    <pre class="prettyprint"><code>var api = googleLongrunning.operationsApi();
+var name = '';
+var filter = '';
+var request = {
+    name: name,
+    filter: filter
+};
+api.listOperationsStream(request).on('data', function(element) {
+    // doThingsWith(element)
+}).on('error', funciton(err) {
+    console.error(err);
+});</code></pre>
 
 
 
@@ -1772,7 +2145,7 @@ api.listOperations(request, {flattenPages: false}, callback);</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.2</a> on Mon Nov 07 2016 17:31:51 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 18 2016 10:30:07 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>
