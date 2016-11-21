@@ -760,16 +760,15 @@ describe('streaming', function() {
     setTimeout(s.end.bind(s), 50);
   });
 
-  // TODO: Figure out why this gets broken when longrunning polling test is run.
-  it.skip('cancels in the middle', function(done) {
+  it('cancels in the middle', function(done) {
     function schedulePush(s, c) {
-      if (!s.readable) {
-        return;
-      }
-      setTimeout(function() {
+      var intervalId = setInterval(function() {
         s.push(c);
-        schedulePush(s, c + 1);
+        c++;
       }, 10);
+      s.on('finish', function() {
+        clearInterval(intervalId);
+      });
     }
     var cancelError = new Error('cancelled');
     function func(metadata, options) {
