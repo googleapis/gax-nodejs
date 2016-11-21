@@ -842,15 +842,6 @@ describe('longrunning', function() {
     response: null
   };
   var mockDecoder = function(val) { return JSON.parse(val); };
-  var MOCK_DESCRIPTOR_POOL = {
-    mock: {
-      proto: {
-        Message: {
-          decode: mockDecoder
-        }
-      }
-    }
-  };
 
   function createLongrunningCall(func, opts) {
     var settings = new gax.CallSettings();
@@ -858,23 +849,13 @@ describe('longrunning', function() {
     if (!opts.operationsApi) {
       opts.operationsApi = mockOperationsApi();
     }
-    if (!opts.descriptorPool) {
-      opts.descriptorPool = MOCK_DESCRIPTOR_POOL;
-    }
-    var decoders = {};
-    if (opts.responseDecoder) {
-      decoders.responseDecoder = opts.responseDecoder;
-    }
-    if (opts.metadataDecoder) {
-      decoders.metadataDecoder = opts.metadataDecoder;
-    }
     return apiCallable.createApiCall(
         Promise.resolve(func),
         settings,
         new LongrunningDescriptor(
             opts.operationsApi,
-            opts.descriptorPool,
-            decoders));
+            mockDecoder,
+            mockDecoder));
   }
 
   var getOperationSpy;
@@ -982,29 +963,6 @@ describe('longrunning', function() {
     });
   });
 
-  it('uses decoders in longrunningDescriptor', function(done) {
-    var func = function(argument, metadata, options, callback) {
-      callback(null, SUCCESSFUL_OP);
-    };
-    var apiCall = createLongrunningCall(func, {
-      descriptorPool: {},
-      responseDecoder: mockDecoder,
-      metadataDecoder: mockDecoder
-    });
-    apiCall().then(function(responses) {
-      var response = responses[0];
-      var metadata = responses[1];
-      var op = responses[2];
-
-      expect(response).to.deep.eq(RESPONSE_VAL);
-      expect(metadata).to.deep.eq(RESPONSE_VAL);
-      expect(op).to.deep.eq(SUCCESSFUL_OP);
-      done();
-    }).catch(function(error) {
-      done(error);
-    });
-  });
-
   it.skip('backsoff exponentially', function(done) {
     // TODO: Add test for exponential backoff using mocked time.
   });
@@ -1022,25 +980,6 @@ describe('longrunning', function() {
     }).catch(function(error) {
       expect(error.message).to.eq('Total timeout exceeded before any' +
           'response was received');
-      done();
-    }).catch(function(error) {
-      done(error);
-    });
-  });
-
-  it('returns raw operation if no decoder is found', function(done) {
-    var func = function(argument, metadata, options, callback) {
-      callback(null, SUCCESSFUL_OP);
-    };
-    var apiCall = createLongrunningCall(func, {descriptorPool: {}});
-    apiCall().then(function(responses) {
-      var response = responses[0];
-      var metadata = responses[1];
-      var op = responses[2];
-
-      expect(response).to.deep.be.null;
-      expect(metadata).to.deep.be.null;
-      expect(op).to.deep.eq(SUCCESSFUL_OP);
       done();
     }).catch(function(error) {
       done(error);
