@@ -861,10 +861,20 @@ describe('longrunning', function() {
     if (!opts.descriptorPool) {
       opts.descriptorPool = MOCK_DESCRIPTOR_POOL;
     }
+    var decoders = {};
+    if (opts.responseDecoder) {
+      decoders.responseDecoder = opts.responseDecoder;
+    }
+    if (opts.metadataDecoder) {
+      decoders.metadataDecoder = opts.metadataDecoder;
+    }
     return apiCallable.createApiCall(
         Promise.resolve(func),
         settings,
-        new LongrunningDescriptor(opts.operationsApi, opts.descriptorPool));
+        new LongrunningDescriptor(
+            opts.operationsApi,
+            opts.descriptorPool,
+            decoders));
   }
 
   var getOperationSpy;
@@ -913,6 +923,8 @@ describe('longrunning', function() {
       expect(metadata).to.deep.eq(RESPONSE_VAL);
       expect(op).to.deep.eq(SUCCESSFUL_OP);
       done();
+    }).catch(function(error) {
+      done(error);
     });
   });
 
@@ -927,6 +939,8 @@ describe('longrunning', function() {
       expect(error.message).to.eq(FAKE_STATUS_MESSAGE);
       expect(error.code).to.eq(FAKE_STATUS_CODE_1);
       done();
+    }).catch(function(error) {
+      done(error);
     });
   });
 
@@ -959,7 +973,7 @@ describe('longrunning', function() {
       return noop;
     };
     var apiCall = createLongrunningCall(func);
-    apiCall(null, {isLongrunning: false}).then(function(responses) {
+    apiCall(null, {longrunning: false}).then(function(responses) {
       var op = responses[0];
       expect(op).to.deep.eq(PENDING_OP);
       done();
@@ -968,17 +982,16 @@ describe('longrunning', function() {
     });
   });
 
-  it('uses decoders in callOptions', function(done) {
+  it('uses decoders in longrunningDescriptor', function(done) {
     var func = function(argument, metadata, options, callback) {
       callback(null, SUCCESSFUL_OP);
     };
-    var apiCall = createLongrunningCall(func, {descriptorPool: {}});
-    apiCall(null, {
-      longrunningOptions: {
-        responseDecoder: mockDecoder,
-        metadataDecoder: mockDecoder
-      }
-    }).then(function(responses) {
+    var apiCall = createLongrunningCall(func, {
+      descriptorPool: {},
+      responseDecoder: mockDecoder,
+      metadataDecoder: mockDecoder
+    });
+    apiCall().then(function(responses) {
       var response = responses[0];
       var metadata = responses[1];
       var op = responses[2];
@@ -987,11 +1000,13 @@ describe('longrunning', function() {
       expect(metadata).to.deep.eq(RESPONSE_VAL);
       expect(op).to.deep.eq(SUCCESSFUL_OP);
       done();
+    }).catch(function(error) {
+      done(error);
     });
   });
 
   it.skip('backsoff exponentially', function(done) {
-    // TODO: Add test for exponential backoff.
+    // TODO: Add test for exponential backoff using mocked time.
   });
 
   it('times out', function(done) {
@@ -1001,15 +1016,15 @@ describe('longrunning', function() {
     };
     var apiCall = createLongrunningCall(func);
     apiCall(null, {
-      longrunningOptions: {
-        backoffSettings: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1)
-      }
+      longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1)
     }).then(function(responses) {
       done(new Error('should not get here'));
     }).catch(function(error) {
       expect(error.message).to.eq('Total timeout exceeded before any' +
           'response was received');
       done();
+    }).catch(function(error) {
+      done(error);
     });
   });
 
@@ -1027,6 +1042,8 @@ describe('longrunning', function() {
       expect(metadata).to.deep.be.null;
       expect(op).to.deep.eq(SUCCESSFUL_OP);
       done();
+    }).catch(function(error) {
+      done(error);
     });
   });
 
@@ -1042,9 +1059,7 @@ describe('longrunning', function() {
     };
     var apiCall = createLongrunningCall(func, {operationsApi: operationsApi});
     var promise = apiCall(null, {
-      longrunningOptions: {
-        backoffSettings: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1000)
-      }
+      longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1000)
     });
     promise.then(function(responses) {
       done(new Error('should not get here'));
@@ -1052,6 +1067,8 @@ describe('longrunning', function() {
       expect(cancelOperationSpy.called).to.be.true;
       expect(getOpCancelSpy.called).to.be.true;
       done();
+    }).catch(function(error) {
+      done(error);
     });
     setTimeout(promise.cancel.bind(promise), 15);
   });
