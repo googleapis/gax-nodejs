@@ -812,7 +812,6 @@ describe('longrunning', function() {
     typeUrl: 'mock.proto.Message',
     value: JSON.stringify(METADATA_VAL)
   };
-  // var FAKE_STATUS_MESSAGE = 'Fake status message.';
   var OPERATION_NAME = 'operation_name';
   var SUCCESSFUL_OP = {
     result: 'response',
@@ -822,18 +821,6 @@ describe('longrunning', function() {
     error: null,
     response: RESPONSE
   };
-  // var ERROR_OP = {
-  //   result: 'error',
-  //   name: OPERATION_NAME,
-  //   metadata: null,
-  //   done: true,
-  //   error: {
-  //     code: FAKE_STATUS_CODE_1,
-  //     message: FAKE_STATUS_MESSAGE,
-  //     details: []
-  //   },
-  //   response: null
-  // };
   var PENDING_OP = {
     result: null,
     name: OPERATION_NAME,
@@ -842,110 +829,56 @@ describe('longrunning', function() {
     error: null,
     response: null
   };
+  var ERROR = {
+    code: FAKE_STATUS_CODE_1,
+    message: 'operation error'
+  };
+  var ERROR_OP = {
+    result: 'error',
+    name: OPERATION_NAME,
+    metadata: METADATA,
+    done: true,
+    error: ERROR,
+    response: null
+  };
   var mockDecoder = function(val) { return JSON.parse(val); };
 
-  function createLongrunningCall(func, opts) {
+  function createLongrunningCall(func, client) {
     var settings = new gax.CallSettings();
-    opts = opts || {};
-    if (!opts.operationsClient) {
-      opts.operationsClient = mockOperationsClient();
-    }
     return apiCallable.createApiCall(
         Promise.resolve(func),
         settings,
-        new LongrunningDescriptor(
-            opts.operationsClient,
-            mockDecoder,
-            mockDecoder));
+        new LongrunningDescriptor(client, mockDecoder, mockDecoder));
   }
-
-  var getOperationSpy;
-  var cancelOperationSpy;
 
   function mockOperationsClient(opts) {
     opts = opts || {};
     var remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
-    getOperationSpy = sinon.spy(function(request) {
+    var cancelGetOperationSpy = sinon.spy();
+    var getOperationSpy = sinon.spy(function() {
       var resolver;
       var promise = new Promise(function(resolve, reject) {
         resolver = resolve;
       });
-      promise.cancel = opts.getOpCancelFunc;
-      if (!opts.expectedCalls) {
+      promise.cancel = cancelGetOperationSpy;
+
+      if (remainingCalls && remainingCalls > 1) {
         resolver([PENDING_OP]);
-      } else if (remainingCalls && remainingCalls > 1) {
         --remainingCalls;
-        resolver([PENDING_OP]);
-      } else {
-        resolver([opts.expectedOperation || SUCCESSFUL_OP]);
+      } else if (!opts.dontResolve) {
+        resolver([opts.finalOperation || SUCCESSFUL_OP]);
       }
       return promise;
     });
-    cancelOperationSpy = sinon.spy(function(request) {
+    var cancelOperationSpy = sinon.spy(function(request) {
       return Promise.resolve();
     });
     return {
       getOperation: getOperationSpy,
-      cancelOperation: cancelOperationSpy
+      cancelOperation: cancelOperationSpy,
+      cancelGetOperationSpy: cancelGetOperationSpy
     };
   }
-  // var noop = function() {};
-  describe('Operation', function() {
-    it('promise resolves to the correct data.', function(done) {
-      var func = function(argument, metadata, options, callback) {
-        callback(null, PENDING_OP);
-      };
-      var expectedCalls = 3;
-      var operationsClient = mockOperationsClient({
-        expectedCalls: expectedCalls
-      });
-      var apiCall = createLongrunningCall(func, {
-        operationsClient: operationsClient
-      });
-
-      apiCall().then(function(responses) {
-        var operation = responses[0];
-        return operation.promise();
-      }).then(function(responses) {
-        var result = responses[0];
-        var metadata = responses[1];
-        var rawResponse = responses[2];
-        expect(result).to.deep.eq(RESPONSE_VAL);
-        expect(metadata).to.deep.eq(METADATA_VAL);
-        expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-        expect(getOperationSpy.callCount).to.eq(expectedCalls);
-        done();
-      }).catch(function(err) {
-        done(err)
-      });
-    });
-
-    it('complete event resolves to the correct data.', function(done) {
-      var func = function(argument, metadata, options, callback) {
-        callback(null, PENDING_OP);
-      };
-      var expectedCalls = 3;
-      var operationsClient = mockOperationsClient({
-        expectedCalls: expectedCalls
-      });
-      var apiCall = createLongrunningCall(func, {
-        operationsClient: operationsClient
-      });
-
-      apiCall().then(function(responses) {
-        var operation = responses[0];
-        operation.on('complete', function(result, metadata, rawResponse) {
-          expect(result).to.deep.eq(RESPONSE_VAL);
-          expect(metadata).to.deep.eq(METADATA_VAL);
-          expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-          expect(getOperationSpy.callCount).to.eq(expectedCalls);
-          done();
-        })
-      }).catch(function(err) {
-        done(err)
-      });
-    });
-  });
 
   it('resolves to the correct datatypes', function(done) {
     var func = function(argument, metadata, options, callback) {
@@ -963,6 +896,159 @@ describe('longrunning', function() {
       done();
     }).catch(function(error) {
       done(error);
+    });
+  });
+
+  describe('operation', function() {
+    it('promise resolves to the correct data', function(done) {
+      var func = function(argument, metadata, options, callback) {
+        callback(null, PENDING_OP);
+      };
+      var expectedCalls = 3;
+      var client = mockOperationsClient({expectedCalls: expectedCalls});
+      var apiCall = createLongrunningCall(func, client);
+
+      apiCall().then(function(responses) {
+        var operation = responses[0];
+        return operation.promise();
+      }).then(function(responses) {
+        var result = responses[0];
+        var metadata = responses[1];
+        var rawResponse = responses[2];
+        expect(result).to.deep.eq(RESPONSE_VAL);
+        expect(metadata).to.deep.eq(METADATA_VAL);
+        expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+        expect(client.getOperation.callCount).to.eq(expectedCalls);
+        done();
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+
+    it('promise resolves error', function(done) {
+      var func = function(argument, metadata, options, callback) {
+        callback(null, PENDING_OP);
+      };
+      var expectedCalls = 3;
+      var client = mockOperationsClient({
+        expectedCalls: expectedCalls,
+        finalOperation: ERROR_OP
+      });
+      var apiCall = createLongrunningCall(func, client);
+
+      apiCall().then(function(responses) {
+        var operation = responses[0];
+        return operation.promise();
+      }).then(function(responses) {
+        done(new Error('should not get here'));
+      }).catch(function(err) {
+        expect(client.getOperation.callCount).to.eq(expectedCalls);
+        expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+        expect(err.message).to.deep.eq('operation error');
+        done();
+      });
+    });
+
+    it('operation cancels', function(done) {
+      var func = function(argument, metadata, options, callback) {
+        callback(null, PENDING_OP);
+      };
+      var client = mockOperationsClient({
+        dontResolve: true
+      });
+      var apiCall = createLongrunningCall(func, client);
+
+      apiCall().then(function(responses) {
+        var operation = responses[0];
+        var p = operation.promise();
+        operation.cancel().then(function() {
+          expect(client.cancelOperation.called).to.be.true;
+          expect(client.cancelGetOperationSpy.called).to.be.true;
+          done();
+        });
+        return p;
+      }).then(function(responses) {
+        done(new Error('should not get here'));
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+
+    it('succesful operation emits complete', function(done) {
+      var func = function(argument, metadata, options, callback) {
+        callback(null, PENDING_OP);
+      };
+      var expectedCalls = 3;
+      var client = mockOperationsClient({
+        expectedCalls: expectedCalls
+      });
+      var apiCall = createLongrunningCall(func, client);
+      apiCall().then(function(responses) {
+        var operation = responses[0];
+        operation.on('complete', function(result, metadata, rawResponse) {
+          expect(result).to.deep.eq(RESPONSE_VAL);
+          expect(metadata).to.deep.eq(METADATA_VAL);
+          expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+          expect(client.getOperation.callCount).to.eq(expectedCalls);
+          done();
+        });
+        operation.on('error', function(err) {
+          done('should not get here');
+        });
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+
+    it('operation error emits an error', function(done) {
+      var func = function(argument, metadata, options, callback) {
+        callback(null, PENDING_OP);
+      };
+      var expectedCalls = 3;
+      var client = mockOperationsClient({
+        expectedCalls: expectedCalls,
+        finalOperation: ERROR_OP
+      });
+      var apiCall = createLongrunningCall(func, client);
+      apiCall().then(function(responses) {
+        var operation = responses[0];
+        operation.on('complete', function(result, metadata, rawResponse) {
+          done(new Error('Should not get here.'));
+        });
+        operation.on('error', function(err) {
+          expect(client.getOperation.callCount).to.eq(expectedCalls);
+          expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+          expect(err.message).to.deep.eq('operation error');
+          done();
+        });
+      }).catch(function(err) {
+        done(err);
+      });
+    });
+
+    it('times out when polling', function(done) {
+      var func = function(argument, metadata, options, callback) {
+        callback(null, PENDING_OP);
+      };
+      var client = mockOperationsClient({
+        finalOperation: PENDING_OP
+      });
+      var apiCall = createLongrunningCall(func, client);
+      apiCall(null, {
+        longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1)
+      }).then(function(responses) {
+        var operation = responses[0];
+        operation.on('complete', function(result, metadata, rawResponse) {
+          done(new Error('Should not get here.'));
+        });
+        operation.on('error', function(err) {
+          expect(err.message).to.deep.eq('Total timeout exceeded before any' +
+              'response was received');
+          done();
+        });
+      }).catch(function(err) {
+        done(err);
+      });
     });
   });
 });
