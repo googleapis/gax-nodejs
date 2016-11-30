@@ -1042,7 +1042,7 @@ describe('longrunning', function() {
           done(new Error('Should not get here.'));
         });
         operation.on('error', function(err) {
-          expect(err.message).to.deep.eq('Total timeout exceeded before any' +
+          expect(err.message).to.deep.eq('Total timeout exceeded before any ' +
               'response was received');
           done();
         });
