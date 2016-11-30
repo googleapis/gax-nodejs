@@ -172,6 +172,18 @@ describe('Promise', function() {
     }).catch(done);
     setTimeout(promise.cancel.bind(promise), 15);
   });
+
+  it('does not return promise when callback is supplied', function(done) {
+    function func(argument, metadata, options, callback) {
+      callback(null, 42);
+    }
+    var apiCall = createApiCall(func);
+    expect(apiCall(null, null, function(err, response) {
+      expect(err).to.be.null;
+      expect(response).to.eq(42);
+      done();
+    })).to.be.undefined;
+  });
 });
 
 describe('paged iteration', function() {
@@ -219,7 +231,7 @@ describe('paged iteration', function() {
       expect(err).to.be.null;
       expect(results).to.deep.equal(expected);
       done();
-    }).catch(done);
+    });
   });
 
   it('returns a response when autoPaginate is false', function(done) {
@@ -272,7 +284,7 @@ describe('paged iteration', function() {
         done();
       }
     }
-    apiCall({}, {autoPaginate: false}, callback).catch(done);
+    apiCall({}, {autoPaginate: false}, callback);
   });
 
   it('retries on failure', function(done) {
@@ -364,7 +376,7 @@ describe('retryable', function() {
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
       done();
-    }).catch(done);
+    });
   });
 
   it('retries the API call with promise', function(done) {
@@ -386,7 +398,7 @@ describe('retryable', function() {
       expect(toAttempt).to.eq(0);
       expect(deadlineArg).to.be.ok;
       done();
-    }).catch(function(err) { done(err); });
+    }).catch(done);
   });
 
   it('cancels in the middle of retries', function(done) {
@@ -572,7 +584,7 @@ describe('bundleable', function() {
       } else {
         callback([obj]);
       }
-    }).catch(done);
+    });
     apiCall(createRequest([1, 2, 3], 'id'), null).then(callback).catch(done);
   });
 
