@@ -37,6 +37,7 @@ var grpc = require('./lib/grpc');
 var extend = require('extend');
 var streaming = require('./lib/streaming');
 var operationsApi = require('./lib/operations_api');
+var longrunning = require('./lib/longrunning');
 
 function lro(options) {
   options = extend({
@@ -59,4 +60,5 @@ exports.StreamType = streaming.StreamType;
 exports.StreamDescriptor = streaming.StreamDescriptor;
 exports.constructSettings = gax.constructSettings;
 exports.BundleExecutor = bundling.BundleExecutor;
+exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
 exports.version = require('./package').version;
