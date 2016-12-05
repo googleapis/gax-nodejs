@@ -8,12 +8,12 @@
   ],
   "dependencies": {
     "extend": "^3.0.0",
-    "google-auto-auth": "~0.2.4",
+    "google-auto-auth": "^0.5.2",
     "google-proto-files": "^0.8.3",
     "grpc": "~1.0",
-    "lodash": "~4.11.1",
+    "lodash": "^4.17.2",
     "process-nextick-args": "^1.0.7",
-    "readable-stream": "~2.0.6"
+    "readable-stream": "^2.2.2"
   },
   "devDependencies": {
     "chai": "*",
