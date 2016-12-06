@@ -36,7 +36,7 @@ var gax = require('./lib/gax');
 var grpc = require('./lib/grpc');
 var extend = require('extend');
 var streaming = require('./lib/streaming');
-var operationsApi = require('./lib/operations_api');
+var operationsClient = require('./lib/operations_client');
 var longrunning = require('./lib/longrunning');
 
 function lro(options) {
@@ -44,10 +44,10 @@ function lro(options) {
     scopes: lro.ALL_SCOPES
   }, options);
   var gaxGrpc = grpc(options);
-  return operationsApi(gaxGrpc);
+  return operationsClient(gaxGrpc);
 }
-lro.SERVICE_ADDRESS = operationsApi.SERVICE_ADDRESS;
-lro.ALL_SCOPES = operationsApi.ALL_SCOPES;
+lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
+lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 exports.lro = lro;
 exports.createApiCall = require('./lib/api_callable').createApiCall;
