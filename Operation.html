@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: PathTemplate</title>
+    <title>JSDoc: Class: Operation</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: PathTemplate</h1>
+    <h1 class="page-title">Class: Operation</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>PathTemplate</h2>
+        <h2>Operation</h2>
         
     
 </header>
@@ -40,11 +40,15 @@
 
     
 
-    <h4 class="name" id="PathTemplate"><span class="type-signature"></span>new PathTemplate<span class="signature">(data)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Operation"><span class="type-signature"></span>new Operation<span class="signature">(grpcOp, longrunningDescriptor, backoffSettings)</span><span class="type-signature"></span></h4>
 
     
 
 
+
+<div class="description">
+    <p>Wrapper for a google.longrunnung.Operation.</p>
+</div>
 
 
 
@@ -79,13 +83,13 @@
 
         <tr>
             
-                <td class="name"><code>data</code></td>
+                <td class="name"><code>grpcOp</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">google.longrunning.Operation</span>
 
 
             
@@ -95,7 +99,55 @@
 
             
 
-            <td class="description last"><p>the of the template</p></td>
+            <td class="description last"><p>The operation to be wrapped.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>longrunningDescriptor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>This defines the
+operations service client and unpacking mechanisms for the operation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>backoffSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#BackoffSettings">BackoffSettings</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The backoff settings used in
+in polling the operation.</p></td>
         </tr>
 
     
@@ -136,7 +188,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="path_template.js.html">path_template.js</a>, <a href="path_template.js.html#line50">line 50</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line131">line 131</a>
     </li></ul></dd>
     
 
@@ -185,14 +237,14 @@
 
     
 
-    <h4 class="name" id="inspect"><span class="type-signature"></span>inspect<span class="signature">()</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id="cancel"><span class="type-signature"></span>cancel<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Renders the path template.</p>
+    <p>Cancels current polling api call and cancels the operation.</p>
 </div>
 
 
@@ -236,7 +288,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="path_template.js.html">path_template.js</a>, <a href="path_template.js.html#line155">line 155</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line180">line 180</a>
     </li></ul></dd>
     
 
@@ -263,7 +315,8 @@
 
         
 <div class="param-desc">
-    <p>contains var names matched to binding values</p>
+    <p>the promise of the OperationsClient#cancelOperation api
+request.</p>
 </div>
 
 
@@ -274,7 +327,7 @@
     </dt>
     <dd>
         
-<span class="param-type">string</span>
+<span class="param-type">Promise</span>
 
 
     </dd>
@@ -289,14 +342,20 @@
 
     
 
-    <h4 class="name" id="match"><span class="type-signature"></span>match<span class="signature">(path)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    <h4 class="name" id="getOperation"><span class="type-signature"></span>getOperation<span class="signature">(callback)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Matches a fully-qualified path template string.</p>
+    <p>Get the updated status of the operation. If the Operation has previously
+completed, this will use the status of the cached completed operation.</p>
+<ul>
+<li>callback(err): Operation failed</li>
+<li>callback(null, result, metadata, rawResponse): Operation complete</li>
+<li>callback(null, null, metadata, rawResponse): Operation incomplete</li>
+</ul>
 </div>
 
 
@@ -332,13 +391,13 @@
 
         <tr>
             
-                <td class="name"><code>path</code></td>
+                <td class="name"><code>callback</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">String</span>
+<span class="param-type">getOperationCallback</span>
 
 
             
@@ -348,7 +407,8 @@
 
             
 
-            <td class="description last"><p>a fully-qualified path template string</p></td>
+            <td class="description last"><p>Callback to handle the polled
+operation result and metadata.</p></td>
         </tr>
 
     
@@ -389,7 +449,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="path_template.js.html">path_template.js</a>, <a href="path_template.js.html#line74">line 74</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line207">line 207</a>
     </li></ul></dd>
     
 
@@ -410,59 +470,8 @@
 
 
 
-<h5>Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>if path can't be matched to this template</p>
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">TypeError</span>
 
 
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
-
-
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>contains var names matched to binding values</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Object</span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -471,14 +480,14 @@
 
     
 
-    <h4 class="name" id="render"><span class="type-signature"></span>render<span class="signature">(bindings)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    <h4 class="name" id="promise"><span class="type-signature"></span>promise<span class="signature">()</span><span class="type-signature"> &rarr; {promise}</span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Renders a path template using the provided bindings.</p>
+    <p>Wraps the <code>complete</code> and <code>error</code> events in a Promise.</p>
 </div>
 
 
@@ -487,55 +496,6 @@
 
 
 
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>bindings</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>a mapping of var names to binding strings</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
 
 
 
@@ -571,7 +531,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="path_template.js.html">path_template.js</a>, <a href="path_template.js.html#line123">line 123</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line321">line 321</a>
     </li></ul></dd>
     
 
@@ -592,43 +552,16 @@
 
 
 
-<h5>Throws:</h5>
-
-        
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>if a key is missing, or if a sub-template cannot be
-  parsed</p>
-        </div>
-    </dt>
-    <dd></dd>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">TypeError</span>
-
-
-            </dd>
-        </dl>
-    </dt>
-    <dd></dd>
-</dl>
-
-
-    
 
 
 <h5>Returns:</h5>
 
         
 <div class="param-desc">
-    <p>a rendered representation of the path template</p>
+    <ul>
+<li>Promise that resolves on operation completion and rejects
+on operation error.</li>
+</ul>
 </div>
 
 
@@ -639,7 +572,7 @@
     </dt>
     <dd>
         
-<span class="param-type">String</span>
+<span class="param-type">promise</span>
 
 
     </dd>

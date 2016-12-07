@@ -141,7 +141,7 @@ this service.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line55">line 55</a>
+        <a href="operations_client.js.html">operations_client.js</a>, <a href="operations_client.js.html#line55">line 55</a>
     </li></ul></dd>
     
 
@@ -763,7 +763,7 @@ file of the form:</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line512">line 512</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line521">line 521</a>
     </li></ul></dd>
     
 
@@ -1000,7 +1000,7 @@ and the options on the invocation.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line322">line 322</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line335">line 335</a>
     </li></ul></dd>
     
 
@@ -1319,7 +1319,7 @@ and page_streaming are both configured.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line272">line 272</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line281">line 281</a>
     </li></ul></dd>
     
 
@@ -1800,7 +1800,7 @@ This function is unsupported, and intended for internal use only.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line316">line 316</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line325">line 325</a>
     </li></ul></dd>
     
 
@@ -1978,7 +1978,7 @@ This function is unsupported, and intended for internal use only.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line239">line 239</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line248">line 248</a>
     </li></ul></dd>
     
 
@@ -2187,14 +2187,14 @@ format.</li>
 
     
 
-    <h4 class="name" id="operationsApi"><span class="type-signature"></span>operationsApi<span class="signature">(opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="operationsClient"><span class="type-signature"></span>operationsClient<span class="signature">(opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Build a new instance of <a href="OperationsApi.html">OperationsApi</a>.</p>
+    <p>Build a new instance of <a href="OperationsClient.html">OperationsClient</a>.</p>
 </div>
 
 
@@ -2526,7 +2526,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="operations_api.js.html">operations_api.js</a>, <a href="operations_api.js.html#line456">line 456</a>
+        <a href="operations_client.js.html">operations_client.js</a>, <a href="operations_client.js.html#line430">line 430</a>
     </li></ul></dd>
     
 
@@ -2563,7 +2563,162 @@ format.</li>
 
     
 
-    <h4 class="name" id="APICall"><span class="type-signature"></span>APICall<span class="signature">(argument, callOptions, callback)</span><span class="type-signature"> &rarr; {Promise|Stream}</span></h4>
+    <h4 class="name" id="anyDecoder"><span class="type-signature"></span>anyDecoder<span class="signature">(message)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+
+    
+
+
+
+<div class="description">
+    <p>A callback to upack a google.protobuf.Any message.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>message</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">google.protobuf.Any</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The message to unpacked.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>The unpacked message.</li>
+</ul>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+            
+                
+
+    
+
+    <h4 class="name" id="APICall"><span class="type-signature"></span>APICall<span class="signature">(argument, callOptions, callback)</span><span class="type-signature"> &rarr; {Promise|Stream|undefined}</span></h4>
 
     
 
@@ -2705,7 +2860,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line54">line 54</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line56">line 56</a>
     </li></ul></dd>
     
 
@@ -2743,6 +2898,9 @@ format.</li>
 |
 
 <span class="param-type">Stream</span>
+|
+
+<span class="param-type">undefined</span>
 
 
     </dd>
@@ -2898,7 +3056,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line40">line 40</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line42">line 42</a>
     </li></ul></dd>
     
 
@@ -3094,7 +3252,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line46">line 46</a>
+        <a href="api_callable.js.html">api_callable.js</a>, <a href="api_callable.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -3354,7 +3512,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line82">line 82</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line83">line 83</a>
     </li></ul></dd>
     
 
@@ -3584,7 +3742,7 @@ format.</li>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line106">line 106</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line107">line 107</a>
     </li></ul></dd>
     
 
@@ -3816,6 +3974,37 @@ argument. See the examples below.</p>
 
             <td class="description last"><p>If set to false and the call is configured
   for bundling, bundling is not performed.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>longrunning</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#BackoffSettings">BackoffSettings</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>BackoffSettings used for polling.</p></td>
         </tr>
 
     
@@ -4114,6 +4303,244 @@ api.pageStreamingMethod(
 
             
                 
+
+    
+
+    <h4 class="name" id="GetOperationCallback"><span class="type-signature"></span>GetOperationCallback<span class="signature">(error<span class="signature-attributes">nullable</span>, result<span class="signature-attributes">nullable</span>, metadata<span class="signature-attributes">nullable</span>, rawResponse<span class="signature-attributes">nullable</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>error</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Error</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>result</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>metadata</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rawResponse</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">google.longrunning.Operation</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+                    &lt;nullable><br>
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line188">line 188</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+                
 <h4 class="name" id="RetryOptions">RetryOptions</h4>
 
 
@@ -4243,7 +4670,7 @@ api.pageStreamingMethod(
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line75">line 75</a>
+        <a href="gax.js.html">gax.js</a>, <a href="gax.js.html#line76">line 76</a>
     </li></ul></dd>
     
 
@@ -4273,13 +4700,13 @@ api.pageStreamingMethod(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="OperationsApi.html">OperationsApi</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsApi">operationsApi</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Fri Nov 18 2016 10:30:07 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Dec 06 2016 15:56:23 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>
