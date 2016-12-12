@@ -814,15 +814,15 @@ describe('streaming', function() {
 });
 
 describe('longrunning', function() {
-  var RESPONSE_VAL = {test: 'response'};
+  var RESPONSE_VAL = 'response';
   var RESPONSE = {
     typyeUrl: 'mock.proto.message',
-    value: JSON.stringify(RESPONSE_VAL)
+    value: Buffer.from(RESPONSE_VAL)
   };
-  var METADATA_VAL = {test: 'metadata'};
+  var METADATA_VAL = 'metadata';
   var METADATA = {
     typeUrl: 'mock.proto.Message',
-    value: JSON.stringify(METADATA_VAL)
+    value: Buffer.from(METADATA_VAL)
   };
   var OPERATION_NAME = 'operation_name';
   var SUCCESSFUL_OP = {
@@ -853,7 +853,7 @@ describe('longrunning', function() {
     error: ERROR,
     response: null
   };
-  var mockDecoder = function(val) { return JSON.parse(val); };
+  var mockDecoder = function(val) { return val.toString(); };
 
   function createLongrunningCall(func, client) {
     var settings = new gax.CallSettings();
@@ -1097,10 +1097,10 @@ describe('longrunning', function() {
         var func = function(argument, metadata, options, callback) {
           callback(null, PENDING_OP);
         };
-        var updatedMetadataVal = {test: 'updated'};
+        var updatedMetadataVal = 'updated';
         var updatedMetadata = {
           typeUrl: 'mock.proto.Message',
-          value: JSON.stringify(updatedMetadataVal)
+          value: Buffer.from(updatedMetadataVal)
         };
         var updatedOp = {
           result: null,
