@@ -170,7 +170,9 @@ describe('Promise', function() {
       expect(callCount).to.be.below(4);
       done();
     }).catch(done);
-    setTimeout(promise.cancel.bind(promise), 15);
+    setTimeout(function() {
+      promise.cancel();
+    }, 15);
   });
 
   it('does not return promise when callback is supplied', function(done) {
@@ -410,8 +412,12 @@ describe('retryable', function() {
         fail(argument, metadata, options, callback);
         return;
       }
-      setTimeout(promise.cancel.bind(promise), 0);
-      setTimeout(callback.bind(null, null, 1729), 10);
+      setTimeout(function() {
+        promise.cancel();
+      }, 0);
+      setTimeout(function() {
+        callback(null, null, 1729);
+      }, 10);
     }
     var apiCall = createApiCall(func, settings);
     promise = apiCall(null, null);
@@ -742,8 +748,12 @@ describe('streaming', function() {
     };
     function func(metadata, options) {
       var s = through2.obj();
-      setTimeout(s.emit.bind(s, 'metadata', responseMetadata), 10);
-      s.on('end', s.emit.bind(s, 'status', status));
+      setTimeout(function() {
+        s.emit('metadata', responseMetadata);
+      }, 10);
+      s.on('end', function() {
+        s.emit('status', status);
+      });
       return s;
     }
     var apiCall = createStreamingCall(
@@ -769,7 +779,9 @@ describe('streaming', function() {
     });
     expect(s.readable).to.be.true;
     expect(s.writable).to.be.true;
-    setTimeout(s.end.bind(s), 50);
+    setTimeout(function() {
+      s.end(s);
+    }, 50);
   });
 
   it('cancels in the middle', function(done) {
