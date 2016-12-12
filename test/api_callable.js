@@ -814,15 +814,22 @@ describe('streaming', function() {
 });
 
 describe('longrunning', function() {
+  function createBuffer(str) {
+    if (Buffer.from) {
+      return Buffer.from(str);
+    }
+    return new Buffer(str);
+  }
+
   var RESPONSE_VAL = 'response';
   var RESPONSE = {
     typyeUrl: 'mock.proto.message',
-    value: Buffer.from(RESPONSE_VAL)
+    value: createBuffer(RESPONSE_VAL)
   };
   var METADATA_VAL = 'metadata';
   var METADATA = {
     typeUrl: 'mock.proto.Message',
-    value: Buffer.from(METADATA_VAL)
+    value: createBuffer(METADATA_VAL)
   };
   var OPERATION_NAME = 'operation_name';
   var SUCCESSFUL_OP = {
@@ -1100,7 +1107,7 @@ describe('longrunning', function() {
         var updatedMetadataVal = 'updated';
         var updatedMetadata = {
           typeUrl: 'mock.proto.Message',
-          value: Buffer.from(updatedMetadataVal)
+          value: createBuffer(updatedMetadataVal)
         };
         var updatedOp = {
           result: null,
