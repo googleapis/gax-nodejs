@@ -827,10 +827,13 @@ describe('streaming', function() {
 
 describe('longrunning', function() {
   function createBuffer(str) {
-    if (Buffer.from) {
-      return Buffer.from(str);
+    var buffer;
+    try {
+      buffer = Buffer.from(str);
+    } catch (_) {
+      buffer = new Buffer(str);
     }
-    return new Buffer(str);
+    return buffer;
   }
 
   var RESPONSE_VAL = 'response';
