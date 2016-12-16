@@ -658,6 +658,7 @@ describe('streaming', function() {
 
   it('handles server streaming', function(done) {
     var spy = sinon.spy(function(argument, metadata, options) {
+      expect(arguments.length).to.eq(3);
       var s = through2.obj();
       s.push({resources: [1, 2]});
       s.push({resources: [3, 4, 5]});
@@ -686,6 +687,7 @@ describe('streaming', function() {
 
   it('handles client streaming', function(done) {
     function func(metadata, options, callback) {
+      expect(arguments.length).to.eq(3);
       var s = through2.obj();
       var written = [];
       s.on('end', function() {
@@ -714,6 +716,7 @@ describe('streaming', function() {
 
   it('handles bidi streaming', function(done) {
     function func(metadata, options) {
+      expect(arguments.length).to.eq(2);
       var s = through2.obj();
       return s;
     }
