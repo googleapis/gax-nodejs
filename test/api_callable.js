@@ -928,6 +928,14 @@ describe('longrunning', function() {
         var rawResponse = responses[1];
         expect(operation).to.be.an('object');
         expect(operation).to.have.property('backoffSettings');
+        expect(operation.backoffSettings)
+          .to.have.property('initialRetryDelayMillis');
+        expect(operation.backoffSettings)
+          .to.have.property('retryDelayMultiplier');
+        expect(operation.backoffSettings)
+          .to.have.property('maxRetryDelayMillis');
+        expect(operation.backoffSettings)
+          .to.have.property('totalTimeoutMillis');
         expect(operation).to.have.property('longrunningDescriptor');
         expect(operation.currentOperation).to.deep.eq(SUCCESSFUL_OP);
         expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
