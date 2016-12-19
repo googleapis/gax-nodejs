@@ -36,7 +36,7 @@ var apiCallable = require('../lib/api_callable');
 var gax = require('../lib/gax');
 var PageDescriptor = require('../lib/page_streaming').PageDescriptor;
 var BundleDescriptor = require('../lib/bundling').BundleDescriptor;
-var LongrunningDescriptor = require('../lib/longrunning').LongrunningDescriptor;
+var longrunning = require('../lib/longrunning');
 var streaming = require('../lib/streaming');
 var expect = require('chai').expect;
 var sinon = require('sinon');
@@ -885,7 +885,8 @@ describe('longrunning', function() {
     return apiCallable.createApiCall(
         Promise.resolve(func),
         settings,
-        new LongrunningDescriptor(client, mockDecoder, mockDecoder));
+        new longrunning.LongrunningDescriptor(
+          client, mockDecoder, mockDecoder));
   }
 
   function mockOperationsClient(opts) {
@@ -943,6 +944,30 @@ describe('longrunning', function() {
       }).catch(function(error) {
         done(error);
       });
+    });
+  });
+
+  describe('operation', function() {
+    it('returns an Operation with correct values', function(done) {
+      var client = mockOperationsClient();
+      var desc = new longrunning.LongrunningDescriptor(
+        client, mockDecoder, mockDecoder);
+      var backoff = gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1);
+      var operation = longrunning.operation(SUCCESSFUL_OP, desc, backoff);
+
+      expect(operation).to.be.an('object');
+      expect(operation).to.have.property('backoffSettings');
+      expect(operation.backoffSettings)
+        .to.have.property('initialRetryDelayMillis');
+      expect(operation.backoffSettings)
+        .to.have.property('retryDelayMultiplier');
+      expect(operation.backoffSettings)
+        .to.have.property('maxRetryDelayMillis');
+      expect(operation.backoffSettings)
+        .to.have.property('totalTimeoutMillis');
+      expect(operation).to.have.property('longrunningDescriptor');
+      expect(operation.currentOperation).to.deep.eq(SUCCESSFUL_OP);
+      done();
     });
   });
 
