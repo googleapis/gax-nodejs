@@ -61,4 +61,5 @@ exports.StreamDescriptor = streaming.StreamDescriptor;
 exports.constructSettings = gax.constructSettings;
 exports.BundleExecutor = bundling.BundleExecutor;
 exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
+exports.operation = longrunning.operation;
 exports.version = require('./package').version;
