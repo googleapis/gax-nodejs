@@ -1,5 +1,4 @@
-/**
- * Copyright 2016, Google Inc.
+/* Copyright 2016, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,7 +7,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -31,35 +30,41 @@
 
 'use strict';
 
-var bundling = require('./lib/bundling');
-var gax = require('./lib/gax');
-var grpc = require('./lib/grpc');
-var extend = require('extend');
-var streaming = require('./lib/streaming');
-var operationsClient = require('./lib/operations_client');
-var longrunning = require('./lib/longrunning');
+var gax = require('../lib/gax');
+var apiCallable = require('../lib/api_callable');
 
-function lro(options) {
-  options = extend({
-    scopes: lro.ALL_SCOPES
-  }, options);
-  var gaxGrpc = grpc(options);
-  return operationsClient(gaxGrpc);
+var FAKE_STATUS_CODE_1 = exports.FAKE_STATUS_CODE_1 = 1;
+
+function fail(argument, metadata, options, callback) {
+  var error = new Error();
+  error.code = FAKE_STATUS_CODE_1;
+  callback(error);
 }
-lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
-lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
+exports.fail = fail;
 
-exports.lro = lro;
-exports.createApiCall = require('./lib/api_callable').createApiCall;
-exports.grpc = grpc;
-exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.PathTemplate = require('./lib/path_template').PathTemplate;
-exports.PageDescriptor = require('./lib/paged_iteration').PageDescriptor;
-exports.BundleDescriptor = bundling.BundleDescriptor;
-exports.StreamType = streaming.StreamType;
-exports.StreamDescriptor = streaming.StreamDescriptor;
-exports.constructSettings = gax.constructSettings;
-exports.BundleExecutor = bundling.BundleExecutor;
-exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
-exports.operation = longrunning.operation;
-exports.version = require('./package').version;
+function createApiCall(func, opts) {
+  opts = opts || {};
+  var settings = new gax.CallSettings(opts.settings || {});
+  var descriptor = opts.descriptor;
+  return apiCallable.createApiCall(Promise.resolve(
+    function(argument, metadata, options, callback) {
+      if (opts.returnCancelFunc) {
+        return {
+          cancel: func(argument, metadata, options, callback)
+        };
+      }
+      func(argument, metadata, options, callback);
+      return {
+        cancel: opts.cancel || function() { callback(new Error('canceled')); }
+      };
+    }), settings, descriptor);
+}
+exports.createApiCall = createApiCall;
+
+function createRetryOptions(backoff) {
+  if (arguments.length > 1) {
+    backoff = gax.createBackoffSettings.apply(null, arguments);
+  }
+  return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
+}
+exports.createRetryOptions = createRetryOptions;
