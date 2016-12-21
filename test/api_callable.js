@@ -272,8 +272,9 @@ describe('retryable', function() {
   // maxRetries is unsupported, and intended for internal use only.
   it('errors on maxRetries', function(done) {
     var toAttempt = 5;
-    var maxRetriesRetryOptions = utils.createRetryOptions(
+    var backoff = gax.createMaxRetriesBackoffSettings(
         0, 0, 0, 0, 0, 0, toAttempt);
+    var maxRetriesRetryOptions = utils.createRetryOptions(backoff);
 
     var maxRetrySettings = {
       settings: {timeout: 0, retry: maxRetriesRetryOptions}};
