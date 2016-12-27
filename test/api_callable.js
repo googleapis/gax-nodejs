@@ -921,25 +921,31 @@ describe('longrunning', function() {
   describe('createApiCall', function() {
     it('longrunning call resolves to the correct datatypes', function(done) {
       var func = function(argument, metadata, options, callback) {
-        callback(null, SUCCESSFUL_OP);
+        callback(null, PENDING_OP);
       };
+      var defaultInitialRetryDelayMillis = 100;
+      var defaultRetryDelayMultiplier = 1.3;
+      var defaultMaxRetryDelayMillis = 60000;
+      var defaultTotalTimeoutMillis = 600000;
       var apiCall = createLongrunningCall(func);
       apiCall().then(function(responses) {
         var operation = responses[0];
         var rawResponse = responses[1];
         expect(operation).to.be.an('object');
         expect(operation).to.have.property('backoffSettings');
-        expect(operation.backoffSettings)
-          .to.have.property('initialRetryDelayMillis');
-        expect(operation.backoffSettings)
-          .to.have.property('retryDelayMultiplier');
-        expect(operation.backoffSettings)
-          .to.have.property('maxRetryDelayMillis');
-        expect(operation.backoffSettings)
-          .to.have.property('totalTimeoutMillis');
+        expect(operation.backoffSettings.initialRetryDelayMillis)
+          .to.eq(defaultInitialRetryDelayMillis);
+        expect(operation.backoffSettings.retryDelayMultiplier)
+          .to.eq(defaultRetryDelayMultiplier);
+        expect(operation.backoffSettings.maxRetryDelayMillis)
+          .to.eq(defaultMaxRetryDelayMillis);
+        expect(operation.backoffSettings.totalTimeoutMillis)
+          .to.eq(defaultTotalTimeoutMillis);
         expect(operation).to.have.property('longrunningDescriptor');
-        expect(operation.currentOperation).to.deep.eq(SUCCESSFUL_OP);
-        expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+        expect(operation.latestResponse).to.deep.eq(PENDING_OP);
+        expect(operation.result).to.be.null;
+        expect(operation.metadata).to.deep.eq(METADATA_VAL);
+        expect(rawResponse).to.deep.eq(PENDING_OP);
         done();
       }).catch(function(error) {
         done(error);
@@ -952,21 +958,34 @@ describe('longrunning', function() {
       var client = mockOperationsClient();
       var desc = new longrunning.LongrunningDescriptor(
         client, mockDecoder, mockDecoder);
-      var backoff = gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1);
+      var initialRetryDelayMillis = 1;
+      var retryDelayMultiplier = 2;
+      var maxRetryDelayMillis = 3;
+      var totalTimeoutMillis = 4;
+      var unusedRpcValue = 0;
+      var backoff = gax.createBackoffSettings(
+        initialRetryDelayMillis,
+        retryDelayMultiplier,
+        maxRetryDelayMillis,
+        unusedRpcValue,
+        unusedRpcValue,
+        unusedRpcValue,
+        totalTimeoutMillis);
       var operation = longrunning.operation(SUCCESSFUL_OP, desc, backoff);
-
       expect(operation).to.be.an('object');
       expect(operation).to.have.property('backoffSettings');
-      expect(operation.backoffSettings)
-        .to.have.property('initialRetryDelayMillis');
-      expect(operation.backoffSettings)
-        .to.have.property('retryDelayMultiplier');
-      expect(operation.backoffSettings)
-        .to.have.property('maxRetryDelayMillis');
-      expect(operation.backoffSettings)
-        .to.have.property('totalTimeoutMillis');
+      expect(operation.backoffSettings.initialRetryDelayMillis)
+        .to.eq(initialRetryDelayMillis);
+      expect(operation.backoffSettings.retryDelayMultiplier)
+        .to.eq(retryDelayMultiplier);
+      expect(operation.backoffSettings.maxRetryDelayMillis)
+        .to.eq(maxRetryDelayMillis);
+      expect(operation.backoffSettings.totalTimeoutMillis)
+        .to.eq(totalTimeoutMillis);
       expect(operation).to.have.property('longrunningDescriptor');
-      expect(operation.currentOperation).to.deep.eq(SUCCESSFUL_OP);
+      expect(operation.result).to.deep.eq(RESPONSE_VAL);
+      expect(operation.metadata).to.deep.eq(METADATA_VAL);
+      expect(operation.latestResponse).to.deep.eq(SUCCESSFUL_OP);
       done();
     });
   });
@@ -1184,6 +1203,8 @@ describe('longrunning', function() {
             expect(client.getOperation.callCount).to.eq(expectedCalls);
             expect(metadata).to.deep.eq(updatedMetadataVal);
             expect(rawResponse).to.deep.eq(updatedOp);
+            expect(operation.metadata).to.deep.eq(metadata);
+            expect(operation.metadata).to.deep.eq(updatedMetadataVal);
             // Shows that progress only happens on updated operations since this
             // will produce a test error if done is called multiple times,
             // and the same pending operation was polled thrice.
