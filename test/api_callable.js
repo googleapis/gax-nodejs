@@ -1055,8 +1055,8 @@ describe('longrunning', function() {
               expect(metadata).to.deep.eq(METADATA_VAL);
               expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
               expect(client.getOperation.callCount).to.eq(1);
+              done();
             })).to.be.undefined;
-          done();
         }).catch(function(error) {
           done(error);
         });
@@ -1098,6 +1098,7 @@ describe('longrunning', function() {
         }).then(function(responses) {
           done(new Error('Should not get here.'));
         }).catch(function(error) {
+          expect(error).to.be.an('error');
           done();
         });
       });
