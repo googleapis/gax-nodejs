@@ -1015,7 +1015,7 @@ describe('longrunning', function() {
         });
       });
 
-      it('it makes an api call to get the updated operation', function(done) {
+      it('makes an api call to get the updated operation', function(done) {
         var func = function(argument, metadata, options, callback) {
           callback(null, PENDING_OP);
         };
@@ -1035,6 +1035,71 @@ describe('longrunning', function() {
           });
         }).catch(function(error) {
           done(error);
+        });
+      });
+
+      it('does not return a promise when given a callback.', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, PENDING_OP);
+        };
+        var client = mockOperationsClient();
+        var apiCall = createLongrunningCall(func, client);
+        apiCall().then(function(responses) {
+          var operation = responses[0];
+          expect(operation.getOperation(
+            function(err, result, metadata, rawResponse) {
+              if (err) {
+                done(err);
+              }
+              expect(result).to.deep.eq(RESPONSE_VAL);
+              expect(metadata).to.deep.eq(METADATA_VAL);
+              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+              expect(client.getOperation.callCount).to.eq(1);
+              done();
+            })).to.be.undefined;
+        }).catch(function(error) {
+          done(error);
+        });
+      });
+
+      it('returns a promise that resolves to the correct data', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, PENDING_OP);
+        };
+        var client = mockOperationsClient();
+        var apiCall = createLongrunningCall(func, client);
+        apiCall().then(function(responses) {
+          var operation = responses[0];
+          return operation.getOperation();
+        }).then(function(responses) {
+          var result = responses[0];
+          var metadata = responses[1];
+          var rawResponse = responses[2];
+
+          expect(result).to.deep.eq(RESPONSE_VAL);
+          expect(metadata).to.deep.eq(METADATA_VAL);
+          expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+          expect(client.getOperation.callCount).to.eq(1);
+          done();
+        }).catch(function(error) {
+          done(error);
+        });
+      });
+
+      it('returns a promise that rejects an operation error.', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, ERROR_OP);
+        };
+        var client = mockOperationsClient();
+        var apiCall = createLongrunningCall(func, client);
+        apiCall().then(function(responses) {
+          var operation = responses[0];
+          return operation.getOperation();
+        }).then(function(responses) {
+          done(new Error('Should not get here.'));
+        }).catch(function(error) {
+          expect(error).to.be.an('error');
+          done();
         });
       });
     });
