@@ -300,7 +300,7 @@ describe('longrunning', function() {
           callback(null, ERROR_OP);
         };
         var client = mockOperationsClient();
-        var apiCall = createLongrunningCall(func, client);
+        var apiCall = createApiCall(func, client);
         apiCall().then(function(responses) {
           var operation = responses[0];
           return operation.getOperation();
