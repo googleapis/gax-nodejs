@@ -33,6 +33,7 @@
 var bundling = require('../lib/bundling');
 var expect = require('chai').expect;
 var sinon = require('sinon');
+var createApiCall = require('./utils').createApiCall;
 var _ = require('lodash');
 
 function createSimple(value, otherValue) {
@@ -716,5 +717,91 @@ describe('Executor', function() {
         });
       });
     });
+  });
+});
+
+describe('bundleable', function() {
+  function func(argument, metadata, options, callback) {
+    callback(null, argument);
+  }
+  var bundleOptions = {elementCountThreshold: 12, delayThreshold: 10};
+  var descriptor = new bundling.BundleDescriptor(
+      'field1', ['field2'], 'field1', byteLength);
+  var settings = {settings: {bundleOptions: bundleOptions},
+                  descriptor: descriptor};
+
+  it('bundles requests', function(done) {
+    var spy = sinon.spy(func);
+    var callback = sinon.spy(function(obj) {
+      expect(obj).to.be.an('array');
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+      if (callback.callCount === 2) {
+        expect(spy.callCount).to.eq(1);
+        done();
+      }
+    });
+    var apiCall = createApiCall(spy, settings);
+    apiCall(createSimple([1, 2, 3], 'id'), null, function(err, obj) {
+      if (err) {
+        done(err);
+      } else {
+        callback([obj]);
+      }
+    });
+    apiCall(createSimple([1, 2, 3], 'id'), null).then(callback).catch(done);
+  });
+
+  it('suppresses bundling behavior by call options', function(done) {
+    var spy = sinon.spy(func);
+    var callbackCount = 0;
+    function bundledCallback(obj) {
+      expect(obj).to.be.an('array');
+      callbackCount++;
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+      if (callbackCount === 3) {
+        expect(spy.callCount).to.eq(2);
+        done();
+      }
+    }
+    function unbundledCallback(obj) {
+      expect(obj).to.be.an('array');
+      callbackCount++;
+      expect(callbackCount).to.eq(1);
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+    }
+    var apiCall = createApiCall(spy, settings);
+    apiCall(createSimple([1, 2, 3], 'id'), null)
+        .then(bundledCallback)
+        .catch(done);
+    apiCall(createSimple([1, 2, 3], 'id'), {isBundling: false})
+        .then(unbundledCallback)
+        .catch(done);
+    apiCall(createSimple([1, 2, 3], 'id'), null)
+        .then(bundledCallback)
+        .catch(done);
+  });
+
+  it('cancels partially on bundling method', function(done) {
+    var apiCall = createApiCall(func, settings);
+    var expectedSuccess = false;
+    var expectedFailure = false;
+    apiCall(createSimple([1, 2, 3], 'id'), null).then(function(obj) {
+      expect(obj).to.be.an('array');
+      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+      expectedSuccess = true;
+      if (expectedSuccess && expectedFailure) {
+        done();
+      }
+    }).catch(done);
+    var p = apiCall(createSimple([1, 2, 3], 'id'), null);
+    p.then(function(obj) {
+      done(new Error('should not succeed'));
+    }).catch(function(err) {
+      expectedFailure = true;
+      if (expectedSuccess && expectedFailure) {
+        done();
+      }
+    });
+    p.cancel();
   });
 });
