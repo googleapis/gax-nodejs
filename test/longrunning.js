@@ -130,25 +130,31 @@ describe('longrunning', function() {
   describe('createApiCall', function() {
     it('longrunning call resolves to the correct datatypes', function(done) {
       var func = function(argument, metadata, options, callback) {
-        callback(null, SUCCESSFUL_OP);
+        callback(null, PENDING_OP);
       };
+      var defaultInitialRetryDelayMillis = 100;
+      var defaultRetryDelayMultiplier = 1.3;
+      var defaultMaxRetryDelayMillis = 60000;
+      var defaultTotalTimeoutMillis = 600000;
       var apiCall = createApiCall(func);
       apiCall().then(function(responses) {
         var operation = responses[0];
         var rawResponse = responses[1];
         expect(operation).to.be.an('object');
         expect(operation).to.have.property('backoffSettings');
-        expect(operation.backoffSettings)
-          .to.have.property('initialRetryDelayMillis');
-        expect(operation.backoffSettings)
-          .to.have.property('retryDelayMultiplier');
-        expect(operation.backoffSettings)
-          .to.have.property('maxRetryDelayMillis');
-        expect(operation.backoffSettings)
-          .to.have.property('totalTimeoutMillis');
+        expect(operation.backoffSettings.initialRetryDelayMillis)
+          .to.eq(defaultInitialRetryDelayMillis);
+        expect(operation.backoffSettings.retryDelayMultiplier)
+          .to.eq(defaultRetryDelayMultiplier);
+        expect(operation.backoffSettings.maxRetryDelayMillis)
+          .to.eq(defaultMaxRetryDelayMillis);
+        expect(operation.backoffSettings.totalTimeoutMillis)
+          .to.eq(defaultTotalTimeoutMillis);
         expect(operation).to.have.property('longrunningDescriptor');
-        expect(operation.currentOperation).to.deep.eq(SUCCESSFUL_OP);
-        expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+        expect(operation.latestResponse).to.deep.eq(PENDING_OP);
+        expect(operation.result).to.be.null;
+        expect(operation.metadata).to.deep.eq(METADATA_VAL);
+        expect(rawResponse).to.deep.eq(PENDING_OP);
         done();
       }).catch(function(error) {
         done(error);
@@ -161,21 +167,34 @@ describe('longrunning', function() {
       var client = mockOperationsClient();
       var desc = new longrunning.LongrunningDescriptor(
         client, mockDecoder, mockDecoder);
-      var backoff = gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1);
+      var initialRetryDelayMillis = 1;
+      var retryDelayMultiplier = 2;
+      var maxRetryDelayMillis = 3;
+      var totalTimeoutMillis = 4;
+      var unusedRpcValue = 0;
+      var backoff = gax.createBackoffSettings(
+        initialRetryDelayMillis,
+        retryDelayMultiplier,
+        maxRetryDelayMillis,
+        unusedRpcValue,
+        unusedRpcValue,
+        unusedRpcValue,
+        totalTimeoutMillis);
       var operation = longrunning.operation(SUCCESSFUL_OP, desc, backoff);
-
       expect(operation).to.be.an('object');
       expect(operation).to.have.property('backoffSettings');
-      expect(operation.backoffSettings)
-        .to.have.property('initialRetryDelayMillis');
-      expect(operation.backoffSettings)
-        .to.have.property('retryDelayMultiplier');
-      expect(operation.backoffSettings)
-        .to.have.property('maxRetryDelayMillis');
-      expect(operation.backoffSettings)
-        .to.have.property('totalTimeoutMillis');
+      expect(operation.backoffSettings.initialRetryDelayMillis)
+        .to.eq(initialRetryDelayMillis);
+      expect(operation.backoffSettings.retryDelayMultiplier)
+        .to.eq(retryDelayMultiplier);
+      expect(operation.backoffSettings.maxRetryDelayMillis)
+        .to.eq(maxRetryDelayMillis);
+      expect(operation.backoffSettings.totalTimeoutMillis)
+        .to.eq(totalTimeoutMillis);
       expect(operation).to.have.property('longrunningDescriptor');
-      expect(operation.currentOperation).to.deep.eq(SUCCESSFUL_OP);
+      expect(operation.result).to.deep.eq(RESPONSE_VAL);
+      expect(operation.metadata).to.deep.eq(METADATA_VAL);
+      expect(operation.latestResponse).to.deep.eq(SUCCESSFUL_OP);
       done();
     });
   });
@@ -205,7 +224,7 @@ describe('longrunning', function() {
         });
       });
 
-      it('it makes an api call to get the updated operation', function(done) {
+      it('makes an api call to get the updated operation', function(done) {
         var func = function(argument, metadata, options, callback) {
           callback(null, PENDING_OP);
         };
@@ -225,6 +244,71 @@ describe('longrunning', function() {
           });
         }).catch(function(error) {
           done(error);
+        });
+      });
+
+      it('does not return a promise when given a callback.', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, PENDING_OP);
+        };
+        var client = mockOperationsClient();
+        var apiCall = createApiCall(func, client);
+        apiCall().then(function(responses) {
+          var operation = responses[0];
+          expect(operation.getOperation(
+            function(err, result, metadata, rawResponse) {
+              if (err) {
+                done(err);
+              }
+              expect(result).to.deep.eq(RESPONSE_VAL);
+              expect(metadata).to.deep.eq(METADATA_VAL);
+              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+              expect(client.getOperation.callCount).to.eq(1);
+              done();
+            })).to.be.undefined;
+        }).catch(function(error) {
+          done(error);
+        });
+      });
+
+      it('returns a promise that resolves to the correct data', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, PENDING_OP);
+        };
+        var client = mockOperationsClient();
+        var apiCall = createApiCall(func, client);
+        apiCall().then(function(responses) {
+          var operation = responses[0];
+          return operation.getOperation();
+        }).then(function(responses) {
+          var result = responses[0];
+          var metadata = responses[1];
+          var rawResponse = responses[2];
+
+          expect(result).to.deep.eq(RESPONSE_VAL);
+          expect(metadata).to.deep.eq(METADATA_VAL);
+          expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+          expect(client.getOperation.callCount).to.eq(1);
+          done();
+        }).catch(function(error) {
+          done(error);
+        });
+      });
+
+      it('returns a promise that rejects an operation error.', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, ERROR_OP);
+        };
+        var client = mockOperationsClient();
+        var apiCall = createLongrunningCall(func, client);
+        apiCall().then(function(responses) {
+          var operation = responses[0];
+          return operation.getOperation();
+        }).then(function(responses) {
+          done(new Error('Should not get here.'));
+        }).catch(function(error) {
+          expect(error).to.be.an('error');
+          done();
         });
       });
     });
@@ -393,6 +477,8 @@ describe('longrunning', function() {
             expect(client.getOperation.callCount).to.eq(expectedCalls);
             expect(metadata).to.deep.eq(updatedMetadataVal);
             expect(rawResponse).to.deep.eq(updatedOp);
+            expect(operation.metadata).to.deep.eq(metadata);
+            expect(operation.metadata).to.deep.eq(updatedMetadataVal);
             // Shows that progress only happens on updated operations since this
             // will produce a test error if done is called multiple times,
             // and the same pending operation was polled thrice.
