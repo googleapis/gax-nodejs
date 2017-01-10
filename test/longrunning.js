@@ -91,6 +91,12 @@ var ERROR_OP = {
 };
 var mockDecoder = function(val) { return val.toString(); };
 
+function MockPromise(executor) {
+  var promise = new Promise(executor);
+  promise.isMock = true;
+  return promise;
+}
+
 function createApiCall(func, client) {
   var descriptor = new longrunning.LongrunningDescriptor(
         client, mockDecoder, mockDecoder);
@@ -311,6 +317,24 @@ describe('longrunning', function() {
           done();
         });
       });
+
+      it('uses provided promiseModule when resolving.', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, PENDING_OP);
+        };
+
+        var client = mockOperationsClient();
+        var apiCall = createApiCall(func, client);
+        var resolveSpy = sinon.spy(Promise.resolve);
+        MockPromise.resolve = resolveSpy;
+        apiCall(null, {promise: MockPromise}).then(function(responses) {
+          var operation = responses[0];
+          return operation.getOperation();
+        }).then(function() {
+          expect(resolveSpy.called).to.be.true;
+          done();
+        });
+      });
     });
 
     describe('promise', function() {
@@ -361,6 +385,30 @@ describe('longrunning', function() {
           expect(err.message).to.deep.eq('operation error');
           done();
         });
+      });
+
+      it('uses provided promiseModule', function(done) {
+        var client = mockOperationsClient();
+        var desc = new longrunning.LongrunningDescriptor(
+          client, mockDecoder, mockDecoder);
+        var initialRetryDelayMillis = 1;
+        var retryDelayMultiplier = 2;
+        var maxRetryDelayMillis = 3;
+        var totalTimeoutMillis = 4;
+        var unusedRpcValue = 0;
+        var backoff = gax.createBackoffSettings(
+          initialRetryDelayMillis,
+          retryDelayMultiplier,
+          maxRetryDelayMillis,
+          unusedRpcValue,
+          unusedRpcValue,
+          unusedRpcValue,
+          totalTimeoutMillis);
+        var operation = longrunning.operation(
+          SUCCESSFUL_OP, desc, backoff, {promise: MockPromise});
+        var promise = operation.promise();
+        expect(promise.isMock).to.be.true;
+        done();
       });
     });
 
