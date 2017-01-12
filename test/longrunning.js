@@ -91,12 +91,6 @@ var ERROR_OP = {
 };
 var mockDecoder = function(val) { return val.toString(); };
 
-function MockPromise(executor) {
-  var promise = new Promise(executor);
-  promise.isMock = true;
-  return promise;
-}
-
 function createApiCall(func, client) {
   var descriptor = new longrunning.LongrunningDescriptor(
         client, mockDecoder, mockDecoder);
@@ -318,20 +312,24 @@ describe('longrunning', function() {
         });
       });
 
-      it('uses provided promiseModule when resolving.', function(done) {
+      it('uses provided promise constructor.', function(done) {
         var func = function(argument, metadata, options, callback) {
           callback(null, PENDING_OP);
         };
 
+        var called = false;
+        function MockPromise(executor) {
+          var promise = new Promise(executor);
+          called = true;
+          return promise;
+        }
+
         var client = mockOperationsClient();
         var apiCall = createApiCall(func, client);
-        var resolveSpy = sinon.spy(Promise.resolve);
-        MockPromise.resolve = resolveSpy;
         apiCall(null, {promise: MockPromise}).then(function(responses) {
           var operation = responses[0];
-          return operation.getOperation();
-        }).then(function() {
-          expect(resolveSpy.called).to.be.true;
+          operation.getOperation();
+          expect(called).to.be.true;
           done();
         });
       });
@@ -387,7 +385,7 @@ describe('longrunning', function() {
         });
       });
 
-      it('uses provided promiseModule', function(done) {
+      it('uses provided promise constructor', function(done) {
         var client = mockOperationsClient();
         var desc = new longrunning.LongrunningDescriptor(
           client, mockDecoder, mockDecoder);
@@ -404,10 +402,16 @@ describe('longrunning', function() {
           unusedRpcValue,
           unusedRpcValue,
           totalTimeoutMillis);
+        var called = false;
+        function MockPromise(executor) {
+          var promise = new Promise(executor);
+          called = true;
+          return promise;
+        }
         var operation = longrunning.operation(
           SUCCESSFUL_OP, desc, backoff, {promise: MockPromise});
-        var promise = operation.promise();
-        expect(promise.isMock).to.be.true;
+        operation.promise();
+        expect(called).to.be.true;
         done();
       });
     });
