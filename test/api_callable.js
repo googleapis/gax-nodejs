@@ -158,6 +158,25 @@ describe('Promise', function() {
       done();
     })).to.be.undefined;
   });
+
+  it('uses a provided promise module.', function(done) {
+    var called = false;
+    function MockPromise(resolver) {
+      called = true;
+      return new Promise(resolver);
+    }
+
+    function func(argument, metadata, options, callback) {
+      callback(null, 42);
+    }
+    var apiCall = createApiCall(func);
+    apiCall(null, {promise: MockPromise}).then(function(response) {
+      expect(response).to.be.an('array');
+      expect(response[0]).to.eq(42);
+      expect(called).to.be.true;
+      done();
+    }).catch(done);
+  });
 });
 
 describe('retryable', function() {

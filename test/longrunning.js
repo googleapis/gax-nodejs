@@ -311,6 +311,28 @@ describe('longrunning', function() {
           done();
         });
       });
+
+      it('uses provided promise constructor.', function(done) {
+        var func = function(argument, metadata, options, callback) {
+          callback(null, PENDING_OP);
+        };
+
+        var called = false;
+        function MockPromise(executor) {
+          var promise = new Promise(executor);
+          called = true;
+          return promise;
+        }
+
+        var client = mockOperationsClient();
+        var apiCall = createApiCall(func, client);
+        apiCall(null, {promise: MockPromise}).then(function(responses) {
+          var operation = responses[0];
+          operation.getOperation();
+          expect(called).to.be.true;
+          done();
+        });
+      });
     });
 
     describe('promise', function() {
@@ -361,6 +383,36 @@ describe('longrunning', function() {
           expect(err.message).to.deep.eq('operation error');
           done();
         });
+      });
+
+      it('uses provided promise constructor', function(done) {
+        var client = mockOperationsClient();
+        var desc = new longrunning.LongrunningDescriptor(
+          client, mockDecoder, mockDecoder);
+        var initialRetryDelayMillis = 1;
+        var retryDelayMultiplier = 2;
+        var maxRetryDelayMillis = 3;
+        var totalTimeoutMillis = 4;
+        var unusedRpcValue = 0;
+        var backoff = gax.createBackoffSettings(
+          initialRetryDelayMillis,
+          retryDelayMultiplier,
+          maxRetryDelayMillis,
+          unusedRpcValue,
+          unusedRpcValue,
+          unusedRpcValue,
+          totalTimeoutMillis);
+        var called = false;
+        function MockPromise(executor) {
+          var promise = new Promise(executor);
+          called = true;
+          return promise;
+        }
+        var operation = longrunning.operation(
+          SUCCESSFUL_OP, desc, backoff, {promise: MockPromise});
+        operation.promise();
+        expect(called).to.be.true;
+        done();
       });
     });
 
