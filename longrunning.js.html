@@ -117,7 +117,10 @@ util.inherits(LongrunningApiCaller, NormalApiCaller);
 
 LongrunningApiCaller.prototype.call = function(
     apiCall, argument, settings, canceller) {
-  canceller.call(this._wrapOperation.bind(this, apiCall, settings), argument);
+  var self = this;
+  canceller.call(function(argument, callback) {
+    self._wrapOperation(apiCall, settings, argument, callback);
+  }, argument);
 };
 
 LongrunningApiCaller.prototype._wrapOperation = function(
@@ -138,7 +141,8 @@ LongrunningApiCaller.prototype._wrapOperation = function(
     var operation = new Operation(
       rawResponse,
       longrunningDescriptor,
-      backoffSettings
+      backoffSettings,
+      settings
     );
 
     callback(null, operation, rawResponse);
@@ -155,16 +159,23 @@ LongrunningApiCaller.prototype._wrapOperation = function(
  * operations service client and unpacking mechanisms for the operation.
  * @param {BackoffSettings} backoffSettings - The backoff settings used in
  * in polling the operation.
+ * @param {CallOptions=} callOptions - CallOptions used in making get operation
+ * requests.
  */
-function Operation(grpcOp, longrunningDescriptor, backoffSettings) {
+function Operation(
+  grpcOp, longrunningDescriptor, backoffSettings, callOptions) {
   events.EventEmitter.call(this);
   this.completeListeners = 0;
   this.hasActiveListeners = false;
 
-  this.currentOperation = grpcOp;
+  this.latestResponse = grpcOp;
   this.longrunningDescriptor = longrunningDescriptor;
+  this.result = null;
+  this.metadata = null;
   this.backoffSettings = backoffSettings;
-  this.listenForEvents_();
+  this._unpackResponse(grpcOp);
+  this._listenForEvents();
+  this._callOptions = callOptions;
 }
 util.inherits(Operation, events.EventEmitter);
 
@@ -178,7 +189,7 @@ util.inherits(Operation, events.EventEmitter);
  *
  * @private
  */
-Operation.prototype.listenForEvents_ = function() {
+Operation.prototype._listenForEvents = function() {
   var self = this;
 
   this.on('newListener', function(event) {
@@ -206,11 +217,11 @@ Operation.prototype.listenForEvents_ = function() {
  * request.
  */
 Operation.prototype.cancel = function() {
-  if (this.currentCallPromise) {
-    this.currentCallPromise.cancel();
+  if (this.currentCallPromise_) {
+    this.currentCallPromise_.cancel();
   }
   var operationsClient = this.longrunningDescriptor.operationsClient;
-  return operationsClient.cancelOperation({name: this.currentOperation.name});
+  return operationsClient.cancelOperation({name: this.latestResponse.name});
 };
 
 /**
@@ -231,51 +242,82 @@ Operation.prototype.cancel = function() {
  *
  * @param {getOperationCallback} callback - Callback to handle the polled
  * operation result and metadata.
+ * @return {Promise|undefined} - This returns a promise if a callback is not specified.
+ * The promise resolves to an array where the first element is the unpacked
+ * result, the second element is the metadata, and the third element is the raw
+ * response of the api call. The promise rejects if the operation returns an
+ * error.
  */
 Operation.prototype.getOperation = function(callback) {
   var self = this;
-  var responseDecoder = this.longrunningDescriptor.responseDecoder;
-  var metadataDecoder = this.longrunningDescriptor.metadataDecoder;
   var operationsClient = this.longrunningDescriptor.operationsClient;
 
-  function unpackResponse(op) {
-    self.currentOperation = op;
-    var response;
-    var metadata;
-
-    if (op.done) {
-      if (op.result === 'error') {
-        var error = new Error(op.error.message);
-        error.code = op.error.code;
-        callback(error);
-        return;
-      }
-
-      if (responseDecoder &amp;&amp; op.response) {
-        response = responseDecoder(op.response.value);
-      }
+  function promisifyResponse() {
+    if (!callback) {
+      var PromiseCtor = self._callOptions.promise;
+      return new PromiseCtor(function(resolve, reject) {
+        if (self.latestResponse.error) {
+          var error = new Error(self.latestReponse.error.message);
+          error.code = self.latestReponse.error.code;
+          reject(error);
+        } else {
+          resolve([self.result, self.metadata, self.latestResponse]);
+        }
+      });
     }
-
-    if (metadataDecoder &amp;&amp; op.metadata) {
-      metadata = metadataDecoder(op.metadata.value);
-    }
-    callback(null, response, metadata, op);
-  }
-
-  if (this.currentOperation.done) {
-    unpackResponse(this.currentOperation);
     return;
   }
 
-  this.currentCallPromise =
-      operationsClient.getOperation({name: this.currentOperation.name});
+  if (this.latestResponse.done) {
+    this._unpackResponse(this.latestResponse, callback);
+    return promisifyResponse();
+  }
 
-  this.currentCallPromise
+  this.currentCallPromise_ =
+      operationsClient.getOperation(
+        {name: this.latestResponse.name}, this._callOptions);
+
+  var noCallbackPromise = this.currentCallPromise_
     .then(function(responses) {
-      unpackResponse(responses[0]);
-    }).catch(function(err) {
-      callback(err);
+      self.latestResponse = responses[0];
+      self._unpackResponse(responses[0], callback);
+      return promisifyResponse();
     });
+
+  if (!callback) {
+    return noCallbackPromise;
+  }
+};
+
+Operation.prototype._unpackResponse = function(op, callback) {
+  var responseDecoder = this.longrunningDescriptor.responseDecoder;
+  var metadataDecoder = this.longrunningDescriptor.metadataDecoder;
+  var response;
+  var metadata;
+
+  if (op.done) {
+    if (op.result === 'error') {
+      var error = new Error(op.error.message);
+      error.code = op.error.code;
+      if (callback) {
+        callback(error);
+      }
+      return;
+    }
+
+    if (responseDecoder &amp;&amp; op.response) {
+      response = responseDecoder(op.response.value);
+      this.result = response;
+    }
+  }
+
+  if (metadataDecoder &amp;&amp; op.metadata) {
+    metadata = metadataDecoder(op.metadata.value);
+    this.metadata = metadata;
+  }
+  if (callback) {
+    callback(null, response, metadata, op);
+  }
 };
 
 /**
@@ -296,8 +338,8 @@ Operation.prototype.startPolling_ = function() {
   var delay = this.backoffSettings.initialRetryDelayMillis;
   var deadline = now.getTime() + this.backoffSettings.totalTimeoutMillis;
   var previousMetadataBytes;
-  if (this.currentOperation.metadata) {
-    previousMetadataBytes = this.currentOperation.metadata.value;
+  if (this.latestResponse.metadata) {
+    previousMetadataBytes = this.latestResponse.metadata.value;
   }
 
   function emit() {
@@ -322,7 +364,8 @@ Operation.prototype.startPolling_ = function() {
       }
 
       if (!result) {
-        if (rawResponse.metadata.value !== previousMetadataBytes) {
+        if (rawResponse.metadata &amp;&amp; (!previousMetadataBytes ||
+              !rawResponse.metadata.value.equals(previousMetadataBytes))) {
           nextTick(emit, 'progress', metadata, rawResponse);
           previousMetadataBytes = rawResponse.metadata.value;
         }
@@ -348,8 +391,8 @@ Operation.prototype.startPolling_ = function() {
  */
 Operation.prototype.promise = function() {
   var self = this;
-
-  return new Promise(function(resolve, reject) {
+  var PromiseCtor = this._callOptions.promise;
+  return new PromiseCtor(function(resolve, reject) {
     self
       .on('error', reject)
       .on('complete', function(result, metadata, rawResponse) {
@@ -357,6 +400,26 @@ Operation.prototype.promise = function() {
       });
   });
 };
+
+/**
+ * Method used to create Operation objects.
+ *
+ * @constructor
+ *
+ * @param {google.longrunning.Operation} op - The operation to be wrapped.
+ * @param {LongrunningDescriptor} longrunningDescriptor - This defines the
+ * operations service client and unpacking mechanisms for the operation.
+ * @param {BackoffSettings} backoffSettings - The backoff settings used in
+ * in polling the operation.
+ * @param {CallOptions=} callOptions - CallOptions used in making get operation
+ * requests.
+ */
+exports.operation =
+  function(op, longrunningDescriptor, backoffSettings, callOptions) {
+    return new Operation(
+      op, longrunningDescriptor, backoffSettings, callOptions);
+  };
+
 </code></pre>
         </article>
     </section>
@@ -367,13 +430,13 @@ Operation.prototype.promise = function() {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="operation_.html">operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Dec 06 2016 15:56:23 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Feb 01 2017 16:57:27 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: page_streaming.js</title>
+    <title>JSDoc: Source: paged_iteration.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: page_streaming.js</h1>
+    <h1 class="page-title">Source: paged_iteration.js</h1>
 
     
 
@@ -80,28 +80,30 @@ function PagedIteration(pageDescriptor) {
 util.inherits(PagedIteration, NormalApiCaller);
 
 PagedIteration.prototype.createActualCallback = function(request, callback) {
+  var self = this;
   return function fetchNextPageToken(err, response) {
     if (err) {
       callback(err);
       return;
     }
-    var resources = response[this.pageDescriptor.resourceField];
-    var pageToken = response[this.pageDescriptor.responsePageTokenField];
+    var resources = response[self.pageDescriptor.resourceField];
+    var pageToken = response[self.pageDescriptor.responsePageTokenField];
     if (pageToken) {
-      request[this.pageDescriptor.requestPageTokenField] = pageToken;
+      request[self.pageDescriptor.requestPageTokenField] = pageToken;
       callback(err, resources, request, response);
     } else {
       callback(err, resources, null, response);
     }
-  }.bind(this);
+  };
 };
 
 PagedIteration.prototype.wrap = function(func) {
+  var self = this;
   return function wrappedCall(argument, metadata, options, callback) {
     return func(
         argument, metadata, options,
-        this.createActualCallback(argument, callback));
-  }.bind(this);
+        self.createActualCallback(argument, callback));
+  };
 };
 
 PagedIteration.prototype.init = function(settings, callback) {
@@ -228,11 +230,15 @@ PageDescriptor.prototype.createStream = function(
     }
     return apiCall(response[1], options)
         .then(callback)
-        .catch(stream.emit.bind(stream, 'error'));
+        .catch(function(err) {
+          stream.emit('error', err);
+        });
   }
   apiCall(request, options)
       .then(callback)
-      .catch(stream.emit.bind(stream, 'error'));
+      .catch(function(err) {
+        stream.emit('error', err);
+      });
   return stream;
 };
 
@@ -254,13 +260,13 @@ PageDescriptor.prototype.apiCaller = function() {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="operation_.html">operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Dec 06 2016 15:56:23 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Feb 01 2017 16:57:27 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>

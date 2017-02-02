@@ -99,7 +99,10 @@ function StreamProxy(type, callback) {
   this._writeQueue = [];
   this._isEndCalled = false;
   this._isCancelCalled = false;
-  this.on('finish', this._onFinish.bind(this));
+  var self = this;
+  this.on('finish', function() {
+    self._onFinish();
+  });
 }
 
 util.inherits(StreamProxy, DuplexStream);
@@ -147,9 +150,14 @@ StreamProxy.prototype.cancel = function() {
 StreamProxy.prototype.setStream = function(apiCall, argument) {
   var stream = apiCall(argument, this._callback);
   this.stream = stream;
+  var self = this;
   (['error', 'metadata', 'status']).forEach(function(event) {
-    stream.on(event, this.emit.bind(this, event));
-  }.bind(this));
+    stream.on(event, function() {
+      var args = Array.prototype.slice.call(arguments, 0);
+      args.unshift(event);
+      self.emit.apply(self, args);
+    });
+  });
   // We also want to supply the status data as 'response' event to support
   // the behavior of google-cloud-node expects.
   // see: https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
@@ -158,17 +166,23 @@ StreamProxy.prototype.setStream = function(apiCall, argument) {
     // Create a response object with succeeds.
     // TODO: unify this logic with the decoration of gRPC response when it's added.
     // see: https://github.com/googleapis/gax-nodejs/issues/65
-    this.emit('response', {
+    self.emit('response', {
       code: 200,
       details: '',
       message: 'OK',
       metadata: metadata
     });
-  }.bind(this));
+  });
   if (this.type !== StreamType.CLIENT_STREAMING) {
-    stream.on('data', this.emit.bind(this, 'data'));
+    stream.on('data', function() {
+      var args = Array.prototype.slice.call(arguments, 0);
+      args.unshift('data');
+      self.emit.apply(self, args);
+    });
     // Pushing null causes an ending process of the readable stream.
-    stream.on('end', this.push.bind(this, null));
+    stream.on('end', function() {
+      self.push(null);
+    });
     // This is required in case no 'data' handler exists.
     this.resume();
   }
@@ -201,14 +215,21 @@ GrpcStreamable.prototype.init = function(settings, callback) {
 };
 
 GrpcStreamable.prototype.wrap = function(func) {
-  if (this.descriptor.type === StreamType.CLIENT_STREAMING) {
-    return function(argument, metadata, options, callback) {
-      return func(metadata, options, callback);
-    };
-  } else if (this.descriptor.type === StreamType.BIDI_STREAMING) {
-    return function(argument, metadata, options, callback) {
-      return func(metadata, options);
-    };
+  switch (this.descriptor.type) {
+    case StreamType.SERVER_STREAMING:
+      return function(argument, metadata, options, callback) {
+        return func(argument, metadata, options);
+      };
+    case StreamType.CLIENT_STREAMING:
+      return function(argument, metadata, options, callback) {
+        return func(metadata, options, callback);
+      };
+    case StreamType.BIDI_STREAMING:
+      return function(argument, metadata, options, callback) {
+        return func(metadata, options);
+      };
+    default:
+      console.error('Unknown stream type', this.descriptor.type);
   }
   return func;
 };
@@ -254,13 +275,13 @@ exports.StreamDescriptor = StreamDescriptor;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="operation_.html">operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Dec 06 2016 15:56:23 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Feb 01 2017 16:57:27 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>

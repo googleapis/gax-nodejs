@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: StreamDescriptor</title>
+    <title>JSDoc: Class: operation</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: StreamDescriptor</h1>
+    <h1 class="page-title">Class: operation</h1>
 
     
 
@@ -28,7 +28,7 @@
 
 <header>
     
-        <h2>StreamDescriptor</h2>
+        <h2>operation</h2>
         
     
 </header>
@@ -40,14 +40,14 @@
 
     
 
-    <h4 class="name" id="StreamDescriptor"><span class="type-signature"></span>new StreamDescriptor<span class="signature">(streamType)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="operation"><span class="type-signature"></span>new operation<span class="signature">(op, longrunningDescriptor, backoffSettings, callOptions<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    <p>Describes the structure of gRPC streaming call.</p>
+    <p>Method used to create Operation objects.</p>
 </div>
 
 
@@ -71,6 +71,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -83,23 +85,129 @@
 
         <tr>
             
-                <td class="name"><code>streamType</code></td>
+                <td class="name"><code>op</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#StreamType">StreamType</a></span>
+<span class="param-type">google.longrunning.Operation</span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>the type of streaming.</p></td>
+            <td class="description last"><p>The operation to be wrapped.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>longrunningDescriptor</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>This defines the
+operations service client and unpacking mechanisms for the operation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>backoffSettings</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#BackoffSettings">BackoffSettings</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>The backoff settings used in
+in polling the operation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#CallOptions">CallOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>CallOptions used in making get operation
+requests.</p></td>
         </tr>
 
     
@@ -140,7 +248,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="streaming.js.html">streaming.js</a>, <a href="streaming.js.html#line226">line 226</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line389">line 389</a>
     </li></ul></dd>
     
 

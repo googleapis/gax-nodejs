@@ -40,7 +40,7 @@
 
     
 
-    <h4 class="name" id="Operation"><span class="type-signature"></span>new Operation<span class="signature">(grpcOp, longrunningDescriptor, backoffSettings)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="Operation"><span class="type-signature"></span>new Operation<span class="signature">(grpcOp, longrunningDescriptor, backoffSettings, callOptions<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
 
     
 
@@ -71,6 +71,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -96,6 +98,14 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
@@ -118,6 +128,14 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -143,11 +161,53 @@ operations service client and unpacking mechanisms for the operation.</p></td>
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"><p>The backoff settings used in
 in polling the operation.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callOptions</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#CallOptions">CallOptions</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>CallOptions used in making get operation
+requests.</p></td>
         </tr>
 
     
@@ -188,7 +248,7 @@ in polling the operation.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line131">line 131</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line137">line 137</a>
     </li></ul></dd>
     
 
@@ -288,7 +348,7 @@ in polling the operation.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line180">line 180</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line191">line 191</a>
     </li></ul></dd>
     
 
@@ -342,7 +402,7 @@ request.</p>
 
     
 
-    <h4 class="name" id="getOperation"><span class="type-signature"></span>getOperation<span class="signature">(callback)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="getOperation"><span class="type-signature"></span>getOperation<span class="signature">(callback)</span><span class="type-signature"> &rarr; {Promise|undefined}</span></h4>
 
     
 
@@ -449,7 +509,7 @@ operation result and metadata.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line207">line 207</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line223">line 223</a>
     </li></ul></dd>
     
 
@@ -472,6 +532,37 @@ operation result and metadata.</p></td>
 
 
 
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <ul>
+<li>This returns a promise if a callback is not specified.
+The promise resolves to an array where the first element is the unpacked
+result, the second element is the metadata, and the third element is the raw
+response of the api call. The promise rejects if the operation returns an
+error.</li>
+</ul>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -531,7 +622,7 @@ operation result and metadata.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line321">line 321</a>
+        <a href="longrunning.js.html">longrunning.js</a>, <a href="longrunning.js.html#line364">line 364</a>
     </li></ul></dd>
     
 
@@ -598,13 +689,13 @@ on operation error.</li>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="operation_.html">operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Dec 06 2016 15:56:23 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Feb 01 2017 16:57:27 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -87,6 +87,9 @@
  * @property {boolean=} isBundling - If set to false and the call is configured
  *   for bundling, bundling is not performed.
  * @property {BackoffSettings=} longrunning - BackoffSettings used for polling.
+ * @property {Function=} promise - A constructor for a promise that implements the ES6
+ * specification of promise which will be used to create promises. If not
+ * provided, native promises will be used.
  * @example
  * // suppress bundling for bundled method.
  * api.bundlingMethod(
@@ -176,6 +179,9 @@
  *   the page streaming request.
  * @param {Object} settings.otherArgs - Additional arguments to be passed to
  *   the API calls.
+ * @param {Function=} settings.promise - A constructor for a promise that
+ * implements the ES6 specification of promise. If not provided, native promises
+ * will be used.
  *
  * @constructor
  */
@@ -190,7 +196,8 @@ function CallSettings(settings) {
   this.bundleOptions = settings.bundleOptions;
   this.isBundling = ('isBundling' in settings) ? settings.isBundling : true;
   this.longrunning =
-      ('longrunning' in settings) ? settings.longrunning : true;
+      ('longrunning' in settings) ? settings.longrunning : null;
+  this.promise = ('promise' in settings) ? settings.promise : Promise;
 }
 exports.CallSettings = CallSettings;
 
@@ -213,6 +220,7 @@ CallSettings.prototype.merge = function merge(options) {
   var otherArgs = this.otherArgs;
   var isBundling = this.isBundling;
   var longrunning = this.longrunning;
+  var promise = this.promise;
   if ('timeout' in options) {
     timeout = options.timeout;
   }
@@ -252,6 +260,10 @@ CallSettings.prototype.merge = function merge(options) {
     longrunning = options.longrunning;
   }
 
+  if ('promise' in options) {
+    promise = options.promise;
+  }
+
   return new CallSettings({
     timeout: timeout,
     retry: retry,
@@ -260,7 +272,9 @@ CallSettings.prototype.merge = function merge(options) {
     autoPaginate: autoPaginate,
     pageToken: pageToken,
     otherArgs: otherArgs,
-    isBundling: isBundling});
+    isBundling: isBundling,
+    promise: promise
+  });
 };
 
 /**
@@ -543,12 +557,14 @@ function mergeRetryOptions(retry, overrides) {
  *   those codes.
  * @param {Object} otherArgs - the non-request arguments to be passed to the API
  *   calls.
+ * @param {Function=} promise - A constructor for a promise that implements the
+ * ES6 specification of promise. If not provided, native promises will be used.
  * @return {Object} A mapping from method name to CallSettings, or null if the
  *   service is not found in the config.
  */
 exports.constructSettings = function constructSettings(
     serviceName, clientConfig, configOverrides,
-    retryNames, otherArgs) {
+    retryNames, otherArgs, promise) {
   otherArgs = otherArgs || {};
   var defaults = {};
 
@@ -592,7 +608,8 @@ exports.constructSettings = function constructSettings(
       retry: retry,
       bundleOptions:
         bundlingConfig ? createBundleOptions(bundlingConfig) : null,
-      otherArgs: otherArgs
+      otherArgs: otherArgs,
+      promise: promise || Promise
     });
   }
   return defaults;
@@ -607,13 +624,13 @@ exports.constructSettings = function constructSettings(
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="BundleDescriptor.html">BundleDescriptor</a></li><li><a href="BundleExecutor.html">BundleExecutor</a></li><li><a href="CallSettings.html">CallSettings</a></li><li><a href="GrpcClient.html">GrpcClient</a></li><li><a href="LongrunningDescriptor.html">LongrunningDescriptor</a></li><li><a href="Operation.html">Operation</a></li><li><a href="operation_.html">operation</a></li><li><a href="OperationsClient.html">OperationsClient</a></li><li><a href="PageDescriptor.html">PageDescriptor</a></li><li><a href="PathTemplate.html">PathTemplate</a></li><li><a href="StreamDescriptor.html">StreamDescriptor</a></li></ul><h3>Global</h3><ul><li><a href="global.html#ALL_SCOPES">ALL_SCOPES</a></li><li><a href="global.html#computeBundleId">computeBundleId</a></li><li><a href="global.html#constructSettings">constructSettings</a></li><li><a href="global.html#createApiCall">createApiCall</a></li><li><a href="global.html#createBackoffSettings">createBackoffSettings</a></li><li><a href="global.html#createCredPromise">createCredPromise</a></li><li><a href="global.html#createMaxRetriesBackoffSettings">createMaxRetriesBackoffSettings</a></li><li><a href="global.html#createRetryOptions">createRetryOptions</a></li><li><a href="global.html#formatSegments">formatSegments</a></li><li><a href="global.html#operationsClient">operationsClient</a></li><li><a href="global.html#StreamType">StreamType</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Tue Dec 06 2016 15:56:23 GMT-0800 (PST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Feb 01 2017 16:57:27 GMT-0800 (PST)
 </footer>
 
 <script> prettyPrint(); </script>
