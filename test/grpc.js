@@ -46,7 +46,7 @@ describe('grpc', function() {
     });
   });
 
-  describe('metadataBuilder', function() {
+  describe.skip('metadataBuilder', function() {
     var grpcClient = gaxGrpc();
 
     it('builds metadata', function() {
