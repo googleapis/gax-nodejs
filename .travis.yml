@@ -4,10 +4,9 @@ node_js:
   - 6
   - 5
   - 4
-  - 0.12
 script:
-  - npm test
-  - bash ./verify_lint.sh
+  - npm run test
+  - npm run lint
   - bash ./verify_build.sh
 after_success:
   - npm run codecov
