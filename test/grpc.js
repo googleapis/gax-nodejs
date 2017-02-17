@@ -46,7 +46,7 @@ describe('grpc', function() {
     });
   });
 
-  describe.skip('metadataBuilder', function() {
+  describe('metadataBuilder', function() {
     var grpcClient = gaxGrpc();
 
     it('builds metadata', function() {
@@ -62,7 +62,7 @@ describe('grpc', function() {
       }
     });
 
-    it('customize api-client header for A/B testing', function() {
+    it.skip('customize api-client header for A/B testing', function() {
       var headers = {
         'X-Goog-Api-Client': 'gl-node/nodeVersion gax/gaxVersion'
       };
