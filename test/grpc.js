@@ -40,7 +40,7 @@ describe('grpc', function() {
       expect(gaxGrpc().grpcVersion).to.eq(grpcVersion);
     });
 
-    it('returns unknown when grpc module is injected', function() {
+    it('returns unknown when grpc module is mocked', function() {
       var mockGrpc = {};
       expect(gaxGrpc({grpc: mockGrpc}).grpcVersion).to.eq('');
     });
@@ -53,7 +53,7 @@ describe('grpc', function() {
       var headers = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
-        'X-Goog-Api-Client': 'gl-node/nodeVersion gax/gaxVersion'
+        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
       };
       var builder = grpcClient.metadataBuilder(headers);
       var metadata = builder();

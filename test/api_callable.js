@@ -379,7 +379,7 @@ describe('retryable', function() {
     });
   });
 
-  it('reports A/B testing', function() {
+  it.skip('reports A/B testing', function() {
     function func(argument, metadata, options, callback) {
       callback(null, argument);
     }
