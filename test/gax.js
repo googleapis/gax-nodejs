@@ -48,10 +48,8 @@ var A_CONFIG = {
 
 A_CONFIG.interfaces[SERVICE_NAME] = {
   'retry_codes': {
-    'retry_codes_def': {
-      'foo_retry': ['code_a', 'code_b'],
-      'bar_retry': ['code_c']
-    }
+    'foo_retry': ['code_a', 'code_b'],
+    'bar_retry': ['code_c']
   },
   'retry_params': {
     'default': {
@@ -149,10 +147,8 @@ describe('gax construct settings', function() {
     var overrides = {'interfaces': {}};
     overrides.interfaces[SERVICE_NAME] = {
       'retry_codes': {
-        'retry_codes_def': {
-          'bar_retry': [],
-          'baz_retry': ['code_a']
-        }
+        'bar_retry': [],
+        'baz_retry': ['code_a']
       },
       'retry_params': {
         'default': {
