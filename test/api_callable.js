@@ -378,4 +378,35 @@ describe('retryable', function() {
       done();
     });
   });
+
+  it.skip('reports A/B testing', function() {
+    function func(argument, metadata, options, callback) {
+      callback(null, argument);
+    }
+    var mockBuilder = sinon.mock();
+    var settings = {settings: {
+      timeout: 0,
+      retry: retryOptions,
+      otherArgs: {metadataBuilder: mockBuilder}
+    }};
+    var apiCall = createApiCall(func, settings);
+    mockBuilder.withExactArgs({retry: '2'});
+    return apiCall(null, null).then(function() {
+      mockBuilder.verify();
+      mockBuilder.reset();
+      var backoff = gax.createMaxRetriesBackoffSettings(
+        0, 0, 0, 0, 0, 0, 5);
+      mockBuilder.withExactArgs({retry: '1'});
+      return apiCall(null, {retry: utils.createRetryOptions(backoff)});
+    }).then(function() {
+      mockBuilder.verify();
+      mockBuilder.reset();
+      mockBuilder.withExactArgs({retry: '2'});
+      var options =
+        {retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200)};
+      return apiCall(null, options);
+    }).then(function() {
+      mockBuilder.verify();
+    });
+  });
 });
