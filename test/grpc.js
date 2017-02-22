@@ -89,7 +89,7 @@ describe('grpc', function() {
       this.options = options;
     }
     var grpcClient;
-    var dummyChannelCreds = {channelCreds: 'dummy'};
+    var dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
 
     beforeEach(function() {
       var stubAuth = {getAuthClient: sinon.stub()};
@@ -98,9 +98,9 @@ describe('grpc', function() {
         combineChannelCredentials: sinon.stub(),
         createFromGoogleCredential: sinon.stub()
       }};
-      var dummyAuth = {authData: 'dummy'};
-      var dummySslCreds = {sslCreds: 'dummy'};
-      var dummyGrpcAuth = {grpcAuth: 'dummy'};
+      var dummyAuth = {authData: 'dummyAuth'};
+      var dummySslCreds = {sslCreds: 'dummySslCreds'};
+      var dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
       stubAuth.getAuthClient.callsArgWith(0, null, dummyAuth);
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
       stubGrpc.credentials.createFromGoogleCredential
