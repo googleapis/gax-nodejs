@@ -37,9 +37,6 @@ var createApiCall = require('./utils').createApiCall;
 var _ = require('lodash');
 
 function createSimple(value, otherValue) {
-  if (otherValue === undefined) {
-    otherValue = null;
-  }
   return {field1: value, field2: otherValue};
 }
 
@@ -63,7 +60,7 @@ describe('computeBundleId', function() {
         fields: ['field1'],
         want: 'dummy_value'
       }, {
-        message: 'composite value with null',
+        message: 'composite value with missing field2',
         object: createSimple('dummy_value'),
         fields: ['field1', 'field2'],
         want: 'dummy_value,'
@@ -73,15 +70,15 @@ describe('computeBundleId', function() {
         fields: ['field1', 'field2'],
         want: 'dummy_value,other_value'
       }, {
-        message: 'empty discriminator fields',
-        object: createSimple('dummy_value'),
-        fields: [],
-        want: ''
-      }, {
         message: 'null',
         object: createSimple(null),
         fields: ['field1'],
         want: ''
+      }, {
+        message: 'partially nonexisting fields',
+        object: createSimple('dummy_value', 'other_value'),
+        fields: ['field1', 'field3'],
+        want: 'dummy_value,'
       }, {
         message: 'numeric',
         object: createSimple(42),
@@ -109,17 +106,13 @@ describe('computeBundleId', function() {
   describe('returns undefined if failed', function() {
     var testCases = [
       {
+        message: 'empty discriminator fields',
+        object: createSimple('dummy_value'),
+        fields: []
+      }, {
         message: 'nonexisting fields',
         object: createSimple('dummy_value'),
         fields: ['field3']
-      }, {
-        message: 'partially nonexisting fields',
-        object: createSimple('dummy_value'),
-        fields: ['field1', 'field3']
-      }, {
-        message: 'partially nonexisting fields with field2',
-        object: createSimple('dummy_value', 'other_value'),
-        fields: ['field1', 'field3']
       }, {
         message: 'fails to look up in the middle',
         object: createOuter('this is dotty'),
@@ -502,6 +495,43 @@ describe('Executor', function() {
     });
     executor.schedule(failing, createSimple([1], 'id'), callback);
     executor.schedule(failing, createSimple([2], 'id'), callback);
+  });
+
+  it('runs unbundleable tasks immediately', function(done) {
+    var executor = newExecutor({delayThreshold: 10});
+    var spy = sinon.spy(apiCall);
+    var counter = 0;
+    var unbundledCallCounter = 0;
+    function onEnd() {
+      expect(spy.callCount).to.eq(3);
+      done();
+    }
+    executor.schedule(spy, createSimple([1, 2], 'id1'), function(err, resp) {
+      expect(resp.field1).to.deep.eq([1, 2]);
+      expect(unbundledCallCounter).to.eq(2);
+      counter++;
+      if (counter === 4) {
+        onEnd();
+      }
+    });
+    executor.schedule(spy, createSimple([3]), function(err, resp) {
+      expect(resp.field1).to.deep.eq([3]);
+      unbundledCallCounter++;
+      counter++;
+    });
+    executor.schedule(spy, createSimple([4], 'id1'), function(err, resp) {
+      expect(resp.field1).to.deep.eq([4]);
+      expect(unbundledCallCounter).to.eq(2);
+      counter++;
+      if (counter === 4) {
+        onEnd();
+      }
+    });
+    executor.schedule(spy, createSimple([5, 6]), function(err, resp) {
+      expect(resp.field1).to.deep.eq([5, 6]);
+      unbundledCallCounter++;
+      counter++;
+    });
   });
 
   describe('callback', function() {
