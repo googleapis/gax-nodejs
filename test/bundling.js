@@ -58,42 +58,47 @@ describe('computeBundleId', function() {
         message: 'single field value',
         object: createSimple('dummy_value'),
         fields: ['field1'],
-        want: 'dummy_value'
+        want: '["dummy_value"]'
       }, {
         message: 'composite value with missing field2',
         object: createSimple('dummy_value'),
         fields: ['field1', 'field2'],
-        want: 'dummy_value,'
+        want: '["dummy_value",null]'
       }, {
         message: 'a composite value',
         object: createSimple('dummy_value', 'other_value'),
         fields: ['field1', 'field2'],
-        want: 'dummy_value,other_value'
+        want: '["dummy_value","other_value"]'
       }, {
         message: 'null',
         object: createSimple(null),
         fields: ['field1'],
-        want: ''
+        want: '[null]'
       }, {
         message: 'partially nonexisting fields',
         object: createSimple('dummy_value', 'other_value'),
         fields: ['field1', 'field3'],
-        want: 'dummy_value,'
+        want: '["dummy_value",null]'
       }, {
         message: 'numeric',
         object: createSimple(42),
         fields: ['field1'],
-        want: '42'
+        want: '[42]'
+      }, {
+        message: 'structured data',
+        object: createSimple({foo: 'bar', baz: 42}),
+        fields: ['field1'],
+        want: '[{"foo":"bar","baz":42}]'
       }, {
         message: 'a simple dotted value',
         object: createOuter('this is dotty'),
         fields: ['inner.field1'],
-        want: 'this is dotty'
+        want: '["this is dotty"]'
       }, {
         message: 'a complex case',
         object: createOuter('what!?'),
         fields: ['inner.field1', 'inner.field2', 'field1'],
-        want: 'what!?,what!?,what!?'
+        want: '["what!?","what!?","what!?"]'
       }
     ];
     testCases.forEach(function(t) {
@@ -466,16 +471,16 @@ describe('Executor', function() {
     executor.schedule(apiCall, createSimple([4, 5], 'id1'));
     executor.schedule(apiCall, createSimple([6], 'id2'));
 
-    expect(executor._tasks).to.have.property('id1');
-    expect(executor._tasks).to.have.property('id2');
+    expect(executor._tasks).to.have.property('["id1"]');
+    expect(executor._tasks).to.have.property('["id2"]');
     expect(_.size(executor._tasks)).to.eq(2);
 
-    var task = executor._tasks.id1;
+    var task = executor._tasks['["id1"]'];
     expect(task._data.length).to.eq(2);
     expect(task._data[0].elements).to.eql([1, 2]);
     expect(task._data[1].elements).to.eql([4, 5]);
 
-    task = executor._tasks.id2;
+    task = executor._tasks['["id2"]'];
     expect(task._data.length).to.eq(2);
     expect(task._data[0].elements).to.eql([3]);
     expect(task._data[1].elements).to.eql([6]);
