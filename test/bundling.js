@@ -36,18 +36,11 @@ var sinon = require('sinon');
 var createApiCall = require('./utils').createApiCall;
 var _ = require('lodash');
 
-function createSimple(value, otherValue) {
-  if (otherValue === undefined) {
-    otherValue = null;
-  }
-  return {field1: value, field2: otherValue};
-}
-
 function createOuter(value, otherValue) {
   if (otherValue === undefined) {
     otherValue = value;
   }
-  return {inner: createSimple(value, otherValue), field1: value};
+  return {inner: {field1: value, field2: otherValue}, field1: value};
 }
 
 function byteLength(obj) {
@@ -59,44 +52,49 @@ describe('computeBundleId', function() {
     var testCases = [
       {
         message: 'single field value',
-        object: createSimple('dummy_value'),
+        object: {field1: 'dummy_value'},
         fields: ['field1'],
-        want: 'dummy_value'
+        want: '["dummy_value"]'
       }, {
-        message: 'composite value with null',
-        object: createSimple('dummy_value'),
+        message: 'composite value with missing field2',
+        object: {field1: 'dummy_value'},
         fields: ['field1', 'field2'],
-        want: 'dummy_value,'
+        want: '["dummy_value",null]'
       }, {
         message: 'a composite value',
-        object: createSimple('dummy_value', 'other_value'),
+        object: {field1: 'dummy_value', field2: 'other_value'},
         fields: ['field1', 'field2'],
-        want: 'dummy_value,other_value'
-      }, {
-        message: 'empty discriminator fields',
-        object: createSimple('dummy_value'),
-        fields: [],
-        want: ''
+        want: '["dummy_value","other_value"]'
       }, {
         message: 'null',
-        object: createSimple(null),
+        object: {field1: null},
         fields: ['field1'],
-        want: ''
+        want: '[null]'
+      }, {
+        message: 'partially nonexisting fields',
+        object: {field1: 'dummy_value', field2: 'other_value'},
+        fields: ['field1', 'field3'],
+        want: '["dummy_value",null]'
       }, {
         message: 'numeric',
-        object: createSimple(42),
+        object: {field1: 42},
         fields: ['field1'],
-        want: '42'
+        want: '[42]'
+      }, {
+        message: 'structured data',
+        object: {field1: {foo: 'bar', baz: 42}},
+        fields: ['field1'],
+        want: '[{"foo":"bar","baz":42}]'
       }, {
         message: 'a simple dotted value',
         object: createOuter('this is dotty'),
         fields: ['inner.field1'],
-        want: 'this is dotty'
+        want: '["this is dotty"]'
       }, {
         message: 'a complex case',
         object: createOuter('what!?'),
         fields: ['inner.field1', 'inner.field2', 'field1'],
-        want: 'what!?,what!?,what!?'
+        want: '["what!?","what!?","what!?"]'
       }
     ];
     testCases.forEach(function(t) {
@@ -109,17 +107,13 @@ describe('computeBundleId', function() {
   describe('returns undefined if failed', function() {
     var testCases = [
       {
+        message: 'empty discriminator fields',
+        object: {field1: 'dummy_value'},
+        fields: []
+      }, {
         message: 'nonexisting fields',
-        object: createSimple('dummy_value'),
+        object: {field1: 'dummy_value'},
         fields: ['field3']
-      }, {
-        message: 'partially nonexisting fields',
-        object: createSimple('dummy_value'),
-        fields: ['field1', 'field3']
-      }, {
-        message: 'partially nonexisting fields with field2',
-        object: createSimple('dummy_value', 'other_value'),
-        fields: ['field1', 'field3']
       }, {
         message: 'fails to look up in the middle',
         object: createOuter('this is dotty'),
@@ -468,21 +462,21 @@ describe('Executor', function() {
 
   it('groups api calls by the id', function() {
     var executor = newExecutor({delayThreshold: 10});
-    executor.schedule(apiCall, createSimple([1, 2], 'id1'));
-    executor.schedule(apiCall, createSimple([3], 'id2'));
-    executor.schedule(apiCall, createSimple([4, 5], 'id1'));
-    executor.schedule(apiCall, createSimple([6], 'id2'));
+    executor.schedule(apiCall, {field1: [1, 2], field2: 'id1'});
+    executor.schedule(apiCall, {field1: [3], field2: 'id2'});
+    executor.schedule(apiCall, {field1: [4, 5], field2: 'id1'});
+    executor.schedule(apiCall, {field1: [6], field2: 'id2'});
 
-    expect(executor._tasks).to.have.property('id1');
-    expect(executor._tasks).to.have.property('id2');
+    expect(executor._tasks).to.have.property('["id1"]');
+    expect(executor._tasks).to.have.property('["id2"]');
     expect(_.size(executor._tasks)).to.eq(2);
 
-    var task = executor._tasks.id1;
+    var task = executor._tasks['["id1"]'];
     expect(task._data.length).to.eq(2);
     expect(task._data[0].elements).to.eql([1, 2]);
     expect(task._data[1].elements).to.eql([4, 5]);
 
-    task = executor._tasks.id2;
+    task = executor._tasks['["id2"]'];
     expect(task._data.length).to.eq(2);
     expect(task._data[0].elements).to.eql([3]);
     expect(task._data[1].elements).to.eql([6]);
@@ -500,8 +494,46 @@ describe('Executor', function() {
         done();
       }
     });
-    executor.schedule(failing, createSimple([1], 'id'), callback);
-    executor.schedule(failing, createSimple([2], 'id'), callback);
+    executor.schedule(failing, {field1: [1], field2: 'id'}, callback);
+    executor.schedule(failing, {field1: [2], field2: 'id'}, callback);
+  });
+
+  it('runs unbundleable tasks immediately', function(done) {
+    var executor = newExecutor({delayThreshold: 10});
+    var spy = sinon.spy(apiCall);
+    var counter = 0;
+    var unbundledCallCounter = 0;
+    function onEnd() {
+      expect(spy.callCount).to.eq(3);
+      done();
+    }
+    executor.schedule(
+      spy, {field1: [1, 2], field2: 'id1'}, function(err, resp) {
+        expect(resp.field1).to.deep.eq([1, 2]);
+        expect(unbundledCallCounter).to.eq(2);
+        counter++;
+        if (counter === 4) {
+          onEnd();
+        }
+      });
+    executor.schedule(spy, {field1: [3]}, function(err, resp) {
+      expect(resp.field1).to.deep.eq([3]);
+      unbundledCallCounter++;
+      counter++;
+    });
+    executor.schedule(spy, {field1: [4], field2: 'id1'}, function(err, resp) {
+      expect(resp.field1).to.deep.eq([4]);
+      expect(unbundledCallCounter).to.eq(2);
+      counter++;
+      if (counter === 4) {
+        onEnd();
+      }
+    });
+    executor.schedule(spy, {field1: [5, 6]}, function(err, resp) {
+      expect(resp.field1).to.deep.eq([5, 6]);
+      unbundledCallCounter++;
+      counter++;
+    });
   });
 
   describe('callback', function() {
@@ -530,13 +562,13 @@ describe('Executor', function() {
 
     it('shouldn\'t block next event after cancellation', function(done) {
       var canceller = executor.schedule(
-          spyApi, createSimple([1, 2], 'id'), function(err, resp) {
+          spyApi, {field1: [1, 2], field2: 'id'}, function(err, resp) {
             expect(err).to.be.an.instanceOf(Error);
 
             expect(spyApi.callCount).to.eq(0);
 
             executor.schedule(
-                spyApi, createSimple([3, 4], 'id'),
+                spyApi, {field1: [3, 4], field2: 'id'},
                 function(err, resp) {
                   expect(resp.field1).to.deep.equal([3, 4]);
                   expect(spyApi.callCount).to.eq(1);
@@ -549,7 +581,7 @@ describe('Executor', function() {
 
     it('distinguishes a running task and a scheduled one', function(done) {
       var counter = 0;
-      executor.schedule(timedAPI, createSimple([1, 2], 'id'),
+      executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'},
           function(err, resp) {
             expect(err).to.be.null;
             counter++;
@@ -561,7 +593,7 @@ describe('Executor', function() {
       executor._runNow('id');
 
       var canceller = executor.schedule(
-          timedAPI, createSimple([1, 2], 'id'),
+          timedAPI, {field1: [1, 2], field2: 'id'},
           function(err, resp) {
             expect(err).to.be.an.instanceOf(Error);
             counter++;
@@ -578,15 +610,15 @@ describe('Executor', function() {
       callback(null, request);
     });
     for (var i = 0; i < threshold - 1; ++i) {
-      executor.schedule(spy, createSimple([1], 'id1'));
-      executor.schedule(spy, createSimple([2], 'id2'));
+      executor.schedule(spy, {field1: [1], field2: 'id1'});
+      executor.schedule(spy, {field1: [2], field2: 'id2'});
     }
     expect(spy.callCount).to.eq(0);
 
-    executor.schedule(spy, createSimple([1], 'id1'));
+    executor.schedule(spy, {field1: [1], field2: 'id1'});
     expect(spy.callCount).to.eq(1);
 
-    executor.schedule(spy, createSimple([2], 'id2'));
+    executor.schedule(spy, {field1: [2], field2: 'id2'});
     expect(spy.callCount).to.eq(2);
 
     expect(_.size(executor._tasks)).to.eq(0);
@@ -604,15 +636,15 @@ describe('Executor', function() {
       callback(null, request);
     });
     for (var i = 0; i < count - 1; ++i) {
-      executor.schedule(spy, createSimple([1], 'id1'));
-      executor.schedule(spy, createSimple([2], 'id2'));
+      executor.schedule(spy, {field1: [1], field2: 'id1'});
+      executor.schedule(spy, {field1: [2], field2: 'id2'});
     }
     expect(spy.callCount).to.eq(0);
 
-    executor.schedule(spy, createSimple([1], 'id1'));
+    executor.schedule(spy, {field1: [1], field2: 'id1'});
     expect(spy.callCount).to.eq(1);
 
-    executor.schedule(spy, createSimple([2], 'id2'));
+    executor.schedule(spy, {field1: [2], field2: 'id2'});
     expect(spy.callCount).to.eq(2);
 
     expect(_.size(executor._tasks)).to.eq(0);
@@ -627,20 +659,20 @@ describe('Executor', function() {
       expect(request.field1).to.be.an.instanceOf(Array);
       callback(null, request);
     });
-    executor.schedule(spy, createSimple([1, 2], 'id'));
-    executor.schedule(spy, createSimple([3, 4], 'id'));
+    executor.schedule(spy, {field1: [1, 2], field2: 'id'});
+    executor.schedule(spy, {field1: [3, 4], field2: 'id'});
     expect(spy.callCount).to.eq(0);
     expect(_.size(executor._tasks)).to.eq(1);
 
-    executor.schedule(spy, createSimple([5, 6, 7], 'id'));
+    executor.schedule(spy, {field1: [5, 6, 7], field2: 'id'});
     expect(spy.callCount).to.eq(1);
     expect(_.size(executor._tasks)).to.eq(1);
 
-    executor.schedule(spy, createSimple([8, 9, 10, 11, 12], 'id'));
+    executor.schedule(spy, {field1: [8, 9, 10, 11, 12], field2: 'id'});
     expect(spy.callCount).to.eq(3);
     expect(_.size(executor._tasks)).to.eq(0);
 
-    executor.schedule(spy, createSimple([1, 2, 3, 4, 5, 6, 7], 'id'),
+    executor.schedule(spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'},
         function(err, response) {
           expect(err).to.be.an.instanceOf(Error);
           done();
@@ -658,21 +690,21 @@ describe('Executor', function() {
       expect(request.field1).to.be.an.instanceOf(Array);
       callback(null, request);
     });
-    executor.schedule(spy, createSimple([1, 2], 'id'));
-    executor.schedule(spy, createSimple([3, 4], 'id'));
+    executor.schedule(spy, {field1: [1, 2], field2: 'id'});
+    executor.schedule(spy, {field1: [3, 4], field2: 'id'});
     expect(spy.callCount).to.eq(0);
     expect(_.size(executor._tasks)).to.eq(1);
 
-    executor.schedule(spy, createSimple([5, 6, 7], 'id'));
+    executor.schedule(spy, {field1: [5, 6, 7], field2: 'id'});
     expect(spy.callCount).to.eq(1);
     expect(_.size(executor._tasks)).to.eq(1);
 
-    executor.schedule(spy, createSimple([8, 9, 0, 1, 2], 'id'));
+    executor.schedule(spy, {field1: [8, 9, 0, 1, 2], field2: 'id'});
     expect(spy.callCount).to.eq(3);
     expect(_.size(executor._tasks)).to.eq(0);
 
-    executor.schedule(
-      spy, createSimple([1, 2, 3, 4, 5, 6, 7], 'id'), function(err, response) {
+    executor.schedule(spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'},
+      function(err, response) {
         expect(err).to.be.an.instanceOf(Error);
         done();
       });
@@ -696,7 +728,7 @@ describe('Executor', function() {
         }
       });
       for (var i = 0; i < tasks; i++) {
-        executor.schedule(spy, createSimple([i], 'id'), callback);
+        executor.schedule(spy, {field1: [i], field2: 'id'}, callback);
       }
     });
 
@@ -704,12 +736,12 @@ describe('Executor', function() {
       var executor = newExecutor({delayThreshold: 50});
       var spy = sinon.spy(apiCall);
       var start = (new Date()).getTime();
-      executor.schedule(spy, createSimple([0], 'id'), function() {
+      executor.schedule(spy, {field1: [0], field2: 'id'}, function() {
         expect(spy.callCount).to.eq(1);
         var firstEnded = (new Date()).getTime();
         expect(firstEnded - start).to.be.least(50);
 
-        executor.schedule(spy, createSimple([1], 'id'), function() {
+        executor.schedule(spy, {field1: [1], field2: 'id'}, function() {
           expect(spy.callCount).to.eq(2);
           var secondEnded = (new Date()).getTime();
           expect(secondEnded - firstEnded).to.be.least(50);
@@ -741,14 +773,14 @@ describe('bundleable', function() {
       }
     });
     var apiCall = createApiCall(spy, settings);
-    apiCall(createSimple([1, 2, 3], 'id'), null, function(err, obj) {
+    apiCall({field1: [1, 2, 3], field2: 'id'}, null, function(err, obj) {
       if (err) {
         done(err);
       } else {
         callback([obj]);
       }
     });
-    apiCall(createSimple([1, 2, 3], 'id'), null).then(callback).catch(done);
+    apiCall({field1: [1, 2, 3], field2: 'id'}, null).then(callback).catch(done);
   });
 
   it('suppresses bundling behavior by call options', function(done) {
@@ -770,13 +802,13 @@ describe('bundleable', function() {
       expect(obj[0].field1).to.deep.equal([1, 2, 3]);
     }
     var apiCall = createApiCall(spy, settings);
-    apiCall(createSimple([1, 2, 3], 'id'), null)
+    apiCall({field1: [1, 2, 3], field2: 'id'}, null)
         .then(bundledCallback)
         .catch(done);
-    apiCall(createSimple([1, 2, 3], 'id'), {isBundling: false})
+    apiCall({field1: [1, 2, 3], field2: 'id'}, {isBundling: false})
         .then(unbundledCallback)
         .catch(done);
-    apiCall(createSimple([1, 2, 3], 'id'), null)
+    apiCall({field1: [1, 2, 3], field2: 'id'}, null)
         .then(bundledCallback)
         .catch(done);
   });
@@ -785,7 +817,7 @@ describe('bundleable', function() {
     var apiCall = createApiCall(func, settings);
     var expectedSuccess = false;
     var expectedFailure = false;
-    apiCall(createSimple([1, 2, 3], 'id'), null).then(function(obj) {
+    apiCall({field1: [1, 2, 3], field2: 'id'}, null).then(function(obj) {
       expect(obj).to.be.an('array');
       expect(obj[0].field1).to.deep.equal([1, 2, 3]);
       expectedSuccess = true;
@@ -793,7 +825,7 @@ describe('bundleable', function() {
         done();
       }
     }).catch(done);
-    var p = apiCall(createSimple([1, 2, 3], 'id'), null);
+    var p = apiCall({field1: [1, 2, 3], field2: 'id'}, null);
     p.then(function(obj) {
       done(new Error('should not succeed'));
     }).catch(function(err) {
