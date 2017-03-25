@@ -11,9 +11,11 @@
     "google-auto-auth": "^0.5.2",
     "google-proto-files": "^0.9.1",
     "grpc": "^1.1",
+    "is-stream-ended": "^0.1.0",
     "lodash": "^4.17.2",
     "process-nextick-args": "^1.0.7",
-    "readable-stream": "^2.2.2"
+    "readable-stream": "^2.2.2",
+    "through2": "^2.0.3"
   },
   "devDependencies": {
     "chai": "*",
@@ -24,8 +26,9 @@
     "jsdoc": "~3.4.0",
     "mocha": "~2.2.5",
     "pegjs": "~0.9.0",
+    "pumpify": "^1.3.5",
     "sinon": "~1.17.3",
-    "through2": "~2.0.1"
+    "stream-events": "^1.0.1"
   },
   "scripts": {
     "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
