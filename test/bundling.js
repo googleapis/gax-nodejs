@@ -710,6 +710,25 @@ describe('Executor', function() {
       });
   });
 
+  it('does not invoke runNow twice', function(done) {
+    var threshold = 2;
+    var executor = newExecutor({
+      elementCountThreshold: threshold,
+      delayThreshold: 10
+    });
+    executor._runNow = sinon.spy(executor._runNow.bind(executor));
+    var spy = sinon.spy(function(request, callback) {
+      expect(request.field1.length).to.eq(threshold);
+      callback(null, request);
+    });
+    executor.schedule(spy, {field1: [1, 2], field2: 'id1'});
+    setTimeout(function() {
+      expect(spy.callCount).to.eq(1);
+      expect(executor._runNow.callCount).to.eq(1);
+      done();
+    }, 20);
+  });
+
   describe('timer', function() {
     it('waits on the timer', function(done) {
       var executor = newExecutor({delayThreshold: 50});
