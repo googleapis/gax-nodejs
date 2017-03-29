@@ -35,10 +35,11 @@
 var util = require('./utils');
 var PageDescriptor = require('../lib/paged_iteration').PageDescriptor;
 var expect = require('chai').expect;
-var sinon = require('sinon');
-var through2 = require('through2');
-var streamEvents = require('stream-events');
+var process = require('process');
 var pumpify = require('pumpify');
+var sinon = require('sinon');
+var streamEvents = require('stream-events');
+var through2 = require('through2');
 
 describe('paged iteration', function() {
   var pageSize = 3;
@@ -242,6 +243,19 @@ describe('paged iteration', function() {
           expect(spy.callCount).to.eq(pagesToStream + 1);
         }, done, 0);
       }, 50);
+    });
+
+    it('does not start calls when it is already started', function(done) {
+      var stream = descriptor.createStream(apiCall, {}, null);
+      stream.on('end', function() {
+        expect(spy.callCount).to.eq(pagesToStream + 1);
+        done();
+      });
+      stream.resume();
+      process.nextTick(function() {
+        stream.pause();
+        stream.resume();
+      });
     });
 
     it('cooperates with google-cloud-node usage', function(done) {
