@@ -32,6 +32,7 @@
 
 var gaxGrpc = require('../lib/grpc');
 var expect = require('chai').expect;
+var extend = require('extend');
 var sinon = require('sinon');
 
 describe('grpc', function() {
@@ -89,18 +90,29 @@ describe('grpc', function() {
       this.options = options;
     }
     var grpcClient;
+    var stubGrpc;
     var dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
+    var dummySslCreds = {sslCreds: 'dummySslCreds'};
+    var dummyAuth = {authData: 'dummyAuth'};
+    var dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
+
+    function createStub(opts, optClient) {
+      var client = optClient || grpcClient;
+      opts = extend({servicePath: 'foo.example.com', port: 443}, opts);
+      return client.createStub(DummyStub, opts).then(function(stub) {
+        expect(stub).to.be.an.instanceOf(DummyStub);
+        expect(stub.address).to.eq('foo.example.com:443');
+        return stub;
+      });
+    }
 
     beforeEach(function() {
       var stubAuth = {getAuthClient: sinon.stub()};
-      var stubGrpc = {credentials: {
+      stubGrpc = {credentials: {
         createSsl: sinon.stub(),
         combineChannelCredentials: sinon.stub(),
         createFromGoogleCredential: sinon.stub()
       }};
-      var dummyAuth = {authData: 'dummyAuth'};
-      var dummySslCreds = {sslCreds: 'dummySslCreds'};
-      var dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
       stubAuth.getAuthClient.callsArgWith(0, null, dummyAuth);
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
       stubGrpc.credentials.createFromGoogleCredential
@@ -111,10 +123,7 @@ describe('grpc', function() {
     });
 
     it('creates a stub', function() {
-      var opts = {servicePath: 'foo.example.com', port: 443};
-      return grpcClient.createStub(DummyStub, opts).then(function(stub) {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        expect(stub.address).to.eq('foo.example.com:443');
+      return createStub().then(function(stub) {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         expect(stub.options).to.be.falsy;
       });
@@ -122,19 +131,36 @@ describe('grpc', function() {
 
     it('supports optional parameters', function() {
       var opts = {
-        'servicePath': 'foo.example.com',
-        'port': 443,
         'grpc.max_send_message_length': 10 * 1024 * 1024,
         'grpc.initial_reconnect_backoff_ms': 10000,
         'other_dummy_options': 'test'
       };
-      return grpcClient.createStub(DummyStub, opts).then(function(stub) {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        expect(stub.address).to.eq('foo.example.com:443');
+      return createStub(opts).then(function(stub) {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         expect(stub.options).has.key([
           'grpc.max_send_message_length',
           'grpc.initial_reconnect_backoff_ms']);
+      });
+    });
+
+    it('accepts custom channel creds', function() {
+      var customCreds = {sslCreds: 'dummyCustomCreds'};
+      var customChannelCreds = {channelCreds: 'dummyCustomChannel'};
+      stubGrpc.credentials.combineChannelCredentials
+        .withArgs(customCreds, dummyGrpcAuth).returns(customChannelCreds);
+      return createStub({sslCreds: customCreds}).then(function(stub) {
+        expect(stubGrpc.credentials.createSsl.callCount).to.eq(0);
+        expect(stub.creds).to.deep.eq(customChannelCreds);
+      });
+    });
+
+    it('disables auth', function() {
+      grpcClient = gaxGrpc({auth: false, grpc: stubGrpc});
+      return createStub(null, grpcClient).then(function(stub) {
+        expect(stub.creds).to.deep.eq(dummySslCreds);
+        expect(stubGrpc.credentials.createSsl.callCount).to.eq(1);
+        expect(stubGrpc.credentials.createFromGoogleCredential.callCount).to.eq(0);
+        expect(stubGrpc.credentials.combineChannelCredentials.callCount).to.eq(0);
       });
     });
   });
