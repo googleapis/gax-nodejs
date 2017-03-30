@@ -35,7 +35,11 @@
 var util = require('./utils');
 var PageDescriptor = require('../lib/paged_iteration').PageDescriptor;
 var expect = require('chai').expect;
+var process = require('process');
+var pumpify = require('pumpify');
 var sinon = require('sinon');
+var streamEvents = require('stream-events');
+var through2 = require('through2');
 
 describe('paged iteration', function() {
   var pageSize = 3;
@@ -155,6 +159,22 @@ describe('paged iteration', function() {
     }).catch(done);
   });
 
+  it('caps the results by maxResults', function() {
+    var spy = sinon.spy(func);
+    var apiCall = util.createApiCall(spy, createOptions);
+    return apiCall({}, {maxResults: pageSize * 2 + 2}).then(function(response) {
+      expect(response).to.be.an('array');
+      expect(response[0]).to.be.an('array');
+      expect(response[0].length).to.eq(pageSize * 2 + 2);
+      var expected = 0;
+      for (var i = 0; i < response[0].length; ++i) {
+        expect(response[0][i]).to.eq(expected);
+        expected++;
+      }
+      expect(spy.callCount).to.eq(3);
+    });
+  });
+
   describe('stream conversion', function() {
     var spy;
     var apiCall;
@@ -171,7 +191,10 @@ describe('paged iteration', function() {
       }).on('end', function() {
         onEnd();
         done();
-      }).on('error', done);
+      }).on('error', function(err) {
+        console.error(err);
+        done(err);
+      });
     }
 
     it('returns a stream', function(done) {
@@ -199,6 +222,60 @@ describe('paged iteration', function() {
       streamChecker(descriptor.createStream(apiCall, {}, options), function() {
         expect(spy.callCount).to.eq(pagesToStream);
       }, done, pageSize);
+    });
+
+    it('caps the elements by maxResults', function(done) {
+      var onData = sinon.spy();
+      var stream = descriptor.createStream(
+        apiCall, {}, {maxResults: pageSize * 2 + 2});
+      stream.on('data', onData);
+      streamChecker(stream, function() {
+        expect(spy.callCount).to.eq(3);
+        expect(onData.callCount).to.eq(pageSize * 2 + 2);
+      }, done, 0);
+    });
+
+    it('does not call API eagerly', function(done) {
+      var stream = descriptor.createStream(apiCall, {}, null);
+      setTimeout(function() {
+        expect(spy.callCount).to.eq(0);
+        streamChecker(stream, function() {
+          expect(spy.callCount).to.eq(pagesToStream + 1);
+        }, done, 0);
+      }, 50);
+    });
+
+    it('does not start calls when it is already started', function(done) {
+      var stream = descriptor.createStream(apiCall, {}, null);
+      stream.on('end', function() {
+        expect(spy.callCount).to.eq(pagesToStream + 1);
+        done();
+      });
+      stream.resume();
+      process.nextTick(function() {
+        stream.pause();
+        stream.resume();
+      });
+    });
+
+    it('cooperates with google-cloud-node usage', function(done) {
+      var stream;
+      var output = streamEvents(pumpify.obj());
+      output.once('reading', function() {
+        stream = descriptor.createStream(apiCall, {}, null);
+        output.setPipeline(stream, through2.obj());
+      });
+      var count = 0;
+      output.on('data', function() {
+        count++;
+        if (count === pageSize + 1) {
+          output.end();
+        }
+      }).on('end', function() {
+        expect(count).to.eq(pageSize + 1);
+        expect(spy.callCount).to.eq(2);
+        done();
+      }).on('error', done);
     });
   });
 });
