@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "0.12.3",
+  "version": "0.13.0",
   "description": "Google API Extensions",
   "main": "index.js",
   "files": [
@@ -10,7 +10,7 @@
     "extend": "^3.0.0",
     "google-auto-auth": "^0.5.2",
     "google-proto-files": "^0.9.1",
-    "grpc": "^1.1",
+    "grpc": "^1.2",
     "is-stream-ended": "^0.1.0",
     "lodash": "^4.17.2",
     "process-nextick-args": "^1.0.7",
