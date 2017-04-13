@@ -155,9 +155,10 @@ describe('grpc', function() {
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(customCreds);
         expect(stubAuth.getAuthClient.callCount).to.eq(0);
-        expect(stubGrpc.credentials.createSsl.callCount).to.eq(0);
-        expect(stubGrpc.credentials.combineChannelCredentials.callCount).to.eq(0);
-        expect(stubGrpc.credentials.createFromGoogleCredential.callCount).to.eq(0);
+        var credentials = stubGrpc.credentials;
+        expect(credentials.createSsl.callCount).to.eq(0);
+        expect(credentials.combineChannelCredentials.callCount).to.eq(0);
+        expect(credentials.createFromGoogleCredential.callCount).to.eq(0);
       });
     });
   });
