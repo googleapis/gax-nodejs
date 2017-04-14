@@ -90,17 +90,22 @@ describe('grpc', function() {
     }
     var grpcClient;
     var dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
+    var stubAuth = {getAuthClient: sinon.stub()};
+    var stubGrpc = {credentials: {
+      createSsl: sinon.stub(),
+      combineChannelCredentials: sinon.stub(),
+      createFromGoogleCredential: sinon.stub()
+    }};
 
     beforeEach(function() {
-      var stubAuth = {getAuthClient: sinon.stub()};
-      var stubGrpc = {credentials: {
-        createSsl: sinon.stub(),
-        combineChannelCredentials: sinon.stub(),
-        createFromGoogleCredential: sinon.stub()
-      }};
       var dummyAuth = {authData: 'dummyAuth'};
       var dummySslCreds = {sslCreds: 'dummySslCreds'};
       var dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
+      stubAuth.getAuthClient.reset();
+      stubGrpc.credentials.createSsl.reset();
+      stubGrpc.credentials.combineChannelCredentials.reset();
+      stubGrpc.credentials.createFromGoogleCredential.reset();
+
       stubAuth.getAuthClient.callsArgWith(0, null, dummyAuth);
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
       stubGrpc.credentials.createFromGoogleCredential
@@ -135,6 +140,25 @@ describe('grpc', function() {
         expect(stub.options).has.key([
           'grpc.max_send_message_length',
           'grpc.initial_reconnect_backoff_ms']);
+      });
+    });
+
+    it('uses the passed grpc channel', function() {
+      var customCreds = {channelCreds: 'custom'};
+      var opts = {
+        servicePath: 'foo.example.com',
+        port: 443,
+        sslCreds: customCreds
+      };
+      return grpcClient.createStub(DummyStub, opts).then(function(stub) {
+        expect(stub).to.be.an.instanceOf(DummyStub);
+        expect(stub.address).to.eq('foo.example.com:443');
+        expect(stub.creds).to.deep.eq(customCreds);
+        expect(stubAuth.getAuthClient.callCount).to.eq(0);
+        var credentials = stubGrpc.credentials;
+        expect(credentials.createSsl.callCount).to.eq(0);
+        expect(credentials.combineChannelCredentials.callCount).to.eq(0);
+        expect(credentials.createFromGoogleCredential.callCount).to.eq(0);
       });
     });
   });
