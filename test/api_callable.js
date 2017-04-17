@@ -409,4 +409,57 @@ describe('retryable', function() {
       mockBuilder.verify();
     });
   });
+
+  it('uses sets metadata headers with users headers', function(done) {
+    function func(argument, metadata, options, callback) {
+      callback();
+    }
+
+    var setSpy = sinon.spy();
+    var metadata = {set: setSpy};
+    var mockBuilder = function() {
+      return metadata;
+    };
+    var settings = {settings: {
+      otherArgs: {metadataBuilder: mockBuilder}
+    }};
+    var apiCall = createApiCall(func, settings);
+    var headers = {
+      h1: 'val1',
+      h2: 'val2'
+    };
+    apiCall(null, {otherArgs: {headers: headers}}).then(function() {
+      expect(setSpy.callCount).to.equal(2);
+      expect(setSpy.firstCall.args).to.deep.equal(['h1', 'val1']);
+      expect(setSpy.secondCall.args).to.deep.equal(['h2', 'val2']);
+      done();
+    });
+  });
+
+  it('does not override \'x-goog-api-client\' headers', function(done) {
+    function func(argument, metadata, options, callback) {
+      callback();
+    }
+
+    var setSpy = sinon.spy();
+    var metadata = {set: setSpy};
+    var mockBuilder = function() {
+      return metadata;
+    };
+    var settings = {settings: {
+      otherArgs: {metadataBuilder: mockBuilder}
+    }};
+    var apiCall = createApiCall(func, settings);
+    var headers = {
+      'x-goog-api-client': 'header',
+      'h1': 'val1',
+      'h2': 'val2'
+    };
+    apiCall(null, {otherArgs: {headers: headers}}).then(function() {
+      expect(setSpy.callCount).to.equal(2);
+      expect(setSpy.firstCall.args).to.deep.equal(['h1', 'val1']);
+      expect(setSpy.secondCall.args).to.deep.equal(['h2', 'val2']);
+      done();
+    });
+  });
 });
