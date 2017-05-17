@@ -71,6 +71,33 @@ describe('createApiCall', function() {
       done();
     });
   });
+
+  it('chooses the proper timeout', function(done) {
+    function func(argument, metadata, options, callback) {
+      callback(null, options.deadline.getTime());
+    }
+
+    // The settings originally from the 'config_service_v2_client_config.json'
+    // in @google-cloud/logging library.
+    // See https://github.com/googleapis/gax-nodejs/issues/136
+    var apiCall = createApiCall(func, {settings: {
+      timeout: 30000,
+      retry: gax.createRetryOptions(
+          [],
+          gax.createBackoffSettings(
+              100, 1.2, 1000, 2000, 1.5, 30000, 45000))
+    }});
+
+    var start = (new Date()).getTime();
+    apiCall(null, null, function(err, resp) {
+      // The verifying value is slightly bigger than the expected number
+      // 2000 / 30000, because sometimes runtime can consume some time before
+      // the call starts.
+      expect(resp - start).above(2100);
+      expect(resp - start).most(30100);
+      done();
+    });
+  });
 });
 
 describe('Promise', function() {
@@ -261,7 +288,7 @@ describe('retryable', function() {
     apiCall(null, null, function(err, resp) {
       expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err.note).to.be.ok;
+      expect(err.note).to.be.undefined;
       expect(spy.callCount).to.eq(1);
       done();
     });
