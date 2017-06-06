@@ -121,7 +121,7 @@ describe('grpc', function() {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        expect(stub.options).to.be.false;
+        expect(stub.options).to.deep.eq({});
       });
     });
 
