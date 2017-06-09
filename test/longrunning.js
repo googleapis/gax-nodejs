@@ -135,7 +135,7 @@ describe('longrunning', function() {
       var defaultInitialRetryDelayMillis = 100;
       var defaultRetryDelayMultiplier = 1.3;
       var defaultMaxRetryDelayMillis = 60000;
-      var defaultTotalTimeoutMillis = 600000;
+      var defaultTotalTimeoutMillis = null;
       var apiCall = createApiCall(func);
       apiCall().then(function(responses) {
         var operation = responses[0];
