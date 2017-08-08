@@ -456,8 +456,8 @@ describe('retryable', function() {
       h2: 'val2'
     };
     apiCall(null, {otherArgs: {headers: headers}}).then(function() {
-      expect(gotHeaders['h1']).to.deep.equal('val1');
-      expect(gotHeaders['h2']).to.deep.equal('val2');
+      expect(gotHeaders.h1).to.deep.equal('val1');
+      expect(gotHeaders.h2).to.deep.equal('val2');
       done();
     });
   });
