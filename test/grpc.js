@@ -63,6 +63,33 @@ describe('grpc', function() {
       }
     });
 
+    it('adds user metadata', function() {
+      var headers = {
+        'X-Dummy-Header': 'Dummy value',
+        'Other-Header': 'Other value',
+        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
+      };
+      var builder = grpcClient.metadataBuilder(headers);
+      var abTesting = null;
+      var moreHeaders = {foo: 'bar'};
+      var metadata = builder(abTesting, moreHeaders);
+      expect(metadata.get('foo')).to.deep.eq(['bar']);
+    });
+
+    it('does not override x-goog-api-client', function() {
+      var headers = {
+        'X-Dummy-Header': 'Dummy value',
+        'Other-Header': 'Other value',
+        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
+      };
+      var builder = grpcClient.metadataBuilder(headers);
+      var abTesting = null;
+      var moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
+      var metadata = builder(abTesting, moreHeaders);
+      expect(metadata.get('x-goog-api-client'))
+        .to.deep.eq(['gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0']);
+    });
+
     it.skip('customize api-client header for A/B testing', function() {
       var headers = {
         'X-Goog-Api-Client': 'gl-node/nodeVersion gax/gaxVersion'
