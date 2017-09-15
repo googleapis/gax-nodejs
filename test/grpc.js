@@ -32,6 +32,9 @@
 
 var gaxGrpc = require('../lib/grpc');
 var expect = require('chai').expect;
+var path = require('path');
+var protobuf = require('protobufjs');
+var proxyquire = require('proxyquire');
 var sinon = require('sinon');
 
 describe('grpc', function() {
@@ -186,6 +189,96 @@ describe('grpc', function() {
         expect(credentials.createSsl.callCount).to.eq(0);
         expect(credentials.combineChannelCredentials.callCount).to.eq(0);
         expect(credentials.createFromGoogleCredential.callCount).to.eq(0);
+      });
+    });
+  });
+
+  describe('loadProto', function() {
+    var TEST_FILE = path.join(
+        __dirname, 'fixtures', 'google', 'example', 'library', 'v1',
+       'library.proto');
+    var grpcClient = gaxGrpc();
+
+    it('should load the test file', function() {
+      var protos = grpcClient.loadProto(TEST_FILE);
+      expect(protos.google.example.library.v1.LibraryService)
+        .to.be.a('Function');
+      expect(protos.test.TestMessage).to.be.an('object');
+    });
+  });
+
+  describe('GoogleProtoFilesRoot', function() {
+    var TEST_FILE = path.join(
+        __dirname, 'fixtures', 'google', 'example', 'library', 'v1',
+       'library.proto');
+
+    describe('load', function() {
+      it('should not be able to load test file using protobufjs directly',
+          function(done) {
+            protobuf.load(TEST_FILE).then(function() {
+              done(Error('should not get here'));
+            }).catch(function() {
+              done();
+            });
+          });
+
+      it('should load a test file', function(done) {
+        protobuf.load(TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+          .then(function(root) {
+            expect(root).to.be.an.instanceOf(protobuf.Root);
+            expect(root.lookup('google.example.library.v1.LibraryService'))
+              .to.be.an.instanceOf(protobuf.Service);
+            expect(root.lookup('test.TestMessage'))
+              .to.be.an.instanceOf(protobuf.Type);
+            done();
+          }).catch(done);
+      });
+    });
+
+    describe('loadSync', function() {
+      it('should not be able to load test file using protobufjs directly',
+          function() {
+            var root = protobuf.loadSync(TEST_FILE);
+            // Common proto that should not have been loaded.
+            expect(root.lookup('google.api.Http')).to.eq(null);
+          });
+
+      it('should load a test file that relies on common protos', function() {
+        var root = protobuf.loadSync(TEST_FILE,
+          new gaxGrpc.GoogleProtoFilesRoot());
+        expect(root).to.be.an.instanceOf(protobuf.Root);
+        expect(root.lookup('google.example.library.v1.LibraryService'))
+          .to.be.an.instanceOf(protobuf.Service);
+        expect(root.lookup('test.TestMessage'))
+          .to.be.an.instanceOf(protobuf.Type);
+      });
+    });
+
+    describe('_findIncludePath', function() {
+      it('should throw an error if a file is not found', function() {
+        var findIncludePath = proxyquire('../lib/grpc', {
+          fs: {
+            existsSync: function() { return false; }
+          }
+        }).GoogleProtoFilesRoot._findIncludePath;
+
+        expect(
+          findIncludePath.bind(null,
+            '/test/path/location', 'test/import.proto')).to.throw();
+      });
+
+      it('should return the correct resolved import path', function() {
+        var correctPath = '/test/example/import.proto';
+        var findIncludePath = proxyquire('../lib/grpc', {
+          fs: {
+            existsSync: function(path) {
+              return path === correctPath;
+            }
+          }
+        }).GoogleProtoFilesRoot._findIncludePath;
+
+        expect(findIncludePath('/test/path/location/', 'example/import.proto'))
+          .to.equal(correctPath);
       });
     });
   });
