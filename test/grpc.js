@@ -195,15 +195,29 @@ describe('grpc', function() {
 
   describe('loadProto', function() {
     var TEST_FILE = path.join(
-        __dirname, 'fixtures', 'google', 'example', 'library', 'v1',
+        'fixtures', 'google', 'example', 'library', 'v1',
        'library.proto');
     var grpcClient = gaxGrpc();
 
     it('should load the test file', function() {
-      var protos = grpcClient.loadProto(TEST_FILE);
+      var protos = grpcClient.loadProto(__dirname, TEST_FILE);
       expect(protos.google.example.library.v1.LibraryService)
         .to.be.a('Function');
       expect(protos.test.TestMessage).to.be.an('object');
+    });
+
+    it('should load a common proto', function() {
+      var nonexistantDir = path.join(__dirname, 'nonexistant', 'dir');
+      var iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
+      var protos = grpcClient.loadProto(nonexistantDir, iamService);
+      expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
+    });
+
+    it('should emit an error for not found proto', function() {
+      var nonexistantDir = path.join(__dirname, 'nonexistant', 'dir');
+      var nonexistantFile = 'nonexistant.proto';
+      expect(grpcClient.loadProto.bind(null, nonexistantDir, nonexistantFile))
+        .to.throw();
     });
   });
 
