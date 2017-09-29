@@ -269,6 +269,9 @@ describe('grpc', function() {
     });
 
     describe('_findIncludePath', function() {
+      var originPath = path.join('test', 'path', 'location');
+      var includePath = path.join('example', 'import.proto');
+
       it('should throw an error if a file is not found', function() {
         var findIncludePath = proxyquire('../lib/grpc', {
           fs: {
@@ -277,12 +280,11 @@ describe('grpc', function() {
         }).GoogleProtoFilesRoot._findIncludePath;
 
         expect(
-          findIncludePath.bind(null,
-            '/test/path/location', 'test/import.proto')).to.throw();
+          findIncludePath.bind(null, originPath, includePath)).to.throw();
       });
 
       it('should return the correct resolved import path', function() {
-        var correctPath = '/test/example/import.proto';
+        var correctPath = path.join('test', 'example', 'import.proto');
         var findIncludePath = proxyquire('../lib/grpc', {
           fs: {
             existsSync: function(path) {
@@ -290,9 +292,7 @@ describe('grpc', function() {
             }
           }
         }).GoogleProtoFilesRoot._findIncludePath;
-
-        expect(findIncludePath('/test/path/location/', 'example/import.proto'))
-          .to.equal(correctPath);
+        expect(findIncludePath(originPath, includePath)).to.equal(correctPath);
       });
     });
   });
