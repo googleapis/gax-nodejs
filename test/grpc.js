@@ -207,16 +207,16 @@ describe('grpc', function() {
     });
 
     it('should load a common proto', function() {
-      var nonexistantDir = path.join(__dirname, 'nonexistant', 'dir');
+      var nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       var iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
-      var protos = grpcClient.loadProto(nonexistantDir, iamService);
+      var protos = grpcClient.loadProto(nonExistentDir, iamService);
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
 
     it('should emit an error for not found proto', function() {
-      var nonexistantDir = path.join(__dirname, 'nonexistant', 'dir');
-      var nonexistantFile = 'nonexistant.proto';
-      expect(grpcClient.loadProto.bind(null, nonexistantDir, nonexistantFile))
+      var nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
+      var nonExistentFile = 'nonexistent.proto';
+      expect(grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile))
         .to.throw();
     });
   });
@@ -225,7 +225,7 @@ describe('grpc', function() {
     var FIXTURES_DIR = path.join(
       __dirname, 'fixtures', 'google', 'example', 'library', 'v1');
     var TEST_FILE = path.join(FIXTURES_DIR, 'library.proto');
-    var NON_EXISTANT_FILE = path.join(__dirname, 'does', 'not', 'exist.proto');
+    var NON_EXISTENT_FILE = path.join(__dirname, 'does', 'not', 'exist.proto');
     var MISSING_INCLUDE_FILE = path.join(FIXTURES_DIR,
       'missing_include.proto');
 
@@ -251,8 +251,8 @@ describe('grpc', function() {
           }).catch(done);
       });
 
-      it('should fail trying to load a non existant file.', function(done) {
-        protobuf.load(NON_EXISTANT_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+      it('should fail trying to load a non existent file.', function(done) {
+        protobuf.load(NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot())
           .then(function() {
             done(Error('should not get here'));
           }).catch(function() {
@@ -288,9 +288,9 @@ describe('grpc', function() {
           .to.be.an.instanceOf(protobuf.Type);
       });
 
-      it('should fail trying to load a non existant file.', function() {
+      it('should fail trying to load a non existent file.', function() {
         expect(protobuf.loadSync.bind(
-          null, NON_EXISTANT_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+          null, NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
           .to.throw();
       });
 
