@@ -222,11 +222,14 @@ describe('grpc', function() {
   });
 
   describe('GoogleProtoFilesRoot', function() {
-    var TEST_FILE = path.join(
-        __dirname, 'fixtures', 'google', 'example', 'library', 'v1',
-       'library.proto');
+    var FIXTURES_DIR = path.join(
+      __dirname, 'fixtures', 'google', 'example', 'library', 'v1');
+    var TEST_FILE = path.join(FIXTURES_DIR, 'library.proto');
+    var NON_EXISTANT_FILE = path.join(__dirname, 'does', 'not', 'exist.proto');
+    var MISSING_INCLUDE_FILE = path.join(FIXTURES_DIR,
+      'missing_include.proto');
 
-    describe('load', function() {
+    describe('use with protobufjs load', function() {
       it('should not be able to load test file using protobufjs directly',
           function(done) {
             protobuf.load(TEST_FILE).then(function() {
@@ -247,9 +250,27 @@ describe('grpc', function() {
             done();
           }).catch(done);
       });
+
+      it('should fail trying to load a non existant file.', function(done) {
+        protobuf.load(NON_EXISTANT_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+          .then(function() {
+            done(Error('should not get here'));
+          }).catch(function() {
+            done();
+          });
+      });
+
+      it('should fail loading a file with a missing include.', function(done) {
+        protobuf.load(MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+          .then(function() {
+            done(Error('should not get here'));
+          }).catch(function() {
+            done();
+          });
+      });
     });
 
-    describe('loadSync', function() {
+    describe('use with protobufjs loadSync', function() {
       it('should not be able to load test file using protobufjs directly',
           function() {
             var root = protobuf.loadSync(TEST_FILE);
@@ -265,6 +286,18 @@ describe('grpc', function() {
           .to.be.an.instanceOf(protobuf.Service);
         expect(root.lookup('test.TestMessage'))
           .to.be.an.instanceOf(protobuf.Type);
+      });
+
+      it('should fail trying to load a non existant file.', function() {
+        expect(protobuf.loadSync.bind(
+          null, NON_EXISTANT_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+          .to.throw();
+      });
+
+      it('should fail loading a file with a missing include', function() {
+        expect(protobuf.loadSync.bind(
+          null, MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+          .to.throw();
       });
     });
 
