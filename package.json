@@ -34,12 +34,12 @@
     "stream-events": "^1.0.1"
   },
   "scripts": {
-    "codecov": "istanbul cover _mocha -- --reporter spec --slow 500 --timeout 5000 && codecov",
+    "codecov": "istanbul test ./node_modules/mocha/bin/_mocha -- --reporter spec --slow 500 --timeout 5000 && ./node_modules/codecov/bin/codecov",
     "doc": "jsdoc lib package.json README.md -c ./jsdoc.conf -d doc",
     "lint": "eslint --ignore-path .jshintignore lib test",
     "lint-fix": "eslint --ignore-path .jshintignore --fix lib test",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
-    "test": "istanbul test _mocha -- --reporter spec --slow 500 --timeout 5000",
+    "test": "istanbul test ./node_modules/mocha/bin/_mocha -- --reporter spec --slow 500 --timeout 5000",
     "publish-gh-pages": "bash ./publish-gh-pages.sh"
   },
   "repository": {
