@@ -60,7 +60,6 @@ describe('streaming', function() {
 
     var apiCall = createApiCall(
         spy, streaming.StreamType.SERVER_STREAMING);
-    var s = apiCall(null, null);
     var callback = sinon.spy(function(data) {
       if (callback.callCount === 1) {
         expect(data).to.deep.equal({resources: [1, 2]});
@@ -68,41 +67,69 @@ describe('streaming', function() {
         expect(data).to.deep.equal({resources: [3, 4, 5]});
       }
     });
+    var s = apiCall(null, null)
+      .on('data', callback)
+      .on('end', function() {
+        expect(callback.callCount).to.eq(2);
+        done();
+      });
     expect(s.readable).to.be.true;
     expect(s.writable).to.be.false;
-    s.on('data', callback);
-    s.on('end', function() {
-      expect(callback.callCount).to.eq(2);
-      done();
-    });
   });
 
   it('handles client streaming', function(done) {
     function func(metadata, options, callback) {
       expect(arguments.length).to.eq(3);
-      var s = through2.obj();
       var written = [];
-      s.on('end', function() {
-        callback(null, written);
-      });
-      s.on('error', callback);
-      s.on('data', function(data) {
-        written.push(data);
-      });
-      return s;
+      return through2.obj()
+        .on('end', function() {
+          callback(null, written);
+        })
+        .on('error', callback)
+        .on('data', function(data) {
+          written.push(data);
+        });
     }
 
     var apiCall = createApiCall(
         func, streaming.StreamType.CLIENT_STREAMING);
-    var s = apiCall(null, null, function(err, response) {
-      expect(err).to.be.null;
-      expect(response).to.deep.eq(['foo', 'bar']);
-      done();
-    });
+    var s = apiCall(null, null)
+        .on('response', function(response) {
+          expect(response).to.deep.eq(['foo', 'bar']);
+          done();
+        });
     expect(s.readable).to.be.false;
     expect(s.writable).to.be.true;
     s.write('foo');
     s.write('bar');
+    s.end();
+  });
+
+  it('handles errors on ending client streaming', function(done) {
+    function func(metadata, options, callback) {
+      expect(arguments.length).to.eq(3);
+      return through2.obj()
+        .on('end', function() {
+          callback(new Error());
+        })
+        .on('data', function(data) {
+          expect(data).to.eq('foo');
+        });
+    }
+
+    var apiCall = createApiCall(
+        func, streaming.StreamType.CLIENT_STREAMING);
+    var s = apiCall(null, null)
+        .on('response', function() {
+          done(new Error('should not reach'));
+        })
+        .on('error', function(err) {
+          expect(err).to.be.an('error');
+          done();
+        });
+    expect(s.readable).to.be.false;
+    expect(s.writable).to.be.true;
+    s.write('foo');
     s.end();
   });
 
@@ -113,18 +140,18 @@ describe('streaming', function() {
       return s;
     }
 
-    var apiCall = createApiCall(
-        func, streaming.StreamType.BIDI_STREAMING);
-    var s = apiCall(null, null);
     var arg = {foo: 'bar'};
     var callback = sinon.spy(function(data) {
       expect(data).to.eq(arg);
     });
-    s.on('data', callback);
-    s.on('end', function() {
-      expect(callback.callCount).to.eq(2);
-      done();
-    });
+    var apiCall = createApiCall(
+        func, streaming.StreamType.BIDI_STREAMING);
+    var s = apiCall(null, null)
+      .on('data', callback)
+      .on('end', function() {
+        expect(callback.callCount).to.eq(2);
+        done();
+      });
     expect(s.readable).to.be.true;
     expect(s.writable).to.be.true;
     s.write(arg);
@@ -142,40 +169,40 @@ describe('streaming', function() {
       metadata: responseMetadata
     };
     function func(metadata, options) {
-      var s = through2.obj();
+      var s = through2.obj()
+        .on('end', function() {
+          s.emit('status', status);
+        });
       setTimeout(function() {
         s.emit('metadata', responseMetadata);
       }, 10);
-      s.on('end', function() {
-        s.emit('status', status);
-      });
       return s;
     }
     var apiCall = createApiCall(
         func, streaming.StreamType.BIDI_STREAMING);
-    var s = apiCall(null, null);
     var receivedMetadata;
     var receivedStatus;
     var receivedResponse;
-    s.on('metadata', function(data) {
-      receivedMetadata = data;
-    });
-    s.on('status', function(data) {
-      receivedStatus = data;
-    });
-    s.on('response', function(data) {
-      receivedResponse = data;
-    });
-    s.on('end', function() {
-      expect(receivedMetadata).to.deep.eq(responseMetadata);
-      expect(receivedStatus).to.deep.eq(status);
-      expect(receivedResponse).to.deep.eq(expectedResponse);
-      done();
-    });
+    var s = apiCall(null, null)
+      .on('metadata', function(data) {
+        receivedMetadata = data;
+      })
+      .on('status', function(data) {
+        receivedStatus = data;
+      })
+      .on('response', function(data) {
+        receivedResponse = data;
+      })
+      .on('end', function() {
+        expect(receivedMetadata).to.deep.eq(responseMetadata);
+        expect(receivedStatus).to.deep.eq(status);
+        expect(receivedResponse).to.deep.eq(expectedResponse);
+        done();
+      });
     expect(s.readable).to.be.true;
     expect(s.writable).to.be.true;
     setTimeout(function() {
-      s.end(s);
+      s.end();
     }, 50);
   });
 
@@ -201,21 +228,21 @@ describe('streaming', function() {
     }
     var apiCall = createApiCall(
         func, streaming.StreamType.SERVER_STREAMING);
-    var s = apiCall(null, null);
     var counter = 0;
     var expectedCount = 5;
-    s.on('data', function(data) {
-      expect(data).to.eq(counter);
-      counter++;
-      if (counter === expectedCount) {
-        s.cancel();
-      } else if (counter > expectedCount) {
-        done(new Error('should not reach'));
-      }
-    });
-    s.on('error', function(err) {
-      expect(err).to.eq(cancelError);
-      done();
-    });
+    var s = apiCall(null, null)
+      .on('data', function(data) {
+        expect(data).to.eq(counter);
+        counter++;
+        if (counter === expectedCount) {
+          s.cancel();
+        } else if (counter > expectedCount) {
+          done(new Error('should not reach'));
+        }
+      })
+      .on('error', function(err) {
+        expect(err).to.eq(cancelError);
+        done();
+      });
   });
 });
