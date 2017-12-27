@@ -11,7 +11,7 @@
     "globby": "^6.1.0",
     "google-auto-auth": "^0.8.0",
     "google-proto-files": "^0.13.1",
-    "grpc": "^1.7.1",
+    "grpc": "~1.7.2",
     "is-stream-ended": "^0.1.0",
     "lodash": "^4.17.2",
     "process-nextick-args": "^1.0.7",
