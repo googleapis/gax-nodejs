@@ -30,43 +30,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
+"use strict";
 
-var expect = require('chai').expect;
+var expect = require("chai").expect;
 
-describe('The PathTemplate parser', function() {
-  it('should load the pegjs generated module ok', function() {
-    var parser = require('../lib/path_template_parser');
+describe("The PathTemplate parser", function() {
+  it("should load the pegjs generated module ok", function() {
+    var parser = require("../lib/path_template_parser");
     expect(parser).to.not.eql(null);
   });
 
-  describe('function `parse`', function() {
-    var parser = require('../lib/path_template_parser');
+  describe("function `parse`", function() {
+    var parser = require("../lib/path_template_parser");
 
-    it('should succeed with valid inputs', function() {
+    it("should succeed with valid inputs", function() {
       var shouldPass = function() {
-        parser.parse('a/b/**/*/{a=hello/world}');
+        parser.parse("a/b/**/*/{a=hello/world}");
       };
       expect(shouldPass).to.not.throw();
     });
 
-    it('should fail on invalid tokens', function() {
+    it("should fail on invalid tokens", function() {
       var shouldFail = function() {
-        parser.parse('hello/wor* ld}');
+        parser.parse("hello/wor* ld}");
       };
       expect(shouldFail).to.throw();
     });
 
-    it('should fail on unexpected eof', function() {
+    it("should fail on unexpected eof", function() {
       var shouldFail = function() {
-        parser.parse('a/{hello=world');
+        parser.parse("a/{hello=world");
       };
       expect(shouldFail).to.throw();
     });
 
-    it('should fail on inner binding', function() {
+    it("should fail on inner binding", function() {
       var shouldFail = function() {
-        parser.parse('buckets/{hello={world}}');
+        parser.parse("buckets/{hello={world}}");
       };
       expect(shouldFail).to.throw();
     });

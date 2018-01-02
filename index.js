@@ -29,21 +29,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
+"use strict";
 
-var bundling = require('./lib/bundling');
-var gax = require('./lib/gax');
-var grpc = require('./lib/grpc');
-var extend = require('extend');
-var streaming = require('./lib/streaming');
-var operationsClient = require('./lib/operations_client');
-var longrunning = require('./lib/longrunning');
-var routingHeader = require('./lib/routing_header');
+var bundling = require("./lib/bundling");
+var gax = require("./lib/gax");
+var grpc = require("./lib/grpc");
+var extend = require("extend");
+var streaming = require("./lib/streaming");
+var operationsClient = require("./lib/operations_client");
+var longrunning = require("./lib/longrunning");
+var routingHeader = require("./lib/routing_header");
 
 function lro(options) {
-  options = extend({
-    scopes: lro.ALL_SCOPES
-  }, options);
+  options = extend(
+    {
+      scopes: lro.ALL_SCOPES
+    },
+    options
+  );
   var gaxGrpc = grpc(options);
   return operationsClient(gaxGrpc);
 }
@@ -51,11 +54,11 @@ lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 exports.lro = lro;
-exports.createApiCall = require('./lib/api_callable').createApiCall;
+exports.createApiCall = require("./lib/api_callable").createApiCall;
 exports.grpc = grpc;
 exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.PathTemplate = require('./lib/path_template').PathTemplate;
-exports.PageDescriptor = require('./lib/paged_iteration').PageDescriptor;
+exports.PathTemplate = require("./lib/path_template").PathTemplate;
+exports.PageDescriptor = require("./lib/paged_iteration").PageDescriptor;
 exports.BundleDescriptor = bundling.BundleDescriptor;
 exports.StreamType = streaming.StreamType;
 exports.StreamDescriptor = streaming.StreamDescriptor;
@@ -64,4 +67,4 @@ exports.BundleExecutor = bundling.BundleExecutor;
 exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
 exports.operation = longrunning.operation;
 exports.routingHeader = routingHeader;
-exports.version = require('./package').version;
+exports.version = require("./package").version;
