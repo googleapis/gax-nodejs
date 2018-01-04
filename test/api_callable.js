@@ -30,20 +30,20 @@
 
 /* jshint expr: true*/
 
-"use strict";
+'use strict';
 
-var gax = require("../lib/gax");
-var expect = require("chai").expect;
-var sinon = require("sinon");
-var utils = require("./utils");
+var gax = require('../lib/gax');
+var expect = require('chai').expect;
+var sinon = require('sinon');
+var utils = require('./utils');
 
 var fail = utils.fail;
 var createApiCall = utils.createApiCall;
 var FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
 var FAKE_STATUS_CODE_2 = utils.FAKE_STATUS_CODE_1 + 1;
 
-describe("createApiCall", function() {
-  it("calls api call", function(done) {
+describe('createApiCall', function() {
+  it('calls api call', function(done) {
     var deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
@@ -57,12 +57,12 @@ describe("createApiCall", function() {
     });
   });
 
-  it("is customized by call options", function(done) {
+  it('is customized by call options', function(done) {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
-    var apiCall = createApiCall(func, { settings: { timeout: 100 } });
-    apiCall(null, { timeout: 200 }, function(err, resp) {
+    var apiCall = createApiCall(func, {settings: {timeout: 100}});
+    apiCall(null, {timeout: 200}, function(err, resp) {
       var now = new Date();
       var originalDeadline = now.getTime() + 100;
       var expectedDeadline = now.getTime() + 200;
@@ -72,7 +72,7 @@ describe("createApiCall", function() {
     });
   });
 
-  it("chooses the proper timeout", function(done) {
+  it('chooses the proper timeout', function(done) {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
@@ -86,8 +86,8 @@ describe("createApiCall", function() {
         retry: gax.createRetryOptions(
           [],
           gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)
-        )
-      }
+        ),
+      },
     });
 
     var start = new Date().getTime();
@@ -102,8 +102,8 @@ describe("createApiCall", function() {
   });
 });
 
-describe("Promise", function() {
-  it("calls api call", function(done) {
+describe('Promise', function() {
+  it('calls api call', function(done) {
     var deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
@@ -112,7 +112,7 @@ describe("Promise", function() {
     var apiCall = createApiCall(func);
     apiCall(null)
       .then(function(response) {
-        expect(response).to.be.an("array");
+        expect(response).to.be.an('array');
         expect(response[0]).to.eq(42);
         expect(deadlineArg).to.be.ok;
         done();
@@ -120,11 +120,11 @@ describe("Promise", function() {
       .catch(done);
   });
 
-  it("emits error on failure", function(done) {
+  it('emits error on failure', function(done) {
     var apiCall = createApiCall(fail);
     apiCall(null, null)
       .then(function() {
-        done(new Error("should not reach"));
+        done(new Error('should not reach'));
       })
       .catch(function(err) {
         expect(err).to.be.an.instanceOf(Error);
@@ -132,17 +132,17 @@ describe("Promise", function() {
       });
   });
 
-  it("has cancel method", function(done) {
+  it('has cancel method', function(done) {
     function func(argument, metadata, options, callback) {
       setTimeout(function() {
         callback(null, 42);
       }, 0);
     }
-    var apiCall = createApiCall(func, { cancel: done });
+    var apiCall = createApiCall(func, {cancel: done});
     var promise = apiCall(null);
     promise
       .then(function() {
-        done(new Error("should not reach"));
+        done(new Error('should not reach'));
       })
       .catch(function() {
         done();
@@ -150,7 +150,7 @@ describe("Promise", function() {
     promise.cancel();
   });
 
-  it("cancels retrying call", function(done) {
+  it('cancels retrying call', function(done) {
     var retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
 
     var callCount = 0;
@@ -169,17 +169,17 @@ describe("Promise", function() {
       }, 10);
       return function cancelFunc() {
         clearTimeout(timeoutId);
-        callback(new Error("canceled"));
+        callback(new Error('canceled'));
       };
     }
     var apiCall = createApiCall(func, {
-      settings: { retry: retryOptions },
-      returnCancelFunc: true
+      settings: {retry: retryOptions},
+      returnCancelFunc: true,
     });
     var promise = apiCall(null);
     promise
       .then(function() {
-        done(new Error("should not reach"));
+        done(new Error('should not reach'));
       })
       .catch(function() {
         expect(callCount).to.be.below(4);
@@ -191,7 +191,7 @@ describe("Promise", function() {
     }, 15);
   });
 
-  it("does not return promise when callback is supplied", function(done) {
+  it('does not return promise when callback is supplied', function(done) {
     function func(argument, metadata, options, callback) {
       callback(null, 42);
     }
@@ -205,7 +205,7 @@ describe("Promise", function() {
     ).to.be.undefined;
   });
 
-  it("uses a provided promise module.", function(done) {
+  it('uses a provided promise module.', function(done) {
     var called = false;
     function MockPromise(resolver) {
       called = true;
@@ -216,9 +216,9 @@ describe("Promise", function() {
       callback(null, 42);
     }
     var apiCall = createApiCall(func);
-    apiCall(null, { promise: MockPromise })
+    apiCall(null, {promise: MockPromise})
       .then(function(response) {
-        expect(response).to.be.an("array");
+        expect(response).to.be.an('array');
         expect(response[0]).to.eq(42);
         expect(called).to.be.true;
         done();
@@ -227,11 +227,11 @@ describe("Promise", function() {
   });
 });
 
-describe("retryable", function() {
+describe('retryable', function() {
   var retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
-  var settings = { settings: { timeout: 0, retry: retryOptions } };
+  var settings = {settings: {timeout: 0, retry: retryOptions}};
 
-  it("retries the API call", function(done) {
+  it('retries the API call', function(done) {
     var toAttempt = 3;
     var deadlineArg;
     function func(argument, metadata, options, callback) {
@@ -252,7 +252,7 @@ describe("retryable", function() {
     });
   });
 
-  it("retries the API call with promise", function(done) {
+  it('retries the API call with promise', function(done) {
     var toAttempt = 3;
     var deadlineArg;
     function func(argument, metadata, options, callback) {
@@ -267,7 +267,7 @@ describe("retryable", function() {
     var apiCall = createApiCall(func, settings);
     apiCall(null, null)
       .then(function(resp) {
-        expect(resp).to.be.an("array");
+        expect(resp).to.be.an('array');
         expect(resp[0]).to.eq(1729);
         expect(toAttempt).to.eq(0);
         expect(deadlineArg).to.be.ok;
@@ -276,7 +276,7 @@ describe("retryable", function() {
       .catch(done);
   });
 
-  it("cancels in the middle of retries", function(done) {
+  it('cancels in the middle of retries', function(done) {
     var callCount = 0;
     var promise;
     function func(argument, metadata, options, callback) {
@@ -296,7 +296,7 @@ describe("retryable", function() {
     promise = apiCall(null, null);
     promise
       .then(function() {
-        done(new Error("should not reach"));
+        done(new Error('should not reach'));
       })
       .catch(function(err) {
         expect(err).to.be.an.instanceOf(Error);
@@ -309,11 +309,11 @@ describe("retryable", function() {
       [],
       gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7)
     );
-    var settings = { settings: { timeout: 0, retry: retryOptions } };
+    var settings = {settings: {timeout: 0, retry: retryOptions}};
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.undefined;
       expect(spy.callCount).to.eq(1);
@@ -321,20 +321,20 @@ describe("retryable", function() {
     });
   });
 
-  it("aborts retries", function(done) {
+  it('aborts retries', function(done) {
     var apiCall = createApiCall(fail, settings);
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       done();
     });
   });
 
-  it.skip("times out", function(done) {
+  it.skip('times out', function(done) {
     var toAttempt = 3;
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
@@ -343,7 +343,7 @@ describe("retryable", function() {
   });
 
   // maxRetries is unsupported, and intended for internal use only.
-  it("errors on maxRetries", function(done) {
+  it('errors on maxRetries', function(done) {
     var toAttempt = 5;
     var backoff = gax.createMaxRetriesBackoffSettings(
       0,
@@ -357,19 +357,19 @@ describe("retryable", function() {
     var maxRetriesRetryOptions = utils.createRetryOptions(backoff);
 
     var maxRetrySettings = {
-      settings: { timeout: 0, retry: maxRetriesRetryOptions }
+      settings: {timeout: 0, retry: maxRetriesRetryOptions},
     };
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       expect(spy.callCount).to.eq(toAttempt);
       done();
     });
   });
 
   // maxRetries is unsupported, and intended for internal use only.
-  it("errors when totalTimeoutMillis and maxRetries set", function(done) {
+  it('errors when totalTimeoutMillis and maxRetries set', function(done) {
     var maxRetries = 5;
     var backoff = gax.createMaxRetriesBackoffSettings(
       0,
@@ -383,18 +383,18 @@ describe("retryable", function() {
     var maxRetriesRetryOptions = utils.createRetryOptions(backoff);
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
     var maxRetrySettings = {
-      settings: { timeout: 0, retry: maxRetriesRetryOptions }
+      settings: {timeout: 0, retry: maxRetriesRetryOptions},
     };
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       expect(spy.callCount).to.eq(0);
       done();
     });
   });
 
-  it("aborts on unexpected exception", function(done) {
+  it('aborts on unexpected exception', function(done) {
     function func(argument, metadata, options, callback) {
       var error = new Error();
       error.code = FAKE_STATUS_CODE_2;
@@ -403,7 +403,7 @@ describe("retryable", function() {
     var spy = sinon.spy(func);
     var apiCall = createApiCall(spy, settings);
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_2);
       expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
@@ -411,7 +411,7 @@ describe("retryable", function() {
     });
   });
 
-  it("does not retry even when no responses", function(done) {
+  it('does not retry even when no responses', function(done) {
     function func(argument, metadata, options, callback) {
       callback(null, null);
     }
@@ -423,18 +423,18 @@ describe("retryable", function() {
     });
   });
 
-  it.skip("retries with exponential backoff", function(done) {
+  it.skip('retries with exponential backoff', function(done) {
     var startTime = new Date();
     var spy = sinon.spy(fail);
 
     var backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
     var retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
     var apiCall = createApiCall(spy, {
-      settings: { timeout: 0, retry: retryOptions }
+      settings: {timeout: 0, retry: retryOptions},
     });
 
     apiCall(null, null, function(err) {
-      expect(err).to.be.an("error");
+      expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.ok;
       var now = new Date();
@@ -452,7 +452,7 @@ describe("retryable", function() {
     });
   });
 
-  it.skip("reports A/B testing", function() {
+  it.skip('reports A/B testing', function() {
     function func(argument, metadata, options, callback) {
       callback(null, argument);
     }
@@ -461,25 +461,25 @@ describe("retryable", function() {
       settings: {
         timeout: 0,
         retry: retryOptions,
-        otherArgs: { metadataBuilder: mockBuilder }
-      }
+        otherArgs: {metadataBuilder: mockBuilder},
+      },
     };
     var apiCall = createApiCall(func, settings);
-    mockBuilder.withExactArgs({ retry: "2" });
+    mockBuilder.withExactArgs({retry: '2'});
     return apiCall(null, null)
       .then(function() {
         mockBuilder.verify();
         mockBuilder.reset();
         var backoff = gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, 5);
-        mockBuilder.withExactArgs({ retry: "1" });
-        return apiCall(null, { retry: utils.createRetryOptions(backoff) });
+        mockBuilder.withExactArgs({retry: '1'});
+        return apiCall(null, {retry: utils.createRetryOptions(backoff)});
       })
       .then(function() {
         mockBuilder.verify();
         mockBuilder.reset();
-        mockBuilder.withExactArgs({ retry: "2" });
+        mockBuilder.withExactArgs({retry: '2'});
         var options = {
-          retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200)
+          retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
         };
         return apiCall(null, options);
       })
@@ -488,7 +488,7 @@ describe("retryable", function() {
       });
   });
 
-  it("forwards metadata to builder", function(done) {
+  it('forwards metadata to builder', function(done) {
     function func(argument, metadata, options, callback) {
       callback();
     }
@@ -499,17 +499,17 @@ describe("retryable", function() {
     };
     var settings = {
       settings: {
-        otherArgs: { metadataBuilder: mockBuilder }
-      }
+        otherArgs: {metadataBuilder: mockBuilder},
+      },
     };
     var apiCall = createApiCall(func, settings);
     var headers = {
-      h1: "val1",
-      h2: "val2"
+      h1: 'val1',
+      h2: 'val2',
     };
-    apiCall(null, { otherArgs: { headers: headers } }).then(function() {
-      expect(gotHeaders.h1).to.deep.equal("val1");
-      expect(gotHeaders.h2).to.deep.equal("val2");
+    apiCall(null, {otherArgs: {headers: headers}}).then(function() {
+      expect(gotHeaders.h1).to.deep.equal('val1');
+      expect(gotHeaders.h2).to.deep.equal('val2');
       done();
     });
   });

@@ -30,20 +30,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-"use strict";
+'use strict';
 
-var expect = require("chai").expect;
-var sinon = require("sinon");
+var expect = require('chai').expect;
+var sinon = require('sinon');
 
-var createCredPromise = require("../lib/auth").createCredPromise;
+var createCredPromise = require('../lib/auth').createCredPromise;
 
-describe("credential promise", function() {
+describe('credential promise', function() {
   var dummyCreds = {};
   var getCredentials = function(callback) {
     callback(null, dummyCreds);
   };
 
-  it("resolves the credential", function(done) {
+  it('resolves the credential', function(done) {
     var credP = createCredPromise(getCredentials);
     credP
       .then(function(cred) {
@@ -55,7 +55,7 @@ describe("credential promise", function() {
       });
   });
 
-  it("keeps credential", function(done) {
+  it('keeps credential', function(done) {
     var getCredentialsSpy = sinon.spy(getCredentials);
     var credP = createCredPromise(getCredentialsSpy);
     var checkCredSpy = sinon.spy(function checkCred(cred) {
@@ -72,8 +72,8 @@ describe("credential promise", function() {
       });
   });
 
-  it("propagates errors from the credential callback", function(done) {
-    var testError = new Error("this is used in a test");
+  it('propagates errors from the credential callback', function(done) {
+    var testError = new Error('this is used in a test');
     var getCredentials = function(callback) {
       callback(testError);
     };

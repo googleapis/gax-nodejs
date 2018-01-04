@@ -27,15 +27,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-"use strict";
+'use strict';
 
-var expect = require("chai").expect;
+var expect = require('chai').expect;
 
-var fromParams = require("../lib/routing_header").fromParams;
+var fromParams = require('../lib/routing_header').fromParams;
 
-describe("fromParams", function() {
-  it("constructs the routing header", function() {
-    var routingHeader = fromParams({ name: "foo", "book.read": true });
-    expect(routingHeader).to.equal("name=foo&book.read=true");
+describe('fromParams', function() {
+  it('constructs the routing header', function() {
+    var routingHeader = fromParams({name: 'foo', 'book.read': true});
+    expect(routingHeader).to.equal('name=foo&book.read=true');
   });
 });

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-"use strict";
+'use strict';
 
-var gax = require("../lib/gax");
-var apiCallable = require("../lib/api_callable");
+var gax = require('../lib/gax');
+var apiCallable = require('../lib/api_callable');
 
 var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
@@ -50,7 +50,7 @@ function createApiCall(func, opts) {
     Promise.resolve(function(argument, metadata, options, callback) {
       if (opts.returnCancelFunc) {
         return {
-          cancel: func(argument, metadata, options, callback)
+          cancel: func(argument, metadata, options, callback),
         };
       }
       func(argument, metadata, options, callback);
@@ -58,8 +58,8 @@ function createApiCall(func, opts) {
         cancel:
           opts.cancel ||
           function() {
-            callback(new Error("canceled"));
-          }
+            callback(new Error('canceled'));
+          },
       };
     }),
     settings,
