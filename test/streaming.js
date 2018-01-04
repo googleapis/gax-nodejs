@@ -52,7 +52,7 @@ function createApiCall(func, type) {
 
 describe("streaming", function() {
   it("handles server streaming", function(done) {
-    var spy = sinon.spy(function(argument, metadata, options) {
+    var spy = sinon.spy(function() {
       expect(arguments.length).to.eq(3);
       var s = through2.obj();
       s.push({ resources: [1, 2] });
@@ -108,7 +108,7 @@ describe("streaming", function() {
   });
 
   it("handles bidi streaming", function(done) {
-    function func(metadata, options) {
+    function func() {
       expect(arguments.length).to.eq(2);
       var s = through2.obj();
       return s;
@@ -141,7 +141,7 @@ describe("streaming", function() {
       details: "",
       metadata: responseMetadata
     };
-    function func(metadata, options) {
+    function func() {
       var s = through2.obj();
       setTimeout(function() {
         s.emit("metadata", responseMetadata);
@@ -189,7 +189,7 @@ describe("streaming", function() {
       });
     }
     var cancelError = new Error("cancelled");
-    function func(metadata, options) {
+    function func() {
       var s = through2.obj();
       schedulePush(s, 0);
       s.cancel = function() {

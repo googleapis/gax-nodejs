@@ -42,11 +42,7 @@ var FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
 
 function createBuffer(str) {
   var buffer;
-  try {
-    buffer = Buffer.from(str);
-  } catch (_) {
-    buffer = new Buffer(str);
-  }
+  buffer = Buffer.from(str);
   return buffer;
 }
 
@@ -109,7 +105,7 @@ describe("longrunning", function() {
     var cancelGetOperationSpy = sinon.spy();
     var getOperationSpy = sinon.spy(function() {
       var resolver;
-      var promise = new Promise(function(resolve, reject) {
+      var promise = new Promise(function(resolve) {
         resolver = resolve;
       });
       promise.cancel = cancelGetOperationSpy;
@@ -122,7 +118,7 @@ describe("longrunning", function() {
       }
       return promise;
     });
-    var cancelOperationSpy = sinon.spy(function(request) {
+    var cancelOperationSpy = sinon.spy(function() {
       return Promise.resolve();
     });
     return {
@@ -350,7 +346,7 @@ describe("longrunning", function() {
             var operation = responses[0];
             return operation.getOperation();
           })
-          .then(function(responses) {
+          .then(function() {
             done(new Error("Should not get here."));
           })
           .catch(function(error) {
@@ -427,7 +423,7 @@ describe("longrunning", function() {
             var operation = responses[0];
             return operation.promise();
           })
-          .then(function(responses) {
+          .then(function() {
             done(new Error("should not get here"));
           })
           .catch(function(err) {
@@ -495,7 +491,7 @@ describe("longrunning", function() {
             });
             return p;
           })
-          .then(function(responses) {
+          .then(function() {
             done(new Error("should not get here"));
           })
           .catch(function(err) {
@@ -524,7 +520,7 @@ describe("longrunning", function() {
               expect(client.getOperation.callCount).to.eq(expectedCalls);
               done();
             });
-            operation.on("error", function(err) {
+            operation.on("error", function() {
               done("should not get here");
             });
           })
@@ -546,7 +542,7 @@ describe("longrunning", function() {
         apiCall()
           .then(function(responses) {
             var operation = responses[0];
-            operation.on("complete", function(result, metadata, rawResponse) {
+            operation.on("complete", function() {
               done(new Error("Should not get here."));
             });
             operation.on("error", function(err) {
@@ -621,7 +617,7 @@ describe("longrunning", function() {
         })
           .then(function(responses) {
             var operation = responses[0];
-            operation.on("complete", function(result, metadata, rawResponse) {
+            operation.on("complete", function() {
               done(new Error("Should not get here."));
             });
             operation.on("error", function(err) {

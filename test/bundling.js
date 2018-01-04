@@ -391,7 +391,7 @@ describe("Task", function() {
       expect(resp.field1).to.deep.equal([1, 2, 3]);
       callback();
     });
-    extendElements(task, [4, 5, 6], function(err, resp) {
+    extendElements(task, [4, 5, 6], function(err) {
       expect(err).to.be.an.instanceOf(Error);
     });
     var cancelId = task._data[task._data.length - 1].callback.id;
@@ -424,11 +424,11 @@ describe("Task", function() {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], function(err, resp) {
+    extendElements(task, [1, 2, 3], function(err) {
       expect(err).to.be.an.instanceOf(Error);
       callback();
     });
-    extendElements(task, [1, 2, 3], function(err, resp) {
+    extendElements(task, [1, 2, 3], function(err) {
       expect(err).to.be.an.instanceOf(Error);
       callback();
     });
@@ -461,7 +461,7 @@ describe("Task", function() {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], function(err, resp) {
+    extendElements(task, [1, 2, 3], function(err) {
       expect(err).to.be.an.instanceOf(Error);
       callback();
     });
@@ -521,7 +521,7 @@ describe("Executor", function() {
 
   it("emits errors when the api call fails", function(done) {
     var executor = newExecutor({ delayThreshold: 10 });
-    var callback = sinon.spy(function(err, resp) {
+    var callback = sinon.spy(function(err) {
       expect(err).to.be.an.instanceOf(Error);
       if (callback.callCount === 2) {
         done();
@@ -599,7 +599,7 @@ describe("Executor", function() {
       var canceller = executor.schedule(
         spyApi,
         { field1: [1, 2], field2: "id" },
-        function(err, resp) {
+        function(err) {
           expect(err).to.be.an.instanceOf(Error);
 
           expect(spyApi.callCount).to.eq(0);
@@ -621,8 +621,7 @@ describe("Executor", function() {
     it("distinguishes a running task and a scheduled one", function(done) {
       var counter = 0;
       executor.schedule(timedAPI, { field1: [1, 2], field2: "id" }, function(
-        err,
-        resp
+        err
       ) {
         expect(err).to.be.null;
         counter++;
@@ -636,7 +635,7 @@ describe("Executor", function() {
       var canceller = executor.schedule(
         timedAPI,
         { field1: [1, 2], field2: "id" },
-        function(err, resp) {
+        function(err) {
           expect(err).to.be.an.instanceOf(Error);
           counter++;
         }
@@ -720,7 +719,7 @@ describe("Executor", function() {
     executor.schedule(
       spy,
       { field1: [1, 2, 3, 4, 5, 6, 7], field2: "id" },
-      function(err, response) {
+      function(err) {
         expect(err).to.be.an.instanceOf(Error);
         done();
       }
@@ -755,7 +754,7 @@ describe("Executor", function() {
     executor.schedule(
       spy,
       { field1: [1, 2, 3, 4, 5, 6, 7], field2: "id" },
-      function(err, response) {
+      function(err) {
         expect(err).to.be.an.instanceOf(Error);
         done();
       }
@@ -793,7 +792,7 @@ describe("Executor", function() {
         done();
       }
       var tasks = 5;
-      var callback = sinon.spy(function(err, resp) {
+      var callback = sinon.spy(function() {
         if (callback.callCount === tasks) {
           onEnd();
         }
@@ -908,10 +907,10 @@ describe("bundleable", function() {
       .catch(done);
     var p = apiCall({ field1: [1, 2, 3], field2: "id" }, null);
     p
-      .then(function(obj) {
+      .then(function() {
         done(new Error("should not succeed"));
       })
-      .catch(function(err) {
+      .catch(function() {
         expectedFailure = true;
         if (expectedSuccess && expectedFailure) {
           done();

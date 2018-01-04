@@ -205,7 +205,6 @@ describe("paged iteration", function() {
           done();
         })
         .on("error", function(err) {
-          console.error(err);
           done(err);
         });
     }

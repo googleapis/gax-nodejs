@@ -123,7 +123,7 @@ describe("Promise", function() {
   it("emits error on failure", function(done) {
     var apiCall = createApiCall(fail);
     apiCall(null, null)
-      .then(function(response) {
+      .then(function() {
         done(new Error("should not reach"));
       })
       .catch(function(err) {
@@ -141,10 +141,10 @@ describe("Promise", function() {
     var apiCall = createApiCall(func, { cancel: done });
     var promise = apiCall(null);
     promise
-      .then(function(response) {
+      .then(function() {
         done(new Error("should not reach"));
       })
-      .catch(function(err) {
+      .catch(function() {
         done();
       });
     promise.cancel();
@@ -178,10 +178,10 @@ describe("Promise", function() {
     });
     var promise = apiCall(null);
     promise
-      .then(function(response) {
+      .then(function() {
         done(new Error("should not reach"));
       })
-      .catch(function(err) {
+      .catch(function() {
         expect(callCount).to.be.below(4);
         done();
       })
@@ -295,7 +295,7 @@ describe("retryable", function() {
     var apiCall = createApiCall(func, settings);
     promise = apiCall(null, null);
     promise
-      .then(function(resp) {
+      .then(function() {
         done(new Error("should not reach"));
       })
       .catch(function(err) {
@@ -312,7 +312,7 @@ describe("retryable", function() {
     var settings = { settings: { timeout: 0, retry: retryOptions } };
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.undefined;
@@ -323,7 +323,7 @@ describe("retryable", function() {
 
   it("aborts retries", function(done) {
     var apiCall = createApiCall(fail, settings);
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       done();
     });
@@ -333,7 +333,7 @@ describe("retryable", function() {
     var toAttempt = 3;
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, settings);
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.ok;
@@ -361,7 +361,7 @@ describe("retryable", function() {
     };
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       expect(spy.callCount).to.eq(toAttempt);
       done();
@@ -387,7 +387,7 @@ describe("retryable", function() {
     };
     var spy = sinon.spy(fail);
     var apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       expect(spy.callCount).to.eq(0);
       done();
@@ -402,7 +402,7 @@ describe("retryable", function() {
     }
     var spy = sinon.spy(func);
     var apiCall = createApiCall(spy, settings);
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       expect(err.code).to.eq(FAKE_STATUS_CODE_2);
       expect(err.note).to.be.ok;
@@ -433,7 +433,7 @@ describe("retryable", function() {
       settings: { timeout: 0, retry: retryOptions }
     });
 
-    apiCall(null, null, function(err, resp) {
+    apiCall(null, null, function(err) {
       expect(err).to.be.an("error");
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
       expect(err.note).to.be.ok;
@@ -495,7 +495,6 @@ describe("retryable", function() {
 
     var gotHeaders;
     var mockBuilder = function(abTest, headers) {
-      console.log(headers);
       gotHeaders = headers;
     };
     var settings = {

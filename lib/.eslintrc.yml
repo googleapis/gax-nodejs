@@ -1,0 +1,6 @@
+---
+env:
+  mocha: true
+rules:
+  no-warning-comments: off
+  no-console: off
