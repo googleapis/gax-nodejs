@@ -41,9 +41,12 @@ var longrunning = require('./lib/longrunning');
 var routingHeader = require('./lib/routing_header');
 
 function lro(options) {
-  options = extend({
-    scopes: lro.ALL_SCOPES
-  }, options);
+  options = extend(
+    {
+      scopes: lro.ALL_SCOPES,
+    },
+    options
+  );
   var gaxGrpc = grpc(options);
   return operationsClient(gaxGrpc);
 }

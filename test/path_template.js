@@ -56,23 +56,21 @@ describe('PathTemplate', function() {
   describe('method `match`', function() {
     it('should fail on an impossible match', function() {
       var t = new PathTemplate('hello/world');
-      var mismatches = [
-        'hello',
-        'hello/world/fail'
-      ];
+      var mismatches = ['hello', 'hello/world/fail'];
       mismatches.forEach(function(m) {
-        expect(function() {t.match(m); }).to.throw(TypeError);
+        expect(function() {
+          t.match(m);
+        }).to.throw(TypeError);
       });
     });
 
     it('should fail on mismatched literal', function() {
       var t = new PathTemplate('hello/world');
-      var mismatches = [
-        'hello/world2',
-        'hello/world3'
-      ];
+      var mismatches = ['hello/world2', 'hello/world3'];
       mismatches.forEach(function(m) {
-        expect(function() {t.match(m); }).to.throw(TypeError);
+        expect(function() {
+          t.match(m);
+        }).to.throw(TypeError);
       });
     });
 
@@ -84,23 +82,23 @@ describe('PathTemplate', function() {
           want: {
             $0: 'f',
             $1: 'o',
-            $2: 'bar'
-          }
+            $2: 'bar',
+          },
         },
         {
           path: 'buckets/world',
           template: 'buckets/{hello}',
           want: {
-            hello: 'world'
-          }
+            hello: 'world',
+          },
         },
         {
           path: 'buckets/world',
           template: 'buckets/{hello=*}',
           want: {
-            hello: 'world'
-          }
-        }
+            hello: 'world',
+          },
+        },
       ];
       tests.forEach(function(t) {
         var template = new PathTemplate(t.template);
@@ -134,7 +132,7 @@ describe('PathTemplate', function() {
         $0: 'f',
         $1: 'o',
         $2: 'o',
-        $3: 'google.com:a-b'
+        $3: 'google.com:a-b',
       };
       var want = 'buckets/f/o/o/objects/google.com:a-b';
       expect(template.render(params)).to.eql(want);
@@ -145,16 +143,18 @@ describe('PathTemplate', function() {
       var params = {
         $0: 'f',
         $1: 'o',
-        $2: 'o'
+        $2: 'o',
       };
-      expect(function() {template.render(params); }).to.throw(TypeError);
+      expect(function() {
+        template.render(params);
+      }).to.throw(TypeError);
     });
 
     it('should succeed with an unbound in the middle', function() {
       var template = new PathTemplate('bar/**/foo/*');
       var params = {
         $0: '1/2',
-        $1: '3'
+        $1: '3',
       };
       var want = 'bar/1/2/foo/3';
       expect(template.render(params)).to.eql(want);
@@ -167,7 +167,7 @@ describe('PathTemplate', function() {
       'buckets/*/objects/*': 'buckets/{$0=*}/objects/{$1=*}',
       '/buckets/{hello}': 'buckets/{hello=*}',
       '/buckets/{hello=what}/{world}': 'buckets/{hello=what}/{world=*}',
-      '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what'
+      '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
     };
 
     _.forEach(tests, function(want, template) {

@@ -45,12 +45,14 @@ describe('credential promise', function() {
 
   it('resolves the credential', function(done) {
     var credP = createCredPromise(getCredentials);
-    credP.then(function(cred) {
-      expect(cred).to.eq(dummyCreds);
-      done();
-    }).catch(function(err) {
-      done(err);
-    });
+    credP
+      .then(function(cred) {
+        expect(cred).to.eq(dummyCreds);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('keeps credential', function(done) {
@@ -59,14 +61,15 @@ describe('credential promise', function() {
     var checkCredSpy = sinon.spy(function checkCred(cred) {
       expect(cred).to.eq(dummyCreds);
     });
-    Promise.all([credP.then(checkCredSpy), credP.then(checkCredSpy)]).then(
-        function() {
-          expect(getCredentialsSpy.callCount).to.eq(1);
-          expect(checkCredSpy.callCount).to.eq(2);
-          done();
-        }).catch(function(err) {
-          done(err);
-        });
+    Promise.all([credP.then(checkCredSpy), credP.then(checkCredSpy)])
+      .then(function() {
+        expect(getCredentialsSpy.callCount).to.eq(1);
+        expect(checkCredSpy.callCount).to.eq(2);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
   it('propagates errors from the credential callback', function(done) {
@@ -75,11 +78,13 @@ describe('credential promise', function() {
       callback(testError);
     };
     var credP = createCredPromise(getCredentials);
-    credP.catch(function(err) {
-      expect(err).to.eq(testError);
-      done();
-    }).catch(function(err) {
-      done(err);
-    });
+    credP
+      .catch(function(err) {
+        expect(err).to.eq(testError);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 });

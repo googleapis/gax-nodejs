@@ -44,12 +44,15 @@ function createApiCall(func, type) {
   // in streaming API call.
   var settings = new gax.CallSettings();
   return apiCallable.createApiCall(
-      Promise.resolve(func), settings, new streaming.StreamDescriptor(type));
+    Promise.resolve(func),
+    settings,
+    new streaming.StreamDescriptor(type)
+  );
 }
 
 describe('streaming', function() {
   it('handles server streaming', function(done) {
-    var spy = sinon.spy(function(argument, metadata, options) {
+    var spy = sinon.spy(function() {
       expect(arguments.length).to.eq(3);
       var s = through2.obj();
       s.push({resources: [1, 2]});
@@ -58,8 +61,7 @@ describe('streaming', function() {
       return s;
     });
 
-    var apiCall = createApiCall(
-        spy, streaming.StreamType.SERVER_STREAMING);
+    var apiCall = createApiCall(spy, streaming.StreamType.SERVER_STREAMING);
     var s = apiCall(null, null);
     var callback = sinon.spy(function(data) {
       if (callback.callCount === 1) {
@@ -92,8 +94,7 @@ describe('streaming', function() {
       return s;
     }
 
-    var apiCall = createApiCall(
-        func, streaming.StreamType.CLIENT_STREAMING);
+    var apiCall = createApiCall(func, streaming.StreamType.CLIENT_STREAMING);
     var s = apiCall(null, null, function(err, response) {
       expect(err).to.be.null;
       expect(response).to.deep.eq(['foo', 'bar']);
@@ -107,14 +108,13 @@ describe('streaming', function() {
   });
 
   it('handles bidi streaming', function(done) {
-    function func(metadata, options) {
+    function func() {
       expect(arguments.length).to.eq(2);
       var s = through2.obj();
       return s;
     }
 
-    var apiCall = createApiCall(
-        func, streaming.StreamType.BIDI_STREAMING);
+    var apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
     var s = apiCall(null, null);
     var arg = {foo: 'bar'};
     var callback = sinon.spy(function(data) {
@@ -139,9 +139,9 @@ describe('streaming', function() {
       code: 200,
       message: 'OK',
       details: '',
-      metadata: responseMetadata
+      metadata: responseMetadata,
     };
-    function func(metadata, options) {
+    function func() {
       var s = through2.obj();
       setTimeout(function() {
         s.emit('metadata', responseMetadata);
@@ -151,8 +151,7 @@ describe('streaming', function() {
       });
       return s;
     }
-    var apiCall = createApiCall(
-        func, streaming.StreamType.BIDI_STREAMING);
+    var apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
     var s = apiCall(null, null);
     var receivedMetadata;
     var receivedStatus;
@@ -190,7 +189,7 @@ describe('streaming', function() {
       });
     }
     var cancelError = new Error('cancelled');
-    function func(metadata, options) {
+    function func() {
       var s = through2.obj();
       schedulePush(s, 0);
       s.cancel = function() {
@@ -199,8 +198,7 @@ describe('streaming', function() {
       };
       return s;
     }
-    var apiCall = createApiCall(
-        func, streaming.StreamType.SERVER_STREAMING);
+    var apiCall = createApiCall(func, streaming.StreamType.SERVER_STREAMING);
     var s = apiCall(null, null);
     var counter = 0;
     var expectedCount = 5;

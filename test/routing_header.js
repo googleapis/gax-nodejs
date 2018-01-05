@@ -35,7 +35,7 @@ var fromParams = require('../lib/routing_header').fromParams;
 
 describe('fromParams', function() {
   it('constructs the routing header', function() {
-    var routingHeader = fromParams({'name': 'foo', 'book.read': true});
+    var routingHeader = fromParams({name: 'foo', 'book.read': true});
     expect(routingHeader).to.equal('name=foo&book.read=true');
   });
 });

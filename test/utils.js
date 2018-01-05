@@ -33,7 +33,7 @@
 var gax = require('../lib/gax');
 var apiCallable = require('../lib/api_callable');
 
-var FAKE_STATUS_CODE_1 = exports.FAKE_STATUS_CODE_1 = 1;
+var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
 function fail(argument, metadata, options, callback) {
   var error = new Error();
@@ -46,18 +46,25 @@ function createApiCall(func, opts) {
   opts = opts || {};
   var settings = new gax.CallSettings(opts.settings || {});
   var descriptor = opts.descriptor;
-  return apiCallable.createApiCall(Promise.resolve(
-    function(argument, metadata, options, callback) {
+  return apiCallable.createApiCall(
+    Promise.resolve(function(argument, metadata, options, callback) {
       if (opts.returnCancelFunc) {
         return {
-          cancel: func(argument, metadata, options, callback)
+          cancel: func(argument, metadata, options, callback),
         };
       }
       func(argument, metadata, options, callback);
       return {
-        cancel: opts.cancel || function() { callback(new Error('canceled')); }
+        cancel:
+          opts.cancel ||
+          function() {
+            callback(new Error('canceled'));
+          },
       };
-    }), settings, descriptor);
+    }),
+    settings,
+    descriptor
+  );
 }
 exports.createApiCall = createApiCall;
 

@@ -44,10 +44,12 @@ var through2 = require('through2');
 describe('paged iteration', function() {
   var pageSize = 3;
   var pagesToStream = 5;
-  var descriptor = new PageDescriptor(
-      'pageToken', 'nextPageToken', 'nums');
+  var descriptor = new PageDescriptor('pageToken', 'nextPageToken', 'nums');
   var retryOptions = util.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
-  var createOptions = {settings: {retry: retryOptions}, descriptor: descriptor};
+  var createOptions = {
+    settings: {retry: retryOptions},
+    descriptor: descriptor,
+  };
 
   function func(request, metadata, options, callback) {
     var pageToken = request.pageToken || 0;
@@ -68,11 +70,13 @@ describe('paged iteration', function() {
     for (var i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }
-    apiCall({}, null).then(function(results) {
-      expect(results).to.be.an('array');
-      expect(results[0]).to.deep.equal(expected);
-      done();
-    }).catch(done);
+    apiCall({}, null)
+      .then(function(results) {
+        expect(results).to.be.an('array');
+        expect(results[0]).to.deep.equal(expected);
+        done();
+      })
+      .catch(done);
   });
 
   it('calls callback with an Array', function(done) {
@@ -92,33 +96,35 @@ describe('paged iteration', function() {
     var apiCall = util.createApiCall(func, createOptions);
     var expected = 0;
     var req = {};
-    apiCall(req, {autoPaginate: false}).then(function(response) {
-      expect(response).to.be.an('array');
-      expect(response[0]).to.be.an('array');
-      expect(response[0].length).to.eq(pageSize);
-      for (var i = 0; i < pageSize; ++i) {
-        expect(response[0][i]).to.eq(expected);
-        expected++;
-      }
-      expect(response[1]).to.be.an('object');
-      expect(response[1]).to.have.property('pageToken');
-      expect(response[2]).to.be.an('object');
-      expect(response[2]).to.have.property('nums');
-      return apiCall(response[1], {autoPaginate: false});
-    }).then(function(response) {
-      expect(response).to.be.an('array');
-      expect(response[0]).to.be.an('array');
-      expect(response[0].length).to.eq(pageSize);
-      for (var i = 0; i < pageSize; ++i) {
-        expect(response[0][i]).to.eq(expected);
-        expected++;
-      }
-      done();
-    }).catch(done);
+    apiCall(req, {autoPaginate: false})
+      .then(function(response) {
+        expect(response).to.be.an('array');
+        expect(response[0]).to.be.an('array');
+        expect(response[0].length).to.eq(pageSize);
+        for (var i = 0; i < pageSize; ++i) {
+          expect(response[0][i]).to.eq(expected);
+          expected++;
+        }
+        expect(response[1]).to.be.an('object');
+        expect(response[1]).to.have.property('pageToken');
+        expect(response[2]).to.be.an('object');
+        expect(response[2]).to.have.property('nums');
+        return apiCall(response[1], {autoPaginate: false});
+      })
+      .then(function(response) {
+        expect(response).to.be.an('array');
+        expect(response[0]).to.be.an('array');
+        expect(response[0].length).to.eq(pageSize);
+        for (var i = 0; i < pageSize; ++i) {
+          expect(response[0][i]).to.eq(expected);
+          expected++;
+        }
+        done();
+      })
+      .catch(done);
   });
 
-  it('sets additional arguments to the callback', function(
-      done) {
+  it('sets additional arguments to the callback', function(done) {
     var counter = 0;
     var apiCall = util.createApiCall(func, createOptions);
     function callback(err, resources, next, rawResponse) {
@@ -152,11 +158,13 @@ describe('paged iteration', function() {
       }
     }
     var apiCall = util.createApiCall(failingFunc, createOptions);
-    apiCall({}, null).then(function(resources) {
-      expect(resources).to.be.an('array');
-      expect(resources[0].length).to.eq(pageSize * pagesToStream);
-      done();
-    }).catch(done);
+    apiCall({}, null)
+      .then(function(resources) {
+        expect(resources).to.be.an('array');
+        expect(resources[0].length).to.eq(pageSize * pagesToStream);
+        done();
+      })
+      .catch(done);
   });
 
   it('caps the results by maxResults', function() {
@@ -185,22 +193,29 @@ describe('paged iteration', function() {
 
     function streamChecker(stream, onEnd, done, start) {
       var counter = start;
-      stream.on('data', function(data) {
-        expect(data).to.eq(counter);
-        counter++;
-      }).on('end', function() {
-        onEnd();
-        done();
-      }).on('error', function(err) {
-        console.error(err);
-        done(err);
-      });
+      stream
+        .on('data', function(data) {
+          expect(data).to.eq(counter);
+          counter++;
+        })
+        .on('end', function() {
+          onEnd();
+          done();
+        })
+        .on('error', function(err) {
+          done(err);
+        });
     }
 
     it('returns a stream', function(done) {
-      streamChecker(descriptor.createStream(apiCall, {}, null), function() {
-        expect(spy.callCount).to.eq(pagesToStream + 1);
-      }, done, 0);
+      streamChecker(
+        descriptor.createStream(apiCall, {}, null),
+        function() {
+          expect(spy.callCount).to.eq(pagesToStream + 1);
+        },
+        done,
+        0
+      );
     });
 
     it('stops in the middle', function(done) {
@@ -210,38 +225,61 @@ describe('paged iteration', function() {
           stream.end();
         }
       });
-      streamChecker(stream, function() {
-        expect(spy.callCount).to.eq(2);
-      }, done, 0);
+      streamChecker(
+        stream,
+        function() {
+          expect(spy.callCount).to.eq(2);
+        },
+        done,
+        0
+      );
     });
 
     it('ignores autoPaginate options, but respects others', function(done) {
       // Specifies autoPaginate: false, which will be ignored, and pageToken: pageSize
       // which will be used so that the stream will start from the specified token.
       var options = {pageToken: pageSize, autoPaginate: false};
-      streamChecker(descriptor.createStream(apiCall, {}, options), function() {
-        expect(spy.callCount).to.eq(pagesToStream);
-      }, done, pageSize);
+      streamChecker(
+        descriptor.createStream(apiCall, {}, options),
+        function() {
+          expect(spy.callCount).to.eq(pagesToStream);
+        },
+        done,
+        pageSize
+      );
     });
 
     it('caps the elements by maxResults', function(done) {
       var onData = sinon.spy();
       var stream = descriptor.createStream(
-        apiCall, {}, {maxResults: pageSize * 2 + 2});
+        apiCall,
+        {},
+        {maxResults: pageSize * 2 + 2}
+      );
       stream.on('data', onData);
-      streamChecker(stream, function() {
-        expect(spy.callCount).to.eq(3);
-        expect(onData.callCount).to.eq(pageSize * 2 + 2);
-      }, done, 0);
+      streamChecker(
+        stream,
+        function() {
+          expect(spy.callCount).to.eq(3);
+          expect(onData.callCount).to.eq(pageSize * 2 + 2);
+        },
+        done,
+        0
+      );
     });
 
     it('does not call API eagerly', function(done) {
       var stream = descriptor.createStream(apiCall, {}, null);
       setTimeout(function() {
         expect(spy.callCount).to.eq(0);
-        streamChecker(stream, function() {
-          expect(spy.callCount).to.eq(pagesToStream + 1);
-        }, done, 0);
+        streamChecker(
+          stream,
+          function() {
+            expect(spy.callCount).to.eq(pagesToStream + 1);
+          },
+          done,
+          0
+        );
       }, 50);
     });
 
@@ -266,16 +304,19 @@ describe('paged iteration', function() {
         output.setPipeline(stream, through2.obj());
       });
       var count = 0;
-      output.on('data', function() {
-        count++;
-        if (count === pageSize + 1) {
-          output.end();
-        }
-      }).on('end', function() {
-        expect(count).to.eq(pageSize + 1);
-        expect(spy.callCount).to.eq(2);
-        done();
-      }).on('error', done);
+      output
+        .on('data', function() {
+          count++;
+          if (count === pageSize + 1) {
+            output.end();
+          }
+        })
+        .on('end', function() {
+          expect(count).to.eq(pageSize + 1);
+          expect(spy.callCount).to.eq(2);
+          done();
+        })
+        .on('error', done);
     });
   });
 });
