@@ -596,6 +596,7 @@ describe('longrunning', function() {
               // Shows that progress only happens on updated operations since this
               // will produce a test error if done is called multiple times,
               // and the same pending operation was polled thrice.
+              operation.removeAllListeners();
               done();
             });
           })
