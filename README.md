@@ -1,6 +1,8 @@
 Google API Extensions for Node.js
 =================================
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/googleapis/gax-nodejs.svg)](https://greenkeeper.io/)
+
 [![Build Status](https://travis-ci.org/googleapis/gax-nodejs.svg?branch=master)](https://travis-ci.org/googleapis/gax-nodejs)
 [![Code Coverage](https://img.shields.io/codecov/c/github/googleapis/gax-nodejs.svg)](https://codecov.io/github/googleapis/gax-nodejs)
 [![Dependencies](https://david-dm.org/googleapis/gax-nodejs.svg)](https://david-dm.org/googleapis/gax-nodejs)
