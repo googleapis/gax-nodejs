@@ -290,7 +290,7 @@ describe('paged iteration', function() {
         done();
       });
       stream.resume();
-      process.nextTick(function() {
+      setImmediate(function() {
         stream.pause();
         stream.resume();
       });
