@@ -35,7 +35,6 @@
 var util = require('./utils');
 var PageDescriptor = require('../lib/paged_iteration').PageDescriptor;
 var expect = require('chai').expect;
-var process = require('process');
 var pumpify = require('pumpify');
 var sinon = require('sinon');
 var streamEvents = require('stream-events');
