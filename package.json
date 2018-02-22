@@ -8,7 +8,7 @@
   ],
   "dependencies": {
     "extend": "^3.0.0",
-    "globby": "^7.1.1",
+    "globby": "^8.0.0",
     "google-auto-auth": "^0.9.0",
     "google-proto-files": "^0.14.1",
     "grpc": "~1.7.2",
