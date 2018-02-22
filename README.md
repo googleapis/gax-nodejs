@@ -49,7 +49,7 @@ stable.
 Details
 -------
 
-For detailed documentation of the modules in gax-nodejs, please watch [DOCUMENTATION][].
+For detailed documentation of the modules in gax-nodejs, please watch [DOCUMENTATION].
 
 
 License
@@ -58,3 +58,4 @@ License
 BSD - See [LICENSE][] for more information.
 
 [LICENSE]: https://github.com/googleapis/gax-nodejs/blob/master/LICENSE
+[DOCUMENTATION]: http://googleapis.github.io/gax-nodejs/
