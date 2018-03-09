@@ -7,6 +7,7 @@
     "lib"
   ],
   "dependencies": {
+    "duplexify": "^3.5.4",
     "extend": "^3.0.0",
     "globby": "^8.0.0",
     "google-auto-auth": "^0.9.0",
@@ -15,7 +16,6 @@
     "is-stream-ended": "^0.1.0",
     "lodash": "^4.17.2",
     "protobufjs": "^6.8.0",
-    "readable-stream": "^2.2.2",
     "through2": "^2.0.3"
   },
   "devDependencies": {
