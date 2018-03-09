@@ -146,7 +146,7 @@ describe('streaming', function() {
       setTimeout(function() {
         s.emit('metadata', responseMetadata);
       }, 10);
-      s.on('end', function() {
+      s.on('finish', function() {
         s.emit('status', status);
       });
       return s;
@@ -165,7 +165,7 @@ describe('streaming', function() {
     s.on('response', function(data) {
       receivedResponse = data;
     });
-    s.on('end', function() {
+    s.on('finish', function() {
       expect(receivedMetadata).to.deep.eq(responseMetadata);
       expect(receivedStatus).to.deep.eq(status);
       expect(receivedResponse).to.deep.eq(expectedResponse);
