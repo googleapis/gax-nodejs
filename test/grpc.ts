@@ -30,12 +30,12 @@
 
 'use strict';
 
-var gaxGrpc = require('../lib/grpc');
+var gaxGrpc = require('../src/grpc');
 var expect = require('chai').expect;
-var path = require('path');
+import * as path from 'path';
 var protobuf = require('protobufjs');
 var proxyquire = require('proxyquire');
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 
 describe('grpc', function() {
   describe('grpcVersion', function() {
@@ -211,10 +211,12 @@ describe('grpc', function() {
       'v1',
       'library.proto'
     );
+    //var RESOLVED_TEST_FILE = path.resolve(`../`)
+    var TEST_PATH = path.resolve(__dirname, '../../test');
     var grpcClient = gaxGrpc();
 
     it('should load the test file', function() {
-      var protos = grpcClient.loadProto(__dirname, TEST_FILE);
+      var protos = grpcClient.loadProto(TEST_PATH, TEST_FILE);
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
       );
@@ -239,7 +241,7 @@ describe('grpc', function() {
 
   describe('GoogleProtoFilesRoot', function() {
     var FIXTURES_DIR = path.join(
-      __dirname,
+      path.resolve(__dirname, '../../test'),
       'fixtures',
       'google',
       'example',
@@ -348,7 +350,7 @@ describe('grpc', function() {
       var includePath = path.join('example', 'import.proto');
 
       it('should throw an error if a file is not found', function() {
-        var findIncludePath = proxyquire('../lib/grpc', {
+        var findIncludePath = proxyquire('../src/grpc', {
           fs: {
             existsSync: function() {
               return false;
@@ -361,7 +363,7 @@ describe('grpc', function() {
 
       it('should return the correct resolved import path', function() {
         var correctPath = path.join('test', 'example', 'import.proto');
-        var findIncludePath = proxyquire('../lib/grpc', {
+        var findIncludePath = proxyquire('../src/grpc', {
           fs: {
             existsSync: function(path) {
               return path === correctPath;

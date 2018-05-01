@@ -35,7 +35,7 @@
 var _ = require('lodash');
 var expect = require('chai').expect;
 
-var PathTemplate = require('../lib/path_template.js').PathTemplate;
+var PathTemplate = require('../src/path_template.js').PathTemplate;
 
 describe('PathTemplate', function() {
   describe('constructor', function() {

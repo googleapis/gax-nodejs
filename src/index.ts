@@ -34,7 +34,7 @@
 var bundling = require('./bundling');
 var gax = require('./gax');
 var grpc = require('./grpc');
-var extend = require('extend');
+import * as extend from 'extend';
 var streaming = require('./streaming');
 var operationsClient = require('./operations_client');
 var longrunning = require('./longrunning');
@@ -43,22 +43,22 @@ var routingHeader = require('./routing_header');
 function lro(options) {
   options = extend(
     {
-      scopes: lro.ALL_SCOPES,
+      scopes: (lro as any).ALL_SCOPES,
     },
     options
   );
   var gaxGrpc = grpc(options);
   return operationsClient(gaxGrpc);
 }
-lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
-lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
+(lro as any).SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
+(lro as any).ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 exports.lro = lro;
-exports.createApiCall = require('./lib/api_callable').createApiCall;
+exports.createApiCall = require('./api_callable').createApiCall;
 exports.grpc = grpc;
 exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.PathTemplate = require('./lib/path_template').PathTemplate;
-exports.PageDescriptor = require('./lib/paged_iteration').PageDescriptor;
+exports.PathTemplate = require('./path_template').PathTemplate;
+exports.PageDescriptor = require('./paged_iteration').PageDescriptor;
 exports.BundleDescriptor = bundling.BundleDescriptor;
 exports.StreamType = streaming.StreamType;
 exports.StreamDescriptor = streaming.StreamDescriptor;

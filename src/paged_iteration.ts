@@ -31,7 +31,7 @@
 'use strict';
 
 var extend = require('extend');
-var util = require('util');
+import * as util from 'util';
 var NormalApiCaller = require('./api_callable').NormalApiCaller;
 var through2 = require('through2');
 var ended = require('is-stream-ended');

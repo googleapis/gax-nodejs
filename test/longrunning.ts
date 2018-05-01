@@ -32,10 +32,10 @@
 
 'use strict';
 
-var gax = require('../lib/gax');
-var longrunning = require('../lib/longrunning');
+var gax = require('../src/gax');
+var longrunning = require('../src/longrunning');
 var expect = require('chai').expect;
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var utils = require('./utils');
 
 var FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
@@ -89,7 +89,7 @@ var mockDecoder = function(val) {
   return val.toString();
 };
 
-function createApiCall(func, client) {
+function createApiCall(func, client?) {
   var descriptor = new longrunning.LongrunningDescriptor(
     client,
     mockDecoder,

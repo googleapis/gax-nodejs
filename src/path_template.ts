@@ -38,7 +38,7 @@
 
 const _ = require('lodash');
 const extras = require('./parser_extras');
-const util = require('util');
+import * as util from 'util';
 
 exports.PathTemplate = PathTemplate;
 

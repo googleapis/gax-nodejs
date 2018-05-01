@@ -35,6 +35,10 @@
 
 'use strict';
 
+// This is here to fix a TypeScript bug.
+// https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
+export {}
+
 /**
  * Encapsulates the overridable settings for a particular API call.
  *

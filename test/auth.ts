@@ -33,9 +33,9 @@
 'use strict';
 
 var expect = require('chai').expect;
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 
-var createCredPromise = require('../lib/auth').createCredPromise;
+var createCredPromise = require('../src/auth').createCredPromise;
 
 describe('credential promise', function() {
   var dummyCreds = {};

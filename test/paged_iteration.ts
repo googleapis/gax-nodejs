@@ -33,10 +33,10 @@
 'use strict';
 
 var util = require('./utils');
-var PageDescriptor = require('../lib/paged_iteration').PageDescriptor;
+var PageDescriptor = require('../src/paged_iteration').PageDescriptor;
 var expect = require('chai').expect;
 var pumpify = require('pumpify');
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var streamEvents = require('stream-events');
 var through2 = require('through2');
 

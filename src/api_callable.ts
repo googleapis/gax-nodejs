@@ -36,7 +36,7 @@
 'use strict';
 
 var setTimeout2 = require('timers').setTimeout;
-var util = require('util');
+import * as util from 'util';
 
 /**
  * @callback APICallback

@@ -30,13 +30,13 @@
 
 'use strict';
 
-var bundling = require('../lib/bundling');
+var bundling = require('../src/bundling');
 var expect = require('chai').expect;
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var createApiCall = require('./utils').createApiCall;
 var _ = require('lodash');
 
-function createOuter(value, otherValue) {
+function createOuter(value, otherValue?) {
   if (otherValue === undefined) {
     otherValue = value;
   }
@@ -203,12 +203,12 @@ describe('deepCopyForResponse', function() {
 });
 
 describe('Task', function() {
-  function testTask(apiCall) {
+  function testTask(apiCall?) {
     return new bundling.Task(apiCall, {}, 'field1', null, byteLength);
   }
 
   var id = 0;
-  function extendElements(task, elements, callback) {
+  function extendElements(task, elements, callback?) {
     if (!callback) {
       callback = function() {};
     }
@@ -309,7 +309,7 @@ describe('Task', function() {
               done();
             }
           });
-          t.data.forEach(function(d) {
+          (t as any).data.forEach(function(d) {
             extendElements(task, d, callback);
           });
           task.run();
@@ -329,7 +329,7 @@ describe('Task', function() {
           var task = testTask(apiCall);
           task._subresponseField = 'field1';
           var callbackCount = 0;
-          t.data.forEach(function(d) {
+          (t as any).data.forEach(function(d) {
             extendElements(task, d, function(err, data) {
               expect(err).to.be.null;
               expect(data.field1.length).to.be.eq(d.length);
@@ -367,7 +367,7 @@ describe('Task', function() {
               done();
             }
           });
-          t.data.forEach(function(d) {
+          (t as any).data.forEach(function(d) {
             extendElements(task, d, callback);
           });
           task.run();

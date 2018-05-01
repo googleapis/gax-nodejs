@@ -30,8 +30,8 @@
 
 'use strict';
 
-var gax = require('../lib/gax');
-var apiCallable = require('../lib/api_callable');
+var gax = require('../src/gax');
+var apiCallable = require('../src/api_callable');
 
 var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 

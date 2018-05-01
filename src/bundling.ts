@@ -36,7 +36,7 @@
 'use strict';
 
 var _ = require('lodash');
-var util = require('util');
+import * as util from 'util';
 var NormalApiCaller = require('./api_callable').NormalApiCaller;
 
 /**

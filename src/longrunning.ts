@@ -32,7 +32,7 @@
 var createBackoffSettings = require('./gax').createBackoffSettings;
 var NormalApiCaller = require('./api_callable').NormalApiCaller;
 var events = require('events');
-var util = require('util');
+import * as util from 'util';
 
 /**
  * A callback to upack a google.protobuf.Any message.
@@ -251,7 +251,7 @@ Operation.prototype.getOperation = function(callback) {
       return new PromiseCtor(function(resolve, reject) {
         if (self.latestResponse.error) {
           var error = new Error(self.latestReponse.error.message);
-          error.code = self.latestReponse.error.code;
+          (error as any).code = self.latestReponse.error.code;
           reject(error);
         } else {
           resolve([self.result, self.metadata, self.latestResponse]);
@@ -291,7 +291,7 @@ Operation.prototype._unpackResponse = function(op, callback) {
   if (op.done) {
     if (op.result === 'error') {
       var error = new Error(op.error.message);
-      error.code = op.error.code;
+      (error as any).code = op.error.code;
       if (callback) {
         callback(error);
       }

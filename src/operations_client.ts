@@ -28,7 +28,7 @@
 'use strict';
 
 var configData = require('./operations_client_config');
-var extend = require('extend');
+import * as extend from 'extend';
 var gax = require('./gax');
 extend(gax, require('./api_callable'));
 extend(gax, require('./path_template'));
