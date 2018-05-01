@@ -31,7 +31,7 @@ module.exports = {
   source: {
     excludePattern: '(^|\\/|\\\\)[._]',
     include: [
-      'lib'
+      'build/src'
     ],
     includePattern: '\\.js$'
   },

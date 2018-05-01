@@ -140,5 +140,8 @@ jobs:
           name: Set NPM authentication.
           command: 'echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc'
       - run:
+          name: Install dependencies
+          command: npm install --unsafe-perm
+      - run:
           name: Publish the module to npm.
           command: npm publish
