@@ -36,7 +36,7 @@ var apiCallable = require('../lib/api_callable');
 var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
 function fail(argument, metadata, options, callback) {
-  var error = new Error();
+  var error: any = new Error();
   error.code = FAKE_STATUS_CODE_1;
   callback(error);
 }

@@ -31,7 +31,7 @@
 
 var expect = require('chai').expect;
 
-var fromParams = require('../lib/routing_header').fromParams;
+const fromParams = require('../lib/routing_header').fromParams;
 
 describe('fromParams', function() {
   it('constructs the routing header', function() {

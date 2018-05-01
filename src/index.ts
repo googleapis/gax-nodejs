@@ -31,14 +31,14 @@
 
 'use strict';
 
-var bundling = require('./lib/bundling');
-var gax = require('./lib/gax');
-var grpc = require('./lib/grpc');
+var bundling = require('./bundling');
+var gax = require('./gax');
+var grpc = require('./grpc');
 var extend = require('extend');
-var streaming = require('./lib/streaming');
-var operationsClient = require('./lib/operations_client');
-var longrunning = require('./lib/longrunning');
-var routingHeader = require('./lib/routing_header');
+var streaming = require('./streaming');
+var operationsClient = require('./operations_client');
+var longrunning = require('./longrunning');
+var routingHeader = require('./routing_header');
 
 function lro(options) {
   options = extend(

@@ -445,7 +445,7 @@ function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
     });
   }
 
-  var backoffSettings = null;
+  var backoffSettings: any = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
     var params = retryParams[methodConfig.retry_params_name];
     backoffSettings = createBackoffSettings(

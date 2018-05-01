@@ -65,7 +65,7 @@ describe('paged iteration', function() {
 
   it('returns an Array of results', function(done) {
     var apiCall = util.createApiCall(func, createOptions);
-    var expected = [];
+    var expected: any[] = [];
     for (var i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }
@@ -80,7 +80,7 @@ describe('paged iteration', function() {
 
   it('calls callback with an Array', function(done) {
     var apiCall = util.createApiCall(func, createOptions);
-    var expected = [];
+    var expected: any[] = [];
     for (var i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }

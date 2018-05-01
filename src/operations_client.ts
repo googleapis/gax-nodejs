@@ -428,9 +428,9 @@ OperationsClient.prototype.deleteOperation = function(
 };
 
 function OperationsClientBuilder(gaxGrpc) {
-  if (!(this instanceof OperationsClientBuilder)) {
-    return new OperationsClientBuilder(gaxGrpc);
-  }
+  // if (!(this instanceof OperationsClientBuilder)) {
+  //   return new OperationsClientBuilder(gaxGrpc);
+  // }
 
   var operationsClient = gaxGrpc.load([
     {

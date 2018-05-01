@@ -99,7 +99,7 @@ function createApiCall(func, client) {
 }
 
 describe('longrunning', function() {
-  function mockOperationsClient(opts) {
+  function mockOperationsClient(opts?) {
     opts = opts || {};
     var remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     var cancelGetOperationSpy = sinon.spy();
@@ -108,7 +108,7 @@ describe('longrunning', function() {
       var promise = new Promise(function(resolve) {
         resolver = resolve;
       });
-      promise.cancel = cancelGetOperationSpy;
+      (promise as any).cancel = cancelGetOperationSpy;
 
       if (remainingCalls && remainingCalls > 1) {
         resolver([PENDING_OP]);

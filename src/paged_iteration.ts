@@ -110,7 +110,7 @@ PagedIteration.prototype.call = function(
   }
 
   var maxResults = settings.maxResults || -1;
-  var allResources = [];
+  var allResources: any[] = [];
   function pushResources(err, resources, next) {
     if (err) {
       canceller.callback(err);

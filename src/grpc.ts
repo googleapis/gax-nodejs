@@ -33,13 +33,13 @@
 
 var autoAuth = require('google-auto-auth');
 
-var fs = require('fs');
-var gax = require('./gax');
-var globby = require('globby');
-var googleProtoFilesDir = require('google-proto-files')('..');
-var path = require('path');
-var protobuf = require('protobufjs');
-var util = require('util');
+const fs = require('fs');
+const gax = require('./gax');
+const globby = require('globby');
+const googleProtoFilesDir = require('google-proto-files')('..');
+const path = require('path');
+const protobuf = require('protobufjs');
+const util = require('util');
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
 
