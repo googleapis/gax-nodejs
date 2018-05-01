@@ -4,7 +4,7 @@
   "description": "Google API Extensions",
   "main": "index.js",
   "files": [
-    "lib"
+    "build/src"
   ],
   "dependencies": {
     "duplexify": "^3.5.4",
@@ -19,6 +19,8 @@
     "through2": "^2.0.3"
   },
   "devDependencies": {
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^8.10.11",
     "chai": "*",
     "codecov": "~3.0.0",
     "eslint": "^4.10.0",
@@ -34,7 +36,9 @@
     "proxyquire": "^2.0.0",
     "pumpify": "^1.3.5",
     "sinon": "~5.0.1",
-    "stream-events": "^1.0.1"
+    "stream-events": "^1.0.1",
+    "typescript": "~2.8.3",
+    "gts": "^0.5.4"
   },
   "scripts": {
     "codecov": "istanbul test ./node_modules/mocha/bin/_mocha -- --reporter spec --slow 500 --timeout 5000 && ./node_modules/codecov/bin/codecov",
@@ -44,7 +48,14 @@
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
     "test": "istanbul test ./node_modules/mocha/bin/_mocha -- --reporter spec --slow 500 --timeout 5000",
     "publish-gh-pages": "bash ./publish-gh-pages.sh",
-    "prettier": "prettier --write lib/*.js test/*.js index.js"
+    "prettier": "prettier --write lib/*.js test/*.js index.js",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
