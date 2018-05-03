@@ -32,7 +32,7 @@
 
 /* This file describes the gRPC-streaming. */
 
-var util = require('util');
+import * as util from 'util';
 var Duplexify = require('duplexify');
 
 /**

@@ -36,9 +36,9 @@
  * Path template utility.
  */
 
-var _ = require('lodash');
-var extras = require('./parser_extras');
-var util = require('util');
+const _ = require('lodash');
+const extras = require('./parser_extras');
+import * as util from 'util';
 
 exports.PathTemplate = PathTemplate;
 
@@ -73,9 +73,9 @@ function PathTemplate(data) {
  */
 PathTemplate.prototype.match = function match(path) {
   var pathSegments = path.split('/');
-  var bindings = {};
+  var bindings: any = {};
   var segmentCount = this.size;
-  var current = null;
+  var current: any = null;
   var index = 0;
   this.segments.forEach(function(segment) {
     if (index > pathSegments.length) {
@@ -124,7 +124,7 @@ PathTemplate.prototype.match = function match(path) {
  *   parsed
  */
 PathTemplate.prototype.render = function render(bindings) {
-  var out = [];
+  var out: any[] = [];
   var inABinding = false;
   this.segments.forEach(function(segment) {
     if (segment.kind === extras.BINDING) {

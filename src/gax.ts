@@ -35,6 +35,10 @@
 
 'use strict';
 
+// This is here to fix a TypeScript bug.
+// https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
+export {}
+
 /**
  * Encapsulates the overridable settings for a particular API call.
  *
@@ -445,7 +449,7 @@ function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
     });
   }
 
-  var backoffSettings = null;
+  var backoffSettings: any = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
     var params = retryParams[methodConfig.retry_params_name];
     backoffSettings = createBackoffSettings(

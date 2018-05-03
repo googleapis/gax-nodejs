@@ -32,9 +32,9 @@
 
 'use strict';
 
-var gax = require('../lib/gax');
+var gax = require('../src/gax');
 var expect = require('chai').expect;
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var utils = require('./utils');
 
 var fail = utils.fail;
@@ -156,11 +156,11 @@ describe('Promise', function() {
     var callCount = 0;
     function func(argument, metadata, options, callback) {
       callCount++;
-      var err = null;
-      var response = null;
+      var err: Error|null = null;
+      var response: number|null = null;
       if (callCount <= 3) {
         err = new Error();
-        err.code = FAKE_STATUS_CODE_1;
+        (err as any).code = FAKE_STATUS_CODE_1;
       } else {
         response = 42;
       }
@@ -397,7 +397,7 @@ describe('retryable', function() {
   it('aborts on unexpected exception', function(done) {
     function func(argument, metadata, options, callback) {
       var error = new Error();
-      error.code = FAKE_STATUS_CODE_2;
+      (error as any).code = FAKE_STATUS_CODE_2;
       callback(error);
     }
     var spy = sinon.spy(func);

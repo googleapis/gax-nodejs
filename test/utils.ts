@@ -1,4 +1,4 @@
-/* Copyright 2017, Google Inc.
+/* Copyright 2016, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,15 +27,51 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 'use strict';
 
-var expect = require('chai').expect;
+var gax = require('../src/gax');
+var apiCallable = require('../src/api_callable');
 
-var fromParams = require('../lib/routing_header').fromParams;
+var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
-describe('fromParams', function() {
-  it('constructs the routing header', function() {
-    var routingHeader = fromParams({name: 'foo', 'book.read': true});
-    expect(routingHeader).to.equal('name=foo&book.read=true');
-  });
-});
+function fail(argument, metadata, options, callback) {
+  var error: any = new Error();
+  error.code = FAKE_STATUS_CODE_1;
+  callback(error);
+}
+exports.fail = fail;
+
+function createApiCall(func, opts) {
+  opts = opts || {};
+  var settings = new gax.CallSettings(opts.settings || {});
+  var descriptor = opts.descriptor;
+  return apiCallable.createApiCall(
+    Promise.resolve(function(argument, metadata, options, callback) {
+      if (opts.returnCancelFunc) {
+        return {
+          cancel: func(argument, metadata, options, callback),
+        };
+      }
+      func(argument, metadata, options, callback);
+      return {
+        cancel:
+          opts.cancel ||
+          function() {
+            callback(new Error('canceled'));
+          },
+      };
+    }),
+    settings,
+    descriptor
+  );
+}
+exports.createApiCall = createApiCall;
+
+function createRetryOptions(backoff) {
+  if (arguments.length > 1) {
+    backoff = gax.createBackoffSettings.apply(null, arguments);
+  }
+  return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
+}
+exports.createRetryOptions = createRetryOptions;

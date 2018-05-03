@@ -28,7 +28,7 @@
 'use strict';
 
 var configData = require('./operations_client_config');
-var extend = require('extend');
+import * as extend from 'extend';
 var gax = require('./gax');
 extend(gax, require('./api_callable'));
 extend(gax, require('./path_template'));
@@ -428,9 +428,9 @@ OperationsClient.prototype.deleteOperation = function(
 };
 
 function OperationsClientBuilder(gaxGrpc) {
-  if (!(this instanceof OperationsClientBuilder)) {
-    return new OperationsClientBuilder(gaxGrpc);
-  }
+  // if (!(this instanceof OperationsClientBuilder)) {
+  //   return new OperationsClientBuilder(gaxGrpc);
+  // }
 
   var operationsClient = gaxGrpc.load([
     {

@@ -32,10 +32,10 @@
 
 'use strict';
 
-var gax = require('../lib/gax');
-var longrunning = require('../lib/longrunning');
+var gax = require('../src/gax');
+var longrunning = require('../src/longrunning');
 var expect = require('chai').expect;
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var utils = require('./utils');
 
 var FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
@@ -89,7 +89,7 @@ var mockDecoder = function(val) {
   return val.toString();
 };
 
-function createApiCall(func, client) {
+function createApiCall(func, client?) {
   var descriptor = new longrunning.LongrunningDescriptor(
     client,
     mockDecoder,
@@ -99,7 +99,7 @@ function createApiCall(func, client) {
 }
 
 describe('longrunning', function() {
-  function mockOperationsClient(opts) {
+  function mockOperationsClient(opts?) {
     opts = opts || {};
     var remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     var cancelGetOperationSpy = sinon.spy();
@@ -108,7 +108,7 @@ describe('longrunning', function() {
       var promise = new Promise(function(resolve) {
         resolver = resolve;
       });
-      promise.cancel = cancelGetOperationSpy;
+      (promise as any).cancel = cancelGetOperationSpy;
 
       if (remainingCalls && remainingCalls > 1) {
         resolver([PENDING_OP]);

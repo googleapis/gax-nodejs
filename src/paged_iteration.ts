@@ -31,7 +31,7 @@
 'use strict';
 
 var extend = require('extend');
-var util = require('util');
+import * as util from 'util';
 var NormalApiCaller = require('./api_callable').NormalApiCaller;
 var through2 = require('through2');
 var ended = require('is-stream-ended');
@@ -110,7 +110,7 @@ PagedIteration.prototype.call = function(
   }
 
   var maxResults = settings.maxResults || -1;
-  var allResources = [];
+  var allResources: any[] = [];
   function pushResources(err, resources, next) {
     if (err) {
       canceller.callback(err);

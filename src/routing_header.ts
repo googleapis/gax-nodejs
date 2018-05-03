@@ -38,6 +38,10 @@
  * Generally, these headers are specified as gRPC metadata.
  */
 
+// This is here to fix a TypeScript bug.
+// https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
+export {}
+
 'use strict';
 
 /**

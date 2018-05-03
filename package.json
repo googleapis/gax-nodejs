@@ -2,9 +2,10 @@
   "name": "google-gax",
   "version": "0.16.1",
   "description": "Google API Extensions",
-  "main": "index.js",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
   "files": [
-    "lib"
+    "build/src"
   ],
   "dependencies": {
     "duplexify": "^3.5.4",
@@ -19,12 +20,18 @@
     "through2": "^2.0.3"
   },
   "devDependencies": {
+    "@types/extend": "^3.0.0",
+    "@types/mocha": "^5.2.0",
+    "@types/node": "^8.10.11",
+    "@types/sinon": "^4.3.1",
+    "@types/source-map-support": "^0.4.0",
     "chai": "*",
     "codecov": "~3.0.0",
     "eslint": "^4.10.0",
     "eslint-config-prettier": "^2.7.0",
     "eslint-plugin-node": "^6.0.0",
     "eslint-plugin-prettier": "^2.3.1",
+    "gts": "^0.5.4",
     "ink-docstrap": "^1.3.2",
     "istanbul": "~0.4.5",
     "jsdoc": "^3.5.5",
@@ -34,17 +41,22 @@
     "proxyquire": "^2.0.0",
     "pumpify": "^1.3.5",
     "sinon": "~5.0.1",
-    "stream-events": "^1.0.1"
+    "source-map-support": "^0.5.5",
+    "stream-events": "^1.0.1",
+    "typescript": "~2.7.0"
   },
   "scripts": {
-    "codecov": "istanbul test ./node_modules/mocha/bin/_mocha -- --reporter spec --slow 500 --timeout 5000 && ./node_modules/codecov/bin/codecov",
+    "codecov": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --reporter spec --slow 500 --timeout 5000 && ./node_modules/codecov/bin/codecov",
     "docs": "jsdoc -c .jsdoc.js -d doc",
-    "lint": "eslint --ignore-path .jshintignore lib test index.js",
-    "lint-fix": "eslint --ignore-path .jshintignore --fix lib test index.js",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
-    "test": "istanbul test ./node_modules/mocha/bin/_mocha -- --reporter spec --slow 500 --timeout 5000",
+    "test": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --require source-map-support/register --reporter spec --slow 500 --timeout 5000",
     "publish-gh-pages": "bash ./publish-gh-pages.sh",
-    "prettier": "prettier --write lib/*.js test/*.js index.js"
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc -p .",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [

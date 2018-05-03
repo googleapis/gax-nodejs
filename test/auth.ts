@@ -33,42 +33,58 @@
 'use strict';
 
 var expect = require('chai').expect;
+import * as sinon from 'sinon';
 
-describe('The PathTemplate parser', function() {
-  it('should load the pegjs generated module ok', function() {
-    var parser = require('../lib/path_template_parser');
-    expect(parser).to.not.eql(null);
+var createCredPromise = require('../src/auth').createCredPromise;
+
+describe('credential promise', function() {
+  var dummyCreds = {};
+  var getCredentials = function(callback) {
+    callback(null, dummyCreds);
+  };
+
+  it('resolves the credential', function(done) {
+    var credP = createCredPromise(getCredentials);
+    credP
+      .then(function(cred) {
+        expect(cred).to.eq(dummyCreds);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 
-  describe('function `parse`', function() {
-    var parser = require('../lib/path_template_parser');
-
-    it('should succeed with valid inputs', function() {
-      var shouldPass = function() {
-        parser.parse('a/b/**/*/{a=hello/world}');
-      };
-      expect(shouldPass).to.not.throw();
+  it('keeps credential', function(done) {
+    var getCredentialsSpy = sinon.spy(getCredentials);
+    var credP = createCredPromise(getCredentialsSpy);
+    var checkCredSpy = sinon.spy(function checkCred(cred) {
+      expect(cred).to.eq(dummyCreds);
     });
+    Promise.all([credP.then(checkCredSpy), credP.then(checkCredSpy)])
+      .then(function() {
+        expect(getCredentialsSpy.callCount).to.eq(1);
+        expect(checkCredSpy.callCount).to.eq(2);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+  });
 
-    it('should fail on invalid tokens', function() {
-      var shouldFail = function() {
-        parser.parse('hello/wor* ld}');
-      };
-      expect(shouldFail).to.throw();
-    });
-
-    it('should fail on unexpected eof', function() {
-      var shouldFail = function() {
-        parser.parse('a/{hello=world');
-      };
-      expect(shouldFail).to.throw();
-    });
-
-    it('should fail on inner binding', function() {
-      var shouldFail = function() {
-        parser.parse('buckets/{hello={world}}');
-      };
-      expect(shouldFail).to.throw();
-    });
+  it('propagates errors from the credential callback', function(done) {
+    var testError = new Error('this is used in a test');
+    var getCredentials = function(callback) {
+      callback(testError);
+    };
+    var credP = createCredPromise(getCredentials);
+    credP
+      .catch(function(err) {
+        expect(err).to.eq(testError);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
   });
 });

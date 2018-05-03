@@ -8,3 +8,5 @@ doc/
 out/
 system-test/secrets.js
 system-test/*key.json
+build
+.vscode

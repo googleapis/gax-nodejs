@@ -35,8 +35,8 @@
 
 'use strict';
 
-var setTimeout = require('timers').setTimeout;
-var util = require('util');
+var setTimeout2 = require('timers').setTimeout;
+import * as util from 'util';
 
 /**
  * @callback APICallback
@@ -158,7 +158,7 @@ util.inherits(PromiseCanceller, Canceller);
  * @return {function(Object, APICallback)}
  *  the function with other arguments and the timeout.
  */
-function addTimeoutArg(aFunc, timeout, otherArgs, abTests) {
+function addTimeoutArg(aFunc, timeout, otherArgs, abTests?) {
   // TODO: this assumes the other arguments consist of metadata and options,
   // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
   return function timeoutFunc(argument, callback) {
@@ -254,7 +254,7 @@ function retryable(aFunc, retry, otherArgs) {
           callback(err);
         } else {
           var toSleep = Math.random() * delay;
-          timeoutId = setTimeout(function() {
+          timeoutId = setTimeout2(function() {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
             timeout = Math.min(
@@ -300,37 +300,37 @@ function retryable(aFunc, retry, otherArgs) {
  * @private
  * @constructor
  */
-function NormalApiCaller() {}
-
-NormalApiCaller.prototype.init = function(settings, callback) {
-  if (callback) {
-    return new Canceller(callback);
+export class NormalApiCaller{
+  init(settings, callback) {
+    if (callback) {
+      return new Canceller(callback);
+    }
+    return new PromiseCanceller(settings.promise);
   }
-  return new PromiseCanceller(settings.promise);
-};
 
-NormalApiCaller.prototype.wrap = function(func) {
-  return func;
-};
-
-NormalApiCaller.prototype.call = function(
-  apiCall,
-  argument,
-  settings,
-  canceller
-) {
-  canceller.call(apiCall, argument);
-};
-
-NormalApiCaller.prototype.fail = function(canceller, err) {
-  canceller.callback(err);
-};
-
-NormalApiCaller.prototype.result = function(canceller) {
-  if (canceller.promise) {
-    return canceller.promise;
+  wrap(func) {
+    return func;
   }
-};
+
+  call(
+    apiCall,
+    argument,
+    settings,
+    canceller
+  ) {
+    canceller.call(apiCall, argument);
+  }
+
+  fail(canceller, err) {
+    canceller.callback(err);
+  }
+
+  result(canceller) {
+    if (canceller.promise) {
+      return canceller.promise;
+    }
+  }
+}
 
 exports.NormalApiCaller = NormalApiCaller;
 

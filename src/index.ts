@@ -1,4 +1,5 @@
-/* Copyright 2016, Google Inc.
+/**
+ * Copyright 2016, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -7,7 +8,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
+ * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -30,48 +31,40 @@
 
 'use strict';
 
-var gax = require('../lib/gax');
-var apiCallable = require('../lib/api_callable');
+var bundling = require('./bundling');
+var gax = require('./gax');
+var grpc = require('./grpc');
+import * as extend from 'extend';
+var streaming = require('./streaming');
+var operationsClient = require('./operations_client');
+var longrunning = require('./longrunning');
+var routingHeader = require('./routing_header');
 
-var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
-
-function fail(argument, metadata, options, callback) {
-  var error = new Error();
-  error.code = FAKE_STATUS_CODE_1;
-  callback(error);
-}
-exports.fail = fail;
-
-function createApiCall(func, opts) {
-  opts = opts || {};
-  var settings = new gax.CallSettings(opts.settings || {});
-  var descriptor = opts.descriptor;
-  return apiCallable.createApiCall(
-    Promise.resolve(function(argument, metadata, options, callback) {
-      if (opts.returnCancelFunc) {
-        return {
-          cancel: func(argument, metadata, options, callback),
-        };
-      }
-      func(argument, metadata, options, callback);
-      return {
-        cancel:
-          opts.cancel ||
-          function() {
-            callback(new Error('canceled'));
-          },
-      };
-    }),
-    settings,
-    descriptor
+function lro(options) {
+  options = extend(
+    {
+      scopes: (lro as any).ALL_SCOPES,
+    },
+    options
   );
+  var gaxGrpc = grpc(options);
+  return operationsClient(gaxGrpc);
 }
-exports.createApiCall = createApiCall;
+(lro as any).SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
+(lro as any).ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-function createRetryOptions(backoff) {
-  if (arguments.length > 1) {
-    backoff = gax.createBackoffSettings.apply(null, arguments);
-  }
-  return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
-}
-exports.createRetryOptions = createRetryOptions;
+exports.lro = lro;
+exports.createApiCall = require('./api_callable').createApiCall;
+exports.grpc = grpc;
+exports.createByteLengthFunction = grpc.createByteLengthFunction;
+exports.PathTemplate = require('./path_template').PathTemplate;
+exports.PageDescriptor = require('./paged_iteration').PageDescriptor;
+exports.BundleDescriptor = bundling.BundleDescriptor;
+exports.StreamType = streaming.StreamType;
+exports.StreamDescriptor = streaming.StreamDescriptor;
+exports.constructSettings = gax.constructSettings;
+exports.BundleExecutor = bundling.BundleExecutor;
+exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
+exports.operation = longrunning.operation;
+exports.routingHeader = routingHeader;
+exports.version = require('./package').version;

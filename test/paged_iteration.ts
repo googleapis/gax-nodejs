@@ -33,10 +33,10 @@
 'use strict';
 
 var util = require('./utils');
-var PageDescriptor = require('../lib/paged_iteration').PageDescriptor;
+var PageDescriptor = require('../src/paged_iteration').PageDescriptor;
 var expect = require('chai').expect;
 var pumpify = require('pumpify');
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var streamEvents = require('stream-events');
 var through2 = require('through2');
 
@@ -65,7 +65,7 @@ describe('paged iteration', function() {
 
   it('returns an Array of results', function(done) {
     var apiCall = util.createApiCall(func, createOptions);
-    var expected = [];
+    var expected: any[] = [];
     for (var i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }
@@ -80,7 +80,7 @@ describe('paged iteration', function() {
 
   it('calls callback with an Array', function(done) {
     var apiCall = util.createApiCall(func, createOptions);
-    var expected = [];
+    var expected: any[] = [];
     for (var i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }

@@ -99,7 +99,7 @@ module.exports = (function() {
       peg$savedPos = 0,
       peg$posDetailsCache = [{line: 1, column: 1, seenCR: false}],
       peg$maxFailPos = 0,
-      peg$maxFailExpected = [],
+      peg$maxFailExpected: any[] = [],
       peg$silentFails = 0,
       peg$result;
 

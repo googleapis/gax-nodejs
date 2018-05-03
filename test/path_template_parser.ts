@@ -1,4 +1,5 @@
-/**
+/*
+ *
  * Copyright 2016, Google Inc.
  * All rights reserved.
  *
@@ -8,7 +9,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -27,44 +28,47 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
-
 'use strict';
 
-var bundling = require('./lib/bundling');
-var gax = require('./lib/gax');
-var grpc = require('./lib/grpc');
-var extend = require('extend');
-var streaming = require('./lib/streaming');
-var operationsClient = require('./lib/operations_client');
-var longrunning = require('./lib/longrunning');
-var routingHeader = require('./lib/routing_header');
+var expect = require('chai').expect;
 
-function lro(options) {
-  options = extend(
-    {
-      scopes: lro.ALL_SCOPES,
-    },
-    options
-  );
-  var gaxGrpc = grpc(options);
-  return operationsClient(gaxGrpc);
-}
-lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
-lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
+describe('The PathTemplate parser', function() {
+  it('should load the pegjs generated module ok', function() {
+    var parser = require('../src/path_template_parser');
+    expect(parser).to.not.eql(null);
+  });
 
-exports.lro = lro;
-exports.createApiCall = require('./lib/api_callable').createApiCall;
-exports.grpc = grpc;
-exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.PathTemplate = require('./lib/path_template').PathTemplate;
-exports.PageDescriptor = require('./lib/paged_iteration').PageDescriptor;
-exports.BundleDescriptor = bundling.BundleDescriptor;
-exports.StreamType = streaming.StreamType;
-exports.StreamDescriptor = streaming.StreamDescriptor;
-exports.constructSettings = gax.constructSettings;
-exports.BundleExecutor = bundling.BundleExecutor;
-exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
-exports.operation = longrunning.operation;
-exports.routingHeader = routingHeader;
-exports.version = require('./package').version;
+  describe('function `parse`', function() {
+    var parser = require('../src/path_template_parser');
+
+    it('should succeed with valid inputs', function() {
+      var shouldPass = function() {
+        parser.parse('a/b/**/*/{a=hello/world}');
+      };
+      expect(shouldPass).to.not.throw();
+    });
+
+    it('should fail on invalid tokens', function() {
+      var shouldFail = function() {
+        parser.parse('hello/wor* ld}');
+      };
+      expect(shouldFail).to.throw();
+    });
+
+    it('should fail on unexpected eof', function() {
+      var shouldFail = function() {
+        parser.parse('a/{hello=world');
+      };
+      expect(shouldFail).to.throw();
+    });
+
+    it('should fail on inner binding', function() {
+      var shouldFail = function() {
+        parser.parse('buckets/{hello={world}}');
+      };
+      expect(shouldFail).to.throw();
+    });
+  });
+});

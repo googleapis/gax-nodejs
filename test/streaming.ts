@@ -32,11 +32,11 @@
 
 'use strict';
 
-var apiCallable = require('../lib/api_callable');
-var gax = require('../lib/gax');
-var streaming = require('../lib/streaming');
+var apiCallable = require('../src/api_callable');
+var gax = require('../src/gax');
+var streaming = require('../src/streaming');
 var expect = require('chai').expect;
-var sinon = require('sinon');
+import * as sinon from 'sinon';
 var through2 = require('through2');
 
 function createApiCall(func, type) {
@@ -83,7 +83,7 @@ describe('streaming', function() {
     function func(metadata, options, callback) {
       expect(arguments.length).to.eq(3);
       var s = through2.obj();
-      var written = [];
+      var written: any[] = [];
       s.on('end', function() {
         callback(null, written);
       });

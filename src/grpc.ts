@@ -33,13 +33,13 @@
 
 var autoAuth = require('google-auto-auth');
 
-var fs = require('fs');
-var gax = require('./gax');
-var globby = require('globby');
-var googleProtoFilesDir = require('google-proto-files')('..');
-var path = require('path');
-var protobuf = require('protobufjs');
-var util = require('util');
+const fs = require('fs');
+const gax = require('./gax');
+const globby = require('globby');
+let googleProtoFilesDir = require('google-proto-files')('..');
+const path = require('path');
+const protobuf = require('protobufjs');
+import * as util from 'util'
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
 
@@ -86,9 +86,9 @@ var COMMON_PROTO_FILES = globby
  * @constructor
  */
 function GrpcClient(options) {
-  if (!(this instanceof GrpcClient)) {
-    return new GrpcClient(options);
-  }
+  // if (!(this instanceof GrpcClient)) {
+  //   return new GrpcClient(options);
+  // }
   options = options || {};
   this.auth = options.auth || autoAuth(options);
   this.promise = options.promise || Promise;
@@ -100,7 +100,7 @@ function GrpcClient(options) {
     this.grpcVersion = require('grpc/package.json').version;
   }
 }
-module.exports = GrpcClient;
+module.exports = (options) => { return new GrpcClient(options) };
 
 /**
  * Creates a gRPC credentials. It asks the auth data if necessary.
@@ -159,13 +159,13 @@ GrpcClient.prototype.load = function(args) {
  *   object).
  */
 GrpcClient.prototype.loadProto = function(protoPath, filename) {
-  var resolvedPath = GrpcClient._resolveFile(protoPath, filename);
+  var resolvedPath = (GrpcClient as any)._resolveFile(protoPath, filename);
   return this.grpc.loadObject(
     protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot())
   );
 };
 
-GrpcClient._resolveFile = function(protoPath, filename) {
+(GrpcClient as any)._resolveFile = function(protoPath, filename) {
   if (fs.existsSync(path.join(protoPath, filename))) {
     return path.join(protoPath, filename);
   } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
@@ -262,7 +262,7 @@ GrpcClient.prototype.createStub = function(CreateStub, options) {
  * @return {function(Object):number} - a function to compute the byte length
  *   for an object.
  */
-GrpcClient.createByteLengthFunction = function createByteLengthFunction(
+(GrpcClient as any).createByteLengthFunction = function createByteLengthFunction(
   message
 ) {
   return function getByteLength(obj) {
@@ -295,10 +295,10 @@ GoogleProtoFilesRoot.prototype.resolvePath = function(originPath, includePath) {
     return path.join(googleProtoFilesDir, includePath);
   }
 
-  return GoogleProtoFilesRoot._findIncludePath(originPath, includePath);
+  return (GoogleProtoFilesRoot as any)._findIncludePath(originPath, includePath);
 };
 
-GoogleProtoFilesRoot._findIncludePath = function(originPath, includePath) {
+(GoogleProtoFilesRoot as any)._findIncludePath = function(originPath, includePath) {
   originPath = path.normalize(originPath);
   includePath = path.normalize(includePath);
 

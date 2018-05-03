@@ -36,7 +36,7 @@
 'use strict';
 
 var _ = require('lodash');
-var util = require('util');
+import * as util from 'util';
 var NormalApiCaller = require('./api_callable').NormalApiCaller;
 
 /**
@@ -58,7 +58,7 @@ function noop() {}
  *   fields do not exist.
  */
 function computeBundleId(obj, discriminatorFields) {
-  var ids = [];
+  var ids: any[] = [];
   var hasIds = false;
   for (var i = 0; i < discriminatorFields.length; ++i) {
     var id = _.at(obj, discriminatorFields[i])[0];
@@ -112,7 +112,7 @@ function deepCopyForResponse(obj, subresponseInfo) {
   }
   // ArrayBuffer should be copied through slice().
   if (obj instanceof ArrayBuffer) {
-    return obj.slice();
+    return (obj as any).slice();
   }
   if (typeof obj === 'object') {
     result = {};
@@ -195,7 +195,7 @@ Task.prototype.run = function() {
   }
   var request = this._request;
   var elements = [];
-  var ids = [];
+  var ids: any[] = [];
   for (var i = 0; i < this._data.length; ++i) {
     elements.push.apply(elements, this._data[i].elements);
     ids.push(this._data[i].callback.id);
@@ -204,13 +204,13 @@ Task.prototype.run = function() {
 
   var self = this;
   this.callCanceller = this._apiCall(request, function(err, response) {
-    var responses = [];
+    var responses: any[] = [];
     if (err) {
       self._data.forEach(function() {
         responses.push(null);
       });
     } else {
-      var subresponseInfo = null;
+      var subresponseInfo: any = null;
       if (self._subresponseField) {
         subresponseInfo = {
           field: self._subresponseField,
@@ -311,7 +311,7 @@ exports.BundleExecutor = BundleExecutor;
  * @return {function()} - the function to cancel the scheduled invocation.
  */
 BundleExecutor.prototype.schedule = function(apiCall, request, callback) {
-  var bundleId = computeBundleId(
+  var bundleId: any = computeBundleId(
     request,
     this._descriptor.requestDiscriminatorFields
   );
