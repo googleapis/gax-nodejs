@@ -25,15 +25,21 @@ workflows:
       #       - node6
       #       - node8
       #       - node9
+      #       - node10
       #     filters:
       #       tags:
       #         only: /.*/
+      - node10:
+          filters:
+            tags:
+              only: /.*/
       - docs:
           requires:
             - node4
             - node6
             - node8
             - node9
+            - node10
           filters:
             tags:
               only: /.*/
@@ -97,26 +103,31 @@ jobs:
       - image: 'node:9'
         user: node
     steps: *unit_tests_steps
-  # lint:
-  #   docker:
-  #     - image: 'node:8'
-  #       user: node
-  #   steps:
-  #     - checkout
-  #     - run: *remove_package_lock
-  #     - run:
-  #         name: Install modules and dependencies.
-  #         command: |
-  #           mkdir -p /home/node/.npm-global
-  #           npm install
-  #           npm link
-  #         environment:
-  #           NPM_CONFIG_PREFIX: /home/node/.npm-global
-  #     - run:
-  #         name: Run linting.
-  #         command: npm run lint
-  #         environment:
-  #           NPM_CONFIG_PREFIX: /home/node/.npm-global
+  node10:
+    docker:
+      - image: 'node:10'
+        user: node
+    steps: *unit_tests_steps
+#  lint:
+#    docker:
+#      - image: 'node:8'
+#        user: node
+#    steps:
+#      - checkout
+#      - run: *remove_package_lock
+#      - run:
+#          name: Install modules and dependencies.
+#          command: |
+#            mkdir -p /home/node/.npm-global
+#            npm install
+#            npm link
+#          environment:
+#            NPM_CONFIG_PREFIX: /home/node/.npm-global
+#      - run:
+#          name: Run linting.
+#          command: npm run lint
+#          environment:
+#            NPM_CONFIG_PREFIX: /home/node/.npm-global
   docs:
     docker:
       - image: 'node:8'
