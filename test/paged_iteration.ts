@@ -32,13 +32,13 @@
 
 'use strict';
 
-var util = require('./utils');
-var PageDescriptor = require('../src/paged_iteration').PageDescriptor;
-var expect = require('chai').expect;
-var pumpify = require('pumpify');
+const util = require('./utils');
+const {PageDescriptor} = require('../src/paged_iteration');
+import {expect} from 'chai';
+import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
-var streamEvents = require('stream-events');
-var through2 = require('through2');
+import * as streamEvents from 'stream-events';
+import * as through2 from 'through2';
 
 describe('paged iteration', function() {
   var pageSize = 3;
@@ -297,7 +297,7 @@ describe('paged iteration', function() {
 
     it('cooperates with google-cloud-node usage', function(done) {
       var stream;
-      var output = streamEvents(pumpify.obj());
+      var output = streamEvents((pumpify as any).obj()) as pumpify;
       output.once('reading', function() {
         stream = descriptor.createStream(apiCall, {}, null);
         output.setPipeline(stream, through2.obj());

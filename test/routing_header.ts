@@ -29,9 +29,8 @@
  */
 'use strict';
 
-var expect = require('chai').expect;
-
-const fromParams = require('../src/routing_header').fromParams;
+import {expect} from 'chai';
+import {fromParams} from '../src/routing_header';
 
 describe('fromParams', function() {
   it('constructs the routing header', function() {

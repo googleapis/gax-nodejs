@@ -27,9 +27,10 @@
 /* jscs: disable maximumLineLength */
 'use strict';
 
-var configData = require('./operations_client_config');
 import * as extend from 'extend';
-var gax = require('./gax');
+const configData = require('./operations_client_config');
+const gax = require('./gax');
+
 extend(gax, require('./api_callable'));
 extend(gax, require('./path_template'));
 extend(gax, require('./paged_iteration'));

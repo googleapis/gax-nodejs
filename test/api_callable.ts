@@ -32,10 +32,10 @@
 
 'use strict';
 
-var gax = require('../src/gax');
-var expect = require('chai').expect;
+import {expect} from 'chai';
 import * as sinon from 'sinon';
-var utils = require('./utils');
+const gax = require('../src/gax');
+const utils = require('./utils');
 
 var fail = utils.fail;
 var createApiCall = utils.createApiCall;

@@ -35,7 +35,6 @@
 
 'use strict';
 
-var setTimeout2 = require('timers').setTimeout;
 import * as util from 'util';
 
 /**
@@ -254,7 +253,7 @@ function retryable(aFunc, retry, otherArgs) {
           callback(err);
         } else {
           var toSleep = Math.random() * delay;
-          timeoutId = setTimeout2(function() {
+          timeoutId = setTimeout(function() {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
             timeout = Math.min(

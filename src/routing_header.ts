@@ -40,7 +40,6 @@
 
 // This is here to fix a TypeScript bug.
 // https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
-export {}
 
 'use strict';
 
@@ -50,12 +49,10 @@ export {}
  * @param {Object} params - the request header parameters.
  * @return {string} the routing header value.
  */
-function fromParams(params) {
+export function fromParams(params) {
   return Object.keys(params)
     .map(function(key) {
       return key + '=' + params[key];
     })
     .join('&');
 }
-
-exports.fromParams = fromParams;

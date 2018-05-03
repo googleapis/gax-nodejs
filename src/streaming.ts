@@ -33,7 +33,7 @@
 /* This file describes the gRPC-streaming. */
 
 import * as util from 'util';
-var Duplexify = require('duplexify');
+import * as Duplexify from 'duplexify';
 
 /**
  * The type of gRPC streaming.

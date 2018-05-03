@@ -30,11 +30,12 @@
  */
 'use strict';
 
-var extend = require('extend');
+import * as extend from 'extend';
+import * as through2 from 'through2';
+import * as ended from 'is-stream-ended';
 import * as util from 'util';
-var NormalApiCaller = require('./api_callable').NormalApiCaller;
-var through2 = require('through2');
-var ended = require('is-stream-ended');
+
+const {NormalApiCaller} = require('./api_callable');
 
 /**
  * Creates an API caller that returns a stream to performs page-streaming.

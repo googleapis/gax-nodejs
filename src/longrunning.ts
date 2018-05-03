@@ -29,9 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-var createBackoffSettings = require('./gax').createBackoffSettings;
-var NormalApiCaller = require('./api_callable').NormalApiCaller;
-var events = require('events');
+const { createBackoffSettings } = require('./gax');
+const { NormalApiCaller } = require('./api_callable');
+import * as events from 'events';
 import * as util from 'util';
 
 /**

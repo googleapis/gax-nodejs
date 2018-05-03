@@ -32,12 +32,12 @@
 
 'use strict';
 
-var apiCallable = require('../src/api_callable');
-var gax = require('../src/gax');
-var streaming = require('../src/streaming');
-var expect = require('chai').expect;
+const apiCallable = require('../src/api_callable');
+const gax = require('../src/gax');
+const streaming = require('../src/streaming');
+import {expect} from 'chai';
 import * as sinon from 'sinon';
-var through2 = require('through2');
+import * as through2 from 'through2';
 
 function createApiCall(func, type) {
   // can't use "createApiCall" in util.js because argument list is different
@@ -192,7 +192,7 @@ describe('streaming', function() {
     function func() {
       var s = through2.obj();
       schedulePush(s, 0);
-      s.cancel = function() {
+      (s as any).cancel = function() {
         s.end();
         s.emit('error', cancelError);
       };
