@@ -34,12 +34,14 @@
 
 import * as util from 'util';
 import * as Duplexify from 'duplexify';
+import {Stream, Duplex, DuplexOptions} from 'stream';
 
 /**
  * The type of gRPC streaming.
  * @enum {number}
  */
-var StreamType = {
+// tslint:disable-next-line variable-name
+export const StreamType = {
   /** Client sends a single request, server streams responses. */
   SERVER_STREAMING: 1,
 
@@ -50,141 +52,147 @@ var StreamType = {
   BIDI_STREAMING: 3,
 };
 
-exports.StreamType = StreamType;
-
-/**
- * StreamProxy is a proxy to gRPC-streaming method.
- *
- * @private
- * @constructor
- * @param {StreamType} type - the type of gRPC stream.
- * @param {ApiCallback} callback - the callback for further API call.
- */
-function StreamProxy(type, callback) {
-  Duplexify.call(this, null, null, {
-    objectMode: true,
-    readable: type !== StreamType.CLIENT_STREAMING,
-    writable: type !== StreamType.SERVER_STREAMING,
-  });
-  this.type = type;
-  this._callback = callback;
-  this._isCancelCalled = false;
-}
-
-util.inherits(StreamProxy, Duplexify);
-
-StreamProxy.prototype.cancel = function() {
-  if (this.stream) {
-    this.stream.cancel();
-  } else {
-    this._isCancelCalled = true;
+export class StreamProxy extends Duplexify {
+  type: {};
+  private _callback?: Function;
+  private _isCancelCalled: boolean;
+  stream?: Duplex&{cancel: () => void};
+  /**
+   * StreamProxy is a proxy to gRPC-streaming method.
+   *
+   * @private
+   * @constructor
+   * @param {StreamType} type - the type of gRPC stream.
+   * @param {ApiCallback} callback - the callback for further API call.
+   */
+  constructor(type, callback) {
+    super(undefined, undefined, {
+      objectMode: true,
+      readable: type !== StreamType.CLIENT_STREAMING,
+      writable: type !== StreamType.SERVER_STREAMING,
+    } as DuplexOptions);
+    this.type = type;
+    this._callback = callback;
+    this._isCancelCalled = false;
   }
-};
 
-/**
- * Specifies the target stream.
- * @param {ApiCall} apiCall - the API function to be called.
- * @param {Object} argument - the argument to be passed to the apiCall.
- */
-StreamProxy.prototype.setStream = function(apiCall, argument) {
-  var stream = apiCall(argument, this._callback);
-  this.stream = stream;
-  var self = this;
-  ['metadata', 'status'].forEach(function(event) {
-    stream.on(event, function() {
-      var args = Array.prototype.slice.call(arguments, 0);
-      args.unshift(event);
-      self.emit.apply(self, args);
+  cancel() {
+    if (this.stream) {
+      this.stream.cancel();
+    } else {
+      this._isCancelCalled = true;
+    }
+  }
+
+  /**
+   * Specifies the target stream.
+   * @param {ApiCall} apiCall - the API function to be called.
+   * @param {Object} argument - the argument to be passed to the apiCall.
+   */
+  setStream(apiCall, argument) {
+    const stream = apiCall(argument, this._callback);
+    this.stream = stream;
+    ['metadata', 'status'].forEach(event => {
+      stream.on(event, (...args: Array<{}>) => {
+        args.unshift(event);
+        this.emit.apply(this, args);
+      });
     });
-  });
-  // We also want to supply the status data as 'response' event to support
-  // the behavior of google-cloud-node expects.
-  // see: https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
-  // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/116436fa789d8b0f7fc5100b19b424e3ec63e6bf/packages/common/src/grpc-service.js#L355
-  stream.on('metadata', function(metadata) {
-    // Create a response object with succeeds.
-    // TODO: unify this logic with the decoration of gRPC response when it's added.
-    // see: https://github.com/googleapis/gax-nodejs/issues/65
-    self.emit('response', {
-      code: 200,
-      details: '',
-      message: 'OK',
-      metadata: metadata,
+    // We also want to supply the status data as 'response' event to support
+    // the behavior of google-cloud-node expects.
+    // see:
+    // https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
+    // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/116436fa789d8b0f7fc5100b19b424e3ec63e6bf/packages/common/src/grpc-service.js#L355
+    stream.on('metadata', metadata => {
+      // Create a response object with succeeds.
+      // TODO: unify this logic with the decoration of gRPC response when it's
+      // added. see: https://github.com/googleapis/gax-nodejs/issues/65
+      this.emit('response', {
+        code: 200,
+        details: '',
+        message: 'OK',
+        metadata,
+      });
     });
-  });
-  if (this.type !== StreamType.CLIENT_STREAMING) {
-    this.setReadable(stream);
+    if (this.type !== StreamType.CLIENT_STREAMING) {
+      this.setReadable(stream);
+    }
+    if (this.type !== StreamType.SERVER_STREAMING) {
+      this.setWritable(stream);
+    }
+    if (this._isCancelCalled) {
+      stream.cancel();
+    }
   }
-  if (this.type !== StreamType.SERVER_STREAMING) {
-    this.setWritable(stream);
-  }
-  if (this._isCancelCalled) {
-    stream.cancel();
-  }
-};
-
-/**
- * An API caller for methods of gRPC streaming.
- * @private
- * @constructor
- * @param {StreamDescriptor} descriptor - the descriptor of the method structure.
- */
-function GrpcStreamable(descriptor) {
-  this.descriptor = descriptor;
 }
 
-GrpcStreamable.prototype.init = function(settings, callback) {
-  return new StreamProxy(this.descriptor.type, callback);
-};
+export class GrpcStreamable {
+  descriptor: StreamDescriptor;
 
-GrpcStreamable.prototype.wrap = function(func) {
-  switch (this.descriptor.type) {
-    case StreamType.SERVER_STREAMING:
-      return function(argument, metadata, options) {
-        return func(argument, metadata, options);
-      };
-    case StreamType.CLIENT_STREAMING:
-      return function(argument, metadata, options, callback) {
-        return func(metadata, options, callback);
-      };
-    case StreamType.BIDI_STREAMING:
-      return function(argument, metadata, options) {
-        return func(metadata, options);
-      };
-    default:
-      console.error('Unknown stream type', this.descriptor.type);
+  /**
+   * An API caller for methods of gRPC streaming.
+   * @private
+   * @constructor
+   * @param {StreamDescriptor} descriptor - the descriptor of the method structure.
+   */
+  constructor(descriptor) {
+    this.descriptor = descriptor;
   }
-  return func;
-};
 
-GrpcStreamable.prototype.call = function(apiCall, argument, settings, stream) {
-  stream.setStream(apiCall, argument);
-};
+  init(settings, callback) {
+    return new StreamProxy(this.descriptor.type, callback);
+  }
 
-GrpcStreamable.prototype.fail = function(stream, err) {
-  stream.emit('error', err);
-};
+  wrap(func) {
+    switch (this.descriptor.type) {
+      case StreamType.SERVER_STREAMING:
+        return (argument, metadata, options) => {
+          return func(argument, metadata, options);
+        };
+      case StreamType.CLIENT_STREAMING:
+        return (argument, metadata, options, callback) => {
+          return func(metadata, options, callback);
+        };
+      case StreamType.BIDI_STREAMING:
+        return (argument, metadata, options) => {
+          return func(metadata, options);
+        };
+      default:
+        console.error('Unknown stream type', this.descriptor.type);
+    }
+    return func;
+  }
 
-GrpcStreamable.prototype.result = function(stream) {
-  return stream;
-};
+  call(apiCall, argument, settings, stream) {
+    stream.setStream(apiCall, argument);
+  }
 
-/**
- * Describes the structure of gRPC streaming call.
- * @constructor
- * @param {StreamType} streamType - the type of streaming.
- */
-function StreamDescriptor(streamType) {
-  this.type = streamType;
+  fail(stream, err) {
+    stream.emit('error', err);
+  }
+
+  result(stream) {
+    return stream;
+  }
 }
 
-StreamDescriptor.prototype.apiCaller = function(settings) {
-  // Right now retrying does not work with gRPC-streaming, because retryable
-  // assumes an API call returns an event emitter while gRPC-streaming methods
-  // return Stream.
-  // TODO: support retrying.
-  settings.retry = null;
-  return new GrpcStreamable(this);
-};
+export class StreamDescriptor {
+  type: {};
+  /**
+   * Describes the structure of gRPC streaming call.
+   * @constructor
+   * @param {StreamType} streamType - the type of streaming.
+   */
+  constructor(streamType) {
+    this.type = streamType;
+  }
 
-exports.StreamDescriptor = StreamDescriptor;
+  apiCaller(settings) {
+    // Right now retrying does not work with gRPC-streaming, because retryable
+    // assumes an API call returns an event emitter while gRPC-streaming methods
+    // return Stream.
+    // TODO: support retrying.
+    settings.retry = null;
+    return new GrpcStreamable(this);
+  }
+}

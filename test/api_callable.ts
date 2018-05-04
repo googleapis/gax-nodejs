@@ -34,45 +34,47 @@
 
 import {expect} from 'chai';
 import * as sinon from 'sinon';
+import {GoogleError} from '../src/GoogleError';
 const gax = require('../src/gax');
 const utils = require('./utils');
 
-var fail = utils.fail;
-var createApiCall = utils.createApiCall;
-var FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
-var FAKE_STATUS_CODE_2 = utils.FAKE_STATUS_CODE_1 + 1;
+const fail = utils.fail;
+const createApiCall = utils.createApiCall;
+const FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
+const FAKE_STATUS_CODE_2 = utils.FAKE_STATUS_CODE_1 + 1;
 
-describe('createApiCall', function() {
-  it('calls api call', function(done) {
-    var deadlineArg;
+describe('createApiCall', () => {
+  it('calls api call', (done) => {
+    let deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       callback(null, argument);
     }
-    var apiCall = createApiCall(func);
-    apiCall(42, null, function(err, resp) {
+    const apiCall = createApiCall(func);
+    apiCall(42, null, (err, resp) => {
       expect(resp).to.eq(42);
+      // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
       done();
     });
   });
 
-  it('is customized by call options', function(done) {
+  it('is customized by call options', (done) => {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
-    var apiCall = createApiCall(func, {settings: {timeout: 100}});
-    apiCall(null, {timeout: 200}, function(err, resp) {
-      var now = new Date();
-      var originalDeadline = now.getTime() + 100;
-      var expectedDeadline = now.getTime() + 200;
+    const apiCall = createApiCall(func, {settings: {timeout: 100}});
+    apiCall(null, {timeout: 200}, (err, resp) => {
+      const now = new Date();
+      const originalDeadline = now.getTime() + 100;
+      const expectedDeadline = now.getTime() + 200;
       expect(resp).above(originalDeadline);
       expect(resp).most(expectedDeadline);
       done();
     });
   });
 
-  it('chooses the proper timeout', function(done) {
+  it('chooses the proper timeout', (done) => {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
@@ -80,18 +82,17 @@ describe('createApiCall', function() {
     // The settings originally from the 'config_service_v2_client_config.json'
     // in @google-cloud/logging library.
     // See https://github.com/googleapis/gax-nodejs/issues/136
-    var apiCall = createApiCall(func, {
+    const apiCall = createApiCall(func, {
       settings: {
         timeout: 30000,
         retry: gax.createRetryOptions(
-          [],
-          gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)
-        ),
+            [],
+            gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)),
       },
     });
 
-    var start = new Date().getTime();
-    apiCall(null, null, function(err, resp) {
+    const start = new Date().getTime();
+    apiCall(null, null, (err, resp) => {
       // The verifying value is slightly bigger than the expected number
       // 2000 / 30000, because sometimes runtime can consume some time before
       // the call starts.
@@ -102,69 +103,70 @@ describe('createApiCall', function() {
   });
 });
 
-describe('Promise', function() {
-  it('calls api call', function(done) {
-    var deadlineArg;
+describe('Promise', () => {
+  it('calls api call', (done) => {
+    let deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       callback(null, 42);
     }
-    var apiCall = createApiCall(func);
+    const apiCall = createApiCall(func);
     apiCall(null)
-      .then(function(response) {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.eq(42);
-        expect(deadlineArg).to.be.ok;
-        done();
-      })
-      .catch(done);
+        .then(response => {
+          expect(response).to.be.an('array');
+          expect(response[0]).to.eq(42);
+          // tslint:disable-next-line no-unused-expression
+          expect(deadlineArg).to.be.ok;
+          done();
+        })
+        .catch(done);
   });
 
-  it('emits error on failure', function(done) {
-    var apiCall = createApiCall(fail);
+  it('emits error on failure', (done) => {
+    const apiCall = createApiCall(fail);
     apiCall(null, null)
-      .then(function() {
-        done(new Error('should not reach'));
-      })
-      .catch(function(err) {
-        expect(err).to.be.an.instanceOf(Error);
-        done();
-      });
+        .then(() => {
+          done(new Error('should not reach'));
+        })
+        .catch(err => {
+          expect(err).to.be.an.instanceOf(Error);
+          done();
+        });
   });
 
-  it('has cancel method', function(done) {
+  it('has cancel method', (done) => {
     function func(argument, metadata, options, callback) {
-      setTimeout(function() {
+      setTimeout(() => {
         callback(null, 42);
       }, 0);
     }
-    var apiCall = createApiCall(func, {cancel: done});
-    var promise = apiCall(null);
+    const apiCall = createApiCall(func, {cancel: done});
+    const promise = apiCall(null);
     promise
-      .then(function() {
-        done(new Error('should not reach'));
-      })
-      .catch(function() {
-        done();
-      });
+        .then(() => {
+          done(new Error('should not reach'));
+        })
+        .catch(() => {
+          done();
+        });
     promise.cancel();
   });
 
-  it('cancels retrying call', function(done) {
-    var retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
+  it('cancels retrying call', (done) => {
+    const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
 
-    var callCount = 0;
+    let callCount = 0;
     function func(argument, metadata, options, callback) {
       callCount++;
-      var err: Error|null = null;
-      var response: number|null = null;
+      let err: GoogleError;
+      let response: number;
       if (callCount <= 3) {
-        err = new Error();
-        (err as any).code = FAKE_STATUS_CODE_1;
+        err = new GoogleError();
+        err.code = FAKE_STATUS_CODE_1;
       } else {
         response = 42;
       }
-      var timeoutId = setTimeout(function() {
+      const timeoutId = setTimeout(() => {
         callback(err, response);
       }, 10);
       return function cancelFunc() {
@@ -172,41 +174,40 @@ describe('Promise', function() {
         callback(new Error('canceled'));
       };
     }
-    var apiCall = createApiCall(func, {
+    const apiCall = createApiCall(func, {
       settings: {retry: retryOptions},
       returnCancelFunc: true,
     });
-    var promise = apiCall(null);
+    const promise = apiCall(null);
     promise
-      .then(function() {
-        done(new Error('should not reach'));
-      })
-      .catch(function() {
-        expect(callCount).to.be.below(4);
-        done();
-      })
-      .catch(done);
-    setTimeout(function() {
+        .then(() => {
+          done(new Error('should not reach'));
+        })
+        .catch(() => {
+          expect(callCount).to.be.below(4);
+          done();
+        })
+        .catch(done);
+    setTimeout(() => {
       promise.cancel();
     }, 15);
   });
 
-  it('does not return promise when callback is supplied', function(done) {
+  it('does not return promise when callback is supplied', (done) => {
     function func(argument, metadata, options, callback) {
       callback(null, 42);
     }
-    var apiCall = createApiCall(func);
-    expect(
-      apiCall(null, null, function(err, response) {
-        expect(err).to.be.null;
-        expect(response).to.eq(42);
-        done();
-      })
-    ).to.be.undefined;
+    const apiCall = createApiCall(func);
+    expect(apiCall(null, null, (err, response) => {
+      // tslint:disable-next-line no-unused-expression
+      expect(err).to.be.null;
+      expect(response).to.eq(42);
+      done();
+    })).to.be.undefined;
   });
 
-  it('uses a provided promise module.', function(done) {
-    var called = false;
+  it('uses a provided promise module.', (done) => {
+    let called = false;
     function MockPromise(resolver) {
       called = true;
       return new Promise(resolver);
@@ -215,25 +216,26 @@ describe('Promise', function() {
     function func(argument, metadata, options, callback) {
       callback(null, 42);
     }
-    var apiCall = createApiCall(func);
+    const apiCall = createApiCall(func);
     apiCall(null, {promise: MockPromise})
-      .then(function(response) {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.eq(42);
-        expect(called).to.be.true;
-        done();
-      })
-      .catch(done);
+        .then(response => {
+          expect(response).to.be.an('array');
+          expect(response[0]).to.eq(42);
+          // tslint:disable-next-line no-unused-expression
+          expect(called).to.be.true;
+          done();
+        })
+        .catch(done);
   });
 });
 
-describe('retryable', function() {
-  var retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
-  var settings = {settings: {timeout: 0, retry: retryOptions}};
+describe('retryable', () => {
+  const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
+  const settings = {settings: {timeout: 0, retry: retryOptions}};
 
-  it('retries the API call', function(done) {
-    var toAttempt = 3;
-    var deadlineArg;
+  it('retries the API call', (done) => {
+    let toAttempt = 3;
+    let deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       toAttempt--;
@@ -243,18 +245,19 @@ describe('retryable', function() {
       }
       callback(null, 1729);
     }
-    var apiCall = createApiCall(func, settings);
-    apiCall(null, null, function(err, resp) {
+    const apiCall = createApiCall(func, settings);
+    apiCall(null, null, (err, resp) => {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
+      // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
       done();
     });
   });
 
-  it('retries the API call with promise', function(done) {
-    var toAttempt = 3;
-    var deadlineArg;
+  it('retries the API call with promise', (done) => {
+    let toAttempt = 3;
+    let deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
       toAttempt--;
@@ -264,78 +267,79 @@ describe('retryable', function() {
       }
       callback(null, 1729);
     }
-    var apiCall = createApiCall(func, settings);
+    const apiCall = createApiCall(func, settings);
     apiCall(null, null)
-      .then(function(resp) {
-        expect(resp).to.be.an('array');
-        expect(resp[0]).to.eq(1729);
-        expect(toAttempt).to.eq(0);
-        expect(deadlineArg).to.be.ok;
-        done();
-      })
-      .catch(done);
+        .then(resp => {
+          expect(resp).to.be.an('array');
+          expect(resp[0]).to.eq(1729);
+          expect(toAttempt).to.eq(0);
+          // tslint:disable-next-line no-unused-expression
+          expect(deadlineArg).to.be.ok;
+          done();
+        })
+        .catch(done);
   });
 
-  it('cancels in the middle of retries', function(done) {
-    var callCount = 0;
-    var promise;
+  it('cancels in the middle of retries', (done) => {
+    let callCount = 0;
+    let promise;
     function func(argument, metadata, options, callback) {
       callCount++;
       if (callCount <= 2) {
         fail(argument, metadata, options, callback);
         return;
       }
-      setTimeout(function() {
+      setTimeout(() => {
         promise.cancel();
       }, 0);
-      setTimeout(function() {
+      setTimeout(() => {
         callback(null, null, 1729);
       }, 10);
     }
-    var apiCall = createApiCall(func, settings);
+    const apiCall = createApiCall(func, settings);
     promise = apiCall(null, null);
     promise
-      .then(function() {
-        done(new Error('should not reach'));
-      })
-      .catch(function(err) {
-        expect(err).to.be.an.instanceOf(Error);
-        done();
-      });
+        .then(() => {
+          done(new Error('should not reach'));
+        })
+        .catch(err => {
+          expect(err).to.be.an.instanceOf(Error);
+          done();
+        });
   });
 
-  it("doesn't retry if no codes", function(done) {
-    var retryOptions = gax.createRetryOptions(
-      [],
-      gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7)
-    );
-    var settings = {settings: {timeout: 0, retry: retryOptions}};
-    var spy = sinon.spy(fail);
-    var apiCall = createApiCall(spy, settings);
-    apiCall(null, null, function(err) {
+  it('doesn\'t retry if no codes', (done) => {
+    const retryOptions = gax.createRetryOptions(
+        [], gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7));
+    const settings = {settings: {timeout: 0, retry: retryOptions}};
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, settings);
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      // tslint:disable-next-line no-unused-expression
       expect(err.note).to.be.undefined;
       expect(spy.callCount).to.eq(1);
       done();
     });
   });
 
-  it('aborts retries', function(done) {
-    var apiCall = createApiCall(fail, settings);
-    apiCall(null, null, function(err) {
+  it('aborts retries', (done) => {
+    const apiCall = createApiCall(fail, settings);
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       done();
     });
   });
 
-  it.skip('times out', function(done) {
-    var toAttempt = 3;
-    var spy = sinon.spy(fail);
-    var apiCall = createApiCall(spy, settings);
-    apiCall(null, null, function(err) {
+  it.skip('times out', (done) => {
+    const toAttempt = 3;
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, settings);
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      // tslint:disable-next-line no-unused-expression
       expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
       done();
@@ -343,25 +347,18 @@ describe('retryable', function() {
   });
 
   // maxRetries is unsupported, and intended for internal use only.
-  it('errors on maxRetries', function(done) {
-    var toAttempt = 5;
-    var backoff = gax.createMaxRetriesBackoffSettings(
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      toAttempt
-    );
-    var maxRetriesRetryOptions = utils.createRetryOptions(backoff);
+  it('errors on maxRetries', (done) => {
+    const toAttempt = 5;
+    const backoff =
+        gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, toAttempt);
+    const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
 
-    var maxRetrySettings = {
+    const maxRetrySettings = {
       settings: {timeout: 0, retry: maxRetriesRetryOptions},
     };
-    var spy = sinon.spy(fail);
-    var apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall(null, null, function(err) {
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       expect(spy.callCount).to.eq(toAttempt);
       done();
@@ -369,145 +366,141 @@ describe('retryable', function() {
   });
 
   // maxRetries is unsupported, and intended for internal use only.
-  it('errors when totalTimeoutMillis and maxRetries set', function(done) {
-    var maxRetries = 5;
-    var backoff = gax.createMaxRetriesBackoffSettings(
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      maxRetries
-    );
-    var maxRetriesRetryOptions = utils.createRetryOptions(backoff);
+  it('errors when totalTimeoutMillis and maxRetries set', (done) => {
+    const maxRetries = 5;
+    const backoff =
+        gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, maxRetries);
+    const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
-    var maxRetrySettings = {
+    const maxRetrySettings = {
       settings: {timeout: 0, retry: maxRetriesRetryOptions},
     };
-    var spy = sinon.spy(fail);
-    var apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall(null, null, function(err) {
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, maxRetrySettings);
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       expect(spy.callCount).to.eq(0);
       done();
     });
   });
 
-  it('aborts on unexpected exception', function(done) {
+  it('aborts on unexpected exception', (done) => {
     function func(argument, metadata, options, callback) {
-      var error = new Error();
-      (error as any).code = FAKE_STATUS_CODE_2;
+      const error = new GoogleError();
+      error.code = FAKE_STATUS_CODE_2;
       callback(error);
     }
-    var spy = sinon.spy(func);
-    var apiCall = createApiCall(spy, settings);
-    apiCall(null, null, function(err) {
+    const spy = sinon.spy(func);
+    const apiCall = createApiCall(spy, settings);
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_2);
+      // tslint:disable-next-line no-unused-expression
       expect(err.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
       done();
     });
   });
 
-  it('does not retry even when no responses', function(done) {
+  it('does not retry even when no responses', (done) => {
     function func(argument, metadata, options, callback) {
       callback(null, null);
     }
-    var apiCall = createApiCall(func, settings);
-    apiCall(null, null, function(err, resp) {
+    const apiCall = createApiCall(func, settings);
+    apiCall(null, null, (err, resp) => {
+      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
+      // tslint:disable-next-line no-unused-expression
       expect(resp).to.be.null;
       done();
     });
   });
 
-  it.skip('retries with exponential backoff', function(done) {
-    var startTime = new Date();
-    var spy = sinon.spy(fail);
+  it.skip('retries with exponential backoff', (done) => {
+    const startTime = new Date();
+    const spy = sinon.spy(fail);
 
-    var backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
-    var retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
-    var apiCall = createApiCall(spy, {
+    const backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
+    const retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
+    const apiCall = createApiCall(spy, {
       settings: {timeout: 0, retry: retryOptions},
     });
 
-    apiCall(null, null, function(err) {
+    apiCall(null, null, err => {
       expect(err).to.be.an('error');
       expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      // tslint:disable-next-line no-unused-expression
       expect(err.note).to.be.ok;
-      var now = new Date();
-      expect(now.getTime() - startTime.getTime()).to.be.at.least(
-        backoff.totalTimeoutMillis
-      );
-      var callsLowerBound =
-        backoff.totalTimeoutMillis /
-        (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis);
-      var callsUpperBound =
-        backoff.totalTimeoutMillis / backoff.initialRetryDelayMillis;
+      const now = new Date();
+      expect(now.getTime() - startTime.getTime())
+          .to.be.at.least(backoff.totalTimeoutMillis);
+      const callsLowerBound = backoff.totalTimeoutMillis /
+          (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis);
+      const callsUpperBound =
+          backoff.totalTimeoutMillis / backoff.initialRetryDelayMillis;
       expect(spy.callCount).to.be.above(callsLowerBound);
       expect(spy.callCount).to.be.below(callsUpperBound);
       done();
     });
   });
 
-  it.skip('reports A/B testing', function() {
+  it.skip('reports A/B testing', () => {
     function func(argument, metadata, options, callback) {
       callback(null, argument);
     }
-    var mockBuilder = sinon.mock();
-    var settings = {
+    const mockBuilder = sinon.mock();
+    const settings = {
       settings: {
         timeout: 0,
         retry: retryOptions,
         otherArgs: {metadataBuilder: mockBuilder},
       },
     };
-    var apiCall = createApiCall(func, settings);
+    const apiCall = createApiCall(func, settings);
     mockBuilder.withExactArgs({retry: '2'});
     return apiCall(null, null)
-      .then(function() {
-        mockBuilder.verify();
-        mockBuilder.reset();
-        var backoff = gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, 5);
-        mockBuilder.withExactArgs({retry: '1'});
-        return apiCall(null, {retry: utils.createRetryOptions(backoff)});
-      })
-      .then(function() {
-        mockBuilder.verify();
-        mockBuilder.reset();
-        mockBuilder.withExactArgs({retry: '2'});
-        var options = {
-          retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
-        };
-        return apiCall(null, options);
-      })
-      .then(function() {
-        mockBuilder.verify();
-      });
+        .then(() => {
+          mockBuilder.verify();
+          mockBuilder.reset();
+          const backoff =
+              gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, 5);
+          mockBuilder.withExactArgs({retry: '1'});
+          return apiCall(null, {retry: utils.createRetryOptions(backoff)});
+        })
+        .then(() => {
+          mockBuilder.verify();
+          mockBuilder.reset();
+          mockBuilder.withExactArgs({retry: '2'});
+          const options = {
+            retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
+          };
+          return apiCall(null, options);
+        })
+        .then(() => {
+          mockBuilder.verify();
+        });
   });
 
-  it('forwards metadata to builder', function(done) {
+  it('forwards metadata to builder', (done) => {
     function func(argument, metadata, options, callback) {
       callback();
     }
 
-    var gotHeaders;
-    var mockBuilder = function(abTest, headers) {
+    let gotHeaders;
+    const mockBuilder = (abTest, headers) => {
       gotHeaders = headers;
     };
-    var settings = {
+    const settings = {
       settings: {
         otherArgs: {metadataBuilder: mockBuilder},
       },
     };
-    var apiCall = createApiCall(func, settings);
-    var headers = {
+    const apiCall = createApiCall(func, settings);
+    const headers = {
       h1: 'val1',
       h2: 'val2',
     };
-    apiCall(null, {otherArgs: {headers: headers}}).then(function() {
+    apiCall(null, {otherArgs: {headers}}).then(() => {
       expect(gotHeaders.h1).to.deep.equal('val1');
       expect(gotHeaders.h2).to.deep.equal('val2');
       done();

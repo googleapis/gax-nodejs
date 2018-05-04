@@ -55,9 +55,9 @@
  *   getCredentials.
  * @return {Promise} A promise which resolves to the credential.
  */
-exports.createCredPromise = function createCredPromise(getCredentials, opts) {
-  return new Promise(function(resolve, reject) {
-    getCredentials(function(err, credentials) {
+export function createCredPromise(getCredentials, opts?) {
+  return new Promise((resolve, reject) => {
+    getCredentials((err, credentials) => {
       if (err) {
         reject(err);
       } else {
@@ -65,4 +65,4 @@ exports.createCredPromise = function createCredPromise(getCredentials, opts) {
       }
     }, opts);
   });
-};
+}

@@ -32,9 +32,9 @@
 import {expect} from 'chai';
 import {fromParams} from '../src/routing_header';
 
-describe('fromParams', function() {
-  it('constructs the routing header', function() {
-    var routingHeader = fromParams({name: 'foo', 'book.read': true});
+describe('fromParams', () => {
+  it('constructs the routing header', () => {
+    const routingHeader = fromParams({name: 'foo', 'book.read': true});
     expect(routingHeader).to.equal('name=foo&book.read=true');
   });
 });

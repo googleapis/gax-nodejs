@@ -35,25 +35,22 @@ extend(gax, require('./api_callable'));
 extend(gax, require('./path_template'));
 extend(gax, require('./paged_iteration'));
 
-var SERVICE_ADDRESS = 'longrunning.googleapis.com';
+const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 
-var DEFAULT_SERVICE_PORT = 443;
+const DEFAULT_SERVICE_PORT = 443;
 
-var CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
+const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 
-var PAGE_DESCRIPTORS = {
-  listOperations: new gax.PageDescriptor(
-    'pageToken',
-    'nextPageToken',
-    'operations'
-  ),
+const PAGE_DESCRIPTORS = {
+  listOperations:
+      new gax.PageDescriptor('pageToken', 'nextPageToken', 'operations'),
 };
 
 /**
  * The scopes needed to make gRPC calls to all of the methods defined in
  * this service.
  */
-var ALL_SCOPES = [];
+const ALL_SCOPES = [];
 
 /**
  * Manages long-running operations with an API service.
@@ -66,63 +63,53 @@ var ALL_SCOPES = [];
  * returns long-running operations should implement the `Operations` interface
  * so developers can have a consistent client experience.
  *
- * This will be created through a builder function which can be obtained by the module.
- * See the following example of how to initialize the module and how to access to the builder.
+ * This will be created through a builder function which can be obtained by the
+ * module. See the following example of how to initialize the module and how to
+ * access to the builder.
  * @see {@link operationsClient}
  *
  * @class
  */
 function OperationsClient(gaxGrpc, grpcClients, opts) {
   opts = extend(
-    {
-      servicePath: SERVICE_ADDRESS,
-      port: DEFAULT_SERVICE_PORT,
-      clientConfig: {},
-    },
-    opts
-  );
+      {
+        servicePath: SERVICE_ADDRESS,
+        port: DEFAULT_SERVICE_PORT,
+        clientConfig: {},
+      },
+      opts);
 
-  var googleApiClient = ['gl-node/' + process.versions.node];
+  const googleApiClient = ['gl-node/' + process.versions.node];
   if (opts.libName && opts.libVersion) {
     googleApiClient.push(opts.libName + '/' + opts.libVersion);
   }
   googleApiClient.push(
-    CODE_GEN_NAME_VERSION,
-    'gax/' + gax.version,
-    'grpc/' + gaxGrpc.grpcVersion
-  );
+      CODE_GEN_NAME_VERSION, 'gax/' + gax.version,
+      'grpc/' + gaxGrpc.grpcVersion);
 
-  var defaults = gaxGrpc.constructSettings(
-    'google.longrunning.Operations',
-    configData,
-    opts.clientConfig,
-    {'x-goog-api-client': googleApiClient.join(' ')}
-  );
+  const defaults = gaxGrpc.constructSettings(
+      'google.longrunning.Operations', configData, opts.clientConfig,
+      {'x-goog-api-client': googleApiClient.join(' ')});
 
-  var self = this;
+  const self = this;
 
   this.auth = gaxGrpc.auth;
-  var operationsStub = gaxGrpc.createStub(
-    grpcClients.google.longrunning.Operations,
-    opts
-  );
-  var operationsStubMethods = [
+  const operationsStub =
+      gaxGrpc.createStub(grpcClients.google.longrunning.Operations, opts);
+  const operationsStubMethods = [
     'getOperation',
     'listOperations',
     'cancelOperation',
     'deleteOperation',
   ];
-  operationsStubMethods.forEach(function(methodName) {
+  operationsStubMethods.forEach(methodName => {
     self['_' + methodName] = gax.createApiCall(
-      operationsStub.then(function(operationsStub) {
-        return function() {
-          var args = Array.prototype.slice.call(arguments, 0);
-          return operationsStub[methodName].apply(operationsStub, args);
-        };
-      }),
-      defaults[methodName],
-      PAGE_DESCRIPTORS[methodName]
-    );
+        operationsStub.then(operationsStub => {
+          return (...args: Array<{}>) => {
+            return operationsStub[methodName].apply(operationsStub, args);
+          };
+        }),
+        defaults[methodName], PAGE_DESCRIPTORS[methodName]);
   });
 }
 
@@ -147,15 +134,21 @@ OperationsClient.prototype.getProjectId = function(callback) {
  * @param {string} request.name
  *   The name of the operation resource.
  * @param {Object=} options
- *   Optional parameters. You can override the default settings for this call, e.g, timeout,
- *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
+ *   Optional parameters. You can override the default settings for this call,
+ * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+ * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+ * details.
  * @param {function(?Error, ?Object)=} callback
  *   The function which will be called with the result of the API call.
  *
- *   The second parameter to the callback is an object representing [google.longrunning.Operation]{@link external:"google.longrunning.Operation"}.
+ *   The second parameter to the callback is an object representing
+ * [google.longrunning.Operation]{@link
+ * external:"google.longrunning.Operation"}.
  * @return {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [google.longrunning.Operation]{@link external:"google.longrunning.Operation"}.
- *   The promise has a method named "cancel" which cancels the ongoing API call.
+ *   The first element of the array is an object representing
+ * [google.longrunning.Operation]{@link
+ * external:"google.longrunning.Operation"}. The promise has a method named
+ * "cancel" which cancels the ongoing API call.
  *
  * @example
  *
@@ -200,25 +193,35 @@ OperationsClient.prototype.getOperation = function(request, options, callback) {
  *   performed per-page, this determines the maximum number of
  *   resources in a page.
  * @param {Object=} options
- *   Optional parameters. You can override the default settings for this call, e.g, timeout,
- *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
+ *   Optional parameters. You can override the default settings for this call,
+ * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+ * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+ * details.
  * @param {function(?Error, ?Array, ?Object, ?Object)=} callback
  *   The function which will be called with the result of the API call.
  *
- *   The second parameter to the callback is Array of [google.longrunning.Operation]{@link external:"google.longrunning.Operation"}.
+ *   The second parameter to the callback is Array of
+ * [google.longrunning.Operation]{@link
+ * external:"google.longrunning.Operation"}.
  *
- *   When autoPaginate: false is specified through options, it contains the result
- *   in a single response. If the response indicates the next page exists, the third
- *   parameter is set to be used for the next request object. The fourth parameter keeps
- *   the raw response object of an object representing [google.longrunning.ListOperationsResponse]{@link external:"google.longrunning.ListOperationsResponse"}.
+ *   When autoPaginate: false is specified through options, it contains the
+ * result in a single response. If the response indicates the next page exists,
+ * the third parameter is set to be used for the next request object. The fourth
+ * parameter keeps the raw response object of an object representing
+ * [google.longrunning.ListOperationsResponse]{@link
+ * external:"google.longrunning.ListOperationsResponse"}.
  * @return {Promise} - The promise which resolves to an array.
- *   The first element of the array is Array of [google.longrunning.Operation]{@link external:"google.longrunning.Operation"}.
+ *   The first element of the array is Array of
+ * [google.longrunning.Operation]{@link
+ * external:"google.longrunning.Operation"}.
  *
- *   When autoPaginate: false is specified through options, the array has three elements.
- *   The first element is Array of [google.longrunning.Operation]{@link external:"google.longrunning.Operation"} in a single response.
- *   The second element is the next request object if the response
- *   indicates the next page exists, or null. The third element is
- *   an object representing [google.longrunning.ListOperationsResponse]{@link external:"google.longrunning.ListOperationsResponse"}.
+ *   When autoPaginate: false is specified through options, the array has three
+ * elements. The first element is Array of [google.longrunning.Operation]{@link
+ * external:"google.longrunning.Operation"} in a single response. The second
+ * element is the next request object if the response indicates the next page
+ * exists, or null. The third element is an object representing
+ * [google.longrunning.ListOperationsResponse]{@link
+ * external:"google.longrunning.ListOperationsResponse"}.
  *
  *   The promise has a method named "cancel" which cancels the ongoing API call.
  *
@@ -265,10 +268,7 @@ OperationsClient.prototype.getOperation = function(request, options, callback) {
  *     });
  */
 OperationsClient.prototype.listOperations = function(
-  request,
-  options,
-  callback
-) {
+    request, options, callback) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -306,10 +306,14 @@ OperationsClient.prototype.listOperations = function(
  *   performed per-page, this determines the maximum number of
  *   resources in a page.
  * @param {Object=} options
- *   Optional parameters. You can override the default settings for this call, e.g, timeout,
- *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
+ *   Optional parameters. You can override the default settings for this call,
+ * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+ * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+ * details.
  * @return {Stream}
- *   An object stream which emits an object representing [google.longrunning.Operation]{@link external:"google.longrunning.Operation"} on 'data' event.
+ *   An object stream which emits an object representing
+ * [google.longrunning.Operation]{@link external:"google.longrunning.Operation"}
+ * on 'data' event.
  *
  * @example
  *
@@ -332,10 +336,7 @@ OperationsClient.prototype.listOperationsStream = function(request, options) {
   }
 
   return PAGE_DESCRIPTORS.listOperations.createStream(
-    this._listOperations,
-    request,
-    options
-  );
+      this._listOperations, request, options);
 };
 
 /**
@@ -355,8 +356,10 @@ OperationsClient.prototype.listOperationsStream = function(request, options) {
  * @param {string} request.name
  *   The name of the operation resource to be cancelled.
  * @param {Object=} options
- *   Optional parameters. You can override the default settings for this call, e.g, timeout,
- *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
+ *   Optional parameters. You can override the default settings for this call,
+ * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+ * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+ * details.
  * @param {function(?Error)=} callback
  *   The function which will be called with the result of the API call.
  * @return {Promise} - The promise which resolves when API call finishes.
@@ -371,10 +374,7 @@ OperationsClient.prototype.listOperationsStream = function(request, options) {
  * });
  */
 OperationsClient.prototype.cancelOperation = function(
-  request,
-  options,
-  callback
-) {
+    request, options, callback) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -397,8 +397,10 @@ OperationsClient.prototype.cancelOperation = function(
  * @param {string} request.name
  *   The name of the operation resource to be deleted.
  * @param {Object=} options
- *   Optional parameters. You can override the default settings for this call, e.g, timeout,
- *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the details.
+ *   Optional parameters. You can override the default settings for this call,
+ * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+ * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+ * details.
  * @param {function(?Error)=} callback
  *   The function which will be called with the result of the API call.
  * @return {Promise} - The promise which resolves when API call finishes.
@@ -413,10 +415,7 @@ OperationsClient.prototype.cancelOperation = function(
  * });
  */
 OperationsClient.prototype.deleteOperation = function(
-  request,
-  options,
-  callback
-) {
+    request, options, callback) {
   if (options instanceof Function && callback === undefined) {
     callback = options;
     options = {};
@@ -433,7 +432,7 @@ function OperationsClientBuilder(gaxGrpc) {
   //   return new OperationsClientBuilder(gaxGrpc);
   // }
 
-  var operationsClient = gaxGrpc.load([
+  const operationsClient = gaxGrpc.load([
     {
       root: require('google-proto-files')('..'),
       file: 'google/longrunning/operations.proto',
@@ -455,7 +454,7 @@ function OperationsClientBuilder(gaxGrpc) {
    *   The customized config to build the call settings. See
    *   {@link gax.constructSettings} for the format.
    */
-  this.operationsClient = function(opts) {
+  this.operationsClient = opts => {
     return new OperationsClient(gaxGrpc, operationsClient, opts);
   };
   extend(this.operationsClient, OperationsClient);

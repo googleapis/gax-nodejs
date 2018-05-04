@@ -35,56 +35,50 @@
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 
-var createCredPromise = require('../src/auth').createCredPromise;
+import {createCredPromise} from '../src/auth';
 
-describe('credential promise', function() {
-  var dummyCreds = {};
-  var getCredentials = function(callback) {
+describe('credential promise', () => {
+  const dummyCreds = {};
+  const getCredentials = callback => {
     callback(null, dummyCreds);
   };
 
-  it('resolves the credential', function(done) {
-    var credP = createCredPromise(getCredentials);
+  it('resolves the credential', done => {
+    const credP = createCredPromise(getCredentials);
     credP
-      .then(function(cred) {
-        expect(cred).to.eq(dummyCreds);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+        .then(cred => {
+          expect(cred).to.eq(dummyCreds);
+          done();
+        })
+        .catch(done);
   });
 
-  it('keeps credential', function(done) {
-    var getCredentialsSpy = sinon.spy(getCredentials);
-    var credP = createCredPromise(getCredentialsSpy);
-    var checkCredSpy = sinon.spy(function checkCred(cred) {
+  it('keeps credential', done => {
+    const getCredentialsSpy = sinon.spy(getCredentials);
+    const credP = createCredPromise(getCredentialsSpy);
+    const checkCredSpy = sinon.spy(function checkCred(cred) {
       expect(cred).to.eq(dummyCreds);
     });
     Promise.all([credP.then(checkCredSpy), credP.then(checkCredSpy)])
-      .then(function() {
-        expect(getCredentialsSpy.callCount).to.eq(1);
-        expect(checkCredSpy.callCount).to.eq(2);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+        .then(() => {
+          expect(getCredentialsSpy.callCount).to.eq(1);
+          expect(checkCredSpy.callCount).to.eq(2);
+          done();
+        })
+        .catch(done);
   });
 
-  it('propagates errors from the credential callback', function(done) {
-    var testError = new Error('this is used in a test');
-    var getCredentials = function(callback) {
+  it('propagates errors from the credential callback', done => {
+    const testError = new Error('this is used in a test');
+    const getCredentials = callback => {
       callback(testError);
     };
-    var credP = createCredPromise(getCredentials);
+    const credP = createCredPromise(getCredentials);
     credP
-      .catch(function(err) {
-        expect(err).to.eq(testError);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+        .catch(err => {
+          expect(err).to.eq(testError);
+          done();
+        })
+        .catch(done);
   });
 });

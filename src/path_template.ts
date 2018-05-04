@@ -49,17 +49,17 @@ exports.PathTemplate = PathTemplate;
  * @constructor
  */
 function PathTemplate(data) {
-  var parser = require('./path_template_parser');
-  var parseResult = extras.finishParse(parser.parse(data));
+  const parser = require('./path_template_parser');
+  const parseResult = extras.finishParse(parser.parse(data));
 
   Object.defineProperty(this, 'size', {
-    get: function() {
+    get() {
       return parseResult.size;
     },
   });
 
   Object.defineProperty(this, 'segments', {
-    get: function() {
+    get() {
       return parseResult.segments;
     },
   });
@@ -69,16 +69,16 @@ function PathTemplate(data) {
  * Matches a fully-qualified path template string.
  *
  * @param {String} path a fully-qualified path template string
- * @return {Object} contains var names matched to binding values
+ * @return {Object} contains const names matched to binding values
  * @throws {TypeError} if path can't be matched to this template
  */
 PathTemplate.prototype.match = function match(path) {
-  var pathSegments = path.split('/');
-  var bindings: any = {};
-  var segmentCount = this.size;
-  var current: any = null;
-  var index = 0;
-  this.segments.forEach(function(segment) {
+  const pathSegments = path.split('/');
+  const bindings = {};
+  let segmentCount = this.size;
+  let current: number;
+  let index = 0;
+  this.segments.forEach(segment => {
     if (index > pathSegments.length) {
       return;
     }
@@ -89,28 +89,23 @@ PathTemplate.prototype.match = function match(path) {
         bindings[current] = pathSegments[index];
         index += 1;
       } else if (segment.literal === '**') {
-        var size = pathSegments.length - segmentCount + 1;
+        const size = pathSegments.length - segmentCount + 1;
         segmentCount += size - 1;
         bindings[current] = pathSegments.slice(index, index + size).join('/');
         index += size;
       } else if (segment.literal === pathSegments[index]) {
         index += 1;
       } else {
-        var msg = util.format(
-          "mismatched literal (index=%d): '%s' != '%s'",
-          index,
-          segment.literal,
-          pathSegments[index]
-        );
+        const msg = util.format(
+            'mismatched literal (index=%d): \'%s\' != \'%s\'', index,
+            segment.literal, pathSegments[index]);
         throw new TypeError(msg);
       }
     }
   });
   if (index !== pathSegments.length || index !== segmentCount) {
-    var msg = util.format(
-      'match error: could not instantiate a path template from %s',
-      path
-    );
+    const msg = util.format(
+        'match error: could not instantiate a path template from %s', path);
     throw new TypeError(msg);
   }
   return bindings;
@@ -119,25 +114,23 @@ PathTemplate.prototype.match = function match(path) {
 /**
  * Renders a path template using the provided bindings.
  *
- * @param {Object} bindings a mapping of var names to binding strings
+ * @param {Object} bindings a mapping of const names to binding strings
  * @return {String} a rendered representation of the path template
  * @throws {TypeError} if a key is missing, or if a sub-template cannot be
  *   parsed
  */
 PathTemplate.prototype.render = function render(bindings) {
-  var out: any[] = [];
-  var inABinding = false;
-  this.segments.forEach(function(segment) {
+  const out: Array<{}> = [];
+  let inABinding = false;
+  this.segments.forEach(segment => {
     if (segment.kind === extras.BINDING) {
       if (!_.has(bindings, segment.literal)) {
-        var msg = util.format(
-          'Value for key %s is not provided in %s',
-          segment.literal,
-          bindings
-        );
+        const msg = util.format(
+            'Value for key %s is not provided in %s', segment.literal,
+            bindings);
         throw new TypeError(msg);
       }
-      var tmp = new PathTemplate(bindings[segment.literal]);
+      const tmp = new PathTemplate(bindings[segment.literal]);
       Array.prototype.push.apply(out, tmp.segments);
       inABinding = true;
     } else if (segment.kind === extras.END_BINDING) {
@@ -149,7 +142,7 @@ PathTemplate.prototype.render = function render(bindings) {
     }
   });
 
-  var result = formatSegments(out);
+  const result = formatSegments(out);
   this.match(result);
   return result;
 };
@@ -157,7 +150,7 @@ PathTemplate.prototype.render = function render(bindings) {
 /**
  * Renders the path template.
  *
- * @return {string} contains var names matched to binding values
+ * @return {string} contains const names matched to binding values
  */
 PathTemplate.prototype.inspect = function inspect() {
   return formatSegments(this.segments);
@@ -170,9 +163,9 @@ PathTemplate.prototype.inspect = function inspect() {
  *   format.
  */
 function formatSegments(segments) {
-  var out = '';
-  var slash = true;
-  segments.forEach(function(segment) {
+  let out = '';
+  let slash = true;
+  segments.forEach(segment => {
     if (segment.kind === extras.TERMINAL) {
       if (slash) {
         out += '/';

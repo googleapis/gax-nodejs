@@ -35,9 +35,9 @@
 
 'use strict';
 
-import * as _  from 'lodash';
+import * as _ from 'lodash';
 import * as util from 'util';
-const { NormalApiCaller } = require('./api_callable');
+const {NormalApiCaller} = require('./api_callable');
 
 /**
  * A function which does nothing. Used for an empty cancellation funciton.
@@ -58,10 +58,11 @@ function noop() {}
  *   fields do not exist.
  */
 function computeBundleId(obj, discriminatorFields) {
-  var ids: any[] = [];
-  var hasIds = false;
-  for (var i = 0; i < discriminatorFields.length; ++i) {
-    var id = _.at(obj, discriminatorFields[i])[0];
+  // tslint:disable-next-line no-any
+  const ids: any[] = [];
+  let hasIds = false;
+  for (let i = 0; i < discriminatorFields.length; ++i) {
+    const id = _.at(obj, discriminatorFields[i])[0];
     if (id === undefined) {
       ids.push(null);
     } else {
@@ -92,7 +93,7 @@ exports.computeBundleId = computeBundleId;
  * @private
  */
 function deepCopyForResponse(obj, subresponseInfo) {
-  var result;
+  let result;
   if (obj === null) {
     return null;
   }
@@ -101,7 +102,7 @@ function deepCopyForResponse(obj, subresponseInfo) {
   }
   if (Array.isArray(obj)) {
     result = [];
-    obj.forEach(function(element) {
+    obj.forEach(element => {
       result.push(deepCopyForResponse(element, null));
     });
     return result;
@@ -112,22 +113,17 @@ function deepCopyForResponse(obj, subresponseInfo) {
   }
   // ArrayBuffer should be copied through slice().
   if (obj instanceof ArrayBuffer) {
-    return (obj as any).slice();
+    return (obj as ArrayBuffer).slice(0);
   }
   if (typeof obj === 'object') {
     result = {};
-    Object.keys(obj).forEach(function(key) {
-      if (
-        subresponseInfo &&
-        key === subresponseInfo.field &&
-        Array.isArray(obj[key])
-      ) {
+    Object.keys(obj).forEach(key => {
+      if (subresponseInfo && key === subresponseInfo.field &&
+          Array.isArray(obj[key])) {
         // Note that subresponses are not deep-copied. This is safe because
         // those subresponses are not shared among callbacks.
-        result[key] = obj[key].slice(
-          subresponseInfo.start,
-          subresponseInfo.end
-        );
+        result[key] =
+            obj[key].slice(subresponseInfo.start, subresponseInfo.end);
       } else {
         result[key] = deepCopyForResponse(obj[key], null);
       }
@@ -166,8 +162,8 @@ exports.Task = Task;
  * @return {number} The number of elements.
  */
 Task.prototype.getElementCount = function() {
-  var count = 0;
-  for (var i = 0; i < this._data.length; ++i) {
+  let count = 0;
+  for (let i = 0; i < this._data.length; ++i) {
     count += this._data[i].elements.length;
   }
   return count;
@@ -178,8 +174,8 @@ Task.prototype.getElementCount = function() {
  * @return {number} The byte size.
  */
 Task.prototype.getRequestByteSize = function() {
-  var size = 0;
-  for (var i = 0; i < this._data.length; ++i) {
+  let size = 0;
+  for (let i = 0; i < this._data.length; ++i) {
     size += this._data[i].bytes;
   }
   return size;
@@ -193,31 +189,34 @@ Task.prototype.run = function() {
   if (this._data.length === 0) {
     return [];
   }
-  var request = this._request;
-  var elements = [];
-  var ids: any[] = [];
-  for (var i = 0; i < this._data.length; ++i) {
+  const request = this._request;
+  const elements = [];
+  // tslint:disable-next-line no-any
+  const ids: any[] = [];
+  for (let i = 0; i < this._data.length; ++i) {
     elements.push.apply(elements, this._data[i].elements);
     ids.push(this._data[i].callback.id);
   }
   request[this._bundledField] = elements;
 
-  var self = this;
-  this.callCanceller = this._apiCall(request, function(err, response) {
-    var responses: any[] = [];
+  const self = this;
+  this.callCanceller = this._apiCall(request, (err, response) => {
+    // tslint:disable-next-line no-any
+    const responses: any[] = [];
     if (err) {
-      self._data.forEach(function() {
+      self._data.forEach(() => {
         responses.push(null);
       });
     } else {
-      var subresponseInfo: any = null;
+      // tslint:disable-next-line no-any
+      let subresponseInfo: any = null;
       if (self._subresponseField) {
         subresponseInfo = {
           field: self._subresponseField,
           start: 0,
         };
       }
-      self._data.forEach(function(data) {
+      self._data.forEach(data => {
         if (subresponseInfo) {
           subresponseInfo.end = subresponseInfo.start + data.elements.length;
         }
@@ -227,7 +226,7 @@ Task.prototype.run = function() {
         }
       });
     }
-    for (var i = 0; i < self._data.length; ++i) {
+    for (let i = 0; i < self._data.length; ++i) {
       if (self._data[i].cancelled) {
         self._data[i].callback(new Error('cancelled'));
       } else {
@@ -246,9 +245,9 @@ Task.prototype.run = function() {
  */
 Task.prototype.extend = function(elements, bytes, callback) {
   this._data.push({
-    elements: elements,
-    bytes: bytes,
-    callback: callback,
+    elements,
+    bytes,
+    callback,
   });
 };
 
@@ -259,8 +258,8 @@ Task.prototype.extend = function(elements, bytes, callback) {
  */
 Task.prototype.cancel = function(id) {
   if (this.callCanceller) {
-    var allCancelled = true;
-    this._data.forEach(function(d) {
+    let allCancelled = true;
+    this._data.forEach(d => {
       if (d.callback.id === id) {
         d.cancelled = true;
       }
@@ -273,7 +272,7 @@ Task.prototype.cancel = function(id) {
     }
     return allCancelled;
   }
-  for (var i = 0; i < this._data.length; ++i) {
+  for (let i = 0; i < this._data.length; ++i) {
     if (this._data[i].callback.id === id) {
       this._data[i].callback(new Error('cancelled'));
       this._data.splice(i, 1);
@@ -311,64 +310,49 @@ exports.BundleExecutor = BundleExecutor;
  * @return {function()} - the function to cancel the scheduled invocation.
  */
 BundleExecutor.prototype.schedule = function(apiCall, request, callback) {
-  var bundleId: any = computeBundleId(
-    request,
-    this._descriptor.requestDiscriminatorFields
-  );
+  const bundleId =
+      computeBundleId(request, this._descriptor.requestDiscriminatorFields);
   if (!callback) {
     callback = noop;
   }
   if (bundleId === undefined) {
     console.warn(
-      'The request does not have enough information for request bundling. ' +
-        'Invoking immediately. Request: ' +
-        JSON.stringify(request) +
+        'The request does not have enough information for request bundling. ' +
+        'Invoking immediately. Request: ' + JSON.stringify(request) +
         ' discriminator fields: ' +
-        this._descriptor.requestDiscriminatorFields
-    );
+        this._descriptor.requestDiscriminatorFields);
     return apiCall(request, callback);
   }
 
   if (!(bundleId in this._tasks)) {
     this._tasks[bundleId] = new Task(
-      apiCall,
-      request,
-      this._descriptor.bundledField,
-      this._descriptor.subresponseField
-    );
+        apiCall, request, this._descriptor.bundledField,
+        this._descriptor.subresponseField);
   }
-  var task = this._tasks[bundleId];
+  let task = this._tasks[bundleId];
   callback.id = String(this._invocationId++);
   this._invocations[callback.id] = bundleId;
 
-  var bundledField = request[this._descriptor.bundledField];
-  var elementCount = bundledField.length;
-  var requestBytes = 0;
-  var self = this;
-  bundledField.forEach(function(obj) {
-    requestBytes += self._descriptor.byteLengthFunction(obj);
+  const bundledField = request[this._descriptor.bundledField];
+  const elementCount = bundledField.length;
+  let requestBytes = 0;
+  const self = this;
+  bundledField.forEach(obj => {
+    requestBytes += this._descriptor.byteLengthFunction(obj);
   });
 
-  var countLimit = this._options.elementCountLimit || 0;
-  var byteLimit = this._options.requestByteLimit || 0;
+  const countLimit = this._options.elementCountLimit || 0;
+  const byteLimit = this._options.requestByteLimit || 0;
 
-  if (
-    (countLimit > 0 && elementCount >= countLimit) ||
-    (byteLimit > 0 && requestBytes >= byteLimit)
-  ) {
-    var message;
+  if ((countLimit > 0 && elementCount >= countLimit) ||
+      (byteLimit > 0 && requestBytes >= byteLimit)) {
+    let message;
     if (countLimit > 0 && elementCount >= countLimit) {
-      message =
-        'The number of elements ' +
-        elementCount +
-        ' exceeds the limit ' +
-        this._options.elementCountLimit;
+      message = 'The number of elements ' + elementCount +
+          ' exceeds the limit ' + this._options.elementCountLimit;
     } else {
-      message =
-        'The required bytes ' +
-        requestBytes +
-        ' exceeds the limit ' +
-        this._options.requestByteLimit;
+      message = 'The required bytes ' + requestBytes + ' exceeds the limit ' +
+          this._options.requestByteLimit;
     }
     callback(new Error(message));
     return {
@@ -376,45 +360,38 @@ BundleExecutor.prototype.schedule = function(apiCall, request, callback) {
     };
   }
 
-  var existingCount = task.getElementCount();
-  var existingBytes = task.getRequestByteSize();
+  const existingCount = task.getElementCount();
+  const existingBytes = task.getRequestByteSize();
 
-  if (
-    (countLimit > 0 && elementCount + existingCount >= countLimit) ||
-    (byteLimit > 0 && requestBytes + existingBytes >= byteLimit)
-  ) {
+  if ((countLimit > 0 && elementCount + existingCount >= countLimit) ||
+      (byteLimit > 0 && requestBytes + existingBytes >= byteLimit)) {
     this._runNow(bundleId);
     this._tasks[bundleId] = new Task(
-      apiCall,
-      request,
-      this._descriptor.bundledField,
-      this._descriptor.subresponseField
-    );
+        apiCall, request, this._descriptor.bundledField,
+        this._descriptor.subresponseField);
     task = this._tasks[bundleId];
   }
 
   task.extend(bundledField, requestBytes, callback);
-  var ret = {
-    cancel: function() {
+  const ret = {
+    cancel() {
       self._cancel(callback.id);
     },
   };
 
-  var countThreshold = this._options.elementCountThreshold || 0;
-  var sizeThreshold = this._options.requestByteThreshold || 0;
-  if (
-    (countThreshold > 0 && task.getElementCount() >= countThreshold) ||
-    (sizeThreshold > 0 && task.getRequestByteSize() >= sizeThreshold)
-  ) {
+  const countThreshold = this._options.elementCountThreshold || 0;
+  const sizeThreshold = this._options.requestByteThreshold || 0;
+  if ((countThreshold > 0 && task.getElementCount() >= countThreshold) ||
+      (sizeThreshold > 0 && task.getRequestByteSize() >= sizeThreshold)) {
     this._runNow(bundleId);
     return ret;
   }
 
   if (!(bundleId in this._timers) && this._options.delayThreshold > 0) {
-    this._timers[bundleId] = setTimeout(function() {
-      delete self._timers[bundleId];
-      self._runNow(bundleId);
-    }, self._options.delayThreshold);
+    this._timers[bundleId] = setTimeout(() => {
+      delete this._timers[bundleId];
+      this._runNow(bundleId);
+    }, this._options.delayThreshold);
   }
 
   return ret;
@@ -429,7 +406,7 @@ BundleExecutor.prototype.schedule = function(apiCall, request, callback) {
  */
 BundleExecutor.prototype._maybeClearTimeout = function(bundleId) {
   if (bundleId in this._timers) {
-    var timerId = this._timers[bundleId];
+    const timerId = this._timers[bundleId];
     delete this._timers[bundleId];
     clearTimeout(timerId);
   }
@@ -445,12 +422,12 @@ BundleExecutor.prototype._cancel = function(id) {
   if (!(id in this._invocations)) {
     return;
   }
-  var bundleId = this._invocations[id];
+  const bundleId = this._invocations[id];
   if (!(bundleId in this._tasks)) {
     return;
   }
 
-  var task = this._tasks[bundleId];
+  const task = this._tasks[bundleId];
   delete this._invocations[id];
   if (task.cancel(id)) {
     this._maybeClearTimeout(bundleId);
@@ -470,12 +447,11 @@ BundleExecutor.prototype._runNow = function(bundleId) {
     return;
   }
   this._maybeClearTimeout(bundleId);
-  var task = this._tasks[bundleId];
+  const task = this._tasks[bundleId];
   delete this._tasks[bundleId];
 
-  var self = this;
-  task.run().forEach(function(id) {
-    delete self._invocations[id];
+  task.run().forEach(id => {
+    delete this._invocations[id];
   });
 };
 
@@ -495,18 +471,12 @@ util.inherits(Bundleable, NormalApiCaller);
 
 Bundleable.prototype.call = function(apiCall, argument, settings, status) {
   if (settings.isBundling) {
-    var self = this;
-    status.call(function(argument, callback) {
-      self.bundler.schedule(apiCall, argument, callback);
+    status.call((argument, callback) => {
+      this.bundler.schedule(apiCall, argument, callback);
     }, argument);
   } else {
     NormalApiCaller.prototype.call.call(
-      this,
-      apiCall,
-      argument,
-      settings,
-      status
-    );
+        this, apiCall, argument, settings, status);
   }
 };
 
@@ -538,11 +508,8 @@ Bundleable.prototype.call = function(apiCall, argument, settings, status) {
  * @constructor
  */
 function BundleDescriptor(
-  bundledField,
-  requestDiscriminatorFields,
-  subresponseField,
-  byteLengthFunction
-) {
+    bundledField, requestDiscriminatorFields, subresponseField,
+    byteLengthFunction) {
   if (!byteLengthFunction && typeof subresponseField === 'function') {
     byteLengthFunction = subresponseField;
     subresponseField = null;

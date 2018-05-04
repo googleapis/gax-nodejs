@@ -37,69 +37,70 @@ import * as protobuf from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
-describe('grpc', function() {
-  describe('grpcVersion', function() {
-    it('holds the proper grpc version', function() {
-      var grpcVersion = require('grpc/package.json').version;
+describe('grpc', () => {
+  describe('grpcVersion', () => {
+    it('holds the proper grpc version', () => {
+      const grpcVersion = require('grpc/package.json').version;
       expect(gaxGrpc().grpcVersion).to.eq(grpcVersion);
     });
 
-    it('returns unknown when grpc module is mocked', function() {
-      var mockGrpc = {};
+    it('returns unknown when grpc module is mocked', () => {
+      const mockGrpc = {};
       expect(gaxGrpc({grpc: mockGrpc}).grpcVersion).to.eq('');
     });
   });
 
-  describe('metadataBuilder', function() {
-    var grpcClient = gaxGrpc();
+  describe('metadataBuilder', () => {
+    const grpcClient = gaxGrpc();
 
-    it('builds metadata', function() {
-      var headers = {
+    it('builds metadata', () => {
+      const headers = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
-      var builder = grpcClient.metadataBuilder(headers);
-      var metadata = builder();
-      for (var key in headers) {
+      const builder = grpcClient.metadataBuilder(headers);
+      const metadata = builder();
+      // tslint:disable-next-line forin
+      for (const key in headers) {
         expect(metadata.get(key)).to.deep.eq([headers[key]]);
       }
     });
 
-    it('adds user metadata', function() {
-      var headers = {
+    it('adds user metadata', () => {
+      const headers = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
-      var builder = grpcClient.metadataBuilder(headers);
-      var abTesting = null;
-      var moreHeaders = {foo: 'bar'};
-      var metadata = builder(abTesting, moreHeaders);
+      const builder = grpcClient.metadataBuilder(headers);
+      const abTesting = null;
+      const moreHeaders = {foo: 'bar'};
+      const metadata = builder(abTesting, moreHeaders);
       expect(metadata.get('foo')).to.deep.eq(['bar']);
     });
 
-    it('does not override x-goog-api-client', function() {
-      var headers = {
+    it('does not override x-goog-api-client', () => {
+      const headers = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
-      var builder = grpcClient.metadataBuilder(headers);
-      var abTesting = null;
-      var moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
-      var metadata = builder(abTesting, moreHeaders);
+      const builder = grpcClient.metadataBuilder(headers);
+      const abTesting = null;
+      const moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
+      const metadata = builder(abTesting, moreHeaders);
       expect(metadata.get('x-goog-api-client')).to.deep.eq([
         'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       ]);
     });
 
-    it.skip('customize api-client header for A/B testing', function() {
-      var headers = {
+    it.skip('customize api-client header for A/B testing', () => {
+      const headers = {
         'X-Goog-Api-Client': 'gl-node/nodeVersion gax/gaxVersion',
       };
-      var builder = grpcClient.metadataBuilder(headers);
-      var metadata = builder({retry: '1'});
+      const builder = grpcClient.metadataBuilder(headers);
+      let metadata = builder({retry: '1'});
       expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
         'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/1',
       ]);
@@ -116,16 +117,16 @@ describe('grpc', function() {
     });
   });
 
-  describe('createStub', function() {
+  describe('createStub', () => {
     function DummyStub(address, creds, options) {
       this.address = address;
       this.creds = creds;
       this.options = options;
     }
-    var grpcClient;
-    var dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
-    var stubAuth = {getAuthClient: sinon.stub()};
-    var stubGrpc = {
+    let grpcClient;
+    const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
+    const stubAuth = {getAuthClient: sinon.stub()};
+    const stubGrpc = {
       credentials: {
         createSsl: sinon.stub(),
         combineChannelCredentials: sinon.stub(),
@@ -133,10 +134,10 @@ describe('grpc', function() {
       },
     };
 
-    beforeEach(function() {
-      var dummyAuth = {authData: 'dummyAuth'};
-      var dummySslCreds = {sslCreds: 'dummySslCreds'};
-      var dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
+    beforeEach(() => {
+      const dummyAuth = {authData: 'dummyAuth'};
+      const dummySslCreds = {sslCreds: 'dummySslCreds'};
+      const dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
       stubAuth.getAuthClient.reset();
       stubGrpc.credentials.createSsl.reset();
       stubGrpc.credentials.combineChannelCredentials.reset();
@@ -144,18 +145,17 @@ describe('grpc', function() {
 
       stubAuth.getAuthClient.callsArgWith(0, null, dummyAuth);
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
-      stubGrpc.credentials.createFromGoogleCredential
-        .withArgs(dummyAuth)
-        .returns(dummyGrpcAuth);
+      stubGrpc.credentials.createFromGoogleCredential.withArgs(dummyAuth)
+          .returns(dummyGrpcAuth);
       stubGrpc.credentials.combineChannelCredentials
-        .withArgs(dummySslCreds, dummyGrpcAuth)
-        .returns(dummyChannelCreds);
+          .withArgs(dummySslCreds, dummyGrpcAuth)
+          .returns(dummyChannelCreds);
       grpcClient = gaxGrpc({auth: stubAuth, grpc: stubGrpc});
     });
 
-    it('creates a stub', function() {
-      var opts = {servicePath: 'foo.example.com', port: 443};
-      return grpcClient.createStub(DummyStub, opts).then(function(stub) {
+    it('creates a stub', () => {
+      const opts = {servicePath: 'foo.example.com', port: 443};
+      return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
@@ -163,18 +163,19 @@ describe('grpc', function() {
       });
     });
 
-    it('supports optional parameters', function() {
-      var opts = {
+    it('supports optional parameters', () => {
+      const opts = {
         servicePath: 'foo.example.com',
         port: 443,
         'grpc.max_send_message_length': 10 * 1024 * 1024,
         'grpc.initial_reconnect_backoff_ms': 10000,
         other_dummy_options: 'test',
       };
-      return grpcClient.createStub(DummyStub, opts).then(function(stub) {
+      return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
+        // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
           'grpc.max_send_message_length',
           'grpc.initial_reconnect_backoff_ms',
@@ -182,19 +183,19 @@ describe('grpc', function() {
       });
     });
 
-    it('uses the passed grpc channel', function() {
-      var customCreds = {channelCreds: 'custom'};
-      var opts = {
+    it('uses the passed grpc channel', () => {
+      const customCreds = {channelCreds: 'custom'};
+      const opts = {
         servicePath: 'foo.example.com',
         port: 443,
         sslCreds: customCreds,
       };
-      return grpcClient.createStub(DummyStub, opts).then(function(stub) {
+      return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(customCreds);
         expect(stubAuth.getAuthClient.callCount).to.eq(0);
-        var credentials = stubGrpc.credentials;
+        const credentials = stubGrpc.credentials;
         expect(credentials.createSsl.callCount).to.eq(0);
         expect(credentials.combineChannelCredentials.callCount).to.eq(0);
         expect(credentials.createFromGoogleCredential.callCount).to.eq(0);
@@ -202,174 +203,156 @@ describe('grpc', function() {
     });
   });
 
-  describe('loadProto', function() {
-    var TEST_FILE = path.join(
-      'fixtures',
-      'google',
-      'example',
-      'library',
-      'v1',
-      'library.proto'
-    );
-    //var RESOLVED_TEST_FILE = path.resolve(`../`)
-    var TEST_PATH = path.resolve(__dirname, '../../test');
-    var grpcClient = gaxGrpc();
+  describe('loadProto', () => {
+    const TEST_FILE = path.join(
+        'fixtures', 'google', 'example', 'library', 'v1', 'library.proto');
+    // const RESOLVED_TEST_FILE = path.resolve(`../`)
+    const TEST_PATH = path.resolve(__dirname, '../../test');
+    const grpcClient = gaxGrpc();
 
-    it('should load the test file', function() {
-      var protos = grpcClient.loadProto(TEST_PATH, TEST_FILE);
-      expect(protos.google.example.library.v1.LibraryService).to.be.a(
-        'Function'
-      );
+    it('should load the test file', () => {
+      const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      expect(protos.google.example.library.v1.LibraryService)
+          .to.be.a('Function');
       expect(protos.test.TestMessage).to.be.an('object');
     });
 
-    it('should load a common proto', function() {
-      var nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
-      var iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
-      var protos = grpcClient.loadProto(nonExistentDir, iamService);
+    it('should load a common proto', () => {
+      const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
+      const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
+      const protos = grpcClient.loadProto(nonExistentDir, iamService);
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
 
-    it('should emit an error for not found proto', function() {
-      var nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
-      var nonExistentFile = 'nonexistent.proto';
-      expect(
-        grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile)
-      ).to.throw();
+    it('should emit an error for not found proto', () => {
+      const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
+      const nonExistentFile = 'nonexistent.proto';
+      expect(grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile))
+          .to.throw();
     });
   });
 
-  describe('GoogleProtoFilesRoot', function() {
-    var FIXTURES_DIR = path.join(
-      path.resolve(__dirname, '../../test'),
-      'fixtures',
-      'google',
-      'example',
-      'library',
-      'v1'
-    );
-    var TEST_FILE = path.join(FIXTURES_DIR, 'library.proto');
-    var NON_EXISTENT_FILE = path.join(__dirname, 'does', 'not', 'exist.proto');
-    var MISSING_INCLUDE_FILE = path.join(FIXTURES_DIR, 'missing_include.proto');
+  describe('GoogleProtoFilesRoot', () => {
+    const FIXTURES_DIR = path.join(
+        path.resolve(__dirname, '../../test'), 'fixtures', 'google', 'example',
+        'library', 'v1');
+    const TEST_FILE = path.join(FIXTURES_DIR, 'library.proto');
+    const NON_EXISTENT_FILE =
+        path.join(__dirname, 'does', 'not', 'exist.proto');
+    const MISSING_INCLUDE_FILE =
+        path.join(FIXTURES_DIR, 'missing_include.proto');
 
-    describe('use with protobufjs load', function() {
-      it('should not be able to load test file using protobufjs directly', function(done) {
+    describe('use with protobufjs load', () => {
+      it('should not be able to load test file using protobufjs directly',
+         done => {
+           protobuf.load(TEST_FILE)
+               .then(() => {
+                 done(Error('should not get here'));
+               })
+               .catch(() => {
+                 done();
+               });
+         });
+
+      it('should load a test file', done => {
         protobuf
-          .load(TEST_FILE)
-          .then(function() {
-            done(Error('should not get here'));
-          })
-          .catch(function() {
-            done();
-          });
+            .load(
+                TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
+            .then(root => {
+              expect(root).to.be.an.instanceOf(protobuf.Root);
+              expect(root.lookup('google.example.library.v1.LibraryService'))
+                  .to.be.an.instanceOf(protobuf.Service);
+              expect(root.lookup('test.TestMessage'))
+                  .to.be.an.instanceOf(protobuf.Type);
+              done();
+            })
+            .catch(done);
       });
 
-      it('should load a test file', function(done) {
+      it('should fail trying to load a non existent file.', done => {
         protobuf
-          .load(TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
-          .then(function(root) {
-            expect(root).to.be.an.instanceOf(protobuf.Root);
-            expect(
-              root.lookup('google.example.library.v1.LibraryService')
-            ).to.be.an.instanceOf(protobuf.Service);
-            expect(root.lookup('test.TestMessage')).to.be.an.instanceOf(
-              protobuf.Type
-            );
-            done();
-          })
-          .catch(done);
+            .load(
+                NON_EXISTENT_FILE,
+                new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
+            .then(() => {
+              done(Error('should not get here'));
+            })
+            .catch(() => {
+              done();
+            });
       });
 
-      it('should fail trying to load a non existent file.', function(done) {
+      it('should fail loading a file with a missing include.', done => {
         protobuf
-          .load(NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
-          .then(function() {
-            done(Error('should not get here'));
-          })
-          .catch(function() {
-            done();
-          });
-      });
-
-      it('should fail loading a file with a missing include.', function(done) {
-        protobuf
-          .load(MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
-          .then(function() {
-            done(Error('should not get here'));
-          })
-          .catch(function() {
-            done();
-          });
+            .load(
+                MISSING_INCLUDE_FILE,
+                new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
+            .then(() => {
+              done(Error('should not get here'));
+            })
+            .catch(() => {
+              done();
+            });
       });
     });
 
-    describe('use with protobufjs loadSync', function() {
-      it('should not be able to load test file using protobufjs directly', function() {
-        var root = protobuf.loadSync(TEST_FILE);
-        // Common proto that should not have been loaded.
-        expect(root.lookup('google.api.Http')).to.eq(null);
-      });
+    describe('use with protobufjs loadSync', () => {
+      it('should not be able to load test file using protobufjs directly',
+         () => {
+           const root = protobuf.loadSync(TEST_FILE);
+           // Common proto that should not have been loaded.
+           expect(root.lookup('google.api.Http')).to.eq(null);
+         });
 
-      it('should load a test file that relies on common protos', function() {
-        var root = protobuf.loadSync(
-          TEST_FILE,
-          new gaxGrpc.GoogleProtoFilesRoot()
-        );
+      it('should load a test file that relies on common protos', () => {
+        const root =
+            protobuf.loadSync(TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot());
         expect(root).to.be.an.instanceOf(protobuf.Root);
-        expect(
-          root.lookup('google.example.library.v1.LibraryService')
-        ).to.be.an.instanceOf(protobuf.Service);
-        expect(root.lookup('test.TestMessage')).to.be.an.instanceOf(
-          protobuf.Type
-        );
+        expect(root.lookup('google.example.library.v1.LibraryService'))
+            .to.be.an.instanceOf(protobuf.Service);
+        expect(root.lookup('test.TestMessage'))
+            .to.be.an.instanceOf(protobuf.Type);
       });
 
-      it('should fail trying to load a non existent file.', function() {
-        expect(
-          protobuf.loadSync.bind(
-            null,
-            NON_EXISTENT_FILE,
-            new gaxGrpc.GoogleProtoFilesRoot()
-          )
-        ).to.throw();
+      it('should fail trying to load a non existent file.', () => {
+        expect(protobuf.loadSync.bind(
+                   null, NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+            .to.throw();
       });
 
-      it('should fail loading a file with a missing include', function() {
+      it('should fail loading a file with a missing include', () => {
         expect(
-          protobuf.loadSync.bind(
-            null,
-            MISSING_INCLUDE_FILE,
-            new gaxGrpc.GoogleProtoFilesRoot()
-          )
-        ).to.throw();
+            protobuf.loadSync.bind(
+                null, MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+            .to.throw();
       });
     });
 
-    describe('_findIncludePath', function() {
-      var originPath = path.join('test', 'path', 'location');
-      var includePath = path.join('example', 'import.proto');
+    describe('_findIncludePath', () => {
+      const originPath = path.join('test', 'path', 'location');
+      const includePath = path.join('example', 'import.proto');
 
-      it('should throw an error if a file is not found', function() {
-        var findIncludePath = proxyquire('../src/grpc', {
-          fs: {
-            existsSync: function() {
-              return false;
-            },
-          },
-        }).GoogleProtoFilesRoot._findIncludePath;
+      it('should throw an error if a file is not found', () => {
+        const findIncludePath = proxyquire('../src/grpc', {
+                                  fs: {
+                                    existsSync: () => {
+                                      return false;
+                                    },
+                                  },
+                                }).GoogleProtoFilesRoot._findIncludePath;
 
         expect(findIncludePath.bind(null, originPath, includePath)).to.throw();
       });
 
-      it('should return the correct resolved import path', function() {
-        var correctPath = path.join('test', 'example', 'import.proto');
-        var findIncludePath = proxyquire('../src/grpc', {
-          fs: {
-            existsSync: function(path) {
-              return path === correctPath;
-            },
-          },
-        }).GoogleProtoFilesRoot._findIncludePath;
+      it('should return the correct resolved import path', () => {
+        const correctPath = path.join('test', 'example', 'import.proto');
+        const findIncludePath = proxyquire('../src/grpc', {
+                                  fs: {
+                                    existsSync(path) {
+                                      return path === correctPath;
+                                    },
+                                  },
+                                }).GoogleProtoFilesRoot._findIncludePath;
         expect(findIncludePath(originPath, includePath)).to.equal(correctPath);
       });
     });

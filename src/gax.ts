@@ -37,7 +37,7 @@
 
 // This is here to fix a TypeScript bug.
 // https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
-export {}
+export {};
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -192,15 +192,15 @@ CallSettings.prototype.merge = function merge(options) {
   if (!options) {
     return new CallSettings(this);
   }
-  var timeout = this.timeout;
-  var retry = this.retry;
-  var autoPaginate = this.autoPaginate;
-  var pageToken = this.pageToken;
-  var maxResults = this.maxResults;
-  var otherArgs = this.otherArgs;
-  var isBundling = this.isBundling;
-  var longrunning = this.longrunning;
-  var promise = this.promise;
+  let timeout = this.timeout;
+  let retry = this.retry;
+  let autoPaginate = this.autoPaginate;
+  let pageToken = this.pageToken;
+  let maxResults = this.maxResults;
+  let otherArgs = this.otherArgs;
+  let isBundling = this.isBundling;
+  let longrunning = this.longrunning;
+  let promise = this.promise;
   if ('timeout' in options) {
     timeout = options.timeout;
   }
@@ -223,10 +223,12 @@ CallSettings.prototype.merge = function merge(options) {
 
   if ('otherArgs' in options) {
     otherArgs = {};
-    for (var key in this.otherArgs) {
+    // tslint:disable-next-line forin
+    for (const key in this.otherArgs) {
       otherArgs[key] = this.otherArgs[key];
     }
-    for (var optionsKey in options.otherArgs) {
+    // tslint:disable-next-line forin
+    for (const optionsKey in options.otherArgs) {
       otherArgs[optionsKey] = options.otherArgs[optionsKey];
     }
   }
@@ -249,16 +251,16 @@ CallSettings.prototype.merge = function merge(options) {
   }
 
   return new CallSettings({
-    timeout: timeout,
-    retry: retry,
+    timeout,
+    retry,
     bundleOptions: this.bundleOptions,
-    longrunning: longrunning,
-    autoPaginate: autoPaginate,
-    pageToken: pageToken,
-    maxResults: maxResults,
-    otherArgs: otherArgs,
-    isBundling: isBundling,
-    promise: promise,
+    longrunning,
+    autoPaginate,
+    pageToken,
+    maxResults,
+    otherArgs,
+    isBundling,
+    promise,
   });
 };
 
@@ -274,8 +276,8 @@ CallSettings.prototype.merge = function merge(options) {
  */
 function createRetryOptions(retryCodes, backoffSettings) {
   return {
-    retryCodes: retryCodes,
-    backoffSettings: backoffSettings,
+    retryCodes,
+    backoffSettings,
   };
 }
 exports.createRetryOptions = createRetryOptions;
@@ -306,22 +308,17 @@ exports.createRetryOptions = createRetryOptions;
  *
  */
 function createBackoffSettings(
-  initialRetryDelayMillis,
-  retryDelayMultiplier,
-  maxRetryDelayMillis,
-  initialRpcTimeoutMillis,
-  rpcTimeoutMultiplier,
-  maxRpcTimeoutMillis,
-  totalTimeoutMillis
-) {
+    initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
+    initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis,
+    totalTimeoutMillis) {
   return {
-    initialRetryDelayMillis: initialRetryDelayMillis,
-    retryDelayMultiplier: retryDelayMultiplier,
-    maxRetryDelayMillis: maxRetryDelayMillis,
-    initialRpcTimeoutMillis: initialRpcTimeoutMillis,
-    rpcTimeoutMultiplier: rpcTimeoutMultiplier,
-    maxRpcTimeoutMillis: maxRpcTimeoutMillis,
-    totalTimeoutMillis: totalTimeoutMillis,
+    initialRetryDelayMillis,
+    retryDelayMultiplier,
+    maxRetryDelayMillis,
+    initialRpcTimeoutMillis,
+    rpcTimeoutMultiplier,
+    maxRpcTimeoutMillis,
+    totalTimeoutMillis,
   };
 }
 exports.createBackoffSettings = createBackoffSettings;
@@ -352,22 +349,17 @@ exports.createBackoffSettings = createBackoffSettings;
  *
  */
 function createMaxRetriesBackoffSettings(
-  initialRetryDelayMillis,
-  retryDelayMultiplier,
-  maxRetryDelayMillis,
-  initialRpcTimeoutMillis,
-  rpcTimeoutMultiplier,
-  maxRpcTimeoutMillis,
-  maxRetries
-) {
+    initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
+    initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis,
+    maxRetries) {
   return {
-    initialRetryDelayMillis: initialRetryDelayMillis,
-    retryDelayMultiplier: retryDelayMultiplier,
-    maxRetryDelayMillis: maxRetryDelayMillis,
-    initialRpcTimeoutMillis: initialRpcTimeoutMillis,
-    rpcTimeoutMultiplier: rpcTimeoutMultiplier,
-    maxRpcTimeoutMillis: maxRpcTimeoutMillis,
-    maxRetries: maxRetries,
+    initialRetryDelayMillis,
+    retryDelayMultiplier,
+    maxRetryDelayMillis,
+    initialRpcTimeoutMillis,
+    rpcTimeoutMultiplier,
+    maxRpcTimeoutMillis,
+    maxRetries,
   };
 }
 exports.createMaxRetriesBackoffSettings = createMaxRetriesBackoffSettings;
@@ -381,38 +373,35 @@ exports.createMaxRetriesBackoffSettings = createMaxRetriesBackoffSettings;
  * @return {BundleOptions} - A new options.
  */
 function createBundleOptions(options) {
-  var params = [
+  const params = [
     'element_count_threshold',
     'element_count_limit',
     'request_byte_threshold',
     'request_byte_limit',
     'delay_threshold_millis',
   ];
-  params.forEach(function(param) {
+  params.forEach(param => {
     if (param in options && typeof options[param] !== 'number') {
       throw new Error(param + ' should be a number');
     }
   });
 
-  var elementCountThreshold = options.element_count_threshold || 0;
-  var elementCountLimit = options.element_count_limit || 0;
-  var requestByteThreshold = options.request_byte_threshold || 0;
-  var requestByteLimit = options.request_byte_limit || 0;
-  var delayThreshold = options.delay_threshold_millis || 0;
+  const elementCountThreshold = options.element_count_threshold || 0;
+  const elementCountLimit = options.element_count_limit || 0;
+  const requestByteThreshold = options.request_byte_threshold || 0;
+  const requestByteLimit = options.request_byte_limit || 0;
+  const delayThreshold = options.delay_threshold_millis || 0;
 
-  if (
-    elementCountThreshold === 0 &&
-    requestByteThreshold === 0 &&
-    delayThreshold === 0
-  ) {
+  if (elementCountThreshold === 0 && requestByteThreshold === 0 &&
+      delayThreshold === 0) {
     throw new Error('one threshold should be > 0');
   }
   return {
-    elementCountThreshold: elementCountThreshold,
-    elementCountLimit: elementCountLimit,
-    requestByteThreshold: requestByteThreshold,
-    requestByteLimit: requestByteLimit,
-    delayThreshold: delayThreshold,
+    elementCountThreshold,
+    elementCountLimit,
+    requestByteThreshold,
+    requestByteLimit,
+    delayThreshold,
   };
 }
 exports.createBundleOptions = createBundleOptions;
@@ -441,26 +430,22 @@ function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
     return null;
   }
 
-  var codes = null;
+  let codes = null;
   if (retryCodes && 'retry_codes_name' in methodConfig) {
-    var retryCodesName = methodConfig.retry_codes_name;
-    codes = (retryCodes[retryCodesName] || []).map(function(name) {
+    const retryCodesName = methodConfig.retry_codes_name;
+    codes = (retryCodes[retryCodesName] || []).map(name => {
       return retryNames[name];
     });
   }
 
-  var backoffSettings: any = null;
+  let backoffSettings: {}|null = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
-    var params = retryParams[methodConfig.retry_params_name];
+    const params = retryParams[methodConfig.retry_params_name];
     backoffSettings = createBackoffSettings(
-      params.initial_retry_delay_millis,
-      params.retry_delay_multiplier,
-      params.max_retry_delay_millis,
-      params.initial_rpc_timeout_millis,
-      params.rpc_timeout_multiplier,
-      params.max_rpc_timeout_millis,
-      params.total_timeout_millis
-    );
+        params.initial_retry_delay_millis, params.retry_delay_multiplier,
+        params.max_retry_delay_millis, params.initial_rpc_timeout_millis,
+        params.rpc_timeout_multiplier, params.max_rpc_timeout_millis,
+        params.total_timeout_millis);
   }
   return createRetryOptions(codes, backoffSettings);
 }
@@ -487,11 +472,11 @@ function mergeRetryOptions(retry, overrides) {
     return retry;
   }
 
-  var codes = retry.retryCodes;
+  let codes = retry.retryCodes;
   if (overrides.retryCodes) {
     codes = overrides.retryCodes;
   }
-  var backoffSettings = retry.backoffSettings;
+  let backoffSettings = retry.backoffSettings;
   if (overrides.backoffSettings) {
     backoffSettings = overrides.backoffSettings;
   }
@@ -561,39 +546,32 @@ function mergeRetryOptions(retry, overrides) {
  *   service is not found in the config.
  */
 exports.constructSettings = function constructSettings(
-  serviceName,
-  clientConfig,
-  configOverrides,
-  retryNames,
-  otherArgs,
-  promise
-) {
+    serviceName, clientConfig, configOverrides, retryNames, otherArgs,
+    promise) {
   otherArgs = otherArgs || {};
-  var defaults = {};
+  const defaults = {};
 
-  var serviceConfig = (clientConfig.interfaces || {})[serviceName];
+  const serviceConfig = (clientConfig.interfaces || {})[serviceName];
   if (!serviceConfig) {
     return null;
   }
 
-  var overrides = (configOverrides.interfaces || {})[serviceName] || {};
+  const overrides = (configOverrides.interfaces || {})[serviceName] || {};
 
-  var methods = serviceConfig.methods;
-  var overridingMethods = overrides.methods || {};
-  for (var methodName in methods) {
-    var methodConfig = methods[methodName];
-    var jsName = methodName[0].toLowerCase() + methodName.slice(1);
+  const methods = serviceConfig.methods;
+  const overridingMethods = overrides.methods || {};
+  // tslint:disable-next-line forin
+  for (const methodName in methods) {
+    const methodConfig = methods[methodName];
+    const jsName = methodName[0].toLowerCase() + methodName.slice(1);
 
-    var retry = constructRetry(
-      methodConfig,
-      serviceConfig.retry_codes,
-      serviceConfig.retry_params,
-      retryNames
-    );
-    var bundlingConfig = methodConfig.bundling;
-    var timeout = methodConfig.timeout_millis;
+    let retry = constructRetry(
+        methodConfig, serviceConfig.retry_codes, serviceConfig.retry_params,
+        retryNames);
+    let bundlingConfig = methodConfig.bundling;
+    let timeout = methodConfig.timeout_millis;
     if (methodName in overridingMethods) {
-      var overridingMethod = overridingMethods[methodName];
+      const overridingMethod = overridingMethods[methodName];
       if (overridingMethod) {
         if ('bundling' in overridingMethod) {
           bundlingConfig = overridingMethod.bundling;
@@ -603,25 +581,21 @@ exports.constructSettings = function constructSettings(
         }
       }
       retry = mergeRetryOptions(
-        retry,
-        constructRetry(
-          overridingMethod,
-          overrides.retry_codes,
-          overrides.retry_params,
-          retryNames
-        )
-      );
+          retry,
+          constructRetry(
+              overridingMethod, overrides.retry_codes, overrides.retry_params,
+              retryNames));
     }
 
     defaults[jsName] = new CallSettings({
-      timeout: timeout,
-      retry: retry,
-      bundleOptions: bundlingConfig
-        ? createBundleOptions(bundlingConfig)
-        : null,
-      otherArgs: otherArgs,
+      timeout,
+      retry,
+      bundleOptions: bundlingConfig ? createBundleOptions(bundlingConfig) :
+                                      null,
+      otherArgs,
       promise: promise || Promise,
     });
   }
+
   return defaults;
 };
