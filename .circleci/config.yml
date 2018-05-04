@@ -19,6 +19,10 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - node10:
+          filters:
+            tags:
+              only: /.*/
       - lint:
           requires:
             - node4
@@ -26,10 +30,6 @@ workflows:
             - node8
             - node9
             - node10
-          filters:
-            tags:
-              only: /.*/
-      - node10:
           filters:
             tags:
               only: /.*/
