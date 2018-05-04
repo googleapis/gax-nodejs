@@ -32,7 +32,7 @@
  */
 'use strict';
 
-var expect = require('chai').expect;
+import {expect} from 'chai';
 
 describe('The PathTemplate parser', function() {
   it('should load the pegjs generated module ok', function() {

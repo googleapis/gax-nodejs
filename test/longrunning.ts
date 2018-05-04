@@ -32,11 +32,11 @@
 
 'use strict';
 
-var gax = require('../src/gax');
-var longrunning = require('../src/longrunning');
-var expect = require('chai').expect;
+const gax = require('../src/gax');
+const longrunning = require('../src/longrunning');
+import {expect} from 'chai';
 import * as sinon from 'sinon';
-var utils = require('./utils');
+const utils = require('./utils');
 
 var FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
 

@@ -32,8 +32,8 @@
  */
 'use strict';
 
-var _ = require('lodash');
-var expect = require('chai').expect;
+import * as _ from 'lodash';
+import {expect} from 'chai';
 
 var PathTemplate = require('../src/path_template.js').PathTemplate;
 

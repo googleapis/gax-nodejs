@@ -35,9 +35,9 @@
 
 'use strict';
 
-var _ = require('lodash');
+import * as _  from 'lodash';
 import * as util from 'util';
-var NormalApiCaller = require('./api_callable').NormalApiCaller;
+const { NormalApiCaller } = require('./api_callable');
 
 /**
  * A function which does nothing. Used for an empty cancellation funciton.

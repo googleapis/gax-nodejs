@@ -33,7 +33,7 @@
 'use strict';
 
 import * as util from 'util';
-var _ = require('lodash');
+import * as _ from 'lodash';
 
 /* constants used in the pegjs parser */
 var BINDING = (exports.BINDING = 1);

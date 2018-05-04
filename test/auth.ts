@@ -32,7 +32,7 @@
  */
 'use strict';
 
-var expect = require('chai').expect;
+import {expect} from 'chai';
 import * as sinon from 'sinon';
 
 var createCredPromise = require('../src/auth').createCredPromise;

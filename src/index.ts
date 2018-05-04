@@ -31,14 +31,14 @@
 
 'use strict';
 
-var bundling = require('./bundling');
-var gax = require('./gax');
-var grpc = require('./grpc');
 import * as extend from 'extend';
-var streaming = require('./streaming');
-var operationsClient = require('./operations_client');
-var longrunning = require('./longrunning');
-var routingHeader = require('./routing_header');
+const bundling = require('./bundling');
+const gax = require('./gax');
+const grpc = require('./grpc');
+const streaming = require('./streaming');
+const operationsClient = require('./operations_client');
+const longrunning = require('./longrunning');
+import * as routingHeader from './routing_header';
 
 function lro(options) {
   options = extend(

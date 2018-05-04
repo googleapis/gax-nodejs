@@ -36,9 +36,10 @@
  * Path template utility.
  */
 
-const _ = require('lodash');
-const extras = require('./parser_extras');
+import * as _ from 'lodash';
 import * as util from 'util';
+
+const extras = require('./parser_extras');
 
 exports.PathTemplate = PathTemplate;
 

@@ -30,11 +30,11 @@
 
 'use strict';
 
-var bundling = require('../src/bundling');
-var expect = require('chai').expect;
+const bundling = require('../src/bundling');
+import {expect} from 'chai';
 import * as sinon from 'sinon';
-var createApiCall = require('./utils').createApiCall;
-var _ = require('lodash');
+const {createApiCall} = require('./utils');
+import * as _ from 'lodash';
 
 function createOuter(value, otherValue?) {
   if (otherValue === undefined) {

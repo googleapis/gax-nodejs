@@ -30,11 +30,11 @@
 
 'use strict';
 
-var gaxGrpc = require('../src/grpc');
-var expect = require('chai').expect;
+const gaxGrpc = require('../src/grpc');
+import {expect} from 'chai';
 import * as path from 'path';
-var protobuf = require('protobufjs');
-var proxyquire = require('proxyquire');
+import * as protobuf from 'protobufjs';
+import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 describe('grpc', function() {
@@ -175,7 +175,7 @@ describe('grpc', function() {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        expect(stub.options).has.key([
+        (expect(stub.options).has as any).key([
           'grpc.max_send_message_length',
           'grpc.initial_reconnect_backoff_ms',
         ]);
@@ -266,7 +266,7 @@ describe('grpc', function() {
 
       it('should load a test file', function(done) {
         protobuf
-          .load(TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+          .load(TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
           .then(function(root) {
             expect(root).to.be.an.instanceOf(protobuf.Root);
             expect(
@@ -282,7 +282,7 @@ describe('grpc', function() {
 
       it('should fail trying to load a non existent file.', function(done) {
         protobuf
-          .load(NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+          .load(NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
           .then(function() {
             done(Error('should not get here'));
           })
@@ -293,7 +293,7 @@ describe('grpc', function() {
 
       it('should fail loading a file with a missing include.', function(done) {
         protobuf
-          .load(MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot())
+          .load(MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
           .then(function() {
             done(Error('should not get here'));
           })
