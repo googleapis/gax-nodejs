@@ -36,9 +36,9 @@ import * as util from 'util';
 import * as _ from 'lodash';
 
 /* constants used in the pegjs parser */
-const BINDING = (exports.BINDING = 1);
-exports.END_BINDING = 2;
-const TERMINAL = (exports.TERMINAL = 3);
+export const BINDING = 1;
+export const END_BINDING = 2;
+export const TERMINAL = 3;
 
 /**
  * Checks that segments only has one terminal segment that is a path wildcard.
@@ -108,7 +108,7 @@ function updateBindingLiterals(segments) {
  * @return {Object} Returns segments and size
  * @throws {TypeError} if multiple path wildcards exist
  */
-function finishParse(segments) {
+export function finishParse(segments) {
   allowOnePathWildcard(segments);
   updateBindingLiterals(segments);
   return {
@@ -116,5 +116,3 @@ function finishParse(segments) {
     size: countTerminals(segments),
   };
 }
-
-exports.finishParse = finishParse;

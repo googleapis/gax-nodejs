@@ -32,8 +32,8 @@
 
 'use strict';
 
-const util = require('./utils');
-const {PageDescriptor} = require('../src/paged_iteration');
+import * as util from './utils';
+import {PageDescriptor} from '../src/paged_iteration';
 import {expect} from 'chai';
 import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
@@ -216,7 +216,7 @@ describe('paged iteration', () => {
     it('stops in the middle', done => {
       const stream = descriptor.createStream(apiCall, {}, null);
       stream.on('data', data => {
-        if (data === pageSize + 1) {
+        if (Number(data) === pageSize + 1) {
           stream.end();
         }
       });

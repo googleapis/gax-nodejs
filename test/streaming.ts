@@ -32,9 +32,9 @@
 
 'use strict';
 
-const apiCallable = require('../src/api_callable');
-const gax = require('../src/gax');
-const streaming = require('../src/streaming');
+import * as apiCallable from '../src/api_callable';
+import * as gax from '../src/gax';
+import * as streaming from '../src/streaming';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';

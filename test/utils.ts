@@ -31,19 +31,18 @@
 'use strict';
 
 import {GoogleError} from '../src/GoogleError';
-const gax = require('../src/gax');
-const apiCallable = require('../src/api_callable');
+import * as gax from '../src/gax';
+import * as apiCallable from '../src/api_callable';
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
-function fail(argument, metadata, options, callback) {
+export function fail(argument, metadata, options, callback) {
   const error = new GoogleError();
   error.code = FAKE_STATUS_CODE_1;
   callback(error);
 }
-exports.fail = fail;
 
-function createApiCall(func, opts) {
+export function createApiCall(func, opts?) {
   opts = opts || {};
   const settings = new gax.CallSettings(opts.settings || {});
   const descriptor = opts.descriptor;
@@ -63,12 +62,10 @@ function createApiCall(func, opts) {
       }),
       settings, descriptor);
 }
-exports.createApiCall = createApiCall;
 
-function createRetryOptions(backoff) {
-  if (arguments.length > 1) {
+export function createRetryOptions(backoff, ...args: Array<{}>) {
+  if (args.length > 0) {
     backoff = gax.createBackoffSettings.apply(null, arguments);
   }
   return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
 }
-exports.createRetryOptions = createRetryOptions;

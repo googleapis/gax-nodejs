@@ -35,13 +35,15 @@
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import {GoogleError} from '../src/GoogleError';
-const gax = require('../src/gax');
-const utils = require('./utils');
+import * as gax from '../src/gax';
+import * as utils from './utils';
 
 const fail = utils.fail;
 const createApiCall = utils.createApiCall;
-const FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
-const FAKE_STATUS_CODE_2 = utils.FAKE_STATUS_CODE_1 + 1;
+// tslint:disable-next-line no-any
+const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
+// tslint:disable-next-line no-any
+const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
   it('calls api call', (done) => {
@@ -111,7 +113,8 @@ describe('Promise', () => {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    apiCall(null)
+    // tslint:disable-next-line no-any
+    (apiCall as any)(null)
         .then(response => {
           expect(response).to.be.an('array');
           expect(response[0]).to.eq(42);
@@ -141,7 +144,8 @@ describe('Promise', () => {
       }, 0);
     }
     const apiCall = createApiCall(func, {cancel: done});
-    const promise = apiCall(null);
+    // tslint:disable-next-line no-any
+    const promise = (apiCall as any)(null);
     promise
         .then(() => {
           done(new Error('should not reach'));
@@ -178,7 +182,8 @@ describe('Promise', () => {
       settings: {retry: retryOptions},
       returnCancelFunc: true,
     });
-    const promise = apiCall(null);
+    // tslint:disable-next-line no-any
+    const promise = (apiCall as any)(null);
     promise
         .then(() => {
           done(new Error('should not reach'));

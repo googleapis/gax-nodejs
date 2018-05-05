@@ -36,7 +36,7 @@
 
 'use strict';
 
-const gax = require('../src/gax');
+import * as gax from '../src/gax';
 import {expect} from 'chai';
 
 const SERVICE_NAME = 'test.interface.v1.api';

@@ -32,13 +32,14 @@
 
 'use strict';
 
-const gax = require('../src/gax');
-const longrunning = require('../src/longrunning');
+import * as gax from '../src/gax';
+import * as longrunning from '../src/longrunning';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-const utils = require('./utils');
+import * as utils from './utils';
 
-const FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
+// tslint:disable-next-line no-any
+const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
 const RESPONSE_VAL = 'response';
 const RESPONSE = {

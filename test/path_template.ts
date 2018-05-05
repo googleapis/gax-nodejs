@@ -34,8 +34,7 @@
 
 import * as _ from 'lodash';
 import {expect} from 'chai';
-
-const PathTemplate = require('../src/path_template.js').PathTemplate;
+import {PathTemplate} from '../src/path_template';
 
 describe('PathTemplate', () => {
   describe('constructor', () => {

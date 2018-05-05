@@ -38,123 +38,120 @@
 
 import * as _ from 'lodash';
 import * as util from 'util';
+import * as extras from './parser_extras';
+const parser = require('./path_template_parser');
 
-const extras = require('./parser_extras');
+export class PathTemplate {
+  private readonly parseResult;
 
-exports.PathTemplate = PathTemplate;
-
-/**
- * @param {String} data the of the template
- *
- * @constructor
- */
-function PathTemplate(data) {
-  const parser = require('./path_template_parser');
-  const parseResult = extras.finishParse(parser.parse(data));
-
-  Object.defineProperty(this, 'size', {
-    get() {
-      return parseResult.size;
-    },
-  });
-
-  Object.defineProperty(this, 'segments', {
-    get() {
-      return parseResult.segments;
-    },
-  });
-}
-
-/**
- * Matches a fully-qualified path template string.
- *
- * @param {String} path a fully-qualified path template string
- * @return {Object} contains const names matched to binding values
- * @throws {TypeError} if path can't be matched to this template
- */
-PathTemplate.prototype.match = function match(path) {
-  const pathSegments = path.split('/');
-  const bindings = {};
-  let segmentCount = this.size;
-  let current: number;
-  let index = 0;
-  this.segments.forEach(segment => {
-    if (index > pathSegments.length) {
-      return;
-    }
-    if (segment.kind === extras.BINDING) {
-      current = segment.literal;
-    } else if (segment.kind === extras.TERMINAL) {
-      if (segment.literal === '*') {
-        bindings[current] = pathSegments[index];
-        index += 1;
-      } else if (segment.literal === '**') {
-        const size = pathSegments.length - segmentCount + 1;
-        segmentCount += size - 1;
-        bindings[current] = pathSegments.slice(index, index + size).join('/');
-        index += size;
-      } else if (segment.literal === pathSegments[index]) {
-        index += 1;
-      } else {
-        const msg = util.format(
-            'mismatched literal (index=%d): \'%s\' != \'%s\'', index,
-            segment.literal, pathSegments[index]);
-        throw new TypeError(msg);
-      }
-    }
-  });
-  if (index !== pathSegments.length || index !== segmentCount) {
-    const msg = util.format(
-        'match error: could not instantiate a path template from %s', path);
-    throw new TypeError(msg);
+  get size() {
+    return this.parseResult.size;
   }
-  return bindings;
-};
 
-/**
- * Renders a path template using the provided bindings.
- *
- * @param {Object} bindings a mapping of const names to binding strings
- * @return {String} a rendered representation of the path template
- * @throws {TypeError} if a key is missing, or if a sub-template cannot be
- *   parsed
- */
-PathTemplate.prototype.render = function render(bindings) {
-  const out: Array<{}> = [];
-  let inABinding = false;
-  this.segments.forEach(segment => {
-    if (segment.kind === extras.BINDING) {
-      if (!_.has(bindings, segment.literal)) {
-        const msg = util.format(
-            'Value for key %s is not provided in %s', segment.literal,
-            bindings);
-        throw new TypeError(msg);
+  get segments() {
+    return this.parseResult.segments;
+  }
+
+  /**
+   * @param {String} data the of the template
+   *
+   * @constructor
+   */
+  constructor(data: string) {
+    this.parseResult = extras.finishParse(parser.parse(data));
+  }
+
+  /**
+   * Matches a fully-qualified path template string.
+   *
+   * @param {String} path a fully-qualified path template string
+   * @return {Object} contains const names matched to binding values
+   * @throws {TypeError} if path can't be matched to this template
+   */
+  match(path) {
+    const pathSegments = path.split('/');
+    const bindings = {};
+    let segmentCount = this.size;
+    let current: number;
+    let index = 0;
+    this.segments.forEach(segment => {
+      if (index > pathSegments.length) {
+        return;
       }
-      const tmp = new PathTemplate(bindings[segment.literal]);
-      Array.prototype.push.apply(out, tmp.segments);
-      inABinding = true;
-    } else if (segment.kind === extras.END_BINDING) {
-      inABinding = false;
-    } else if (inABinding) {
-      return;
-    } else {
-      out.push(segment);
+      if (segment.kind === extras.BINDING) {
+        current = segment.literal;
+      } else if (segment.kind === extras.TERMINAL) {
+        if (segment.literal === '*') {
+          bindings[current] = pathSegments[index];
+          index += 1;
+        } else if (segment.literal === '**') {
+          const size = pathSegments.length - segmentCount + 1;
+          segmentCount += size - 1;
+          bindings[current] = pathSegments.slice(index, index + size).join('/');
+          index += size;
+        } else if (segment.literal === pathSegments[index]) {
+          index += 1;
+        } else {
+          const msg = util.format(
+              'mismatched literal (index=%d): \'%s\' != \'%s\'', index,
+              segment.literal, pathSegments[index]);
+          throw new TypeError(msg);
+        }
+      }
+    });
+    if (index !== pathSegments.length || index !== segmentCount) {
+      const msg = util.format(
+          'match error: could not instantiate a path template from %s', path);
+      throw new TypeError(msg);
     }
-  });
+    return bindings;
+  }
 
-  const result = formatSegments(out);
-  this.match(result);
-  return result;
-};
+  /**
+   * Renders a path template using the provided bindings.
+   *
+   * @param {Object} bindings a mapping of const names to binding strings
+   * @return {String} a rendered representation of the path template
+   * @throws {TypeError} if a key is missing, or if a sub-template cannot be
+   *   parsed
+   */
+  render(bindings) {
+    const out: Array<{}> = [];
+    let inABinding = false;
+    this.segments.forEach(segment => {
+      if (segment.kind === extras.BINDING) {
+        if (!_.has(bindings, segment.literal)) {
+          const msg = util.format(
+              'Value for key %s is not provided in %s', segment.literal,
+              bindings);
+          throw new TypeError(msg);
+        }
+        const tmp = new PathTemplate(bindings[segment.literal]);
+        Array.prototype.push.apply(out, tmp.segments);
+        inABinding = true;
+      } else if (segment.kind === extras.END_BINDING) {
+        inABinding = false;
+      } else if (inABinding) {
+        return;
+      } else {
+        out.push(segment);
+      }
+    });
 
-/**
- * Renders the path template.
- *
- * @return {string} contains const names matched to binding values
- */
-PathTemplate.prototype.inspect = function inspect() {
-  return formatSegments(this.segments);
-};
+    const result = formatSegments(out);
+    this.match(result);
+    return result;
+  }
+
+  /**
+   * Renders the path template.
+   *
+   * @return {string} contains const names matched to binding values
+   */
+  inspect() {
+    return formatSegments(this.segments);
+  }
+}
 
 /**
  * Creates the string representattion for the segments.

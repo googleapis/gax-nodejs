@@ -59,88 +59,97 @@ import * as util from 'util';
  * @return {Promise|Stream|undefined}
  */
 
-/**
- * Canceller manages callback, API calls, and cancellation
- * of the API calls.
- * @param {APICallback=} callback
- *   The callback to be called asynchronously when the API call
- *   finishes.
- * @constructor
- * @property {APICallback} callback
- *   The callback function to be called.
- * @private
- */
-function Canceller(callback) {
-  this.callback = callback;
-  this.cancelFunc = null;
-  this.completed = false;
-}
+export class Canceller {
+  callback: Function;
+  cancelFunc?: Function;
+  completed: boolean;
 
-/**
- * Cancels the ongoing promise.
- */
-Canceller.prototype.cancel = function() {
-  if (this.completed) {
-    return;
+  /**
+   * Canceller manages callback, API calls, and cancellation
+   * of the API calls.
+   * @param {APICallback=} callback
+   *   The callback to be called asynchronously when the API call
+   *   finishes.
+   * @constructor
+   * @property {APICallback} callback
+   *   The callback function to be called.
+   * @private
+   */
+  constructor(callback?) {
+    this.callback = callback;
+    this.completed = false;
   }
-  this.completed = true;
-  if (this.cancelFunc) {
-    this.cancelFunc();
-  } else {
-    this.callback(new Error('cancelled'));
-  }
-};
 
-/**
- * Call calls the specified function. Result will be used to fulfill
- * the promise.
- *
- * @param {function(Object, APICallback=)} aFunc
- *   A function for an API call.
- * @param {Object} argument
- *   A request object.
- */
-Canceller.prototype.call = function(aFunc, argument) {
-  if (this.completed) {
-    return;
-  }
-  // tslint:disable-next-line no-any
-  const canceller = aFunc(argument, (...args: any[]) => {
+  /**
+   * Cancels the ongoing promise.
+   */
+  cancel() {
+    if (this.completed) {
+      return;
+    }
     this.completed = true;
-    args.unshift(this.callback);
-    setImmediate.apply(null, args);
-  });
-  this.cancelFunc = () => {
-    canceller.cancel();
-  };
-};
+    if (this.cancelFunc) {
+      this.cancelFunc();
+    } else {
+      this.callback(new Error('cancelled'));
+    }
+  }
 
-/**
- * PromiseCanceller is Canceller, but it holds a promise when
- * the API call finishes.
- * @param {Function} PromiseCtor - A constructor for a promise that implements
- * the ES6 specification of promise.
- * @constructor
- * @private
- */
-// tslint:disable-next-line variable-name
-function PromiseCanceller(PromiseCtor) {
-  this.promise = new PromiseCtor((resolve, reject) => {
+
+  /**
+   * Call calls the specified function. Result will be used to fulfill
+   * the promise.
+   *
+   * @param {function(Object, APICallback=)} aFunc
+   *   A function for an API call.
+   * @param {Object} argument
+   *   A request object.
+   */
+  call(aFunc, argument) {
+    if (this.completed) {
+      return;
+    }
     // tslint:disable-next-line no-any
-    Canceller.call(this, (err, ...args: any[]) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(args);
-      }
+    const canceller = aFunc(argument, (...args: any[]) => {
+      this.completed = true;
+      args.unshift(this.callback);
+      setImmediate.apply(null, args);
     });
-  });
-  this.promise.cancel = () => {
-    this.cancel();
-  };
+    this.cancelFunc = () => {
+      canceller.cancel();
+    };
+  }
 }
 
-util.inherits(PromiseCanceller, Canceller);
+// tslint:disable-next-line no-any
+export class PromiseCanceller<T = any> extends Canceller {
+  promise: Promise<T>&{cancel: () => void};
+  /**
+   * PromiseCanceller is Canceller, but it holds a promise when
+   * the API call finishes.
+   * @param {Function} PromiseCtor - A constructor for a promise that implements
+   * the ES6 specification of promise.
+   * @constructor
+   * @private
+   */
+  // tslint:disable-next-line variable-name
+  constructor(PromiseCtor) {
+    super();
+    this.promise = new PromiseCtor((resolve, reject) => {
+      // tslint:disable-next-line no-any
+      Canceller.call(this, (err, ...args: any[]) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(args);
+        }
+      });
+    });
+    this.promise.cancel = () => {
+      this.cancel();
+    };
+  }
+}
 
 /**
  * Updates aFunc so that it gets called with the timeout as its final arg.
@@ -314,8 +323,6 @@ export class NormalApiCaller {
   }
 }
 
-exports.NormalApiCaller = NormalApiCaller;
-
 /**
  * Converts an rpc call into an API call governed by the settings.
  *
@@ -336,12 +343,11 @@ exports.NormalApiCaller = NormalApiCaller;
  * @return {APICall} func - a bound method on a request stub used
  *   to make an rpc call.
  */
-exports.createApiCall = function createApiCall(
-    funcWithAuth, settings, optDescriptor) {
+export function createApiCall(funcWithAuth, settings, optDescriptor?) {
   const apiCaller =
       optDescriptor ? optDescriptor.apiCaller(settings) : new NormalApiCaller();
 
-  return function apiCallInner(request, callOptions, callback) {
+  return function apiCallInner(request?, callOptions?, callback?) {
     const thisSettings = settings.merge(callOptions);
 
     const status = apiCaller.init(thisSettings, callback);
@@ -363,4 +369,4 @@ exports.createApiCall = function createApiCall(
         });
     return apiCaller.result(status);
   };
-};
+}
