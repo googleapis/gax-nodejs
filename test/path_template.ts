@@ -35,47 +35,47 @@
 import * as _ from 'lodash';
 import {expect} from 'chai';
 
-var PathTemplate = require('../src/path_template.js').PathTemplate;
+const PathTemplate = require('../src/path_template.js').PathTemplate;
 
-describe('PathTemplate', function() {
-  describe('constructor', function() {
-    it('should parse and obtain the correct number of segments', function() {
-      var t = new PathTemplate('a/b/**/*/{a=hello/world}');
+describe('PathTemplate', () => {
+  describe('constructor', () => {
+    it('should parse and obtain the correct number of segments', () => {
+      const t = new PathTemplate('a/b/**/*/{a=hello/world}');
       expect(t.segments.length).to.eql(12);
       expect(t.size).to.eql(6);
     });
 
-    it('should fail on multiple path wildcards', function() {
-      var shouldFail = function() {
+    it('should fail on multiple path wildcards', () => {
+      const shouldFail = () => {
         return new PathTemplate('buckets/*/**/**/objects/*');
       };
       expect(shouldFail).to.throw(TypeError);
     });
   });
 
-  describe('method `match`', function() {
-    it('should fail on an impossible match', function() {
-      var t = new PathTemplate('hello/world');
-      var mismatches = ['hello', 'hello/world/fail'];
-      mismatches.forEach(function(m) {
-        expect(function() {
+  describe('method `match`', () => {
+    it('should fail on an impossible match', () => {
+      const t = new PathTemplate('hello/world');
+      const mismatches = ['hello', 'hello/world/fail'];
+      mismatches.forEach(m => {
+        expect(() => {
           t.match(m);
         }).to.throw(TypeError);
       });
     });
 
-    it('should fail on mismatched literal', function() {
-      var t = new PathTemplate('hello/world');
-      var mismatches = ['hello/world2', 'hello/world3'];
-      mismatches.forEach(function(m) {
-        expect(function() {
+    it('should fail on mismatched literal', () => {
+      const t = new PathTemplate('hello/world');
+      const mismatches = ['hello/world2', 'hello/world3'];
+      mismatches.forEach(m => {
+        expect(() => {
           t.match(m);
         }).to.throw(TypeError);
       });
     });
 
-    it('should match atomic resource name', function() {
-      var tests = [
+    it('should match atomic resource name', () => {
+      const tests = [
         {
           path: 'buckets/f/o/objects/bar',
           template: 'buckets/*/*/objects/*',
@@ -100,69 +100,69 @@ describe('PathTemplate', function() {
           },
         },
       ];
-      tests.forEach(function(t) {
-        var template = new PathTemplate(t.template);
+      tests.forEach(t => {
+        const template = new PathTemplate(t.template);
         expect(template.match(t.path)).to.eql(t.want);
       });
     });
 
-    it('should match escaped chars', function() {
-      var template = new PathTemplate('buckets/*/objects');
-      var want = {$0: 'hello%2F%2Bworld'};
+    it('should match escaped chars', () => {
+      const template = new PathTemplate('buckets/*/objects');
+      const want = {$0: 'hello%2F%2Bworld'};
       expect(template.match('buckets/hello%2F%2Bworld/objects')).to.eql(want);
     });
 
-    it('should match template with unbounded wildcard', function() {
-      var template = new PathTemplate('buckets/*/objects/**');
-      var want = {$0: 'foo', $1: 'bar/baz'};
+    it('should match template with unbounded wildcard', () => {
+      const template = new PathTemplate('buckets/*/objects/**');
+      const want = {$0: 'foo', $1: 'bar/baz'};
       expect(template.match('buckets/foo/objects/bar/baz')).to.eql(want);
     });
 
-    it('should match template with unbound in the middle', function() {
-      var template = new PathTemplate('bar/**/foo/*');
-      var want = {$0: 'foo/foo', $1: 'bar'};
+    it('should match template with unbound in the middle', () => {
+      const template = new PathTemplate('bar/**/foo/*');
+      const want = {$0: 'foo/foo', $1: 'bar'};
       expect(template.match('bar/foo/foo/foo/bar')).to.eql(want);
     });
   });
 
-  describe('method `render`', function() {
-    it('should render atomic resource', function() {
-      var template = new PathTemplate('buckets/*/*/*/objects/*');
-      var params = {
+  describe('method `render`', () => {
+    it('should render atomic resource', () => {
+      const template = new PathTemplate('buckets/*/*/*/objects/*');
+      const params = {
         $0: 'f',
         $1: 'o',
         $2: 'o',
         $3: 'google.com:a-b',
       };
-      var want = 'buckets/f/o/o/objects/google.com:a-b';
+      const want = 'buckets/f/o/o/objects/google.com:a-b';
       expect(template.render(params)).to.eql(want);
     });
 
-    it('should fail when there are too few variables', function() {
-      var template = new PathTemplate('buckets/*/*/*/objects/*');
-      var params = {
+    it('should fail when there are too few variables', () => {
+      const template = new PathTemplate('buckets/*/*/*/objects/*');
+      const params = {
         $0: 'f',
         $1: 'o',
         $2: 'o',
       };
-      expect(function() {
+      expect(() => {
         template.render(params);
       }).to.throw(TypeError);
     });
 
-    it('should succeed with an unbound in the middle', function() {
-      var template = new PathTemplate('bar/**/foo/*');
-      var params = {
+    it('should succeed with an unbound in the middle', () => {
+      const template = new PathTemplate('bar/**/foo/*');
+      const params = {
         $0: '1/2',
         $1: '3',
       };
-      var want = 'bar/1/2/foo/3';
+      const want = 'bar/1/2/foo/3';
       expect(template.render(params)).to.eql(want);
     });
   });
 
-  describe('method `inspect`', function() {
-    var tests = {
+  describe('method `inspect`', () => {
+    const tests = {
       'bar/**/foo/*': 'bar/{$0=**}/foo/{$1=*}',
       'buckets/*/objects/*': 'buckets/{$0=*}/objects/{$1=*}',
       '/buckets/{hello}': 'buckets/{hello=*}',
@@ -170,9 +170,9 @@ describe('PathTemplate', function() {
       '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
     };
 
-    _.forEach(tests, function(want, template) {
-      it('should render template ' + template + ' ok', function() {
-        var t = new PathTemplate(template);
+    _.forEach(tests, (want, template) => {
+      it('should render template ' + template + ' ok', () => {
+        const t = new PathTemplate(template);
         expect(t.inspect()).to.eql(want);
       });
     });

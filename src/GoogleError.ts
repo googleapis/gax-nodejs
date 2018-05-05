@@ -1,6 +1,5 @@
 /*
- *
- * Copyright 2016, Google Inc.
+ * Copyright 2018, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,47 +27,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
-'use strict';
 
-import {expect} from 'chai';
-
-describe('The PathTemplate parser', () => {
-  it('should load the pegjs generated module ok', () => {
-    const parser = require('../src/path_template_parser');
-    expect(parser).to.not.eql(null);
-  });
-
-  describe('function `parse`', () => {
-    const parser = require('../src/path_template_parser');
-
-    it('should succeed with valid inputs', () => {
-      const shouldPass = () => {
-        parser.parse('a/b/**/*/{a=hello/world}');
-      };
-      expect(shouldPass).to.not.throw();
-    });
-
-    it('should fail on invalid tokens', () => {
-      const shouldFail = () => {
-        parser.parse('hello/wor* ld}');
-      };
-      expect(shouldFail).to.throw();
-    });
-
-    it('should fail on unexpected eof', () => {
-      const shouldFail = () => {
-        parser.parse('a/{hello=world');
-      };
-      expect(shouldFail).to.throw();
-    });
-
-    it('should fail on inner binding', () => {
-      const shouldFail = () => {
-        parser.parse('buckets/{hello={world}}');
-      };
-      expect(shouldFail).to.throw();
-    });
-  });
-});
+export class GoogleError extends Error { code?: number; }

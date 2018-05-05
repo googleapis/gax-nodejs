@@ -32,9 +32,9 @@
  */
 
 {
-   var _ = require('lodash');
-   var util = require('util');
-   var extras = require('./parser_extras');
+   const _ = require('lodash');
+   const util = require('util');
+   const extras = require('./parser_extras');
 }
 
 

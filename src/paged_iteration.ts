@@ -34,6 +34,7 @@ import * as extend from 'extend';
 import * as through2 from 'through2';
 import * as ended from 'is-stream-ended';
 import * as util from 'util';
+import {Stream} from 'stream';
 
 const {NormalApiCaller} = require('./api_callable');
 
@@ -53,14 +54,14 @@ function PagedIteration(pageDescriptor) {
 util.inherits(PagedIteration, NormalApiCaller);
 
 PagedIteration.prototype.createActualCallback = function(request, callback) {
-  var self = this;
+  const self = this;
   return function fetchNextPageToken(err, response) {
     if (err) {
       callback(err);
       return;
     }
-    var resources = response[self.pageDescriptor.resourceField];
-    var pageToken = response[self.pageDescriptor.responsePageTokenField];
+    const resources = response[self.pageDescriptor.resourceField];
+    const pageToken = response[self.pageDescriptor.responsePageTokenField];
     if (pageToken) {
       request[self.pageDescriptor.requestPageTokenField] = pageToken;
       callback(err, resources, request, response);
@@ -71,14 +72,11 @@ PagedIteration.prototype.createActualCallback = function(request, callback) {
 };
 
 PagedIteration.prototype.wrap = function(func) {
-  var self = this;
+  const self = this;
   return function wrappedCall(argument, metadata, options, callback) {
     return func(
-      argument,
-      metadata,
-      options,
-      self.createActualCallback(argument, callback)
-    );
+        argument, metadata, options,
+        self.createActualCallback(argument, callback));
   };
 };
 
@@ -87,11 +85,7 @@ PagedIteration.prototype.init = function(settings, callback) {
 };
 
 PagedIteration.prototype.call = function(
-  apiCall,
-  argument,
-  settings,
-  canceller
-) {
+    apiCall, argument, settings, canceller) {
   argument = extend({}, argument);
   if (settings.pageToken) {
     argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
@@ -101,24 +95,19 @@ PagedIteration.prototype.call = function(
   }
   if (!settings.autoPaginate) {
     NormalApiCaller.prototype.call.call(
-      this,
-      apiCall,
-      argument,
-      settings,
-      canceller
-    );
+        this, apiCall, argument, settings, canceller);
     return;
   }
 
-  var maxResults = settings.maxResults || -1;
-  var allResources: any[] = [];
+  const maxResults = settings.maxResults || -1;
+  const allResources: Array<{}> = [];
   function pushResources(err, resources, next) {
     if (err) {
       canceller.callback(err);
       return;
     }
 
-    for (var i = 0; i < resources.length; ++i) {
+    for (let i = 0; i < resources.length; ++i) {
       allResources.push(resources[i]);
       if (allResources.length === maxResults) {
         next = null;
@@ -135,97 +124,97 @@ PagedIteration.prototype.call = function(
   setImmediate(apiCall, argument, pushResources);
 };
 
-/**
- * Describes the structure of a page-streaming call.
- *
- * @property {String} requestPageTokenField
- * @property {String} responsePageTokenField
- * @property {String} resourceField
- *
- * @param {String} requestPageTokenField - The field name of the page token in
- *   the request.
- * @param {String} responsePageTokenField - The field name of the page token in
- *   the response.
- * @param {String} resourceField - The resource field name.
- *
- * @constructor
- */
-function PageDescriptor(
-  requestPageTokenField,
-  responsePageTokenField,
-  resourceField
-) {
-  this.requestPageTokenField = requestPageTokenField;
-  this.responsePageTokenField = responsePageTokenField;
-  this.resourceField = resourceField;
-}
-exports.PageDescriptor = PageDescriptor;
+export class PageDescriptor {
+  requestPageTokenField: {};
+  responsePageTokenField: {};
+  resourceField: {};
+  /**
+   * Describes the structure of a page-streaming call.
+   *
+   * @property {String} requestPageTokenField
+   * @property {String} responsePageTokenField
+   * @property {String} resourceField
+   *
+   * @param {String} requestPageTokenField - The field name of the page token in
+   *   the request.
+   * @param {String} responsePageTokenField - The field name of the page token in
+   *   the response.
+   * @param {String} resourceField - The resource field name.
+   *
+   * @constructor
+   */
+  constructor(requestPageTokenField, responsePageTokenField, resourceField) {
+    this.requestPageTokenField = requestPageTokenField;
+    this.responsePageTokenField = responsePageTokenField;
+    this.resourceField = resourceField;
+  }
 
-/**
- * Creates a new object Stream which emits the resource on 'data' event.
- * @private
- * @param {ApiCall} apiCall - the callable object.
- * @param {Object} request - the request object.
- * @param {CallOptions=} options - the call options to customize the api call.
- * @return {Stream} - a new object Stream.
- */
-PageDescriptor.prototype.createStream = function(apiCall, request, options) {
-  var stream = through2.obj();
-  options = extend({}, options, {autoPaginate: false});
-  var maxResults = 'maxResults' in options ? options.maxResults : -1;
-  var pushCount = 0;
-  var started = false;
-  function callback(err, resources, next) {
-    if (err) {
-      stream.emit('error', err);
-      return;
-    }
-    for (var i = 0; i < resources.length; ++i) {
+  /**
+   * Creates a new object Stream which emits the resource on 'data' event.
+   * @private
+   * @param {ApiCall} apiCall - the callable object.
+   * @param {Object} request - the request object.
+   * @param {CallOptions=} options - the call options to customize the api call.
+   * @return {Stream} - a new object Stream.
+   */
+  createStream(apiCall, request, options): Stream {
+    const stream = through2.obj();
+    options = extend({}, options, {autoPaginate: false});
+    const maxResults = 'maxResults' in options ? options.maxResults : -1;
+    let pushCount = 0;
+    let started = false;
+    function callback(err, resources, next) {
+      if (err) {
+        stream.emit('error', err);
+        return;
+      }
+      for (let i = 0; i < resources.length; ++i) {
+        if (ended(stream)) {
+          return;
+        }
+        if (resources[i] === null) {
+          continue;
+        }
+        stream.push(resources[i]);
+        pushCount++;
+        if (pushCount === maxResults) {
+          stream.end();
+        }
+      }
       if (ended(stream)) {
         return;
       }
-      if (resources[i] === null) {
-        continue;
-      }
-      stream.push(resources[i]);
-      pushCount++;
-      if (pushCount === maxResults) {
+      if (!next) {
         stream.end();
+        return;
+      }
+      // When pageToken is specified in the original options, it will overwrite
+      // the page token field in the next request. Therefore it must be cleared.
+      if ('pageToken' in options) {
+        delete options.pageToken;
+      }
+      if (stream.isPaused()) {
+        request = next;
+        started = false;
+      } else {
+        setImmediate(apiCall, next, options, callback);
       }
     }
-    if (ended(stream)) {
-      return;
-    }
-    if (!next) {
-      stream.end();
-      return;
-    }
-    // When pageToken is specified in the original options, it will overwrite
-    // the page token field in the next request. Therefore it must be cleared.
-    if ('pageToken' in options) {
-      delete options.pageToken;
-    }
-    if (stream.isPaused()) {
-      request = next;
-      started = false;
-    } else {
-      setImmediate(apiCall, next, options, callback);
-    }
+    stream.on('resume', () => {
+      if (!started) {
+        started = true;
+        apiCall(request, options, callback);
+      }
+    });
+    return stream;
   }
-  stream.on('resume', function() {
-    if (!started) {
-      started = true;
-      apiCall(request, options, callback);
-    }
-  });
-  return stream;
-};
 
-/**
- * Returns a new API caller.
- * @private
- * @return {PageStreamable} - the page streaming caller.
- */
-PageDescriptor.prototype.apiCaller = function() {
-  return new PagedIteration(this);
-};
+  /**
+   * Returns a new API caller.
+   * @private
+   * @return {PageStreamable} - the page streaming caller.
+   */
+  apiCaller() {
+    return new PagedIteration(this);
+  }
+}

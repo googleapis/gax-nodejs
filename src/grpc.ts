@@ -31,10 +31,10 @@
  */
 'use strict';
 
-var autoAuth = require('google-auto-auth');
+const autoAuth = require('google-auto-auth');
 
 import * as fs from 'fs';
-import * as util from 'util'
+import * as util from 'util';
 import * as globby from 'globby';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
@@ -44,30 +44,30 @@ let googleProtoFilesDir = require('google-proto-files')('..');
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
 
-var COMMON_PROTO_DIRS = [
+const COMMON_PROTO_DIRS = [
   // This list of directories is defined here:
   // https://github.com/googleapis/googleapis/blob/master/gapic/packaging/common_protos.yaml
   'api',
   path.join('iam', 'v1'),
   path.join('logging', 'type'),
   'longrunning',
-  'protobuf', // This is an additional path that the common protos depend on.
+  'protobuf',  // This is an additional path that the common protos depend on.
   'rpc',
   'type',
 ];
 
-var COMMON_PROTO_GLOB_PATTERNS = COMMON_PROTO_DIRS.map(function(dir) {
+const COMMON_PROTO_GLOB_PATTERNS = COMMON_PROTO_DIRS.map(dir => {
   return path.join(googleProtoFilesDir, 'google', dir, '**', '*.proto');
 });
 
-var COMMON_PROTO_FILES = globby
-  .sync(COMMON_PROTO_GLOB_PATTERNS)
-  .map(function(filename) {
-    return path.normalize(filename);
-  })
-  .map(function(filename) {
-    return filename.substring(googleProtoFilesDir.length + 1);
-  });
+const COMMON_PROTO_FILES =
+    globby.sync(COMMON_PROTO_GLOB_PATTERNS)
+        .map(filename => {
+          return path.normalize(filename);
+        })
+        .map(filename => {
+          return filename.substring(googleProtoFilesDir.length + 1);
+        });
 
 /**
  * A class which keeps the context of gRPC and auth for the gRPC.
@@ -101,7 +101,7 @@ function GrpcClient(options) {
     this.grpcVersion = require('grpc/package.json').version;
   }
 }
-module.exports = (options) => { return new GrpcClient(options) };
+module.exports = (options) => new GrpcClient(options);
 
 /**
  * Creates a gRPC credentials. It asks the auth data if necessary.
@@ -112,22 +112,21 @@ module.exports = (options) => { return new GrpcClient(options) };
  * @return {Promise} The promise which will be resolved to the gRPC credential.
  */
 GrpcClient.prototype._getCredentials = function _getCredentials(opts) {
-  var PromiseCtor = this.promise;
+  // tslint:disable-next-line variable-name
+  const PromiseCtor = this.promise;
   if (opts.sslCreds) {
     return PromiseCtor.resolve(opts.sslCreds);
   }
-  var grpc = this.grpc;
-  var getAuthClient = this.auth.getAuthClient.bind(this.auth);
-  var sslCreds = grpc.credentials.createSsl();
-  return new PromiseCtor(function(resolve, reject) {
-    getAuthClient(function(err, auth) {
+  const grpc = this.grpc;
+  const getAuthClient = this.auth.getAuthClient.bind(this.auth);
+  const sslCreds = grpc.credentials.createSsl();
+  return new PromiseCtor((resolve, reject) => {
+    getAuthClient((err, auth) => {
       if (err) {
         reject(err);
       } else {
-        var credentials = grpc.credentials.combineChannelCredentials(
-          sslCreds,
-          grpc.credentials.createFromGoogleCredential(auth)
-        );
+        const credentials = grpc.credentials.combineChannelCredentials(
+            sslCreds, grpc.credentials.createFromGoogleCredential(auth));
         resolve(credentials);
       }
     });
@@ -160,13 +159,14 @@ GrpcClient.prototype.load = function(args) {
  *   object).
  */
 GrpcClient.prototype.loadProto = function(protoPath, filename) {
-  var resolvedPath = (GrpcClient as any)._resolveFile(protoPath, filename);
+  // tslint:disable-next-line no-any
+  const resolvedPath = (GrpcClient as any)._resolveFile(protoPath, filename);
   return this.grpc.loadObject(
-    protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot())
-  );
+      protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
 };
 
-(GrpcClient as any)._resolveFile = function(protoPath, filename) {
+// tslint:disable-next-line no-any
+(GrpcClient as any)._resolveFile = (protoPath, filename) => {
   if (fs.existsSync(path.join(protoPath, filename))) {
     return path.join(protoPath, filename);
   } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
@@ -176,20 +176,19 @@ GrpcClient.prototype.loadProto = function(protoPath, filename) {
 };
 
 GrpcClient.prototype.metadataBuilder = function(headers) {
-  var Metadata = this.grpc.Metadata;
-  var baseMetadata = new Metadata();
-  for (var key in headers) {
+  const Metadata = this.grpc.Metadata;
+  const baseMetadata = new Metadata();
+  // tslint:disable-next-line forin
+  for (const key in headers) {
     baseMetadata.set(key, headers[key]);
   }
   return function buildMetadata(abTests, moreHeaders) {
     // TODO: bring the A/B testing info into the metadata.
-    var copied = false;
-    var metadata = baseMetadata;
-    for (var key in moreHeaders) {
-      if (
-        key.toLowerCase() !== 'x-goog-api-client' &&
-        moreHeaders.hasOwnProperty(key)
-      ) {
+    let copied = false;
+    let metadata = baseMetadata;
+    for (const key in moreHeaders) {
+      if (key.toLowerCase() !== 'x-goog-api-client' &&
+          moreHeaders.hasOwnProperty(key)) {
         if (!copied) {
           copied = true;
           metadata = metadata.clone();
@@ -213,19 +212,10 @@ GrpcClient.prototype.metadataBuilder = function(headers) {
  * @return {Object} A mapping of method names to CallSettings.
  */
 GrpcClient.prototype.constructSettings = function constructSettings(
-  serviceName,
-  clientConfig,
-  configOverrides,
-  headers
-) {
+    serviceName, clientConfig, configOverrides, headers) {
   return gax.constructSettings(
-    serviceName,
-    clientConfig,
-    configOverrides,
-    this.grpc.status,
-    {metadataBuilder: this.metadataBuilder(headers)},
-    this.promise
-  );
+      serviceName, clientConfig, configOverrides, this.grpc.status,
+      {metadataBuilder: this.metadataBuilder(headers)}, this.promise);
 };
 
 /**
@@ -240,11 +230,12 @@ GrpcClient.prototype.constructSettings = function constructSettings(
  *   to set up gRPC connection.
  * @return {Promise} A promse which resolves to a gRPC stub instance.
  */
+// tslint:disable-next-line variable-name
 GrpcClient.prototype.createStub = function(CreateStub, options) {
-  var serviceAddress = options.servicePath + ':' + options.port;
-  return this._getCredentials(options).then(function(credentials) {
-    var grpcOptions = {};
-    Object.keys(options).forEach(function(key) {
+  const serviceAddress = options.servicePath + ':' + options.port;
+  return this._getCredentials(options).then(credentials => {
+    const grpcOptions = {};
+    Object.keys(options).forEach(key => {
       if (key.indexOf('grpc.') === 0) {
         grpcOptions[key] = options[key];
       }
@@ -263,9 +254,9 @@ GrpcClient.prototype.createStub = function(CreateStub, options) {
  * @return {function(Object):number} - a function to compute the byte length
  *   for an object.
  */
-(GrpcClient as any).createByteLengthFunction = function createByteLengthFunction(
-  message
-) {
+// tslint:disable-next-line no-any
+(GrpcClient as any).createByteLengthFunction =
+    function createByteLengthFunction(message) {
   return function getByteLength(obj) {
     return message.encode(obj).finish().length;
   };
@@ -280,7 +271,7 @@ module.exports.GoogleProtoFilesRoot = GoogleProtoFilesRoot;
 
 // Causes the loading of an included proto to check if it is a common
 // proto. If it is a common proto, use the google-proto-files proto.
-GoogleProtoFilesRoot.prototype.resolvePath = function(originPath, includePath) {
+GoogleProtoFilesRoot.prototype.resolvePath = (originPath, includePath) => {
   originPath = path.normalize(originPath);
   includePath = path.normalize(includePath);
 
@@ -295,16 +286,18 @@ GoogleProtoFilesRoot.prototype.resolvePath = function(originPath, includePath) {
   if (COMMON_PROTO_FILES.indexOf(includePath) > -1) {
     return path.join(googleProtoFilesDir, includePath);
   }
-
-  return (GoogleProtoFilesRoot as any)._findIncludePath(originPath, includePath);
+  // tslint:disable-next-line no-any
+  return (GoogleProtoFilesRoot as any)
+      ._findIncludePath(originPath, includePath);
 };
 
-(GoogleProtoFilesRoot as any)._findIncludePath = function(originPath, includePath) {
+// tslint:disable-next-line no-any
+(GoogleProtoFilesRoot as any)._findIncludePath = (originPath, includePath) => {
   originPath = path.normalize(originPath);
   includePath = path.normalize(includePath);
 
-  var current = originPath;
-  var found = fs.existsSync(path.join(current, includePath));
+  let current = originPath;
+  let found = fs.existsSync(path.join(current, includePath));
   while (!found && current.length > 0) {
     current = current.substring(0, current.lastIndexOf(path.sep));
     found = fs.existsSync(path.join(current, includePath));

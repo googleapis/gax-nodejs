@@ -36,9 +36,9 @@ import * as util from 'util';
 import * as _ from 'lodash';
 
 /* constants used in the pegjs parser */
-var BINDING = (exports.BINDING = 1);
+const BINDING = (exports.BINDING = 1);
 exports.END_BINDING = 2;
-var TERMINAL = (exports.TERMINAL = 3);
+const TERMINAL = (exports.TERMINAL = 3);
 
 /**
  * Checks that segments only has one terminal segment that is a path wildcard.
@@ -49,14 +49,14 @@ var TERMINAL = (exports.TERMINAL = 3);
  * @throws {TypeError} if there are too many
  */
 function allowOnePathWildcard(segments) {
-  var hasPathWildcard = false;
-  for (var i = 0; i < segments.length; i++) {
-    var s = segments[i];
+  let hasPathWildcard = false;
+  for (let i = 0; i < segments.length; i++) {
+    const s = segments[i];
     if (s.kind !== TERMINAL || s.literal !== '**') {
       continue;
     }
     if (hasPathWildcard) {
-      var tooManyWildcards = 'cannot contain more than one path wildcard';
+      const tooManyWildcards = 'cannot contain more than one path wildcard';
       throw new TypeError(tooManyWildcards);
     }
     hasPathWildcard = true;
@@ -72,7 +72,7 @@ function allowOnePathWildcard(segments) {
  * @return {number} the number of terminal segments in the template
  */
 function countTerminals(segments) {
-  var terms = _.filter(segments, function(x) {
+  const terms = _.filter(segments, x => {
     return x.kind === TERMINAL;
   });
   return terms.length;
@@ -86,8 +86,8 @@ function countTerminals(segments) {
  * @param {Segments[]} segments the parsed segments
  */
 function updateBindingLiterals(segments) {
-  var bindingIndex = 0;
-  segments.forEach(function(s) {
+  let bindingIndex = 0;
+  segments.forEach(s => {
     if (s.kind === BINDING && !s.literal) {
       s.literal = util.format('$%d', bindingIndex);
       bindingIndex += 1;
@@ -112,7 +112,7 @@ function finishParse(segments) {
   allowOnePathWildcard(segments);
   updateBindingLiterals(segments);
   return {
-    segments: segments,
+    segments,
     size: countTerminals(segments),
   };
 }

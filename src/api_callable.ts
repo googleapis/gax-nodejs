@@ -104,14 +104,13 @@ Canceller.prototype.call = function(aFunc, argument) {
   if (this.completed) {
     return;
   }
-  var self = this;
-  var canceller = aFunc(argument, function() {
-    self.completed = true;
-    var args = Array.prototype.slice.call(arguments, 0);
-    args.unshift(self.callback);
+  // tslint:disable-next-line no-any
+  const canceller = aFunc(argument, (...args: any[]) => {
+    this.completed = true;
+    args.unshift(this.callback);
     setImmediate.apply(null, args);
   });
-  this.cancelFunc = function() {
+  this.cancelFunc = () => {
     canceller.cancel();
   };
 };
@@ -124,19 +123,20 @@ Canceller.prototype.call = function(aFunc, argument) {
  * @constructor
  * @private
  */
+// tslint:disable-next-line variable-name
 function PromiseCanceller(PromiseCtor) {
-  var self = this;
-  this.promise = new PromiseCtor(function(resolve, reject) {
-    Canceller.call(self, function(err) {
+  this.promise = new PromiseCtor((resolve, reject) => {
+    // tslint:disable-next-line no-any
+    Canceller.call(this, (err, ...args: any[]) => {
       if (err) {
         reject(err);
       } else {
-        resolve(Array.prototype.slice.call(arguments, 1));
+        resolve(args);
       }
     });
   });
-  this.promise.cancel = function() {
-    self.cancel();
+  this.promise.cancel = () => {
+    this.cancel();
   };
 }
 
@@ -161,12 +161,12 @@ function addTimeoutArg(aFunc, timeout, otherArgs, abTests?) {
   // TODO: this assumes the other arguments consist of metadata and options,
   // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
   return function timeoutFunc(argument, callback) {
-    var now = new Date();
-    var options = otherArgs.options || {};
+    const now = new Date();
+    const options = otherArgs.options || {};
     options.deadline = new Date(now.getTime() + timeout);
-    var metadata = otherArgs.metadataBuilder
-      ? otherArgs.metadataBuilder(abTests, otherArgs.headers || {})
-      : null;
+    const metadata = otherArgs.metadataBuilder ?
+        otherArgs.metadataBuilder(abTests, otherArgs.headers || {}) :
+        null;
     return aFunc(argument, metadata, options, callback);
   };
 }
@@ -185,13 +185,13 @@ function addTimeoutArg(aFunc, timeout, otherArgs, abTests?) {
  * @return {function(Object, APICallback)} A function that will retry.
  */
 function retryable(aFunc, retry, otherArgs) {
-  var delayMult = retry.backoffSettings.retryDelayMultiplier;
-  var maxDelay = retry.backoffSettings.maxRetryDelayMillis;
-  var timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
-  var maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
+  const delayMult = retry.backoffSettings.retryDelayMultiplier;
+  const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
+  const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
+  const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
 
-  var delay = retry.backoffSettings.initialRetryDelayMillis;
-  var timeout = retry.backoffSettings.initialRpcTimeoutMillis;
+  let delay = retry.backoffSettings.initialRetryDelayMillis;
+  let timeout = retry.backoffSettings.initialRpcTimeoutMillis;
 
   /**
    * Equivalent to ``aFunc``, but retries upon transient failure.
@@ -203,64 +203,55 @@ function retryable(aFunc, retry, otherArgs) {
    * @return {function()} cancel function.
    */
   return function retryingFunc(argument, callback) {
-    var canceller;
-    var timeoutId;
-    var now = new Date();
-    var deadline;
+    let canceller;
+    let timeoutId;
+    let now = new Date();
+    let deadline;
     if (retry.backoffSettings.totalTimeoutMillis) {
       deadline = now.getTime() + retry.backoffSettings.totalTimeoutMillis;
     }
-    var retries = 0;
-    var maxRetries = retry.backoffSettings.maxRetries;
+    let retries = 0;
+    const maxRetries = retry.backoffSettings.maxRetries;
     // TODO: define A/B testing values for retry behaviors.
 
     /** Repeat the API call as long as necessary. */
     function repeat() {
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
-        callback(
-          new Error(
-            'Retry total timeout exceeded before any' + 'response was received'
-          )
-        );
+        callback(new Error(
+            'Retry total timeout exceeded before any' +
+            'response was received'));
         return;
       }
 
       if (retries && retries >= maxRetries) {
-        callback(
-          new Error(
+        callback(new Error(
             'Exceeded maximum number of retries before any ' +
-              'response was received'
-          )
-        );
+            'response was received'));
         return;
       }
 
       retries++;
-      var toCall = addTimeoutArg(aFunc, timeout, otherArgs);
-      canceller = toCall(argument, function(err) {
+      const toCall = addTimeoutArg(aFunc, timeout, otherArgs);
+      // tslint:disable-next-line no-any
+      canceller = toCall(argument, (err, ...args: any[]) => {
         if (!err) {
-          var args = Array.prototype.slice.call(arguments, 1);
           args.unshift(null);
           callback.apply(null, args);
           return;
         }
         canceller = null;
         if (retry.retryCodes.indexOf(err.code) < 0) {
-          err.note =
-            'Exception occurred in retry method that was ' +
-            'not classified as transient';
+          err.note = 'Exception occurred in retry method that was ' +
+              'not classified as transient';
           callback(err);
         } else {
-          var toSleep = Math.random() * delay;
-          timeoutId = setTimeout(function() {
+          const toSleep = Math.random() * delay;
+          timeoutId = setTimeout(() => {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
             timeout = Math.min(
-              timeout * timeoutMult,
-              maxTimeout,
-              deadline - now.getTime()
-            );
+                timeout * timeoutMult, maxTimeout, deadline - now.getTime());
             repeat();
           }, toSleep);
         }
@@ -268,18 +259,15 @@ function retryable(aFunc, retry, otherArgs) {
     }
 
     if (maxRetries && deadline) {
-      callback(
-        new Error(
+      callback(new Error(
           'Cannot set both totalTimeoutMillis and maxRetries ' +
-            'in backoffSettings.'
-        )
-      );
+          'in backoffSettings.'));
     } else {
       repeat();
     }
 
     return {
-      cancel: function() {
+      cancel() {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
@@ -299,7 +287,7 @@ function retryable(aFunc, retry, otherArgs) {
  * @private
  * @constructor
  */
-export class NormalApiCaller{
+export class NormalApiCaller {
   init(settings, callback) {
     if (callback) {
       return new Canceller(callback);
@@ -311,12 +299,7 @@ export class NormalApiCaller{
     return func;
   }
 
-  call(
-    apiCall,
-    argument,
-    settings,
-    canceller
-  ) {
+  call(apiCall, argument, settings, canceller) {
     canceller.call(apiCall, argument);
   }
 
@@ -354,37 +337,30 @@ exports.NormalApiCaller = NormalApiCaller;
  *   to make an rpc call.
  */
 exports.createApiCall = function createApiCall(
-  funcWithAuth,
-  settings,
-  optDescriptor
-) {
-  var apiCaller = optDescriptor
-    ? optDescriptor.apiCaller(settings)
-    : new NormalApiCaller();
+    funcWithAuth, settings, optDescriptor) {
+  const apiCaller =
+      optDescriptor ? optDescriptor.apiCaller(settings) : new NormalApiCaller();
 
   return function apiCallInner(request, callOptions, callback) {
-    var thisSettings = settings.merge(callOptions);
+    const thisSettings = settings.merge(callOptions);
 
-    var status = apiCaller.init(thisSettings, callback);
+    const status = apiCaller.init(thisSettings, callback);
     funcWithAuth
-      .then(function(func) {
-        func = apiCaller.wrap(func);
-        var retry = thisSettings.retry;
-        if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
-          return retryable(func, thisSettings.retry, thisSettings.otherArgs);
-        }
-        return addTimeoutArg(
-          func,
-          thisSettings.timeout,
-          thisSettings.otherArgs
-        );
-      })
-      .then(function(apiCall) {
-        apiCaller.call(apiCall, request, thisSettings, status);
-      })
-      .catch(function(err) {
-        apiCaller.fail(status, err);
-      });
+        .then(func => {
+          func = apiCaller.wrap(func);
+          const retry = thisSettings.retry;
+          if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
+            return retryable(func, thisSettings.retry, thisSettings.otherArgs);
+          }
+          return addTimeoutArg(
+              func, thisSettings.timeout, thisSettings.otherArgs);
+        })
+        .then(apiCall => {
+          apiCaller.call(apiCall, request, thisSettings, status);
+        })
+        .catch(err => {
+          apiCaller.fail(status, err);
+        });
     return apiCaller.result(status);
   };
 };

@@ -30,13 +30,14 @@
 
 'use strict';
 
+import {GoogleError} from '../src/GoogleError';
 const gax = require('../src/gax');
 const apiCallable = require('../src/api_callable');
 
-var FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
+const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
 function fail(argument, metadata, options, callback) {
-  var error: any = new Error();
+  const error = new GoogleError();
   error.code = FAKE_STATUS_CODE_1;
   callback(error);
 }
@@ -44,27 +45,23 @@ exports.fail = fail;
 
 function createApiCall(func, opts) {
   opts = opts || {};
-  var settings = new gax.CallSettings(opts.settings || {});
-  var descriptor = opts.descriptor;
+  const settings = new gax.CallSettings(opts.settings || {});
+  const descriptor = opts.descriptor;
   return apiCallable.createApiCall(
-    Promise.resolve(function(argument, metadata, options, callback) {
-      if (opts.returnCancelFunc) {
+      Promise.resolve((argument, metadata, options, callback) => {
+        if (opts.returnCancelFunc) {
+          return {
+            cancel: func(argument, metadata, options, callback),
+          };
+        }
+        func(argument, metadata, options, callback);
         return {
-          cancel: func(argument, metadata, options, callback),
+          cancel: opts.cancel || (() => {
+                    callback(new Error('canceled'));
+                  }),
         };
-      }
-      func(argument, metadata, options, callback);
-      return {
-        cancel:
-          opts.cancel ||
-          function() {
-            callback(new Error('canceled'));
-          },
-      };
-    }),
-    settings,
-    descriptor
-  );
+      }),
+      settings, descriptor);
 }
 exports.createApiCall = createApiCall;
 

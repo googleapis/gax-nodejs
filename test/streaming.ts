@@ -42,167 +42,174 @@ import * as through2 from 'through2';
 function createApiCall(func, type) {
   // can't use "createApiCall" in util.js because argument list is different
   // in streaming API call.
-  var settings = new gax.CallSettings();
+  const settings = new gax.CallSettings();
   return apiCallable.createApiCall(
-    Promise.resolve(func),
-    settings,
-    new streaming.StreamDescriptor(type)
-  );
+      Promise.resolve(func), settings, new streaming.StreamDescriptor(type));
 }
 
-describe('streaming', function() {
-  it('handles server streaming', function(done) {
-    var spy = sinon.spy(function() {
-      expect(arguments.length).to.eq(3);
-      var s = through2.obj();
+describe('streaming', () => {
+  it('handles server streaming', done => {
+    const spy = sinon.spy((...args: Array<{}>) => {
+      expect(args.length).to.eq(3);
+      const s = through2.obj();
       s.push({resources: [1, 2]});
       s.push({resources: [3, 4, 5]});
       s.push(null);
       return s;
     });
 
-    var apiCall = createApiCall(spy, streaming.StreamType.SERVER_STREAMING);
-    var s = apiCall(null, null);
-    var callback = sinon.spy(function(data) {
+    const apiCall = createApiCall(spy, streaming.StreamType.SERVER_STREAMING);
+    const s = apiCall(null, null);
+    const callback = sinon.spy(data => {
       if (callback.callCount === 1) {
         expect(data).to.deep.equal({resources: [1, 2]});
       } else {
         expect(data).to.deep.equal({resources: [3, 4, 5]});
       }
     });
+    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
+    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.false;
     s.on('data', callback);
-    s.on('end', function() {
+    s.on('end', () => {
       expect(callback.callCount).to.eq(2);
       done();
     });
   });
 
-  it('handles client streaming', function(done) {
+  it('handles client streaming', done => {
     function func(metadata, options, callback) {
       expect(arguments.length).to.eq(3);
-      var s = through2.obj();
-      var written: any[] = [];
-      s.on('end', function() {
+      const s = through2.obj();
+      const written: Array<{}> = [];
+      s.on('end', () => {
         callback(null, written);
       });
       s.on('error', callback);
-      s.on('data', function(data) {
+      s.on('data', data => {
         written.push(data);
       });
       return s;
     }
 
-    var apiCall = createApiCall(func, streaming.StreamType.CLIENT_STREAMING);
-    var s = apiCall(null, null, function(err, response) {
+    const apiCall = createApiCall(func, streaming.StreamType.CLIENT_STREAMING);
+    const s = apiCall(null, null, (err, response) => {
+      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(response).to.deep.eq(['foo', 'bar']);
       done();
     });
+    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.false;
+    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     s.write('foo');
     s.write('bar');
     s.end();
   });
 
-  it('handles bidi streaming', function(done) {
+  it('handles bidi streaming', done => {
     function func() {
       expect(arguments.length).to.eq(2);
-      var s = through2.obj();
+      const s = through2.obj();
       return s;
     }
 
-    var apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
-    var s = apiCall(null, null);
-    var arg = {foo: 'bar'};
-    var callback = sinon.spy(function(data) {
+    const apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
+    const s = apiCall(null, null);
+    const arg = {foo: 'bar'};
+    const callback = sinon.spy(data => {
       expect(data).to.eq(arg);
     });
     s.on('data', callback);
-    s.on('end', function() {
+    s.on('end', () => {
       expect(callback.callCount).to.eq(2);
       done();
     });
+    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
+    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     s.write(arg);
     s.write(arg);
     s.end();
   });
 
-  it('forwards metadata and status', function(done) {
-    var responseMetadata = {metadata: true};
-    var status = {code: 0, metadata: responseMetadata};
-    var expectedResponse = {
+  it('forwards metadata and status', done => {
+    const responseMetadata = {metadata: true};
+    const status = {code: 0, metadata: responseMetadata};
+    const expectedResponse = {
       code: 200,
       message: 'OK',
       details: '',
       metadata: responseMetadata,
     };
     function func() {
-      var s = through2.obj();
-      setTimeout(function() {
+      const s = through2.obj();
+      setTimeout(() => {
         s.emit('metadata', responseMetadata);
       }, 10);
-      s.on('finish', function() {
+      s.on('finish', () => {
         s.emit('status', status);
       });
       return s;
     }
-    var apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
-    var s = apiCall(null, null);
-    var receivedMetadata;
-    var receivedStatus;
-    var receivedResponse;
-    s.on('metadata', function(data) {
+    const apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
+    const s = apiCall(null, null);
+    let receivedMetadata;
+    let receivedStatus;
+    let receivedResponse;
+    s.on('metadata', data => {
       receivedMetadata = data;
     });
-    s.on('status', function(data) {
+    s.on('status', data => {
       receivedStatus = data;
     });
-    s.on('response', function(data) {
+    s.on('response', data => {
       receivedResponse = data;
     });
-    s.on('finish', function() {
+    s.on('finish', () => {
       expect(receivedMetadata).to.deep.eq(responseMetadata);
       expect(receivedStatus).to.deep.eq(status);
       expect(receivedResponse).to.deep.eq(expectedResponse);
       done();
     });
+    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
+    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
-    setTimeout(function() {
+    setTimeout(() => {
       s.end(s);
     }, 50);
   });
 
-  it('cancels in the middle', function(done) {
+  it('cancels in the middle', done => {
     function schedulePush(s, c) {
-      var intervalId = setInterval(function() {
+      const intervalId = setInterval(() => {
         s.push(c);
         c++;
       }, 10);
-      s.on('finish', function() {
+      s.on('finish', () => {
         clearInterval(intervalId);
       });
     }
-    var cancelError = new Error('cancelled');
+    const cancelError = new Error('cancelled');
     function func() {
-      var s = through2.obj();
+      const s = through2.obj();
       schedulePush(s, 0);
-      (s as any).cancel = function() {
+      // tslint:disable-next-line no-any
+      (s as any).cancel = () => {
         s.end();
         s.emit('error', cancelError);
       };
       return s;
     }
-    var apiCall = createApiCall(func, streaming.StreamType.SERVER_STREAMING);
-    var s = apiCall(null, null);
-    var counter = 0;
-    var expectedCount = 5;
-    s.on('data', function(data) {
+    const apiCall = createApiCall(func, streaming.StreamType.SERVER_STREAMING);
+    const s = apiCall(null, null);
+    let counter = 0;
+    const expectedCount = 5;
+    s.on('data', data => {
       expect(data).to.eq(counter);
       counter++;
       if (counter === expectedCount) {
@@ -211,7 +218,7 @@ describe('streaming', function() {
         done(new Error('should not reach'));
       }
     });
-    s.on('error', function(err) {
+    s.on('error', err => {
       expect(err).to.eq(cancelError);
       done();
     });

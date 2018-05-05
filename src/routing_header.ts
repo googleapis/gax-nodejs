@@ -51,8 +51,8 @@
  */
 export function fromParams(params) {
   return Object.keys(params)
-    .map(function(key) {
-      return key + '=' + params[key];
-    })
-    .join('&');
+      .map(key => {
+        return key + '=' + params[key];
+      })
+      .join('&');
 }

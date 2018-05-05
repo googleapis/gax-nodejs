@@ -29,10 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-const { createBackoffSettings } = require('./gax');
-const { NormalApiCaller } = require('./api_callable');
+const {createBackoffSettings} = require('./gax');
+const {NormalApiCaller} = require('./api_callable');
 import * as events from 'events';
 import * as util from 'util';
+import {GoogleError} from './GoogleError';
 
 /**
  * A callback to upack a google.protobuf.Any message.
@@ -58,10 +59,7 @@ import * as util from 'util';
  * @constructor
  */
 function LongrunningDescriptor(
-  operationsClient,
-  responseDecoder,
-  metadataDecoder
-) {
+    operationsClient, responseDecoder, metadataDecoder) {
   this.operationsClient = operationsClient;
   this.responseDecoder = responseDecoder;
   this.metadataDecoder = metadataDecoder;
@@ -90,49 +88,29 @@ function LongrunningApiCaller(longrunningDescriptor) {
 util.inherits(LongrunningApiCaller, NormalApiCaller);
 
 LongrunningApiCaller.prototype.call = function(
-  apiCall,
-  argument,
-  settings,
-  canceller
-) {
-  var self = this;
-  canceller.call(function(argument, callback) {
-    self._wrapOperation(apiCall, settings, argument, callback);
+    apiCall, argument, settings, canceller) {
+  canceller.call((argument, callback) => {
+    this._wrapOperation(apiCall, settings, argument, callback);
   }, argument);
 };
 
 LongrunningApiCaller.prototype._wrapOperation = function(
-  apiCall,
-  settings,
-  argument,
-  callback
-) {
-  var backoffSettings = settings.longrunning;
+    apiCall, settings, argument, callback) {
+  let backoffSettings = settings.longrunning;
   if (!backoffSettings) {
-    backoffSettings = createBackoffSettings(
-      100,
-      1.3,
-      60000,
-      null,
-      null,
-      null,
-      null
-    );
+    backoffSettings =
+        createBackoffSettings(100, 1.3, 60000, null, null, null, null);
   }
 
-  var longrunningDescriptor = this.longrunningDescriptor;
-  return apiCall(argument, function(err, rawResponse) {
+  const longrunningDescriptor = this.longrunningDescriptor;
+  return apiCall(argument, (err, rawResponse) => {
     if (err) {
       callback(err, null, rawResponse);
       return;
     }
 
-    var operation = new Operation(
-      rawResponse,
-      longrunningDescriptor,
-      backoffSettings,
-      settings
-    );
+    const operation = new Operation(
+        rawResponse, longrunningDescriptor, backoffSettings, settings);
 
     callback(null, operation, rawResponse);
   });
@@ -152,11 +130,7 @@ LongrunningApiCaller.prototype._wrapOperation = function(
  * requests.
  */
 function Operation(
-  grpcOp,
-  longrunningDescriptor,
-  backoffSettings,
-  callOptions
-) {
+    grpcOp, longrunningDescriptor, backoffSettings, callOptions) {
   events.EventEmitter.call(this);
   this.completeListeners = 0;
   this.hasActiveListeners = false;
@@ -183,22 +157,20 @@ util.inherits(Operation, events.EventEmitter);
  * @private
  */
 Operation.prototype._listenForEvents = function() {
-  var self = this;
-
-  this.on('newListener', function(event) {
+  this.on('newListener', event => {
     if (event === 'complete') {
-      self.completeListeners++;
+      this.completeListeners++;
 
-      if (!self.hasActiveListeners) {
-        self.hasActiveListeners = true;
-        self.startPolling_();
+      if (!this.hasActiveListeners) {
+        this.hasActiveListeners = true;
+        this.startPolling_();
       }
     }
   });
 
-  this.on('removeListener', function(event) {
-    if (event === 'complete' && --self.completeListeners === 0) {
-      self.hasActiveListeners = false;
+  this.on('removeListener', event => {
+    if (event === 'complete' && --this.completeListeners === 0) {
+      this.hasActiveListeners = false;
     }
   });
 };
@@ -213,7 +185,7 @@ Operation.prototype.cancel = function() {
   if (this.currentCallPromise_) {
     this.currentCallPromise_.cancel();
   }
-  var operationsClient = this.longrunningDescriptor.operationsClient;
+  const operationsClient = this.longrunningDescriptor.operationsClient;
   return operationsClient.cancelOperation({name: this.latestResponse.name});
 };
 
@@ -242,16 +214,17 @@ Operation.prototype.cancel = function() {
  * error.
  */
 Operation.prototype.getOperation = function(callback) {
-  var self = this;
-  var operationsClient = this.longrunningDescriptor.operationsClient;
+  const self = this;
+  const operationsClient = this.longrunningDescriptor.operationsClient;
 
   function promisifyResponse() {
     if (!callback) {
-      var PromiseCtor = self._callOptions.promise;
-      return new PromiseCtor(function(resolve, reject) {
+      // tslint:disable-next-line variable-name
+      const PromiseCtor = self._callOptions.promise;
+      return new PromiseCtor((resolve, reject) => {
         if (self.latestResponse.error) {
-          var error = new Error(self.latestReponse.error.message);
-          (error as any).code = self.latestReponse.error.code;
+          const error = new GoogleError(self.latestReponse.error.message);
+          error.code = self.latestReponse.error.code;
           reject(error);
         } else {
           resolve([self.result, self.metadata, self.latestResponse]);
@@ -267,11 +240,9 @@ Operation.prototype.getOperation = function(callback) {
   }
 
   this.currentCallPromise_ = operationsClient.getOperation(
-    {name: this.latestResponse.name},
-    this._callOptions
-  );
+      {name: this.latestResponse.name}, this._callOptions);
 
-  var noCallbackPromise = this.currentCallPromise_.then(function(responses) {
+  const noCallbackPromise = this.currentCallPromise_.then(responses => {
     self.latestResponse = responses[0];
     self._unpackResponse(responses[0], callback);
     return promisifyResponse();
@@ -283,15 +254,15 @@ Operation.prototype.getOperation = function(callback) {
 };
 
 Operation.prototype._unpackResponse = function(op, callback) {
-  var responseDecoder = this.longrunningDescriptor.responseDecoder;
-  var metadataDecoder = this.longrunningDescriptor.metadataDecoder;
-  var response;
-  var metadata;
+  const responseDecoder = this.longrunningDescriptor.responseDecoder;
+  const metadataDecoder = this.longrunningDescriptor.metadataDecoder;
+  let response;
+  let metadata;
 
   if (op.done) {
     if (op.result === 'error') {
-      var error = new Error(op.error.message);
-      (error as any).code = op.error.code;
+      const error = new GoogleError(op.error.message);
+      error.code = op.error.code;
       if (callback) {
         callback(error);
       }
@@ -323,17 +294,17 @@ Operation.prototype._unpackResponse = function(op, callback) {
  * @private
  */
 Operation.prototype.startPolling_ = function() {
-  var self = this;
+  const self = this;
 
-  var now = new Date();
-  var delayMult = this.backoffSettings.retryDelayMultiplier;
-  var maxDelay = this.backoffSettings.maxRetryDelayMillis;
-  var delay = this.backoffSettings.initialRetryDelayMillis;
-  var deadline = Infinity;
+  let now = new Date();
+  const delayMult = this.backoffSettings.retryDelayMultiplier;
+  const maxDelay = this.backoffSettings.maxRetryDelayMillis;
+  let delay = this.backoffSettings.initialRetryDelayMillis;
+  let deadline = Infinity;
   if (this.backoffSettings.totalTimeoutMillis) {
     deadline = now.getTime() + this.backoffSettings.totalTimeoutMillis;
   }
-  var previousMetadataBytes;
+  let previousMetadataBytes;
   if (this.latestResponse.metadata) {
     previousMetadataBytes = this.latestResponse.metadata.value;
   }
@@ -349,31 +320,27 @@ Operation.prototype.startPolling_ = function() {
 
     if (now.getTime() >= deadline) {
       setImmediate(
-        emit,
-        'error',
-        new Error(
-          'Total timeout exceeded before ' + 'any response was received'
-        )
-      );
+          emit, 'error',
+          new Error(
+              'Total timeout exceeded before ' +
+              'any response was received'));
       return;
     }
 
-    self.getOperation(function(err, result, metadata, rawResponse) {
+    self.getOperation((err, result, metadata, rawResponse) => {
       if (err) {
         setImmediate(emit, 'error', err);
         return;
       }
 
       if (!result) {
-        if (
-          rawResponse.metadata &&
-          (!previousMetadataBytes ||
-            !rawResponse.metadata.value.equals(previousMetadataBytes))
-        ) {
+        if (rawResponse.metadata &&
+            (!previousMetadataBytes ||
+             !rawResponse.metadata.value.equals(previousMetadataBytes))) {
           setImmediate(emit, 'progress', metadata, rawResponse);
           previousMetadataBytes = rawResponse.metadata.value;
         }
-        setTimeout(function() {
+        setTimeout(() => {
           now = new Date();
           delay = Math.min(delay * delayMult, maxDelay);
           retry();
@@ -394,14 +361,13 @@ Operation.prototype.startPolling_ = function() {
  * on operation error.
  */
 Operation.prototype.promise = function() {
-  var self = this;
-  var PromiseCtor = this._callOptions.promise;
-  return new PromiseCtor(function(resolve, reject) {
-    self
-      .on('error', reject)
-      .on('complete', function(result, metadata, rawResponse) {
-        resolve([result, metadata, rawResponse]);
-      });
+  const self = this;
+  // tslint:disable-next-line variable-name
+  const PromiseCtor = this._callOptions.promise;
+  return new PromiseCtor((resolve, reject) => {
+    self.on('error', reject).on('complete', (result, metadata, rawResponse) => {
+      resolve([result, metadata, rawResponse]);
+    });
   });
 };
 
@@ -418,11 +384,7 @@ Operation.prototype.promise = function() {
  * @param {CallOptions=} callOptions - CallOptions used in making get operation
  * requests.
  */
-exports.operation = function(
-  op,
-  longrunningDescriptor,
-  backoffSettings,
-  callOptions
-) {
+export function operation(
+    op, longrunningDescriptor, backoffSettings, callOptions) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
-};
+}

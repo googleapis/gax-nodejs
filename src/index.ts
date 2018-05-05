@@ -42,15 +42,17 @@ import * as routingHeader from './routing_header';
 
 function lro(options) {
   options = extend(
-    {
-      scopes: (lro as any).ALL_SCOPES,
-    },
-    options
-  );
-  var gaxGrpc = grpc(options);
+      {
+        // tslint:disable-next-line no-any
+        scopes: (lro as any).ALL_SCOPES,
+      },
+      options);
+  const gaxGrpc = grpc(options);
   return operationsClient(gaxGrpc);
 }
+// tslint:disable-next-line no-any
 (lro as any).SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
+// tslint:disable-next-line no-any
 (lro as any).ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 exports.lro = lro;
