@@ -37,7 +37,7 @@
 
 import * as _ from 'lodash';
 import * as util from 'util';
-const {NormalApiCaller} = require('./api_callable');
+import {NormalApiCaller} from './api_callable';
 
 /**
  * A function which does nothing. Used for an empty cancellation funciton.
@@ -57,7 +57,7 @@ function noop() {}
  *   discriminator.
  *   fields do not exist.
  */
-function computeBundleId(obj, discriminatorFields) {
+export function computeBundleId(obj, discriminatorFields) {
   // tslint:disable-next-line no-any
   const ids: any[] = [];
   let hasIds = false;
@@ -75,7 +75,6 @@ function computeBundleId(obj, discriminatorFields) {
   }
   return JSON.stringify(ids);
 }
-exports.computeBundleId = computeBundleId;
 
 /**
  * Creates a deep copy of the object with the consideration of subresponse
@@ -92,7 +91,7 @@ exports.computeBundleId = computeBundleId;
  * @return {Object} The copied object.
  * @private
  */
-function deepCopyForResponse(obj, subresponseInfo) {
+export function deepCopyForResponse(obj, subresponseInfo) {
   let result;
   if (obj === null) {
     return null;
@@ -132,401 +131,426 @@ function deepCopyForResponse(obj, subresponseInfo) {
   }
   return obj;
 }
-exports.deepCopyForResponse = deepCopyForResponse;
 
-/**
- * A task coordinates the execution of a single bundle.
- *
- * @param {function} apiCall - The function to conduct calling API.
- * @param {Object} bundlingRequest - The base request object to be used
- *   for the actual API call.
- * @param {string} bundledField - The name of the field in bundlingRequest
- *   to be bundled.
- * @param {string=} subresponseField - The name of the field in the response
- *   to be passed to the callback.
- * @constructor
- * @private
- */
-function Task(apiCall, bundlingRequest, bundledField, subresponseField) {
-  this._apiCall = apiCall;
-  this._request = bundlingRequest;
-  this._bundledField = bundledField;
-  this._subresponseField = subresponseField;
-  this._data = [];
-}
-
-exports.Task = Task;
-
-/**
- * Returns the number of elements in a task.
- * @return {number} The number of elements.
- */
-Task.prototype.getElementCount = function() {
-  let count = 0;
-  for (let i = 0; i < this._data.length; ++i) {
-    count += this._data[i].elements.length;
-  }
-  return count;
-};
-
-/**
- * Returns the total byte size of the elements in a task.
- * @return {number} The byte size.
- */
-Task.prototype.getRequestByteSize = function() {
-  let size = 0;
-  for (let i = 0; i < this._data.length; ++i) {
-    size += this._data[i].bytes;
-  }
-  return size;
-};
-
-/**
- * Invokes the actual API call with current elements.
- * @return {string[]} - the list of ids for invocations to be run.
- */
-Task.prototype.run = function() {
-  if (this._data.length === 0) {
-    return [];
-  }
-  const request = this._request;
-  const elements = [];
+export class Task {
   // tslint:disable-next-line no-any
-  const ids: any[] = [];
-  for (let i = 0; i < this._data.length; ++i) {
-    elements.push.apply(elements, this._data[i].elements);
-    ids.push(this._data[i].callback.id);
+  _apiCall: any;
+  _request: {};
+  _bundledField: string;
+  _subresponseField?: string;
+  // tslint:disable-next-line no-any
+  _data: any[];
+  // tslint:disable-next-line no-any
+  callCanceller?: any;
+
+  /**
+   * A task coordinates the execution of a single bundle.
+   *
+   * @param {function} apiCall - The function to conduct calling API.
+   * @param {Object} bundlingRequest - The base request object to be used
+   *   for the actual API call.
+   * @param {string} bundledField - The name of the field in bundlingRequest
+   *   to be bundled.
+   * @param {string=} subresponseField - The name of the field in the response
+   *   to be passed to the callback.
+   * @constructor
+   * @private
+   */
+  constructor(apiCall, bundlingRequest, bundledField, subresponseField) {
+    this._apiCall = apiCall;
+    this._request = bundlingRequest;
+    this._bundledField = bundledField;
+    this._subresponseField = subresponseField;
+    this._data = [];
   }
-  request[this._bundledField] = elements;
 
-  const self = this;
-  this.callCanceller = this._apiCall(request, (err, response) => {
+  /**
+   * Returns the number of elements in a task.
+   * @return {number} The number of elements.
+   */
+  getElementCount() {
+    let count = 0;
+    for (let i = 0; i < this._data.length; ++i) {
+      count += this._data[i].elements.length;
+    }
+    return count;
+  }
+
+  /**
+   * Returns the total byte size of the elements in a task.
+   * @return {number} The byte size.
+   */
+  getRequestByteSize() {
+    let size = 0;
+    for (let i = 0; i < this._data.length; ++i) {
+      size += this._data[i].bytes;
+    }
+    return size;
+  }
+
+  /**
+   * Invokes the actual API call with current elements.
+   * @return {string[]} - the list of ids for invocations to be run.
+   */
+  run() {
+    if (this._data.length === 0) {
+      return [];
+    }
+    const request = this._request;
+    const elements = [];
     // tslint:disable-next-line no-any
-    const responses: any[] = [];
-    if (err) {
-      self._data.forEach(() => {
-        responses.push(null);
-      });
-    } else {
+    const ids: any[] = [];
+    for (let i = 0; i < this._data.length; ++i) {
+      elements.push.apply(elements, this._data[i].elements);
+      ids.push(this._data[i].callback.id);
+    }
+    request[this._bundledField] = elements;
+
+    const self = this;
+    this.callCanceller = this._apiCall(request, (err, response) => {
       // tslint:disable-next-line no-any
-      let subresponseInfo: any = null;
-      if (self._subresponseField) {
-        subresponseInfo = {
-          field: self._subresponseField,
-          start: 0,
-        };
-      }
-      self._data.forEach(data => {
-        if (subresponseInfo) {
-          subresponseInfo.end = subresponseInfo.start + data.elements.length;
-        }
-        responses.push(deepCopyForResponse(response, subresponseInfo));
-        if (subresponseInfo) {
-          subresponseInfo.start = subresponseInfo.end;
-        }
-      });
-    }
-    for (let i = 0; i < self._data.length; ++i) {
-      if (self._data[i].cancelled) {
-        self._data[i].callback(new Error('cancelled'));
+      const responses: any[] = [];
+      if (err) {
+        self._data.forEach(() => {
+          responses.push(null);
+        });
       } else {
-        self._data[i].callback(err, responses[i]);
+        // tslint:disable-next-line no-any
+        let subresponseInfo: any = null;
+        if (self._subresponseField) {
+          subresponseInfo = {
+            field: self._subresponseField,
+            start: 0,
+          };
+        }
+        self._data.forEach(data => {
+          if (subresponseInfo) {
+            subresponseInfo.end = subresponseInfo.start + data.elements.length;
+          }
+          responses.push(deepCopyForResponse(response, subresponseInfo));
+          if (subresponseInfo) {
+            subresponseInfo.start = subresponseInfo.end;
+          }
+        });
       }
-    }
-  });
-  return ids;
-};
-
-/**
- * Appends the list of elements into the task.
- * @param {Object[]} elements - the new list of elements.
- * @param {number} bytes - the byte size required to encode elements in the API.
- * @param {APICallback} callback - the callback of the method call.
- */
-Task.prototype.extend = function(elements, bytes, callback) {
-  this._data.push({
-    elements,
-    bytes,
-    callback,
-  });
-};
-
-/**
- * Cancels a part of elements.
- * @param {string} id - The identifier of the part of elements.
- * @return {boolean} Whether the entire task will be canceled or not.
- */
-Task.prototype.cancel = function(id) {
-  if (this.callCanceller) {
-    let allCancelled = true;
-    this._data.forEach(d => {
-      if (d.callback.id === id) {
-        d.cancelled = true;
-      }
-      if (!d.cancelled) {
-        allCancelled = false;
+      for (let i = 0; i < self._data.length; ++i) {
+        if (self._data[i].cancelled) {
+          self._data[i].callback(new Error('cancelled'));
+        } else {
+          self._data[i].callback(err, responses[i]);
+        }
       }
     });
-    if (allCancelled) {
-      this.callCanceller.cancel();
-    }
-    return allCancelled;
+    return ids;
   }
-  for (let i = 0; i < this._data.length; ++i) {
-    if (this._data[i].callback.id === id) {
-      this._data[i].callback(new Error('cancelled'));
-      this._data.splice(i, 1);
-      break;
-    }
-  }
-  return this._data.length === 0;
-};
 
-/**
- * Organizes requests for an api service that requires to bundle them.
- *
- * @param {BundleOptions} bundleOptions - configures strategy this instance
- *   uses when executing bundled functions.
- * @param {BundleDescriptor} bundleDescriptor - the description of the bundling.
- * @constructor
- */
-function BundleExecutor(bundleOptions, bundleDescriptor) {
-  this._options = bundleOptions;
-  this._descriptor = bundleDescriptor;
-  this._tasks = {};
-  this._timers = {};
-  this._invocations = {};
-  this._invocationId = 0;
+  /**
+   * Appends the list of elements into the task.
+   * @param {Object[]} elements - the new list of elements.
+   * @param {number} bytes - the byte size required to encode elements in the API.
+   * @param {APICallback} callback - the callback of the method call.
+   */
+  extend(elements, bytes, callback) {
+    this._data.push({
+      elements,
+      bytes,
+      callback,
+    });
+  }
+
+  /**
+   * Cancels a part of elements.
+   * @param {string} id - The identifier of the part of elements.
+   * @return {boolean} Whether the entire task will be canceled or not.
+   */
+  cancel(id) {
+    if (this.callCanceller) {
+      let allCancelled = true;
+      this._data.forEach(d => {
+        if (d.callback.id === id) {
+          d.cancelled = true;
+        }
+        if (!d.cancelled) {
+          allCancelled = false;
+        }
+      });
+      if (allCancelled) {
+        this.callCanceller.cancel();
+      }
+      return allCancelled;
+    }
+    for (let i = 0; i < this._data.length; ++i) {
+      if (this._data[i].callback.id === id) {
+        this._data[i].callback(new Error('cancelled'));
+        this._data.splice(i, 1);
+        break;
+      }
+    }
+    return this._data.length === 0;
+  }
 }
 
-exports.BundleExecutor = BundleExecutor;
-
-/**
- * Schedule a method call.
- *
- * @param {function} apiCall - the function for an API call.
- * @param {Object} request - the request object to be bundled with others.
- * @param {APICallback} callback - the callback to be called when the method finished.
- * @return {function()} - the function to cancel the scheduled invocation.
- */
-BundleExecutor.prototype.schedule = function(apiCall, request, callback) {
-  const bundleId =
-      computeBundleId(request, this._descriptor.requestDiscriminatorFields);
-  if (!callback) {
-    callback = noop;
+export class BundleExecutor {
+  // tslint:disable-next-line no-any
+  _options: any;
+  _descriptor: BundleDescriptor;
+  _tasks: {};
+  _timers: {};
+  _invocations: {};
+  _invocationId: number;
+  /**
+   * Organizes requests for an api service that requires to bundle them.
+   *
+   * @param {BundleOptions} bundleOptions - configures strategy this instance
+   *   uses when executing bundled functions.
+   * @param {BundleDescriptor} bundleDescriptor - the description of the bundling.
+   * @constructor
+   */
+  constructor(bundleOptions, bundleDescriptor) {
+    this._options = bundleOptions;
+    this._descriptor = bundleDescriptor;
+    this._tasks = {};
+    this._timers = {};
+    this._invocations = {};
+    this._invocationId = 0;
   }
-  if (bundleId === undefined) {
-    console.warn(
-        'The request does not have enough information for request bundling. ' +
-        'Invoking immediately. Request: ' + JSON.stringify(request) +
-        ' discriminator fields: ' +
-        this._descriptor.requestDiscriminatorFields);
-    return apiCall(request, callback);
-  }
 
-  if (!(bundleId in this._tasks)) {
-    this._tasks[bundleId] = new Task(
-        apiCall, request, this._descriptor.bundledField,
-        this._descriptor.subresponseField);
-  }
-  let task = this._tasks[bundleId];
-  callback.id = String(this._invocationId++);
-  this._invocations[callback.id] = bundleId;
-
-  const bundledField = request[this._descriptor.bundledField];
-  const elementCount = bundledField.length;
-  let requestBytes = 0;
-  const self = this;
-  bundledField.forEach(obj => {
-    requestBytes += this._descriptor.byteLengthFunction(obj);
-  });
-
-  const countLimit = this._options.elementCountLimit || 0;
-  const byteLimit = this._options.requestByteLimit || 0;
-
-  if ((countLimit > 0 && elementCount >= countLimit) ||
-      (byteLimit > 0 && requestBytes >= byteLimit)) {
-    let message;
-    if (countLimit > 0 && elementCount >= countLimit) {
-      message = 'The number of elements ' + elementCount +
-          ' exceeds the limit ' + this._options.elementCountLimit;
-    } else {
-      message = 'The required bytes ' + requestBytes + ' exceeds the limit ' +
-          this._options.requestByteLimit;
+  /**
+   * Schedule a method call.
+   *
+   * @param {function} apiCall - the function for an API call.
+   * @param {Object} request - the request object to be bundled with others.
+   * @param {APICallback} callback - the callback to be called when the method finished.
+   * @return {function()} - the function to cancel the scheduled invocation.
+   */
+  schedule(apiCall, request, callback?) {
+    const bundleId =
+        computeBundleId(request, this._descriptor.requestDiscriminatorFields);
+    if (!callback) {
+      callback = noop;
     }
-    callback(new Error(message));
-    return {
-      cancel: noop,
+    if (bundleId === undefined) {
+      console.warn(
+          'The request does not have enough information for request bundling. ' +
+          'Invoking immediately. Request: ' + JSON.stringify(request) +
+          ' discriminator fields: ' +
+          this._descriptor.requestDiscriminatorFields);
+      return apiCall(request, callback);
+    }
+
+    if (!(bundleId in this._tasks)) {
+      this._tasks[bundleId] = new Task(
+          apiCall, request, this._descriptor.bundledField,
+          this._descriptor.subresponseField);
+    }
+    let task = this._tasks[bundleId];
+    callback.id = String(this._invocationId++);
+    this._invocations[callback.id] = bundleId;
+
+    const bundledField = request[this._descriptor.bundledField];
+    const elementCount = bundledField.length;
+    let requestBytes = 0;
+    const self = this;
+    bundledField.forEach(obj => {
+      requestBytes += this._descriptor.byteLengthFunction(obj);
+    });
+
+    const countLimit = this._options.elementCountLimit || 0;
+    const byteLimit = this._options.requestByteLimit || 0;
+
+    if ((countLimit > 0 && elementCount >= countLimit) ||
+        (byteLimit > 0 && requestBytes >= byteLimit)) {
+      let message;
+      if (countLimit > 0 && elementCount >= countLimit) {
+        message = 'The number of elements ' + elementCount +
+            ' exceeds the limit ' + this._options.elementCountLimit;
+      } else {
+        message = 'The required bytes ' + requestBytes + ' exceeds the limit ' +
+            this._options.requestByteLimit;
+      }
+      callback(new Error(message));
+      return {
+        cancel: noop,
+      };
+    }
+
+    const existingCount = task.getElementCount();
+    const existingBytes = task.getRequestByteSize();
+
+    if ((countLimit > 0 && elementCount + existingCount >= countLimit) ||
+        (byteLimit > 0 && requestBytes + existingBytes >= byteLimit)) {
+      this._runNow(bundleId);
+      this._tasks[bundleId] = new Task(
+          apiCall, request, this._descriptor.bundledField,
+          this._descriptor.subresponseField);
+      task = this._tasks[bundleId];
+    }
+
+    task.extend(bundledField, requestBytes, callback);
+    const ret = {
+      cancel() {
+        self._cancel(callback.id);
+      },
     };
-  }
 
-  const existingCount = task.getElementCount();
-  const existingBytes = task.getRequestByteSize();
+    const countThreshold = this._options.elementCountThreshold || 0;
+    const sizeThreshold = this._options.requestByteThreshold || 0;
+    if ((countThreshold > 0 && task.getElementCount() >= countThreshold) ||
+        (sizeThreshold > 0 && task.getRequestByteSize() >= sizeThreshold)) {
+      this._runNow(bundleId);
+      return ret;
+    }
 
-  if ((countLimit > 0 && elementCount + existingCount >= countLimit) ||
-      (byteLimit > 0 && requestBytes + existingBytes >= byteLimit)) {
-    this._runNow(bundleId);
-    this._tasks[bundleId] = new Task(
-        apiCall, request, this._descriptor.bundledField,
-        this._descriptor.subresponseField);
-    task = this._tasks[bundleId];
-  }
+    if (!(bundleId in this._timers) && this._options.delayThreshold > 0) {
+      this._timers[bundleId] = setTimeout(() => {
+        delete this._timers[bundleId];
+        this._runNow(bundleId);
+      }, this._options.delayThreshold);
+    }
 
-  task.extend(bundledField, requestBytes, callback);
-  const ret = {
-    cancel() {
-      self._cancel(callback.id);
-    },
-  };
-
-  const countThreshold = this._options.elementCountThreshold || 0;
-  const sizeThreshold = this._options.requestByteThreshold || 0;
-  if ((countThreshold > 0 && task.getElementCount() >= countThreshold) ||
-      (sizeThreshold > 0 && task.getRequestByteSize() >= sizeThreshold)) {
-    this._runNow(bundleId);
     return ret;
   }
 
-  if (!(bundleId in this._timers) && this._options.delayThreshold > 0) {
-    this._timers[bundleId] = setTimeout(() => {
+  /**
+   * Clears scheduled timeout if it exists.
+   *
+   * @param {String} bundleId - the id for the task whose timeout needs to be
+   *   cleared.
+   * @private
+   */
+  _maybeClearTimeout(bundleId) {
+    if (bundleId in this._timers) {
+      const timerId = this._timers[bundleId];
       delete this._timers[bundleId];
-      this._runNow(bundleId);
-    }, this._options.delayThreshold);
+      clearTimeout(timerId);
+    }
   }
 
-  return ret;
-};
+  /**
+   * Cancels an event.
+   *
+   * @param {String} id - The id for the event in the task.
+   * @private
+   */
+  _cancel(id) {
+    if (!(id in this._invocations)) {
+      return;
+    }
+    const bundleId = this._invocations[id];
+    if (!(bundleId in this._tasks)) {
+      return;
+    }
 
-/**
- * Clears scheduled timeout if it exists.
- *
- * @param {String} bundleId - the id for the task whose timeout needs to be
- *   cleared.
- * @private
- */
-BundleExecutor.prototype._maybeClearTimeout = function(bundleId) {
-  if (bundleId in this._timers) {
-    const timerId = this._timers[bundleId];
-    delete this._timers[bundleId];
-    clearTimeout(timerId);
-  }
-};
-
-/**
- * Cancels an event.
- *
- * @param {String} id - The id for the event in the task.
- * @private
- */
-BundleExecutor.prototype._cancel = function(id) {
-  if (!(id in this._invocations)) {
-    return;
-  }
-  const bundleId = this._invocations[id];
-  if (!(bundleId in this._tasks)) {
-    return;
-  }
-
-  const task = this._tasks[bundleId];
-  delete this._invocations[id];
-  if (task.cancel(id)) {
-    this._maybeClearTimeout(bundleId);
-    delete this._tasks[bundleId];
-  }
-};
-
-/**
- * Invokes a task.
- *
- * @param {String} bundleId - The id for the task.
- * @private
- */
-BundleExecutor.prototype._runNow = function(bundleId) {
-  if (!(bundleId in this._tasks)) {
-    console.warn('no such bundleid: ' + bundleId);
-    return;
-  }
-  this._maybeClearTimeout(bundleId);
-  const task = this._tasks[bundleId];
-  delete this._tasks[bundleId];
-
-  task.run().forEach(id => {
+    const task = this._tasks[bundleId];
     delete this._invocations[id];
-  });
-};
+    if (task.cancel(id)) {
+      this._maybeClearTimeout(bundleId);
+      delete this._tasks[bundleId];
+    }
+  }
 
-/**
- * Creates an API caller that bundles requests.
- *
- * @private
- * @constructor
- * @param {BundleExecutor} bundler - bundles API calls.
- */
-function Bundleable(bundler) {
-  this.bundler = bundler;
-  NormalApiCaller.call(this);
+  /**
+   * Invokes a task.
+   *
+   * @param {String} bundleId - The id for the task.
+   * @private
+   */
+  _runNow(bundleId) {
+    if (!(bundleId in this._tasks)) {
+      console.warn('no such bundleid: ' + bundleId);
+      return;
+    }
+    this._maybeClearTimeout(bundleId);
+    const task = this._tasks[bundleId];
+    delete this._tasks[bundleId];
+
+    task.run().forEach(id => {
+      delete this._invocations[id];
+    });
+  }
 }
 
-util.inherits(Bundleable, NormalApiCaller);
-
-Bundleable.prototype.call = function(apiCall, argument, settings, status) {
-  if (settings.isBundling) {
-    status.call((argument, callback) => {
-      this.bundler.schedule(apiCall, argument, callback);
-    }, argument);
-  } else {
-    NormalApiCaller.prototype.call.call(
-        this, apiCall, argument, settings, status);
+export class Bundleable extends NormalApiCaller {
+  // tslint:disable-next-line no-any
+  bundler: any;
+  /**
+   * Creates an API caller that bundles requests.
+   *
+   * @private
+   * @constructor
+   * @param {BundleExecutor} bundler - bundles API calls.
+   */
+  constructor(bundler) {
+    super();
+    this.bundler = bundler;
   }
-};
 
-/**
- * Describes the structure of bundled call.
- *
- * requestDiscriminatorFields may include '.' as a separator, which is used to
- * indicate object traversal. This allows fields in nested objects to be used
- * to determine what request to bundle.
- *
- * @property {String} bundledField
- * @property {String} requestDiscriminatorFields
- * @property {String} subresponseField
- * @property {Function} byteLengthFunction
- *
- * @param {String} bundledField - the repeated field in the request message
- *   that will have its elements aggregated by bundling.
- * @param {String} requestDiscriminatorFields - a list of fields in the
- *   target request message class that are used to detemrine which request
- *   messages should be bundled together.
- * @param {String} subresponseField - an optional field, when present it
- *   indicates the field in the response message that should be used to
- *   demultiplex the response into multiple response messages.
- * @param {Function} byteLengthFunction - a function to obtain the byte
- *   length to be consumed for the bundled field messages. Because Node.JS
- *   protobuf.js/gRPC uses builtin Objects for the user-visible data and
- *   internally they are encoded/decoded in protobuf manner, this function
- *   is actually necessary to calculate the byte length.
- * @constructor
- */
-function BundleDescriptor(
-    bundledField, requestDiscriminatorFields, subresponseField,
-    byteLengthFunction) {
-  if (!byteLengthFunction && typeof subresponseField === 'function') {
-    byteLengthFunction = subresponseField;
-    subresponseField = null;
+  call(apiCall, argument, settings, status) {
+    if (settings.isBundling) {
+      status.call((argument, callback) => {
+        this.bundler.schedule(apiCall, argument, callback);
+      }, argument);
+    } else {
+      NormalApiCaller.prototype.call.call(
+          this, apiCall, argument, settings, status);
+    }
   }
-  this.bundledField = bundledField;
-  this.requestDiscriminatorFields = requestDiscriminatorFields;
-  this.subresponseField = subresponseField;
-  this.byteLengthFunction = byteLengthFunction;
 }
-exports.BundleDescriptor = BundleDescriptor;
 
-/**
- * Returns a new API caller.
- * @private
- * @param {CallSettings} settings - the current settings.
- * @return {Bundleable} - the new bundling API caller.
- */
-BundleDescriptor.prototype.apiCaller = function(settings) {
-  return new Bundleable(new BundleExecutor(settings.bundleOptions, this));
-};
+export class BundleDescriptor {
+  bundledField: string;
+  requestDiscriminatorFields: string;
+  subresponseField: string;
+  byteLengthFunction: Function;
+
+  /**
+   * Describes the structure of bundled call.
+   *
+   * requestDiscriminatorFields may include '.' as a separator, which is used to
+   * indicate object traversal. This allows fields in nested objects to be used
+   * to determine what request to bundle.
+   *
+   * @property {String} bundledField
+   * @property {String} requestDiscriminatorFields
+   * @property {String} subresponseField
+   * @property {Function} byteLengthFunction
+   *
+   * @param {String} bundledField - the repeated field in the request message
+   *   that will have its elements aggregated by bundling.
+   * @param {String} requestDiscriminatorFields - a list of fields in the
+   *   target request message class that are used to detemrine which request
+   *   messages should be bundled together.
+   * @param {String} subresponseField - an optional field, when present it
+   *   indicates the field in the response message that should be used to
+   *   demultiplex the response into multiple response messages.
+   * @param {Function} byteLengthFunction - a function to obtain the byte
+   *   length to be consumed for the bundled field messages. Because Node.JS
+   *   protobuf.js/gRPC uses builtin Objects for the user-visible data and
+   *   internally they are encoded/decoded in protobuf manner, this function
+   *   is actually necessary to calculate the byte length.
+   * @constructor
+   */
+  constructor(
+      bundledField, requestDiscriminatorFields, subresponseField,
+      byteLengthFunction) {
+    if (!byteLengthFunction && typeof subresponseField === 'function') {
+      byteLengthFunction = subresponseField;
+      subresponseField = null;
+    }
+    this.bundledField = bundledField;
+    this.requestDiscriminatorFields = requestDiscriminatorFields;
+    this.subresponseField = subresponseField;
+    this.byteLengthFunction = byteLengthFunction;
+  }
+
+
+  /**
+   * Returns a new API caller.
+   * @private
+   * @param {CallSettings} settings - the current settings.
+   * @return {Bundleable} - the new bundling API caller.
+   */
+  apiCaller(settings) {
+    return new Bundleable(new BundleExecutor(settings.bundleOptions, this));
+  }
+}

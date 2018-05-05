@@ -34,100 +34,101 @@ import * as extend from 'extend';
 import * as through2 from 'through2';
 import * as ended from 'is-stream-ended';
 import * as util from 'util';
-import {Stream} from 'stream';
+import {Stream, Readable, Transform} from 'stream';
 
-const {NormalApiCaller} = require('./api_callable');
+import {NormalApiCaller} from './api_callable';
 
-/**
- * Creates an API caller that returns a stream to performs page-streaming.
- *
- * @private
- * @constructor
- * @param {PageDescriptor} pageDescriptor - indicates the structure
- *   of page streaming to be performed.
- */
-function PagedIteration(pageDescriptor) {
-  NormalApiCaller.call(this);
-  this.pageDescriptor = pageDescriptor;
+export class PagedIteration extends NormalApiCaller {
+  pageDescriptor: PageDescriptor;
+  /**
+   * Creates an API caller that returns a stream to performs page-streaming.
+   *
+   * @private
+   * @constructor
+   * @param {PageDescriptor} pageDescriptor - indicates the structure
+   *   of page streaming to be performed.
+   */
+  constructor(pageDescriptor: PageDescriptor) {
+    super();
+    this.pageDescriptor = pageDescriptor;
+  }
+
+  createActualCallback(request, callback) {
+    const self = this;
+    return function fetchNextPageToken(err, response) {
+      if (err) {
+        callback(err);
+        return;
+      }
+      const resources = response[self.pageDescriptor.resourceField];
+      const pageToken = response[self.pageDescriptor.responsePageTokenField];
+      if (pageToken) {
+        request[self.pageDescriptor.requestPageTokenField] = pageToken;
+        callback(err, resources, request, response);
+      } else {
+        callback(err, resources, null, response);
+      }
+    };
+  }
+
+  wrap(func: Function) {
+    const self = this;
+    return function wrappedCall(argument, metadata, options, callback) {
+      return func(
+          argument, metadata, options,
+          self.createActualCallback(argument, callback));
+    };
+  }
+
+  init(settings, callback) {
+    return NormalApiCaller.prototype.init.call(this, settings, callback);
+  }
+
+  call(apiCall, argument, settings, canceller) {
+    argument = extend({}, argument);
+    if (settings.pageToken) {
+      argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
+    }
+    if (settings.pageSize) {
+      argument[this.pageDescriptor.requestPageSizeField!] = settings.pageSize;
+    }
+    if (!settings.autoPaginate) {
+      NormalApiCaller.prototype.call.call(
+          this, apiCall, argument, settings, canceller);
+      return;
+    }
+
+    const maxResults = settings.maxResults || -1;
+    const allResources: Array<{}> = [];
+    function pushResources(err, resources, next) {
+      if (err) {
+        canceller.callback(err);
+        return;
+      }
+
+      for (let i = 0; i < resources.length; ++i) {
+        allResources.push(resources[i]);
+        if (allResources.length === maxResults) {
+          next = null;
+          break;
+        }
+      }
+      if (!next) {
+        canceller.callback(null, allResources);
+        return;
+      }
+      setImmediate(apiCall, next, pushResources);
+    }
+
+    setImmediate(apiCall, argument, pushResources);
+  }
 }
 
-util.inherits(PagedIteration, NormalApiCaller);
-
-PagedIteration.prototype.createActualCallback = function(request, callback) {
-  const self = this;
-  return function fetchNextPageToken(err, response) {
-    if (err) {
-      callback(err);
-      return;
-    }
-    const resources = response[self.pageDescriptor.resourceField];
-    const pageToken = response[self.pageDescriptor.responsePageTokenField];
-    if (pageToken) {
-      request[self.pageDescriptor.requestPageTokenField] = pageToken;
-      callback(err, resources, request, response);
-    } else {
-      callback(err, resources, null, response);
-    }
-  };
-};
-
-PagedIteration.prototype.wrap = function(func) {
-  const self = this;
-  return function wrappedCall(argument, metadata, options, callback) {
-    return func(
-        argument, metadata, options,
-        self.createActualCallback(argument, callback));
-  };
-};
-
-PagedIteration.prototype.init = function(settings, callback) {
-  return NormalApiCaller.prototype.init.call(this, settings, callback);
-};
-
-PagedIteration.prototype.call = function(
-    apiCall, argument, settings, canceller) {
-  argument = extend({}, argument);
-  if (settings.pageToken) {
-    argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
-  }
-  if (settings.pageSize) {
-    argument[this.pageDescriptor.requestPageSizeField] = settings.pageSize;
-  }
-  if (!settings.autoPaginate) {
-    NormalApiCaller.prototype.call.call(
-        this, apiCall, argument, settings, canceller);
-    return;
-  }
-
-  const maxResults = settings.maxResults || -1;
-  const allResources: Array<{}> = [];
-  function pushResources(err, resources, next) {
-    if (err) {
-      canceller.callback(err);
-      return;
-    }
-
-    for (let i = 0; i < resources.length; ++i) {
-      allResources.push(resources[i]);
-      if (allResources.length === maxResults) {
-        next = null;
-        break;
-      }
-    }
-    if (!next) {
-      canceller.callback(null, allResources);
-      return;
-    }
-    setImmediate(apiCall, next, pushResources);
-  }
-
-  setImmediate(apiCall, argument, pushResources);
-};
-
 export class PageDescriptor {
-  requestPageTokenField: {};
-  responsePageTokenField: {};
-  resourceField: {};
+  requestPageTokenField: string;
+  responsePageTokenField: string;
+  requestPageSizeField?: string;
+  resourceField: string;
   /**
    * Describes the structure of a page-streaming call.
    *
@@ -157,7 +158,7 @@ export class PageDescriptor {
    * @param {CallOptions=} options - the call options to customize the api call.
    * @return {Stream} - a new object Stream.
    */
-  createStream(apiCall, request, options): Stream {
+  createStream(apiCall, request, options): Transform {
     const stream = through2.obj();
     options = extend({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;

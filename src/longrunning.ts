@@ -29,10 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-const {createBackoffSettings} = require('./gax');
-const {NormalApiCaller} = require('./api_callable');
 import * as events from 'events';
+import {EventEmitter} from 'events';
 import * as util from 'util';
+
+import {NormalApiCaller} from './api_callable';
+import {createBackoffSettings} from './gax';
 import {GoogleError} from './GoogleError';
 
 /**
@@ -42,334 +44,347 @@ import {GoogleError} from './GoogleError';
  * @return {Object} - The unpacked message.
  */
 
-/**
- * Describes the structure of a page-streaming call.
- *
- * @property {OperationsClient} operationsClient
- * @property {anyDecoder} responseDecoder
- * @property {anyDecoder} metadataDecoder
- *
- * @param {OperationsClient} operationsClient - The client used to poll or
- *   cancel an operation.
- * @param {anyDecoder=} responseDecoder - The decoder to unpack
- *   the response message.
- * @param {anyDecoder=} metadataDecoder - The decoder to unpack
- *   the metadata message.
- *
- * @constructor
- */
-function LongrunningDescriptor(
-    operationsClient, responseDecoder, metadataDecoder) {
-  this.operationsClient = operationsClient;
-  this.responseDecoder = responseDecoder;
-  this.metadataDecoder = metadataDecoder;
-}
+export class LongrunningDescriptor {
+  operationsClient;
+  responseDecoder;
+  metadataDecoder;
 
-LongrunningDescriptor.prototype.apiCaller = function() {
-  return new LongrunningApiCaller(this);
-};
-
-exports.LongrunningDescriptor = LongrunningDescriptor;
-
-/**
- * Creates an API caller that performs polling on a long running operation.
- *
- * @private
- * @constructor
- * @param {LongrunningDescriptor} longrunningDescriptor - Holds the
- * decoders used for unpacking responses and the operationsClient
- * used for polling the operation.
- */
-function LongrunningApiCaller(longrunningDescriptor) {
-  NormalApiCaller.call(this);
-  this.longrunningDescriptor = longrunningDescriptor;
-}
-
-util.inherits(LongrunningApiCaller, NormalApiCaller);
-
-LongrunningApiCaller.prototype.call = function(
-    apiCall, argument, settings, canceller) {
-  canceller.call((argument, callback) => {
-    this._wrapOperation(apiCall, settings, argument, callback);
-  }, argument);
-};
-
-LongrunningApiCaller.prototype._wrapOperation = function(
-    apiCall, settings, argument, callback) {
-  let backoffSettings = settings.longrunning;
-  if (!backoffSettings) {
-    backoffSettings =
-        createBackoffSettings(100, 1.3, 60000, null, null, null, null);
+  /**
+   * Describes the structure of a page-streaming call.
+   *
+   * @property {OperationsClient} operationsClient
+   * @property {anyDecoder} responseDecoder
+   * @property {anyDecoder} metadataDecoder
+   *
+   * @param {OperationsClient} operationsClient - The client used to poll or
+   *   cancel an operation.
+   * @param {anyDecoder=} responseDecoder - The decoder to unpack
+   *   the response message.
+   * @param {anyDecoder=} metadataDecoder - The decoder to unpack
+   *   the metadata message.
+   *
+   * @constructor
+   */
+  constructor(operationsClient, responseDecoder, metadataDecoder) {
+    this.operationsClient = operationsClient;
+    this.responseDecoder = responseDecoder;
+    this.metadataDecoder = metadataDecoder;
   }
 
-  const longrunningDescriptor = this.longrunningDescriptor;
-  return apiCall(argument, (err, rawResponse) => {
-    if (err) {
-      callback(err, null, rawResponse);
+  apiCaller() {
+    return new LongrunningApiCaller(this);
+  }
+}
+
+export class LongrunningApiCaller extends NormalApiCaller {
+  longrunningDescriptor: LongrunningDescriptor;
+  /**
+   * Creates an API caller that performs polling on a long running operation.
+   *
+   * @private
+   * @constructor
+   * @param {LongrunningDescriptor} longrunningDescriptor - Holds the
+   * decoders used for unpacking responses and the operationsClient
+   * used for polling the operation.
+   */
+  constructor(longrunningDescriptor: LongrunningDescriptor) {
+    super();
+    this.longrunningDescriptor = longrunningDescriptor;
+  }
+
+
+  call(apiCall, argument, settings, canceller) {
+    canceller.call((argument, callback) => {
+      this._wrapOperation(apiCall, settings, argument, callback);
+    }, argument);
+  }
+
+  _wrapOperation(apiCall, settings, argument, callback) {
+    let backoffSettings = settings.longrunning;
+    if (!backoffSettings) {
+      backoffSettings =
+          createBackoffSettings(100, 1.3, 60000, null, null, null, null);
+    }
+
+    const longrunningDescriptor = this.longrunningDescriptor;
+    return apiCall(argument, (err, rawResponse) => {
+      if (err) {
+        callback(err, null, rawResponse);
+        return;
+      }
+
+      const operation = new Operation(
+          rawResponse, longrunningDescriptor, backoffSettings, settings);
+
+      callback(null, operation, rawResponse);
+    });
+  }
+}
+
+export class Operation extends EventEmitter {
+  completeListeners;
+  hasActiveListeners;
+  latestResponse;
+  longrunningDescriptor;
+  result;
+  metadata;
+  backoffSettings;
+  _callOptions;
+  currentCallPromise_;
+
+  /**
+   * Wrapper for a google.longrunnung.Operation.
+   *
+   * @constructor
+   *
+   * @param {google.longrunning.Operation} grpcOp - The operation to be wrapped.
+   * @param {LongrunningDescriptor} longrunningDescriptor - This defines the
+   * operations service client and unpacking mechanisms for the operation.
+   * @param {BackoffSettings} backoffSettings - The backoff settings used in
+   * in polling the operation.
+   * @param {CallOptions=} callOptions - CallOptions used in making get operation
+   * requests.
+   */
+  constructor(grpcOp, longrunningDescriptor, backoffSettings, callOptions) {
+    super();
+    this.completeListeners = 0;
+    this.hasActiveListeners = false;
+    this.latestResponse = grpcOp;
+    this.longrunningDescriptor = longrunningDescriptor;
+    this.result = null;
+    this.metadata = null;
+    this.backoffSettings = backoffSettings;
+    this._unpackResponse(grpcOp);
+    this._listenForEvents();
+    this._callOptions = callOptions;
+  }
+
+  /**
+   * Begin listening for events on the operation. This method keeps track of how
+   * many "complete" listeners are registered and removed, making sure polling
+   * is handled automatically.
+   *
+   * As long as there is one active "complete" listener, the connection is open.
+   * When there are no more listeners, the polling stops.
+   *
+   * @private
+   */
+  _listenForEvents() {
+    this.on('newListener', event => {
+      if (event === 'complete') {
+        this.completeListeners++;
+
+        if (!this.hasActiveListeners) {
+          this.hasActiveListeners = true;
+          this.startPolling_();
+        }
+      }
+    });
+
+    this.on('removeListener', event => {
+      if (event === 'complete' && --this.completeListeners === 0) {
+        this.hasActiveListeners = false;
+      }
+    });
+  }
+
+  /**
+   * Cancels current polling api call and cancels the operation.
+   *
+   * @return {Promise} the promise of the OperationsClient#cancelOperation api
+   * request.
+   */
+  cancel() {
+    if (this.currentCallPromise_) {
+      this.currentCallPromise_.cancel();
+    }
+    const operationsClient = this.longrunningDescriptor.operationsClient;
+    return operationsClient.cancelOperation({name: this.latestResponse.name});
+  }
+
+  /**
+   * @callback GetOperationCallback
+   * @param {?Error} error
+   * @param {?Object} result
+   * @param {?Object} metadata
+   * @param {?google.longrunning.Operation} rawResponse
+   */
+
+  /**
+   * Get the updated status of the operation. If the Operation has previously
+   * completed, this will use the status of the cached completed operation.
+   *
+   *   - callback(err): Operation failed
+   *   - callback(null, result, metadata, rawResponse): Operation complete
+   *   - callback(null, null, metadata, rawResponse): Operation incomplete
+   *
+   * @param {getOperationCallback} callback - Callback to handle the polled
+   * operation result and metadata.
+   * @return {Promise|undefined} - This returns a promise if a callback is not specified.
+   * The promise resolves to an array where the first element is the unpacked
+   * result, the second element is the metadata, and the third element is the
+   * raw response of the api call. The promise rejects if the operation returns
+   * an error.
+   */
+  getOperation(callback) {
+    const self = this;
+    const operationsClient = this.longrunningDescriptor.operationsClient;
+
+    function promisifyResponse() {
+      if (!callback) {
+        // tslint:disable-next-line variable-name
+        const PromiseCtor = self._callOptions.promise;
+        return new PromiseCtor((resolve, reject) => {
+          if (self.latestResponse.error) {
+            const error = new GoogleError(self.latestResponse.error.message);
+            error.code = self.latestResponse.error.code;
+            reject(error);
+          } else {
+            resolve([self.result, self.metadata, self.latestResponse]);
+          }
+        });
+      }
       return;
     }
 
-    const operation = new Operation(
-        rawResponse, longrunningDescriptor, backoffSettings, settings);
+    if (this.latestResponse.done) {
+      this._unpackResponse(this.latestResponse, callback);
+      return promisifyResponse();
+    }
 
-    callback(null, operation, rawResponse);
-  });
-};
+    this.currentCallPromise_ = operationsClient.getOperation(
+        {name: this.latestResponse.name}, this._callOptions);
 
-/**
- * Wrapper for a google.longrunnung.Operation.
- *
- * @constructor
- *
- * @param {google.longrunning.Operation} grpcOp - The operation to be wrapped.
- * @param {LongrunningDescriptor} longrunningDescriptor - This defines the
- * operations service client and unpacking mechanisms for the operation.
- * @param {BackoffSettings} backoffSettings - The backoff settings used in
- * in polling the operation.
- * @param {CallOptions=} callOptions - CallOptions used in making get operation
- * requests.
- */
-function Operation(
-    grpcOp, longrunningDescriptor, backoffSettings, callOptions) {
-  events.EventEmitter.call(this);
-  this.completeListeners = 0;
-  this.hasActiveListeners = false;
+    const noCallbackPromise = this.currentCallPromise_.then(responses => {
+      self.latestResponse = responses[0];
+      self._unpackResponse(responses[0], callback);
+      return promisifyResponse();
+    });
 
-  this.latestResponse = grpcOp;
-  this.longrunningDescriptor = longrunningDescriptor;
-  this.result = null;
-  this.metadata = null;
-  this.backoffSettings = backoffSettings;
-  this._unpackResponse(grpcOp);
-  this._listenForEvents();
-  this._callOptions = callOptions;
-}
-util.inherits(Operation, events.EventEmitter);
+    if (!callback) {
+      return noCallbackPromise;
+    }
+  }
 
-/**
- * Begin listening for events on the operation. This method keeps track of how
- * many "complete" listeners are registered and removed, making sure polling is
- * handled automatically.
- *
- * As long as there is one active "complete" listener, the connection is open.
- * When there are no more listeners, the polling stops.
- *
- * @private
- */
-Operation.prototype._listenForEvents = function() {
-  this.on('newListener', event => {
-    if (event === 'complete') {
-      this.completeListeners++;
+  _unpackResponse(op, callback?) {
+    const responseDecoder = this.longrunningDescriptor.responseDecoder;
+    const metadataDecoder = this.longrunningDescriptor.metadataDecoder;
+    let response;
+    let metadata;
 
-      if (!this.hasActiveListeners) {
-        this.hasActiveListeners = true;
-        this.startPolling_();
+    if (op.done) {
+      if (op.result === 'error') {
+        const error = new GoogleError(op.error.message);
+        error.code = op.error.code;
+        if (callback) {
+          callback(error);
+        }
+        return;
+      }
+
+      if (responseDecoder && op.response) {
+        response = responseDecoder(op.response.value);
+        this.result = response;
       }
     }
-  });
 
-  this.on('removeListener', event => {
-    if (event === 'complete' && --this.completeListeners === 0) {
-      this.hasActiveListeners = false;
+    if (metadataDecoder && op.metadata) {
+      metadata = metadataDecoder(op.metadata.value);
+      this.metadata = metadata;
     }
-  });
-};
-
-/**
- * Cancels current polling api call and cancels the operation.
- *
- * @return {Promise} the promise of the OperationsClient#cancelOperation api
- * request.
- */
-Operation.prototype.cancel = function() {
-  if (this.currentCallPromise_) {
-    this.currentCallPromise_.cancel();
+    if (callback) {
+      callback(null, response, metadata, op);
+    }
   }
-  const operationsClient = this.longrunningDescriptor.operationsClient;
-  return operationsClient.cancelOperation({name: this.latestResponse.name});
-};
 
-/**
- * @callback GetOperationCallback
- * @param {?Error} error
- * @param {?Object} result
- * @param {?Object} metadata
- * @param {?google.longrunning.Operation} rawResponse
- */
+  /**
+   * Poll `getOperation` to check the operation's status. This runs a loop to
+   * ping using the backoff strategy specified at initialization.
+   *
+   * Note: This method is automatically called once a "complete" event handler
+   * is registered on the operation.
+   *
+   * @private
+   */
+  startPolling_() {
+    const self = this;
 
-/**
- * Get the updated status of the operation. If the Operation has previously
- * completed, this will use the status of the cached completed operation.
- *
- *   - callback(err): Operation failed
- *   - callback(null, result, metadata, rawResponse): Operation complete
- *   - callback(null, null, metadata, rawResponse): Operation incomplete
- *
- * @param {getOperationCallback} callback - Callback to handle the polled
- * operation result and metadata.
- * @return {Promise|undefined} - This returns a promise if a callback is not specified.
- * The promise resolves to an array where the first element is the unpacked
- * result, the second element is the metadata, and the third element is the raw
- * response of the api call. The promise rejects if the operation returns an
- * error.
- */
-Operation.prototype.getOperation = function(callback) {
-  const self = this;
-  const operationsClient = this.longrunningDescriptor.operationsClient;
+    let now = new Date();
+    const delayMult = this.backoffSettings.retryDelayMultiplier;
+    const maxDelay = this.backoffSettings.maxRetryDelayMillis;
+    let delay = this.backoffSettings.initialRetryDelayMillis;
+    let deadline = Infinity;
+    if (this.backoffSettings.totalTimeoutMillis) {
+      deadline = now.getTime() + this.backoffSettings.totalTimeoutMillis;
+    }
+    let previousMetadataBytes;
+    if (this.latestResponse.metadata) {
+      previousMetadataBytes = this.latestResponse.metadata.value;
+    }
 
-  function promisifyResponse() {
-    if (!callback) {
-      // tslint:disable-next-line variable-name
-      const PromiseCtor = self._callOptions.promise;
-      return new PromiseCtor((resolve, reject) => {
-        if (self.latestResponse.error) {
-          const error = new GoogleError(self.latestReponse.error.message);
-          error.code = self.latestReponse.error.code;
-          reject(error);
-        } else {
-          resolve([self.result, self.metadata, self.latestResponse]);
+    function emit() {
+      self.emit.apply(self, Array.prototype.slice.call(arguments, 0));
+    }
+
+    function retry() {
+      if (!self.hasActiveListeners) {
+        return;
+      }
+
+      if (now.getTime() >= deadline) {
+        setImmediate(
+            emit, 'error',
+            new Error(
+                'Total timeout exceeded before ' +
+                'any response was received'));
+        return;
+      }
+
+      self.getOperation((err, result, metadata, rawResponse) => {
+        if (err) {
+          setImmediate(emit, 'error', err);
+          return;
         }
+
+        if (!result) {
+          if (rawResponse.metadata &&
+              (!previousMetadataBytes ||
+               !rawResponse.metadata.value.equals(previousMetadataBytes))) {
+            setImmediate(emit, 'progress', metadata, rawResponse);
+            previousMetadataBytes = rawResponse.metadata.value;
+          }
+          setTimeout(() => {
+            now = new Date();
+            delay = Math.min(delay * delayMult, maxDelay);
+            retry();
+          }, delay);
+          return;
+        }
+
+        setImmediate(emit, 'complete', result, metadata, rawResponse);
       });
     }
-    return;
+    retry();
   }
 
-  if (this.latestResponse.done) {
-    this._unpackResponse(this.latestResponse, callback);
-    return promisifyResponse();
-  }
-
-  this.currentCallPromise_ = operationsClient.getOperation(
-      {name: this.latestResponse.name}, this._callOptions);
-
-  const noCallbackPromise = this.currentCallPromise_.then(responses => {
-    self.latestResponse = responses[0];
-    self._unpackResponse(responses[0], callback);
-    return promisifyResponse();
-  });
-
-  if (!callback) {
-    return noCallbackPromise;
-  }
-};
-
-Operation.prototype._unpackResponse = function(op, callback) {
-  const responseDecoder = this.longrunningDescriptor.responseDecoder;
-  const metadataDecoder = this.longrunningDescriptor.metadataDecoder;
-  let response;
-  let metadata;
-
-  if (op.done) {
-    if (op.result === 'error') {
-      const error = new GoogleError(op.error.message);
-      error.code = op.error.code;
-      if (callback) {
-        callback(error);
-      }
-      return;
-    }
-
-    if (responseDecoder && op.response) {
-      response = responseDecoder(op.response.value);
-      this.result = response;
-    }
-  }
-
-  if (metadataDecoder && op.metadata) {
-    metadata = metadataDecoder(op.metadata.value);
-    this.metadata = metadata;
-  }
-  if (callback) {
-    callback(null, response, metadata, op);
-  }
-};
-
-/**
- * Poll `getOperation` to check the operation's status. This runs a loop to ping
- * using the backoff strategy specified at initialization.
- *
- * Note: This method is automatically called once a "complete" event handler is
- * registered on the operation.
- *
- * @private
- */
-Operation.prototype.startPolling_ = function() {
-  const self = this;
-
-  let now = new Date();
-  const delayMult = this.backoffSettings.retryDelayMultiplier;
-  const maxDelay = this.backoffSettings.maxRetryDelayMillis;
-  let delay = this.backoffSettings.initialRetryDelayMillis;
-  let deadline = Infinity;
-  if (this.backoffSettings.totalTimeoutMillis) {
-    deadline = now.getTime() + this.backoffSettings.totalTimeoutMillis;
-  }
-  let previousMetadataBytes;
-  if (this.latestResponse.metadata) {
-    previousMetadataBytes = this.latestResponse.metadata.value;
-  }
-
-  function emit() {
-    self.emit.apply(self, Array.prototype.slice.call(arguments, 0));
-  }
-
-  function retry() {
-    if (!self.hasActiveListeners) {
-      return;
-    }
-
-    if (now.getTime() >= deadline) {
-      setImmediate(
-          emit, 'error',
-          new Error(
-              'Total timeout exceeded before ' +
-              'any response was received'));
-      return;
-    }
-
-    self.getOperation((err, result, metadata, rawResponse) => {
-      if (err) {
-        setImmediate(emit, 'error', err);
-        return;
-      }
-
-      if (!result) {
-        if (rawResponse.metadata &&
-            (!previousMetadataBytes ||
-             !rawResponse.metadata.value.equals(previousMetadataBytes))) {
-          setImmediate(emit, 'progress', metadata, rawResponse);
-          previousMetadataBytes = rawResponse.metadata.value;
-        }
-        setTimeout(() => {
-          now = new Date();
-          delay = Math.min(delay * delayMult, maxDelay);
-          retry();
-        }, delay);
-        return;
-      }
-
-      setImmediate(emit, 'complete', result, metadata, rawResponse);
+  /**
+   * Wraps the `complete` and `error` events in a Promise.
+   *
+   * @return {promise} - Promise that resolves on operation completion and rejects
+   * on operation error.
+   */
+  promise() {
+    const self = this;
+    // tslint:disable-next-line variable-name
+    const PromiseCtor = this._callOptions.promise;
+    return new PromiseCtor((resolve, reject) => {
+      self.on('error', reject)
+          .on('complete', (result, metadata, rawResponse) => {
+            resolve([result, metadata, rawResponse]);
+          });
     });
   }
-  retry();
-};
-
-/**
- * Wraps the `complete` and `error` events in a Promise.
- *
- * @return {promise} - Promise that resolves on operation completion and rejects
- * on operation error.
- */
-Operation.prototype.promise = function() {
-  const self = this;
-  // tslint:disable-next-line variable-name
-  const PromiseCtor = this._callOptions.promise;
-  return new PromiseCtor((resolve, reject) => {
-    self.on('error', reject).on('complete', (result, metadata, rawResponse) => {
-      resolve([result, metadata, rawResponse]);
-    });
-  });
-};
+}
 
 /**
  * Method used to create Operation objects.
@@ -385,6 +400,6 @@ Operation.prototype.promise = function() {
  * requests.
  */
 export function operation(
-    op, longrunningDescriptor, backoffSettings, callOptions) {
+    op, longrunningDescriptor, backoffSettings, callOptions?) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
 }

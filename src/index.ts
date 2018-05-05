@@ -32,13 +32,20 @@
 'use strict';
 
 import * as extend from 'extend';
-const bundling = require('./bundling');
-const gax = require('./gax');
-const grpc = require('./grpc');
-const streaming = require('./streaming');
-const operationsClient = require('./operations_client');
-const longrunning = require('./longrunning');
+
+import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
+
+export {routingHeader};
+export {constructSettings} from './gax';
+export {StreamType, StreamDescriptor} from './streaming';
+export {LongrunningDescriptor, operation} from './longrunning';
+export {BundleDescriptor, BundleExecutor} from './bundling';
+export {PathTemplate} from './path_template';
+export {PageDescriptor} from './paged_iteration';
+export {createApiCall} from './api_callable';
+
+const grpc = require('./grpc');
 
 function lro(options) {
   options = extend(
@@ -48,25 +55,14 @@ function lro(options) {
       },
       options);
   const gaxGrpc = grpc(options);
-  return operationsClient(gaxGrpc);
+  return new operationsClient.OperationsClientBuilder(gaxGrpc);
 }
 // tslint:disable-next-line no-any
 (lro as any).SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 // tslint:disable-next-line no-any
 (lro as any).ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-exports.lro = lro;
-exports.createApiCall = require('./api_callable').createApiCall;
-exports.grpc = grpc;
+export {lro};
+export {grpc};
 exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.PathTemplate = require('./path_template').PathTemplate;
-exports.PageDescriptor = require('./paged_iteration').PageDescriptor;
-exports.BundleDescriptor = bundling.BundleDescriptor;
-exports.StreamType = streaming.StreamType;
-exports.StreamDescriptor = streaming.StreamDescriptor;
-exports.constructSettings = gax.constructSettings;
-exports.BundleExecutor = bundling.BundleExecutor;
-exports.LongrunningDescriptor = longrunning.LongrunningDescriptor;
-exports.operation = longrunning.operation;
-exports.routingHeader = routingHeader;
 exports.version = require('./package').version;

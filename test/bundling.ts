@@ -30,10 +30,10 @@
 
 'use strict';
 
-const bundling = require('../src/bundling');
+import * as bundling from '../src/bundling';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-const {createApiCall} = require('./utils');
+import {createApiCall} from './utils';
 import * as _ from 'lodash';
 
 function createOuter(value, otherValue?) {
@@ -205,7 +205,7 @@ describe('deepCopyForResponse', () => {
 
 describe('Task', () => {
   function testTask(apiCall?) {
-    return new bundling.Task(apiCall, {}, 'field1', null, byteLength);
+    return new bundling.Task(apiCall, {}, 'field1', null);
   }
 
   let id = 0;
@@ -760,7 +760,8 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [1, 2], field2: 'id1'});
     setTimeout(() => {
       expect(spy.callCount).to.eq(1);
-      expect(executor._runNow.callCount).to.eq(1);
+      // tslint:disable-next-line no-any
+      expect((executor._runNow as any).callCount).to.eq(1);
       done();
     }, 20);
   });

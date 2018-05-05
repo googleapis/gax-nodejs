@@ -38,8 +38,7 @@ import * as util from 'util';
 import * as globby from 'globby';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-
-const gax = require('./gax');
+import * as gax from './gax';
 let googleProtoFilesDir = require('google-proto-files')('..');
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);

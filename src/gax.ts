@@ -35,10 +35,6 @@
 
 'use strict';
 
-// This is here to fix a TypeScript bug.
-// https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
-export {};
-
 /**
  * Encapsulates the overridable settings for a particular API call.
  *
@@ -90,6 +86,14 @@ export {};
  * @property {String[]} retryCodes
  * @property {BackoffSettings} backoffSettings
  */
+export class RetryOptions {
+  retryCodes: string[];
+  backoffSettings: BackoffSettings;
+  constructor(retryCodes: string[], backoffSettings: BackoffSettings) {
+    this.retryCodes = retryCodes;
+    this.backoffSettings = backoffSettings;
+  }
+}
 
 /**
  * Parameters to the exponential backoff algorithm for retrying.
@@ -114,6 +118,14 @@ export {};
  *   starting from when the initial request is sent, after which an error will
  *   be returned, regardless of the retrying attempts made meanwhile.
  */
+export interface BackoffSettings {
+  initialRetryDelayMillis: number;
+  retryDelayMultiplier: number;
+  maxRetryDelayMillis: number;
+  initialRpcTimeoutMillis: number;
+  maxRpcTimeoutMillis: number;
+  totalTimeoutMillis: number;
+}
 
 /**
  * Parameter to configure bundling behavior.
@@ -144,125 +156,138 @@ export {};
  *   element in the bundle was added to it.
  */
 
-/**
- * @param {Object} settings - An object containing parameters of this settings.
- * @param {number} settings.timeout - The client-side timeout for API calls.
- *   This parameter is ignored for retrying calls.
- * @param {RetryOptions} settings.retry - The configuration for retrying upon
- *   transient error. If set to null, this call will not retry.
- * @param {boolean} settings.autoPaginate - If there is no `pageDescriptor`,
- *   this attrbute has no meaning. Otherwise, determines whether a page streamed
- *   response should make the page structure transparent to the user by
- *   flattening the repeated field in the returned generator.
- * @param {number} settings.pageToken - If there is no `pageDescriptor`,
- *   this attribute has no meaning. Otherwise, determines the page token used in
- *   the page streaming request.
- * @param {Object} settings.otherArgs - Additional arguments to be passed to
- *   the API calls.
- * @param {Function=} settings.promise - A constructor for a promise that
- * implements the ES6 specification of promise. If not provided, native promises
- * will be used.
- *
- * @constructor
- */
-function CallSettings(settings) {
-  settings = settings || {};
-  this.timeout = settings.timeout || 30 * 1000;
-  this.retry = settings.retry;
-  this.autoPaginate = 'autoPaginate' in settings ? settings.autoPaginate : true;
-  this.pageToken = settings.pageToken;
-  this.maxResults = settings.maxResults;
-  this.otherArgs = settings.otherArgs || {};
-  this.bundleOptions = settings.bundleOptions;
-  this.isBundling = 'isBundling' in settings ? settings.isBundling : true;
-  this.longrunning = 'longrunning' in settings ? settings.longrunning : null;
-  this.promise = 'promise' in settings ? settings.promise : Promise;
+export class CallSettings {
+  timeout: number;
+  retry;
+  autoPaginate: boolean;
+  pageToken: number;
+  maxResults;
+  otherArgs;
+  bundleOptions;
+  isBundling: boolean;
+  longrunning: boolean;
+  promise;
+
+  /**
+   * @param {Object} settings - An object containing parameters of this settings.
+   * @param {number} settings.timeout - The client-side timeout for API calls.
+   *   This parameter is ignored for retrying calls.
+   * @param {RetryOptions} settings.retry - The configuration for retrying upon
+   *   transient error. If set to null, this call will not retry.
+   * @param {boolean} settings.autoPaginate - If there is no `pageDescriptor`,
+   *   this attrbute has no meaning. Otherwise, determines whether a page
+   * streamed response should make the page structure transparent to the user by
+   *   flattening the repeated field in the returned generator.
+   * @param {number} settings.pageToken - If there is no `pageDescriptor`,
+   *   this attribute has no meaning. Otherwise, determines the page token used
+   * in the page streaming request.
+   * @param {Object} settings.otherArgs - Additional arguments to be passed to
+   *   the API calls.
+   * @param {Function=} settings.promise - A constructor for a promise that
+   * implements the ES6 specification of promise. If not provided, native
+   * promises will be used.
+   *
+   * @constructor
+   */
+  constructor(settings?) {
+    settings = settings || {};
+    this.timeout = settings.timeout || 30 * 1000;
+    this.retry = settings.retry;
+    this.autoPaginate =
+        'autoPaginate' in settings ? settings.autoPaginate : true;
+    this.pageToken = settings.pageToken;
+    this.maxResults = settings.maxResults;
+    this.otherArgs = settings.otherArgs || {};
+    this.bundleOptions = settings.bundleOptions;
+    this.isBundling = 'isBundling' in settings ? settings.isBundling : true;
+    this.longrunning = 'longrunning' in settings ? settings.longrunning : null;
+    this.promise = 'promise' in settings ? settings.promise : Promise;
+  }
+
+  /**
+   * Returns a new CallSettings merged from this and a CallOptions object.
+   *
+   * @param {CallOptions} options - an instance whose values override
+   *   those in this object. If null, ``merge`` returns a copy of this
+   *   object
+   * @return {CallSettings} The merged CallSettings instance.
+   */
+  merge(options) {
+    if (!options) {
+      return new CallSettings(this);
+    }
+    let timeout = this.timeout;
+    let retry = this.retry;
+    let autoPaginate = this.autoPaginate;
+    let pageToken = this.pageToken;
+    let maxResults = this.maxResults;
+    let otherArgs = this.otherArgs;
+    let isBundling = this.isBundling;
+    let longrunning = this.longrunning;
+    let promise = this.promise;
+    if ('timeout' in options) {
+      timeout = options.timeout;
+    }
+    if ('retry' in options) {
+      retry = options.retry;
+    }
+
+    if ('autoPaginate' in options && !options.autoPaginate) {
+      autoPaginate = false;
+    }
+
+    if ('pageToken' in options) {
+      autoPaginate = false;
+      pageToken = options.pageToken;
+    }
+
+    if ('maxResults' in options) {
+      maxResults = options.maxResults;
+    }
+
+    if ('otherArgs' in options) {
+      otherArgs = {};
+      // tslint:disable-next-line forin
+      for (const key in this.otherArgs) {
+        otherArgs[key] = this.otherArgs[key];
+      }
+      // tslint:disable-next-line forin
+      for (const optionsKey in options.otherArgs) {
+        otherArgs[optionsKey] = options.otherArgs[optionsKey];
+      }
+    }
+
+    if ('isBundling' in options) {
+      isBundling = options.isBundling;
+    }
+
+    if ('maxRetries' in options) {
+      retry.backoffSettings.maxRetries = options.maxRetries;
+      delete retry.backoffSettings.totalTimeoutMillis;
+    }
+
+    if ('longrunning' in options) {
+      longrunning = options.longrunning;
+    }
+
+    if ('promise' in options) {
+      promise = options.promise;
+    }
+
+    return new CallSettings({
+      timeout,
+      retry,
+      bundleOptions: this.bundleOptions,
+      longrunning,
+      autoPaginate,
+      pageToken,
+      maxResults,
+      otherArgs,
+      isBundling,
+      promise,
+    });
+  }
 }
-exports.CallSettings = CallSettings;
-
-/**
- * Returns a new CallSettings merged from this and a CallOptions object.
- *
- * @param {CallOptions} options - an instance whose values override
- *   those in this object. If null, ``merge`` returns a copy of this
- *   object
- * @return {CallSettings} The merged CallSettings instance.
- */
-CallSettings.prototype.merge = function merge(options) {
-  if (!options) {
-    return new CallSettings(this);
-  }
-  let timeout = this.timeout;
-  let retry = this.retry;
-  let autoPaginate = this.autoPaginate;
-  let pageToken = this.pageToken;
-  let maxResults = this.maxResults;
-  let otherArgs = this.otherArgs;
-  let isBundling = this.isBundling;
-  let longrunning = this.longrunning;
-  let promise = this.promise;
-  if ('timeout' in options) {
-    timeout = options.timeout;
-  }
-  if ('retry' in options) {
-    retry = options.retry;
-  }
-
-  if ('autoPaginate' in options && !options.autoPaginate) {
-    autoPaginate = false;
-  }
-
-  if ('pageToken' in options) {
-    autoPaginate = false;
-    pageToken = options.pageToken;
-  }
-
-  if ('maxResults' in options) {
-    maxResults = options.maxResults;
-  }
-
-  if ('otherArgs' in options) {
-    otherArgs = {};
-    // tslint:disable-next-line forin
-    for (const key in this.otherArgs) {
-      otherArgs[key] = this.otherArgs[key];
-    }
-    // tslint:disable-next-line forin
-    for (const optionsKey in options.otherArgs) {
-      otherArgs[optionsKey] = options.otherArgs[optionsKey];
-    }
-  }
-
-  if ('isBundling' in options) {
-    isBundling = options.isBundling;
-  }
-
-  if ('maxRetries' in options) {
-    retry.backoffSettings.maxRetries = options.maxRetries;
-    delete retry.backoffSettings.totalTimeoutMillis;
-  }
-
-  if ('longrunning' in options) {
-    longrunning = options.longrunning;
-  }
-
-  if ('promise' in options) {
-    promise = options.promise;
-  }
-
-  return new CallSettings({
-    timeout,
-    retry,
-    bundleOptions: this.bundleOptions,
-    longrunning,
-    autoPaginate,
-    pageToken,
-    maxResults,
-    otherArgs,
-    isBundling,
-    promise,
-  });
-};
 
 /**
  * Per-call configurable settings for retrying upon transient failure.
@@ -274,13 +299,12 @@ CallSettings.prototype.merge = function merge(options) {
  * @return {RetryOptions} A new RetryOptions object.
  *
  */
-function createRetryOptions(retryCodes, backoffSettings) {
+export function createRetryOptions(retryCodes, backoffSettings) {
   return {
     retryCodes,
     backoffSettings,
   };
 }
-exports.createRetryOptions = createRetryOptions;
 
 /**
  * Parameters to the exponential backoff algorithm for retrying.
@@ -307,7 +331,7 @@ exports.createRetryOptions = createRetryOptions;
  * @return {BackoffSettings} a new settings.
  *
  */
-function createBackoffSettings(
+export function createBackoffSettings(
     initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
     initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis,
     totalTimeoutMillis) {
@@ -321,7 +345,6 @@ function createBackoffSettings(
     totalTimeoutMillis,
   };
 }
-exports.createBackoffSettings = createBackoffSettings;
 
 /**
  * Parameters to the exponential backoff algorithm for retrying.
@@ -348,7 +371,7 @@ exports.createBackoffSettings = createBackoffSettings;
  * @return {BackoffSettings} a new settings.
  *
  */
-function createMaxRetriesBackoffSettings(
+export function createMaxRetriesBackoffSettings(
     initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
     initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis,
     maxRetries) {
@@ -362,7 +385,6 @@ function createMaxRetriesBackoffSettings(
     maxRetries,
   };
 }
-exports.createMaxRetriesBackoffSettings = createMaxRetriesBackoffSettings;
 
 /**
  * Creates a new {@link BundleOptions}.
@@ -372,7 +394,7 @@ exports.createMaxRetriesBackoffSettings = createMaxRetriesBackoffSettings;
  *   properties for the content of options.
  * @return {BundleOptions} - A new options.
  */
-function createBundleOptions(options) {
+export function createBundleOptions(options) {
   const params = [
     'element_count_threshold',
     'element_count_limit',
@@ -404,7 +426,6 @@ function createBundleOptions(options) {
     delayThreshold,
   };
 }
-exports.createBundleOptions = createBundleOptions;
 
 /**
  * Helper for {@link constructSettings}
@@ -545,11 +566,12 @@ function mergeRetryOptions(retry, overrides) {
  * @return {Object} A mapping from method name to CallSettings, or null if the
  *   service is not found in the config.
  */
-exports.constructSettings = function constructSettings(
-    serviceName, clientConfig, configOverrides, retryNames, otherArgs,
-    promise) {
+export function constructSettings(
+    serviceName, clientConfig, configOverrides, retryNames, otherArgs?, promise?
+) {
   otherArgs = otherArgs || {};
-  const defaults = {};
+  // tslint:disable-next-line no-any
+  const defaults: any = {};
 
   const serviceConfig = (clientConfig.interfaces || {})[serviceName];
   if (!serviceConfig) {
@@ -598,4 +620,4 @@ exports.constructSettings = function constructSettings(
   }
 
   return defaults;
-};
+}
