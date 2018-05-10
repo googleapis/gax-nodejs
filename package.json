@@ -56,14 +56,16 @@
     "codecov": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --reporter spec --slow 500 --timeout 5000 && ./node_modules/codecov/bin/codecov",
     "docs": "jsdoc -c .jsdoc.js -d doc",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
-    "test": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --require source-map-support/register --reporter spec --slow 500 --timeout 5000",
+    "test": "npm run test-only",
+    "test-only": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --require source-map-support/register --reporter spec --slow 500 --timeout 5000",
     "publish-gh-pages": "bash ./publish-gh-pages.sh",
     "check": "gts check",
     "clean": "gts clean",
     "compile": "tsc -p .",
     "fix": "gts fix",
     "prepare": "npm run compile",
-    "pretest": "npm run compile"
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
