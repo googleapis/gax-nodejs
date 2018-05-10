@@ -83,7 +83,7 @@ jobs:
           command: npm install
       - run:
           name: Run unit tests.
-          command: npm test
+          command: npm run test-only
       - run:
           name: Submit coverage data to codecov.
           command: node_modules/.bin/codecov

@@ -30,9 +30,9 @@
  */
 'use strict';
 
-import * as extend from 'extend';
+import extend from 'extend';
 import * as through2 from 'through2';
-import * as ended from 'is-stream-ended';
+import ended from 'is-stream-ended';
 import * as util from 'util';
 import {Stream, Readable, Transform} from 'stream';
 

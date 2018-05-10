@@ -29,4 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-export class GoogleError extends Error { code?: number; }
+export class GoogleError extends Error {
+  code?: number;
+}
