@@ -774,7 +774,7 @@ describe('Executor', () => {
       function onEnd() {
         expect(spy.callCount).to.eq(1);
         const now = new Date().getTime();
-        expect(now - start).to.be.least(50);
+        expect(now - start).to.be.least(49);
         done();
       }
       const tasks = 5;
