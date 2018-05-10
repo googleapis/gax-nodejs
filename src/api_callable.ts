@@ -60,7 +60,7 @@ import * as util from 'util';
  */
 
 export class Canceller {
-  callback: Function;
+  callback: (err: Error|null, ...args: Array<{}>) => void;
   cancelFunc?: Function;
   completed: boolean;
 
@@ -136,14 +136,13 @@ export class PromiseCanceller<T = any> extends Canceller {
   constructor(PromiseCtor) {
     super();
     this.promise = new PromiseCtor((resolve, reject) => {
-      // tslint:disable-next-line no-any
-      Canceller.call(this, (err, ...args: any[]) => {
+      this.callback = (err, ...args) => {
         if (err) {
           reject(err);
         } else {
           resolve(args);
         }
-      });
+      };
     });
     this.promise.cancel = () => {
       this.cancel();

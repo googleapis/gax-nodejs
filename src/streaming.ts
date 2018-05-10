@@ -33,7 +33,7 @@
 /* This file describes the gRPC-streaming. */
 
 import * as util from 'util';
-import * as Duplexify from 'duplexify';
+import Duplexify from 'duplexify';
 import {Stream, Duplex, DuplexOptions} from 'stream';
 
 /**
