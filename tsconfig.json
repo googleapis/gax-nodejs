@@ -4,7 +4,8 @@
     "rootDir": ".",
     "outDir": "build",
     "noImplicitAny": false,
-    "noImplicitThis": false
+    "noImplicitThis": false,
+    "target": "es2015"
   },
   "include": [
     "src/*.ts",
