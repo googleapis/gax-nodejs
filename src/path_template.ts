@@ -41,8 +41,18 @@ import * as util from 'util';
 import * as extras from './parser_extras';
 const parser = require('./path_template_parser');
 
+export interface ParseResult {
+  size: number;
+  segments: Segment[];
+}
+
+export interface Segment {
+  kind: number;
+  literal: string;
+}
+
 export class PathTemplate {
-  private readonly parseResult;
+  private readonly parseResult: ParseResult;
 
   get size() {
     return this.parseResult.size;
@@ -68,11 +78,11 @@ export class PathTemplate {
    * @return {Object} contains const names matched to binding values
    * @throws {TypeError} if path can't be matched to this template
    */
-  match(path) {
+  match(path: string) {
     const pathSegments = path.split('/');
     const bindings = {};
     let segmentCount = this.size;
-    let current: number;
+    let current: string;
     let index = 0;
     this.segments.forEach(segment => {
       if (index > pathSegments.length) {

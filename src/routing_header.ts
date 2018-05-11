@@ -49,7 +49,7 @@
  * @param {Object} params - the request header parameters.
  * @return {string} the routing header value.
  */
-export function fromParams(params) {
+export function fromParams(params: {}) {
   return Object.keys(params)
       .map(key => {
         return key + '=' + params[key];

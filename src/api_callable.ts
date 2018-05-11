@@ -36,12 +36,14 @@
 'use strict';
 
 import * as util from 'util';
+import {RetryOptions} from './gax';
 
 /**
  * @callback APICallback
  * @param {?Error} error
  * @param {?Object} response
  */
+export type APICallback = (err: Error|null, response?: {}) => void;
 
 /**
  * @callback APIFunc
@@ -50,6 +52,9 @@ import * as util from 'util';
  * @param {Object} options
  * @param {APICallback} callback
  */
+export type APIFunc =
+    (argument: {}, metadata: {}, options: {}, callback: APICallback) =>
+        Canceller;
 
 /**
  * @callback APICall
@@ -60,8 +65,8 @@ import * as util from 'util';
  */
 
 export class Canceller {
-  callback: (err: Error|null, ...args: Array<{}>) => void;
-  cancelFunc?: Function;
+  callback?: APICallback;
+  cancelFunc?: () => void;
   completed: boolean;
 
   /**
@@ -75,7 +80,7 @@ export class Canceller {
    *   The callback function to be called.
    * @private
    */
-  constructor(callback?) {
+  constructor(callback?: APICallback) {
     this.callback = callback;
     this.completed = false;
   }
@@ -91,7 +96,7 @@ export class Canceller {
     if (this.cancelFunc) {
       this.cancelFunc();
     } else {
-      this.callback(new Error('cancelled'));
+      this.callback!(new Error('cancelled'));
     }
   }
 
@@ -105,7 +110,9 @@ export class Canceller {
    * @param {Object} argument
    *   A request object.
    */
-  call(aFunc, argument) {
+  call(
+      aFunc: (obj: {}, callback: APICallback) => PromiseCanceller,
+      argument: {}) {
     if (this.completed) {
       return;
     }
@@ -122,8 +129,13 @@ export class Canceller {
 }
 
 // tslint:disable-next-line no-any
+export interface CancellablePromise<T = any> extends Promise<T> {
+  cancel(): void;
+}
+
+// tslint:disable-next-line no-any
 export class PromiseCanceller<T = any> extends Canceller {
-  promise: Promise<T>&{cancel: () => void};
+  promise: CancellablePromise;
   /**
    * PromiseCanceller is Canceller, but it holds a promise when
    * the API call finishes.
@@ -133,21 +145,27 @@ export class PromiseCanceller<T = any> extends Canceller {
    * @private
    */
   // tslint:disable-next-line variable-name
-  constructor(PromiseCtor) {
+  constructor(PromiseCtor: PromiseConstructor) {
     super();
     this.promise = new PromiseCtor((resolve, reject) => {
-      this.callback = (err, ...args) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(args);
-        }
-      };
-    });
+                     this.callback = (err, ...args) => {
+                       if (err) {
+                         reject(err);
+                       } else {
+                         resolve(args);
+                       }
+                     };
+                   }) as CancellablePromise;
     this.promise.cancel = () => {
       this.cancel();
     };
   }
+}
+
+export interface OtherArgs {
+  options?: {deadline?: Date;};
+  headers?: {};
+  metadataBuilder: (abTests?: {}, headers?: {}) => {};
 }
 
 /**
@@ -165,7 +183,8 @@ export class PromiseCanceller<T = any> extends Canceller {
  * @return {function(Object, APICallback)}
  *  the function with other arguments and the timeout.
  */
-function addTimeoutArg(aFunc, timeout, otherArgs, abTests?) {
+function addTimeoutArg(
+    aFunc: APIFunc, timeout: number, otherArgs: OtherArgs, abTests?: {}) {
   // TODO: this assumes the other arguments consist of metadata and options,
   // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
   return function timeoutFunc(argument, callback) {
@@ -175,7 +194,7 @@ function addTimeoutArg(aFunc, timeout, otherArgs, abTests?) {
     const metadata = otherArgs.metadataBuilder ?
         otherArgs.metadataBuilder(abTests, otherArgs.headers || {}) :
         null;
-    return aFunc(argument, metadata, options, callback);
+    return aFunc(argument, metadata!, options, callback);
   };
 }
 
@@ -192,7 +211,7 @@ function addTimeoutArg(aFunc, timeout, otherArgs, abTests?) {
  * @param {Object} otherArgs - the additional arguments to be passed to aFunc.
  * @return {function(Object, APICallback)} A function that will retry.
  */
-function retryable(aFunc, retry, otherArgs) {
+function retryable(aFunc: APIFunc, retry: RetryOptions, otherArgs: OtherArgs) {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
   const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
@@ -210,16 +229,16 @@ function retryable(aFunc, retry, otherArgs) {
    * @param {APICallback} callback The callback.
    * @return {function()} cancel function.
    */
-  return function retryingFunc(argument, callback) {
-    let canceller;
-    let timeoutId;
+  return function retryingFunc(argument: {}, callback: APICallback) {
+    let canceller: Canceller|null;
+    let timeoutId: NodeJS.Timer|null;
     let now = new Date();
-    let deadline;
+    let deadline: number;
     if (retry.backoffSettings.totalTimeoutMillis) {
       deadline = now.getTime() + retry.backoffSettings.totalTimeoutMillis;
     }
     let retries = 0;
-    const maxRetries = retry.backoffSettings.maxRetries;
+    const maxRetries = retry.backoffSettings.maxRetries!;
     // TODO: define A/B testing values for retry behaviors.
 
     /** Repeat the API call as long as necessary. */
@@ -241,8 +260,7 @@ function retryable(aFunc, retry, otherArgs) {
 
       retries++;
       const toCall = addTimeoutArg(aFunc, timeout, otherArgs);
-      // tslint:disable-next-line no-any
-      canceller = toCall(argument, (err, ...args: any[]) => {
+      canceller = toCall(argument, (err, ...args: Array<{}|null>) => {
         if (!err) {
           args.unshift(null);
           callback.apply(null, args);
@@ -266,7 +284,7 @@ function retryable(aFunc, retry, otherArgs) {
       });
     }
 
-    if (maxRetries && deadline) {
+    if (maxRetries && deadline!) {
       callback(new Error(
           'Cannot set both totalTimeoutMillis and maxRetries ' +
           'in backoffSettings.'));
@@ -296,14 +314,14 @@ function retryable(aFunc, retry, otherArgs) {
  * @constructor
  */
 export class NormalApiCaller {
-  init(settings, callback) {
+  init(settings: {promise: PromiseConstructor}, callback: APICallback) {
     if (callback) {
       return new Canceller(callback);
     }
     return new PromiseCanceller(settings.promise);
   }
 
-  wrap(func) {
+  wrap(func: Function) {
     return func;
   }
 

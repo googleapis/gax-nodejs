@@ -144,7 +144,9 @@ export class PageDescriptor {
    *
    * @constructor
    */
-  constructor(requestPageTokenField, responsePageTokenField, resourceField) {
+  constructor(
+      requestPageTokenField: string, responsePageTokenField: string,
+      resourceField: string) {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
     this.resourceField = resourceField;

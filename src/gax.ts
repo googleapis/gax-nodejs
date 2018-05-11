@@ -119,12 +119,14 @@ export class RetryOptions {
  *   be returned, regardless of the retrying attempts made meanwhile.
  */
 export interface BackoffSettings {
+  maxRetries?: number;
   initialRetryDelayMillis: number;
   retryDelayMultiplier: number;
   maxRetryDelayMillis: number;
   initialRpcTimeoutMillis: number;
   maxRpcTimeoutMillis: number;
   totalTimeoutMillis: number;
+  rpcTimeoutMultiplier: number;
 }
 
 /**
@@ -158,15 +160,15 @@ export interface BackoffSettings {
 
 export class CallSettings {
   timeout: number;
-  retry;
+  retry: RetryOptions;
   autoPaginate: boolean;
   pageToken: number;
-  maxResults;
+  maxResults: number;
   otherArgs;
   bundleOptions;
   isBundling: boolean;
   longrunning: boolean;
-  promise;
+  promise: PromiseConstructor;
 
   /**
    * @param {Object} settings - An object containing parameters of this settings.

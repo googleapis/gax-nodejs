@@ -34,6 +34,7 @@
 
 import * as util from 'util';
 import * as _ from 'lodash';
+import {Segment} from './path_template';
 
 /* constants used in the pegjs parser */
 export const BINDING = 1;
@@ -48,7 +49,7 @@ export const TERMINAL = 3;
  * @param {Segments[]} segments the parsed segments
  * @throws {TypeError} if there are too many
  */
-function allowOnePathWildcard(segments) {
+function allowOnePathWildcard(segments: Segment[]) {
   let hasPathWildcard = false;
   for (let i = 0; i < segments.length; i++) {
     const s = segments[i];
@@ -71,7 +72,7 @@ function allowOnePathWildcard(segments) {
  * @param {Segments[]} segments the parsed segments
  * @return {number} the number of terminal segments in the template
  */
-function countTerminals(segments) {
+function countTerminals(segments: Segment[]) {
   const terms = _.filter(segments, x => {
     return x.kind === TERMINAL;
   });
@@ -85,7 +86,7 @@ function countTerminals(segments) {
  *
  * @param {Segments[]} segments the parsed segments
  */
-function updateBindingLiterals(segments) {
+function updateBindingLiterals(segments: Segment[]) {
   let bindingIndex = 0;
   segments.forEach(s => {
     if (s.kind === BINDING && !s.literal) {
@@ -108,7 +109,7 @@ function updateBindingLiterals(segments) {
  * @return {Object} Returns segments and size
  * @throws {TypeError} if multiple path wildcards exist
  */
-export function finishParse(segments) {
+export function finishParse(segments: Segment[]) {
   allowOnePathWildcard(segments);
   updateBindingLiterals(segments);
   return {

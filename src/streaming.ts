@@ -41,16 +41,16 @@ import {Stream, Duplex, DuplexOptions} from 'stream';
  * @enum {number}
  */
 // tslint:disable-next-line variable-name
-export const StreamType = {
+export enum StreamType {
   /** Client sends a single request, server streams responses. */
-  SERVER_STREAMING: 1,
+  SERVER_STREAMING = 1,
 
   /** Client streams requests, server returns a single response. */
-  CLIENT_STREAMING: 2,
+  CLIENT_STREAMING = 2,
 
   /** Both client and server stream objects. */
-  BIDI_STREAMING: 3,
-};
+  BIDI_STREAMING = 3,
+}
 
 export class StreamProxy extends Duplexify {
   type: {};
@@ -65,7 +65,7 @@ export class StreamProxy extends Duplexify {
    * @param {StreamType} type - the type of gRPC stream.
    * @param {ApiCallback} callback - the callback for further API call.
    */
-  constructor(type, callback) {
+  constructor(type: StreamType, callback) {
     super(undefined, undefined, {
       objectMode: true,
       readable: type !== StreamType.CLIENT_STREAMING,
@@ -177,7 +177,7 @@ export class GrpcStreamable {
 }
 
 export class StreamDescriptor {
-  type: {};
+  type: StreamType;
   /**
    * Describes the structure of gRPC streaming call.
    * @constructor

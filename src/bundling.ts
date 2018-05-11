@@ -499,8 +499,8 @@ export class Bundleable extends NormalApiCaller {
 
 export class BundleDescriptor {
   bundledField: string;
-  requestDiscriminatorFields: string;
-  subresponseField: string;
+  requestDiscriminatorFields: string[];
+  subresponseField: string|null;
   byteLengthFunction: Function;
 
   /**
@@ -531,8 +531,8 @@ export class BundleDescriptor {
    * @constructor
    */
   constructor(
-      bundledField, requestDiscriminatorFields, subresponseField,
-      byteLengthFunction) {
+      bundledField: string, requestDiscriminatorFields: string[],
+      subresponseField: string|null, byteLengthFunction) {
     if (!byteLengthFunction && typeof subresponseField === 'function') {
       byteLengthFunction = subresponseField;
       subresponseField = null;
