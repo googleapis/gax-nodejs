@@ -91,8 +91,14 @@ function createApiCall(func, client?) {
   return utils.createApiCall(func, {descriptor});
 }
 
+interface SpyableOperationsClient extends OperationsClient {
+  getOperation: sinon.SinonSpy&longrunning.Operation;
+  cancelOperation: sinon.SinonSpy;
+  cancelGetOperationSpy: sinon.SinonSpy;
+}
+
 describe('longrunning', () => {
-  function mockOperationsClient(opts?): OperationsClient {
+  function mockOperationsClient(opts?): SpyableOperationsClient {
     opts = opts || {};
     let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
@@ -209,8 +215,7 @@ describe('longrunning', () => {
                 expect(result).to.deep.eq(RESPONSE_VAL);
                 expect(metadata).to.deep.eq(METADATA_VAL);
                 expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect((client.getOperation as sinon.SinonSpy).callCount)
-                    .to.eq(0);
+                expect(client.getOperation.callCount).to.eq(0);
                 done();
               });
             })
@@ -233,8 +238,7 @@ describe('longrunning', () => {
                 expect(result).to.deep.eq(RESPONSE_VAL);
                 expect(metadata).to.deep.eq(METADATA_VAL);
                 expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect((client.getOperation as sinon.SinonSpy).callCount)
-                    .to.eq(1);
+                expect(client.getOperation.callCount).to.eq(1);
                 done();
               });
             })
@@ -261,9 +265,7 @@ describe('longrunning', () => {
                         expect(result).to.deep.eq(RESPONSE_VAL);
                         expect(metadata).to.deep.eq(METADATA_VAL);
                         expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                        expect(
-                            (client.getOperation as sinon.SinonSpy).callCount)
-                            .to.eq(1);
+                        expect(client.getOperation.callCount).to.eq(1);
                         done();
                       })
                   // tslint:disable-next-line no-unused-expression
@@ -294,8 +296,7 @@ describe('longrunning', () => {
               expect(result).to.deep.eq(RESPONSE_VAL);
               expect(metadata).to.deep.eq(METADATA_VAL);
               expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect((client.getOperation as sinon.SinonSpy).callCount)
-                  .to.eq(1);
+              expect(client.getOperation.callCount).to.eq(1);
               done();
             })
             .catch(error => {
@@ -368,8 +369,7 @@ describe('longrunning', () => {
               expect(result).to.deep.eq(RESPONSE_VAL);
               expect(metadata).to.deep.eq(METADATA_VAL);
               expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect((client.getOperation as sinon.SinonSpy).callCount)
-                  .to.eq(expectedCalls);
+              expect(client.getOperation.callCount).to.eq(expectedCalls);
               done();
             })
             .catch(err => {
@@ -397,8 +397,7 @@ describe('longrunning', () => {
               done(new Error('should not get here'));
             })
             .catch(err => {
-              expect((client.getOperation as sinon.SinonSpy).callCount)
-                  .to.eq(expectedCalls);
+              expect(client.getOperation.callCount).to.eq(expectedCalls);
               expect(err.code).to.eq(FAKE_STATUS_CODE_1);
               expect(err.message).to.deep.eq('operation error');
               done();
@@ -449,8 +448,7 @@ describe('longrunning', () => {
               const p = operation.promise();
               operation.cancel().then(() => {
                 // tslint:disable-next-line no-unused-expression
-                expect((client.cancelOperation as sinon.SinonSpy).called)
-                    .to.be.true;
+                expect(client.cancelOperation.called).to.be.true;
                 // tslint:disable-next-line no-unused-expression no-any
                 expect((client as any).cancelGetOperationSpy.called).to.be.true;
                 done();
@@ -483,8 +481,7 @@ describe('longrunning', () => {
                 expect(result).to.deep.eq(RESPONSE_VAL);
                 expect(metadata).to.deep.eq(METADATA_VAL);
                 expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect((client.getOperation as sinon.SinonSpy).callCount)
-                    .to.eq(expectedCalls);
+                expect(client.getOperation.callCount).to.eq(expectedCalls);
                 done();
               });
               operation.on('error', () => {
@@ -513,8 +510,7 @@ describe('longrunning', () => {
                 done(new Error('Should not get here.'));
               });
               operation.on('error', err => {
-                expect((client.getOperation as sinon.SinonSpy).callCount)
-                    .to.eq(expectedCalls);
+                expect(client.getOperation.callCount).to.eq(expectedCalls);
                 expect(err.code).to.eq(FAKE_STATUS_CODE_1);
                 expect(err.message).to.deep.eq('operation error');
                 done();
@@ -556,8 +552,7 @@ describe('longrunning', () => {
                 done(new Error('Should not get here.'));
               });
               operation.on('progress', (metadata, rawResponse) => {
-                expect((client.getOperation as sinon.SinonSpy).callCount)
-                    .to.eq(expectedCalls);
+                expect(client.getOperation.callCount).to.eq(expectedCalls);
                 expect(metadata).to.deep.eq(updatedMetadataVal);
                 expect(rawResponse).to.deep.eq(updatedOp);
                 expect(operation.metadata).to.deep.eq(metadata);

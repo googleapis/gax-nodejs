@@ -40,7 +40,6 @@ import {Stream, Duplex, DuplexOptions} from 'stream';
  * The type of gRPC streaming.
  * @enum {number}
  */
-// tslint:disable-next-line variable-name
 export enum StreamType {
   /** Client sends a single request, server streams responses. */
   SERVER_STREAMING = 1,
@@ -139,7 +138,7 @@ export class GrpcStreamable {
     this.descriptor = descriptor;
   }
 
-  init(settings, callback) {
+  init(settings, callback): StreamProxy {
     return new StreamProxy(this.descriptor.type, callback);
   }
 
@@ -187,7 +186,7 @@ export class StreamDescriptor {
     this.type = streamType;
   }
 
-  apiCaller(settings) {
+  apiCaller(settings): GrpcStreamable {
     // Right now retrying does not work with gRPC-streaming, because retryable
     // assumes an API call returns an event emitter while gRPC-streaming methods
     // return Stream.

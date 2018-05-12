@@ -98,8 +98,8 @@ describe('createApiCall', () => {
       // The verifying value is slightly bigger than the expected number
       // 2000 / 30000, because sometimes runtime can consume some time before
       // the call starts.
-      expect(resp - start).above(2100);
-      expect(resp - start).most(30100);
+      expect(Number(resp) - start).above(2100);
+      expect(Number(resp) - start).most(30100);
       done();
     });
   });
@@ -321,9 +321,9 @@ describe('retryable', () => {
     const apiCall = createApiCall(spy, settings);
     apiCall(null, null, err => {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
       // tslint:disable-next-line no-unused-expression
-      expect(err.note).to.be.undefined;
+      expect(err!.note).to.be.undefined;
       expect(spy.callCount).to.eq(1);
       done();
     });
@@ -343,9 +343,9 @@ describe('retryable', () => {
     const apiCall = createApiCall(spy, settings);
     apiCall(null, null, err => {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
       // tslint:disable-next-line no-unused-expression
-      expect(err.note).to.be.ok;
+      expect(err!.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
       done();
     });
@@ -399,9 +399,9 @@ describe('retryable', () => {
     const apiCall = createApiCall(spy, settings);
     apiCall(null, null, err => {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_2);
+      expect(err!.code).to.eq(FAKE_STATUS_CODE_2);
       // tslint:disable-next-line no-unused-expression
-      expect(err.note).to.be.ok;
+      expect(err!.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
       done();
     });
@@ -433,9 +433,9 @@ describe('retryable', () => {
 
     apiCall(null, null, err => {
       expect(err).to.be.an('error');
-      expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+      expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
       // tslint:disable-next-line no-unused-expression
-      expect(err.note).to.be.ok;
+      expect(err!.note).to.be.ok;
       const now = new Date();
       expect(now.getTime() - startTime.getTime())
           .to.be.at.least(backoff.totalTimeoutMillis);

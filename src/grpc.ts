@@ -205,8 +205,7 @@ export class GrpcClient {
   }
 
   /**
-   * A wrapper of {@link constructSettings} function with under the gRPC
-   * context.
+   * A wrapper of {@link constructSettings} function under the gRPC context.
    *
    * Most of parameters are common among constructSettings, please take a look.
    * @param {string} serviceName - The fullly-qualified name of the service.

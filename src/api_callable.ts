@@ -37,13 +37,20 @@
 
 import * as util from 'util';
 import {RetryOptions} from './gax';
+import {Duplex} from 'stream';
+import {GoogleError} from './GoogleError';
+
+export interface ArgumentFunction {
+  (argument: {}, callback: APICallback): void;
+}
 
 /**
  * @callback APICallback
  * @param {?Error} error
  * @param {?Object} response
  */
-export type APICallback = (err: Error|null, response?: {}) => void;
+export type APICallback =
+    (err: GoogleError|null, response?: {}, next?: {}, rawResponse?: {}) => void;
 
 /**
  * @callback APIFunc
@@ -63,6 +70,10 @@ export type APIFunc =
  * @param {APICallback} callback
  * @return {Promise|Stream|undefined}
  */
+export interface APICall {
+  // tslint:disable-next-line no-any
+  (argument?: {}|null, callOptions?: {}|null, callback?: APICallback): any;
+}
 
 export class Canceller {
   callback?: APICallback;
@@ -88,7 +99,7 @@ export class Canceller {
   /**
    * Cancels the ongoing promise.
    */
-  cancel() {
+  cancel(): void {
     if (this.completed) {
       return;
     }
@@ -112,7 +123,7 @@ export class Canceller {
    */
   call(
       aFunc: (obj: {}, callback: APICallback) => PromiseCanceller,
-      argument: {}) {
+      argument: {}): void {
     if (this.completed) {
       return;
     }
@@ -135,7 +146,7 @@ export interface CancellablePromise<T = any> extends Promise<T> {
 
 // tslint:disable-next-line no-any
 export class PromiseCanceller<T = any> extends Canceller {
-  promise: CancellablePromise;
+  promise: CancellablePromise<T>;
   /**
    * PromiseCanceller is Canceller, but it holds a promise when
    * the API call finishes.
@@ -162,7 +173,7 @@ export class PromiseCanceller<T = any> extends Canceller {
   }
 }
 
-export interface OtherArgs {
+export interface ApiCallOtherArgs {
   options?: {deadline?: Date;};
   headers?: {};
   metadataBuilder: (abTests?: {}, headers?: {}) => {};
@@ -184,7 +195,8 @@ export interface OtherArgs {
  *  the function with other arguments and the timeout.
  */
 function addTimeoutArg(
-    aFunc: APIFunc, timeout: number, otherArgs: OtherArgs, abTests?: {}) {
+    aFunc: APIFunc, timeout: number, otherArgs: ApiCallOtherArgs,
+    abTests?: {}): ArgumentFunction {
   // TODO: this assumes the other arguments consist of metadata and options,
   // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
   return function timeoutFunc(argument, callback) {
@@ -211,7 +223,9 @@ function addTimeoutArg(
  * @param {Object} otherArgs - the additional arguments to be passed to aFunc.
  * @return {function(Object, APICallback)} A function that will retry.
  */
-function retryable(aFunc: APIFunc, retry: RetryOptions, otherArgs: OtherArgs) {
+function retryable(
+    aFunc: APIFunc, retry: RetryOptions,
+    otherArgs: ApiCallOtherArgs): ArgumentFunction {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
   const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
@@ -230,7 +244,7 @@ function retryable(aFunc: APIFunc, retry: RetryOptions, otherArgs: OtherArgs) {
    * @return {function()} cancel function.
    */
   return function retryingFunc(argument: {}, callback: APICallback) {
-    let canceller: Canceller|null;
+    let canceller: Canceller|null|void;
     let timeoutId: NodeJS.Timer|null;
     let now = new Date();
     let deadline: number;
@@ -260,14 +274,14 @@ function retryable(aFunc: APIFunc, retry: RetryOptions, otherArgs: OtherArgs) {
 
       retries++;
       const toCall = addTimeoutArg(aFunc, timeout, otherArgs);
-      canceller = toCall(argument, (err, ...args: Array<{}|null>) => {
+      canceller = toCall(argument, (err, ...args) => {
         if (!err) {
           args.unshift(null);
           callback.apply(null, args);
           return;
         }
         canceller = null;
-        if (retry.retryCodes.indexOf(err.code) < 0) {
+        if (retry.retryCodes.indexOf(err!.code!) < 0) {
           err.note = 'Exception occurred in retry method that was ' +
               'not classified as transient';
           callback(err);
@@ -314,22 +328,23 @@ function retryable(aFunc: APIFunc, retry: RetryOptions, otherArgs: OtherArgs) {
  * @constructor
  */
 export class NormalApiCaller {
-  init(settings: {promise: PromiseConstructor}, callback: APICallback) {
+  init(settings: {promise: PromiseConstructor}, callback: APICallback):
+      PromiseCanceller|Canceller {
     if (callback) {
       return new Canceller(callback);
     }
     return new PromiseCanceller(settings.promise);
   }
 
-  wrap(func: Function) {
+  wrap(func: Function): Function {
     return func;
   }
 
-  call(apiCall, argument, settings, canceller) {
+  call(apiCall, argument, settings, canceller): void {
     canceller.call(apiCall, argument);
   }
 
-  fail(canceller, err) {
+  fail(canceller, err): void {
     canceller.callback(err);
   }
 
@@ -360,7 +375,7 @@ export class NormalApiCaller {
  * @return {APICall} func - a bound method on a request stub used
  *   to make an rpc call.
  */
-export function createApiCall(funcWithAuth, settings, optDescriptor?) {
+export function createApiCall(funcWithAuth, settings, optDescriptor?): APICall {
   const apiCaller =
       optDescriptor ? optDescriptor.apiCaller(settings) : new NormalApiCaller();
 

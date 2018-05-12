@@ -87,9 +87,9 @@
  * @property {BackoffSettings} backoffSettings
  */
 export class RetryOptions {
-  retryCodes: string[];
+  retryCodes: number[];
   backoffSettings: BackoffSettings;
-  constructor(retryCodes: string[], backoffSettings: BackoffSettings) {
+  constructor(retryCodes: number[], backoffSettings: BackoffSettings) {
     this.retryCodes = retryCodes;
     this.backoffSettings = backoffSettings;
   }

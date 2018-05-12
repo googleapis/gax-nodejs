@@ -38,6 +38,7 @@ import * as streaming from '../src/streaming';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
+import {Stream, Duplex} from 'stream';
 
 function createApiCall(func, type) {
   // can't use "createApiCall" in util.js because argument list is different
