@@ -68,241 +68,241 @@ const COMMON_PROTO_FILES =
           return filename.substring(googleProtoFilesDir.length + 1);
         });
 
-/**
- * A class which keeps the context of gRPC and auth for the gRPC.
- *
- * @param {Object=} options - The optional parameters. It will be directly
- *   passed to google-auto-auth library, so parameters like keyFile or
- *   credentials will be valid.
- * @param {Object=} options.auth - An instance of google-auto-auth.
- *   When specified, this auth instance will be used instead of creating
- *   a new one.
- * @param {Object=} options.grpc - When specified, this will be used
- *   for the 'grpc' module in this context. By default, it will load the grpc
- *   module in the standard way.
- * @param {Function=} options.promise - A constructor for a promise that
- * implements the ES6 specification of promise. If not provided, native promises
- * will be used.
- * @constructor
- */
-function GrpcClient(options) {
-  // if (!(this instanceof GrpcClient)) {
-  //   return new GrpcClient(options);
-  // }
-  options = options || {};
-  this.auth = options.auth || autoAuth(options);
-  this.promise = options.promise || Promise;
-  if ('grpc' in options) {
-    this.grpc = options.grpc;
-    this.grpcVersion = '';
-  } else {
-    this.grpc = require('grpc');
-    this.grpcVersion = require('grpc/package.json').version;
-  }
-}
-module.exports = (options) => new GrpcClient(options);
-
-/**
- * Creates a gRPC credentials. It asks the auth data if necessary.
- * @private
- * @param {Object} opts - options values for configuring credentials.
- * @param {Object=} opts.sslCreds - when specified, this is used instead
- *   of default channel credentials.
- * @return {Promise} The promise which will be resolved to the gRPC credential.
- */
-GrpcClient.prototype._getCredentials = function _getCredentials(opts) {
-  // tslint:disable-next-line variable-name
-  const PromiseCtor = this.promise;
-  if (opts.sslCreds) {
-    return PromiseCtor.resolve(opts.sslCreds);
-  }
-  const grpc = this.grpc;
-  const getAuthClient = this.auth.getAuthClient.bind(this.auth);
-  const sslCreds = grpc.credentials.createSsl();
-  return new PromiseCtor((resolve, reject) => {
-    getAuthClient((err, auth) => {
-      if (err) {
-        reject(err);
-      } else {
-        const credentials = grpc.credentials.combineChannelCredentials(
-            sslCreds, grpc.credentials.createFromGoogleCredential(auth));
-        resolve(credentials);
-      }
-    });
-  });
-};
-
-/**
- * Load grpc proto services with the specific arguments.
- * @param {Array=} args - The argument list to be passed to grpc.load().
- * @return {Object} The gRPC loaded result (the toplevel namespace object).
- */
-GrpcClient.prototype.load = function(args) {
-  if (!args) {
-    args = [];
-  } else if (!Array.isArray(args)) {
-    args = [args];
-  }
-  if (args.length === 1) {
-    args.push('proto', {convertFieldsToCamelCase: true});
-  }
-  return this.grpc.load.apply(this.grpc, args);
-};
-
-/**
- * Load grpc proto service from a filename hooking in googleapis common protos
- * when necessary.
- * @param {String} protoPath - The directory to search for the protofile.
- * @param {String} filename - The filename of the proto to be loaded.
- * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
- *   object).
- */
-GrpcClient.prototype.loadProto = function(protoPath, filename) {
+export class GrpcClient {
   // tslint:disable-next-line no-any
-  const resolvedPath = (GrpcClient as any)._resolveFile(protoPath, filename);
-  return this.grpc.loadObject(
-      protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
-};
+  auth: any;
+  promise: PromiseConstructor;
+  // tslint:disable-next-line no-any
+  grpc: any;
+  grpcVersion: string;
 
-// tslint:disable-next-line no-any
-(GrpcClient as any)._resolveFile = (protoPath, filename) => {
-  if (fs.existsSync(path.join(protoPath, filename))) {
-    return path.join(protoPath, filename);
-  } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
-    return path.join(googleProtoFilesDir, filename);
-  }
-  throw new Error(filename + ' could not be found in ' + protoPath);
-};
-
-GrpcClient.prototype.metadataBuilder = function(headers) {
-  const Metadata = this.grpc.Metadata;
-  const baseMetadata = new Metadata();
-  // tslint:disable-next-line forin
-  for (const key in headers) {
-    baseMetadata.set(key, headers[key]);
-  }
-  return function buildMetadata(abTests, moreHeaders) {
-    // TODO: bring the A/B testing info into the metadata.
-    let copied = false;
-    let metadata = baseMetadata;
-    for (const key in moreHeaders) {
-      if (key.toLowerCase() !== 'x-goog-api-client' &&
-          moreHeaders.hasOwnProperty(key)) {
-        if (!copied) {
-          copied = true;
-          metadata = metadata.clone();
-        }
-        metadata.set(key, moreHeaders[key]);
-      }
+  /**
+   * A class which keeps the context of gRPC and auth for the gRPC.
+   *
+   * @param {Object=} options - The optional parameters. It will be directly
+   *   passed to google-auto-auth library, so parameters like keyFile or
+   *   credentials will be valid.
+   * @param {Object=} options.auth - An instance of google-auto-auth.
+   *   When specified, this auth instance will be used instead of creating
+   *   a new one.
+   * @param {Object=} options.grpc - When specified, this will be used
+   *   for the 'grpc' module in this context. By default, it will load the grpc
+   *   module in the standard way.
+   * @param {Function=} options.promise - A constructor for a promise that
+   * implements the ES6 specification of promise. If not provided, native
+   * promises will be used.
+   * @constructor
+   */
+  constructor(options) {
+    // if (!(this instanceof GrpcClient)) {
+    //   return new GrpcClient(options);
+    // }
+    options = options || {};
+    this.auth = options.auth || autoAuth(options);
+    this.promise = options.promise || Promise;
+    if ('grpc' in options) {
+      this.grpc = options.grpc;
+      this.grpcVersion = '';
+    } else {
+      this.grpc = require('grpc');
+      this.grpcVersion = require('grpc/package.json').version;
     }
-    return metadata;
-  };
-};
+  }
 
-/**
- * A wrapper of {@link constructSettings} function with under the gRPC context.
- *
- * Most of parameters are common among constructSettings, please take a look.
- * @param {string} serviceName - The fullly-qualified name of the service.
- * @param {Object} clientConfig - A dictionary of the client config.
- * @param {Object} configOverrides - A dictionary of overriding configs.
- * @param {Object} headers - A dictionary of additional HTTP header name to
- *   its value.
- * @return {Object} A mapping of method names to CallSettings.
- */
-GrpcClient.prototype.constructSettings = function constructSettings(
-    serviceName, clientConfig, configOverrides, headers) {
-  return gax.constructSettings(
-      serviceName, clientConfig, configOverrides, this.grpc.status,
-      {metadataBuilder: this.metadataBuilder(headers)}, this.promise);
-};
-
-/**
- * Creates a gRPC stub with current gRPC and auth.
- * @param {function} CreateStub - The constructor function of the stub.
- * @param {Object} options - The optional arguments to customize
- *   gRPC connection. This options will be passed to the constructor of
- *   gRPC client too.
- * @param {string} options.servicePath - The name of the server of the service.
- * @param {number} options.port - The port of the service.
- * @param {grpc.ClientCredentials=} options.sslCreds - The credentials to be used
- *   to set up gRPC connection.
- * @return {Promise} A promse which resolves to a gRPC stub instance.
- */
-// tslint:disable-next-line variable-name
-GrpcClient.prototype.createStub = function(CreateStub, options) {
-  const serviceAddress = options.servicePath + ':' + options.port;
-  return this._getCredentials(options).then(credentials => {
-    const grpcOptions = {};
-    Object.keys(options).forEach(key => {
-      if (key.indexOf('grpc.') === 0) {
-        grpcOptions[key] = options[key];
-      }
+  /**
+   * Creates a gRPC credentials. It asks the auth data if necessary.
+   * @private
+   * @param {Object} opts - options values for configuring credentials.
+   * @param {Object=} opts.sslCreds - when specified, this is used instead
+   *   of default channel credentials.
+   * @return {Promise} The promise which will be resolved to the gRPC credential.
+   */
+  _getCredentials(opts) {
+    // tslint:disable-next-line variable-name
+    const PromiseCtor = this.promise;
+    if (opts.sslCreds) {
+      return PromiseCtor.resolve(opts.sslCreds);
+    }
+    const grpc = this.grpc;
+    const getAuthClient = this.auth.getAuthClient.bind(this.auth);
+    const sslCreds = grpc.credentials.createSsl();
+    return new PromiseCtor((resolve, reject) => {
+      getAuthClient((err, auth) => {
+        if (err) {
+          reject(err);
+        } else {
+          const credentials = grpc.credentials.combineChannelCredentials(
+              sslCreds, grpc.credentials.createFromGoogleCredential(auth));
+          resolve(credentials);
+        }
+      });
     });
-    return new CreateStub(serviceAddress, credentials, grpcOptions);
-  });
-};
+  }
 
-/**
- * Creates a 'bytelength' function for a given proto message class.
- *
- * See {@link BundleDescriptor} about the meaning of the return value.
- *
- * @param {function} message - a constructor function that is generated by
- *   protobuf.js. Assumes 'encoder' field in the message.
- * @return {function(Object):number} - a function to compute the byte length
- *   for an object.
- */
-// tslint:disable-next-line no-any
-(GrpcClient as any).createByteLengthFunction =
-    function createByteLengthFunction(message) {
-  return function getByteLength(obj) {
-    return message.encode(obj).finish().length;
-  };
-};
+  /**
+   * Load grpc proto services with the specific arguments.
+   * @param {Array=} args - The argument list to be passed to grpc.load().
+   * @return {Object} The gRPC loaded result (the toplevel namespace object).
+   */
+  load(args) {
+    if (!args) {
+      args = [];
+    } else if (!Array.isArray(args)) {
+      args = [args];
+    }
+    if (args.length === 1) {
+      args.push('proto', {convertFieldsToCamelCase: true});
+    }
+    return this.grpc.load.apply(this.grpc, args);
+  }
 
-function GoogleProtoFilesRoot() {
-  protobuf.Root.call(this, [].slice.apply(arguments));
+  /**
+   * Load grpc proto service from a filename hooking in googleapis common protos
+   * when necessary.
+   * @param {String} protoPath - The directory to search for the protofile.
+   * @param {String} filename - The filename of the proto to be loaded.
+   * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
+   *   object).
+   */
+  loadProto(protoPath, filename) {
+    const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
+    return this.grpc.loadObject(
+        protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
+  }
+
+  static _resolveFile(protoPath, filename) {
+    if (fs.existsSync(path.join(protoPath, filename))) {
+      return path.join(protoPath, filename);
+    } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
+      return path.join(googleProtoFilesDir, filename);
+    }
+    throw new Error(filename + ' could not be found in ' + protoPath);
+  }
+
+  metadataBuilder(headers) {
+    const Metadata = this.grpc.Metadata;
+    const baseMetadata = new Metadata();
+    // tslint:disable-next-line forin
+    for (const key in headers) {
+      baseMetadata.set(key, headers[key]);
+    }
+    return function buildMetadata(abTests?, moreHeaders?) {
+      // TODO: bring the A/B testing info into the metadata.
+      let copied = false;
+      let metadata = baseMetadata;
+      for (const key in moreHeaders) {
+        if (key.toLowerCase() !== 'x-goog-api-client' &&
+            moreHeaders.hasOwnProperty(key)) {
+          if (!copied) {
+            copied = true;
+            metadata = metadata.clone();
+          }
+          metadata.set(key, moreHeaders[key]);
+        }
+      }
+      return metadata;
+    };
+  }
+
+  /**
+   * A wrapper of {@link constructSettings} function under the gRPC context.
+   *
+   * Most of parameters are common among constructSettings, please take a look.
+   * @param {string} serviceName - The fullly-qualified name of the service.
+   * @param {Object} clientConfig - A dictionary of the client config.
+   * @param {Object} configOverrides - A dictionary of overriding configs.
+   * @param {Object} headers - A dictionary of additional HTTP header name to
+   *   its value.
+   * @return {Object} A mapping of method names to CallSettings.
+   */
+  constructSettings(serviceName, clientConfig, configOverrides, headers) {
+    return gax.constructSettings(
+        serviceName, clientConfig, configOverrides, this.grpc.status,
+        {metadataBuilder: this.metadataBuilder(headers)}, this.promise);
+  }
+
+  /**
+   * Creates a gRPC stub with current gRPC and auth.
+   * @param {function} CreateStub - The constructor function of the stub.
+   * @param {Object} options - The optional arguments to customize
+   *   gRPC connection. This options will be passed to the constructor of
+   *   gRPC client too.
+   * @param {string} options.servicePath - The name of the server of the service.
+   * @param {number} options.port - The port of the service.
+   * @param {grpc.ClientCredentials=} options.sslCreds - The credentials to be used
+   *   to set up gRPC connection.
+   * @return {Promise} A promse which resolves to a gRPC stub instance.
+   */
+  // tslint:disable-next-line variable-name
+  createStub(CreateStub, options) {
+    const serviceAddress = options.servicePath + ':' + options.port;
+    return this._getCredentials(options).then(credentials => {
+      const grpcOptions = {};
+      Object.keys(options).forEach(key => {
+        if (key.indexOf('grpc.') === 0) {
+          grpcOptions[key] = options[key];
+        }
+      });
+      return new CreateStub(serviceAddress, credentials, grpcOptions);
+    });
+  }
+
+  /**
+   * Creates a 'bytelength' function for a given proto message class.
+   *
+   * See {@link BundleDescriptor} about the meaning of the return value.
+   *
+   * @param {function} message - a constructor function that is generated by
+   *   protobuf.js. Assumes 'encoder' field in the message.
+   * @return {function(Object):number} - a function to compute the byte length
+   *   for an object.
+   */
+  static createByteLengthFunction(message) {
+    return function getByteLength(obj) {
+      return message.encode(obj).finish().length;
+    };
+  }
 }
-util.inherits(GoogleProtoFilesRoot, protobuf.Root);
 
-module.exports.GoogleProtoFilesRoot = GoogleProtoFilesRoot;
+export class GoogleProtoFilesRoot extends protobuf.Root {
+  constructor(...args: Array<{}>) {
+    super(...args);
+  }
 
-// Causes the loading of an included proto to check if it is a common
-// proto. If it is a common proto, use the google-proto-files proto.
-GoogleProtoFilesRoot.prototype.resolvePath = (originPath, includePath) => {
-  originPath = path.normalize(originPath);
-  includePath = path.normalize(includePath);
+  // Causes the loading of an included proto to check if it is a common
+  // proto. If it is a common proto, use the google-proto-files proto.
+  resolvePath(originPath, includePath) {
+    originPath = path.normalize(originPath);
+    includePath = path.normalize(includePath);
 
-  // Fully qualified paths don't need to be resolved.
-  if (path.isAbsolute(includePath)) {
-    if (!fs.existsSync(includePath)) {
+    // Fully qualified paths don't need to be resolved.
+    if (path.isAbsolute(includePath)) {
+      if (!fs.existsSync(includePath)) {
+        throw new Error('The include `' + includePath + '` was not found.');
+      }
+      return includePath;
+    }
+
+    if (COMMON_PROTO_FILES.indexOf(includePath) > -1) {
+      return path.join(googleProtoFilesDir, includePath);
+    }
+
+    return GoogleProtoFilesRoot._findIncludePath(originPath, includePath);
+  }
+
+  static _findIncludePath(originPath, includePath) {
+    originPath = path.normalize(originPath);
+    includePath = path.normalize(includePath);
+
+    let current = originPath;
+    let found = fs.existsSync(path.join(current, includePath));
+    while (!found && current.length > 0) {
+      current = current.substring(0, current.lastIndexOf(path.sep));
+      found = fs.existsSync(path.join(current, includePath));
+    }
+    if (!found) {
       throw new Error('The include `' + includePath + '` was not found.');
     }
-    return includePath;
+    return path.join(current, includePath);
   }
-
-  if (COMMON_PROTO_FILES.indexOf(includePath) > -1) {
-    return path.join(googleProtoFilesDir, includePath);
-  }
-  // tslint:disable-next-line no-any
-  return (GoogleProtoFilesRoot as any)
-      ._findIncludePath(originPath, includePath);
-};
-
-// tslint:disable-next-line no-any
-(GoogleProtoFilesRoot as any)._findIncludePath = (originPath, includePath) => {
-  originPath = path.normalize(originPath);
-  includePath = path.normalize(includePath);
-
-  let current = originPath;
-  let found = fs.existsSync(path.join(current, includePath));
-  while (!found && current.length > 0) {
-    current = current.substring(0, current.lastIndexOf(path.sep));
-    found = fs.existsSync(path.join(current, includePath));
-  }
-  if (!found) {
-    throw new Error('The include `' + includePath + '` was not found.');
-  }
-  return path.join(current, includePath);
-};
+}

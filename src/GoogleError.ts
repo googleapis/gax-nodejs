@@ -31,4 +31,5 @@
 
 export class GoogleError extends Error {
   code?: number;
+  note?: string;
 }

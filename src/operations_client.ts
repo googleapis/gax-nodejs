@@ -168,7 +168,7 @@ export class OperationsClient {
    *     console.error(err);
    * });
    */
-  getOperation(request, options, callback) {
+  getOperation(request, options, callback?) {
     if (options instanceof Function && callback === undefined) {
       callback = options;
       options = {};
@@ -382,7 +382,7 @@ export class OperationsClient {
    *     console.error(err);
    * });
    */
-  cancelOperation(request, options, callback) {
+  cancelOperation(request, options?, callback?) {
     if (options instanceof Function && callback === undefined) {
       callback = options;
       options = {};

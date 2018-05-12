@@ -33,9 +33,10 @@ import * as events from 'events';
 import {EventEmitter} from 'events';
 import * as util from 'util';
 
-import {NormalApiCaller} from './api_callable';
-import {createBackoffSettings} from './gax';
+import {CancellablePromise, NormalApiCaller} from './api_callable';
+import {BackoffSettings, createBackoffSettings} from './gax';
 import {GoogleError} from './GoogleError';
+import {OperationsClient} from './operations_client';
 
 /**
  * A callback to upack a google.protobuf.Any message.
@@ -43,11 +44,14 @@ import {GoogleError} from './GoogleError';
  * @param {google.protobuf.Any} message - The message to unpacked.
  * @return {Object} - The unpacked message.
  */
+export interface AnyDecoder {
+  (message: {}): {};
+}
 
 export class LongrunningDescriptor {
-  operationsClient;
-  responseDecoder;
-  metadataDecoder;
+  operationsClient: OperationsClient;
+  responseDecoder: AnyDecoder;
+  metadataDecoder: AnyDecoder;
 
   /**
    * Describes the structure of a page-streaming call.
@@ -65,7 +69,9 @@ export class LongrunningDescriptor {
    *
    * @constructor
    */
-  constructor(operationsClient, responseDecoder, metadataDecoder) {
+  constructor(
+      operationsClient: OperationsClient, responseDecoder: AnyDecoder,
+      metadataDecoder: AnyDecoder) {
     this.operationsClient = operationsClient;
     this.responseDecoder = responseDecoder;
     this.metadataDecoder = metadataDecoder;
@@ -122,15 +128,18 @@ export class LongrunningApiCaller extends NormalApiCaller {
 }
 
 export class Operation extends EventEmitter {
-  completeListeners;
-  hasActiveListeners;
-  latestResponse;
-  longrunningDescriptor;
+  completeListeners: number;
+  hasActiveListeners: boolean;
+  latestResponse: Operation;
+  longrunningDescriptor: LongrunningDescriptor;
   result;
   metadata;
-  backoffSettings;
+  backoffSettings: BackoffSettings;
   _callOptions;
-  currentCallPromise_;
+  currentCallPromise_?: CancellablePromise;
+  name?: string;
+  done?: boolean;
+  error?: GoogleError;
 
   /**
    * Wrapper for a google.longrunnung.Operation.
@@ -145,7 +154,9 @@ export class Operation extends EventEmitter {
    * @param {CallOptions=} callOptions - CallOptions used in making get operation
    * requests.
    */
-  constructor(grpcOp, longrunningDescriptor, backoffSettings, callOptions) {
+  constructor(
+      grpcOp: Operation, longrunningDescriptor: LongrunningDescriptor,
+      backoffSettings: BackoffSettings, callOptions) {
     super();
     this.completeListeners = 0;
     this.hasActiveListeners = false;
@@ -255,7 +266,7 @@ export class Operation extends EventEmitter {
     this.currentCallPromise_ = operationsClient.getOperation(
         {name: this.latestResponse.name}, this._callOptions);
 
-    const noCallbackPromise = this.currentCallPromise_.then(responses => {
+    const noCallbackPromise = this.currentCallPromise_!.then(responses => {
       self.latestResponse = responses[0];
       self._unpackResponse(responses[0], callback);
       return promisifyResponse();

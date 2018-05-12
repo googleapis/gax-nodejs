@@ -41,14 +41,28 @@ import * as util from 'util';
 import * as extras from './parser_extras';
 const parser = require('./path_template_parser');
 
-export class PathTemplate {
-  private readonly parseResult;
+export interface ParseResult {
+  size: number;
+  segments: Segment[];
+}
 
-  get size() {
+export interface Segment {
+  kind: number;
+  literal: string;
+}
+
+export type Bindings = {
+  [index: string]: string
+};
+
+export class PathTemplate {
+  private readonly parseResult: ParseResult;
+
+  get size(): number {
     return this.parseResult.size;
   }
 
-  get segments() {
+  get segments(): Segment[] {
     return this.parseResult.segments;
   }
 
@@ -68,11 +82,11 @@ export class PathTemplate {
    * @return {Object} contains const names matched to binding values
    * @throws {TypeError} if path can't be matched to this template
    */
-  match(path) {
+  match(path: string): Bindings {
     const pathSegments = path.split('/');
-    const bindings = {};
+    const bindings: Bindings = {};
     let segmentCount = this.size;
-    let current: number;
+    let current: string;
     let index = 0;
     this.segments.forEach(segment => {
       if (index > pathSegments.length) {
@@ -115,8 +129,8 @@ export class PathTemplate {
    * @throws {TypeError} if a key is missing, or if a sub-template cannot be
    *   parsed
    */
-  render(bindings) {
-    const out: Array<{}> = [];
+  render(bindings: Bindings): string {
+    const out: Segment[] = [];
     let inABinding = false;
     this.segments.forEach(segment => {
       if (segment.kind === extras.BINDING) {
@@ -159,7 +173,7 @@ export class PathTemplate {
  * @return {string} - A string representing segments in the path template
  *   format.
  */
-function formatSegments(segments) {
+function formatSegments(segments: Segment[]): string {
   let out = '';
   let slash = true;
   segments.forEach(segment => {

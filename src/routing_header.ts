@@ -38,9 +38,6 @@
  * Generally, these headers are specified as gRPC metadata.
  */
 
-// This is here to fix a TypeScript bug.
-// https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
-
 'use strict';
 
 /**
@@ -49,7 +46,7 @@
  * @param {Object} params - the request header parameters.
  * @return {string} the routing header value.
  */
-export function fromParams(params) {
+export function fromParams(params: {}): string {
   return Object.keys(params)
       .map(key => {
         return key + '=' + params[key];

@@ -30,12 +30,16 @@
 
 'use strict';
 
-const gaxGrpc = require('../src/grpc');
+import {GrpcClient, GoogleProtoFilesRoot} from '../src/grpc';
 import {expect} from 'chai';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
+
+function gaxGrpc(options?) {
+  return new GrpcClient(options);
+}
 
 describe('grpc', () => {
   describe('grpcVersion', () => {
@@ -255,9 +259,7 @@ describe('grpc', () => {
          });
 
       it('should load a test file', done => {
-        protobuf
-            .load(
-                TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
+        protobuf.load(TEST_FILE, new GoogleProtoFilesRoot())
             .then(root => {
               expect(root).to.be.an.instanceOf(protobuf.Root);
               expect(root.lookup('google.example.library.v1.LibraryService'))
@@ -270,10 +272,7 @@ describe('grpc', () => {
       });
 
       it('should fail trying to load a non existent file.', done => {
-        protobuf
-            .load(
-                NON_EXISTENT_FILE,
-                new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
+        protobuf.load(NON_EXISTENT_FILE, new GoogleProtoFilesRoot())
             .then(() => {
               done(Error('should not get here'));
             })
@@ -283,10 +282,7 @@ describe('grpc', () => {
       });
 
       it('should fail loading a file with a missing include.', done => {
-        protobuf
-            .load(
-                MISSING_INCLUDE_FILE,
-                new gaxGrpc.GoogleProtoFilesRoot() as protobuf.Root)
+        protobuf.load(MISSING_INCLUDE_FILE, new GoogleProtoFilesRoot())
             .then(() => {
               done(Error('should not get here'));
             })
@@ -305,8 +301,7 @@ describe('grpc', () => {
          });
 
       it('should load a test file that relies on common protos', () => {
-        const root =
-            protobuf.loadSync(TEST_FILE, new gaxGrpc.GoogleProtoFilesRoot());
+        const root = protobuf.loadSync(TEST_FILE, new GoogleProtoFilesRoot());
         expect(root).to.be.an.instanceOf(protobuf.Root);
         expect(root.lookup('google.example.library.v1.LibraryService'))
             .to.be.an.instanceOf(protobuf.Service);
@@ -316,14 +311,13 @@ describe('grpc', () => {
 
       it('should fail trying to load a non existent file.', () => {
         expect(protobuf.loadSync.bind(
-                   null, NON_EXISTENT_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+                   null, NON_EXISTENT_FILE, new GoogleProtoFilesRoot()))
             .to.throw();
       });
 
       it('should fail loading a file with a missing include', () => {
-        expect(
-            protobuf.loadSync.bind(
-                null, MISSING_INCLUDE_FILE, new gaxGrpc.GoogleProtoFilesRoot()))
+        expect(protobuf.loadSync.bind(
+                   null, MISSING_INCLUDE_FILE, new GoogleProtoFilesRoot()))
             .to.throw();
       });
     });

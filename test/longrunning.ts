@@ -37,6 +37,7 @@ import * as longrunning from '../src/longrunning';
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as utils from './utils';
+import {OperationsClient} from '../src/operations_client';
 
 // tslint:disable-next-line no-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
@@ -90,8 +91,14 @@ function createApiCall(func, client?) {
   return utils.createApiCall(func, {descriptor});
 }
 
+interface SpyableOperationsClient extends OperationsClient {
+  getOperation: sinon.SinonSpy&longrunning.Operation;
+  cancelOperation: sinon.SinonSpy;
+  cancelGetOperationSpy: sinon.SinonSpy;
+}
+
 describe('longrunning', () => {
-  function mockOperationsClient(opts?) {
+  function mockOperationsClient(opts?): SpyableOperationsClient {
     opts = opts || {};
     let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
@@ -118,7 +125,8 @@ describe('longrunning', () => {
       getOperation: getOperationSpy,
       cancelOperation: cancelOperationSpy,
       cancelGetOperationSpy,
-    };
+      // tslint:disable-next-line no-any
+    } as any;
   }
 
   describe('createApiCall', () => {
@@ -161,7 +169,7 @@ describe('longrunning', () => {
     it('returns an Operation with correct values', done => {
       const client = mockOperationsClient();
       const desc = new longrunning.LongrunningDescriptor(
-          client, mockDecoder, mockDecoder);
+          client as OperationsClient, mockDecoder, mockDecoder);
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
       const maxRetryDelayMillis = 3;
@@ -441,8 +449,8 @@ describe('longrunning', () => {
               operation.cancel().then(() => {
                 // tslint:disable-next-line no-unused-expression
                 expect(client.cancelOperation.called).to.be.true;
-                // tslint:disable-next-line no-unused-expression
-                expect(client.cancelGetOperationSpy.called).to.be.true;
+                // tslint:disable-next-line no-unused-expression no-any
+                expect((client as any).cancelGetOperationSpy.called).to.be.true;
                 done();
               });
               return p;
