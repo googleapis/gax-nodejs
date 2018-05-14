@@ -800,7 +800,7 @@ describe('Executor', () => {
         executor.schedule(spy, {field1: [1], field2: 'id'}, () => {
           expect(spy.callCount).to.eq(2);
           const secondEnded = new Date().getTime();
-          expect(secondEnded - firstEnded).to.be.least(50);
+          expect(secondEnded - firstEnded).to.be.least(49);
           done();
         });
       });
