@@ -1,7 +1,7 @@
 Google API Extensions for Node.js
 =================================
 
-[![Build Status](https://travis-ci.org/googleapis/gax-nodejs.svg?branch=master)](https://travis-ci.org/googleapis/gax-nodejs)
+[![CircleCI](https://circleci.com/gh/googleapis/gax-nodejs.svg?style=shield)](https://circleci.com/gh/googleapis/gax-nodejs)
 [![Code Coverage](https://img.shields.io/codecov/c/github/googleapis/gax-nodejs.svg)](https://codecov.io/github/googleapis/gax-nodejs)
 [![Dependencies](https://david-dm.org/googleapis/gax-nodejs.svg)](https://david-dm.org/googleapis/gax-nodejs)
 
