@@ -8,6 +8,7 @@
     "build/src"
   ],
   "dependencies": {
+    "@grpc/proto-loader": "^0.1.0",
     "duplexify": "^3.6.0",
     "extend": "^3.0.1",
     "globby": "^8.0.1",

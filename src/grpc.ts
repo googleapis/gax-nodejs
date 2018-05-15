@@ -34,15 +34,46 @@
 import * as fs from 'fs';
 import * as util from 'util';
 import * as globby from 'globby';
+import * as grpcTypes from 'grpc';                           // for types only
+import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as gax from './gax';
-import {IncomingHttpHeaders} from 'http';
+import {OutgoingHttpHeaders} from 'http';
 import {AnyDecoder} from './longrunning';
 let googleProtoFilesDir = require('google-proto-files')('..');
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
+
+/**
+ * Options accepted by grpc.load, which was formerly called by GrpcClient#load.
+ */
+export interface GrpcLoadOldOptions {
+  convertFieldsToCamelCase?: boolean;
+  binaryAsBase64?: boolean;
+  longsAsStrings?: boolean;
+  enumsAsStrings?: boolean;
+}
+
+/**
+ * Acceptable types for values of `filename` in GrpcClient#load.
+ */
+export type GrpcLoadFileArg = string|{
+  root?: string;
+  file: string;
+};
+
+/**
+ * Options accepted by GrpcClient#load.
+ */
+export type GrpcLoadOptions = GrpcLoadOldOptions&grpcProtoLoaderTypes.Options;
+
+/**
+ * GrpcClient#load accepts its arguments in either load(args) or load(...args)
+ * format. This is the type of `args` in the former of the two.
+ */
+export type GrpcLoadArgs = [GrpcLoadFileArg, null, GrpcLoadOptions];
 
 const COMMON_PROTO_DIRS = [
   // This list of directories is defined here:
@@ -88,16 +119,9 @@ export interface Metadata {
   get: (key: {}) => {};
 }
 
-export interface GrpcModule {
-  credentials: {
-    createSsl(): void; combineChannelCredentials: Function;
-    createFromGoogleCredential: Function;
-  };
-  load: Function;
-  loadObject: Function;
-  Metadata: Metadata;
+export type GrpcModule = typeof grpcTypes&{
   status: {[index: string]: number;};
-}
+};
 
 export interface StubOptions {
   [index: string]: {};
@@ -115,6 +139,7 @@ export class GrpcClient {
   promise: PromiseConstructor;
   grpc: GrpcModule;
   grpcVersion: string;
+  grpcProtoLoader: typeof grpcProtoLoaderTypes;
 
   /**
    * A class which keeps the context of gRPC and auth for the gRPC.
@@ -147,6 +172,7 @@ export class GrpcClient {
       this.grpc = require('grpc');
       this.grpcVersion = require('grpc/package.json').version;
     }
+    this.grpcProtoLoader = require('@grpc/proto-loader');
   }
 
   /**
@@ -170,7 +196,19 @@ export class GrpcClient {
   }
 
   /**
+   * Loads the gRPC service from the proto file at the given path and with the
+   * given options.
+   * @param filename The path to the proto file.
+   * @param options Options for loading the proto file.
+   */
+  loadFromProto(filename: string, options: grpcProtoLoaderTypes.Options) {
+    const packageDef = grpcProtoLoaderTypes.loadSync(filename, options);
+    return this.grpc.loadPackageDefinition(packageDef);
+  }
+
+  /**
    * Load grpc proto services with the specific arguments.
+   * Pending deprecation: use GrpcClient#loadFromProto.
    * @param {Array=} args - The argument list to be passed to grpc.load().
    * @return {Object} The gRPC loaded result (the toplevel namespace object).
    */
@@ -189,6 +227,7 @@ export class GrpcClient {
   /**
    * Load grpc proto service from a filename hooking in googleapis common protos
    * when necessary.
+   * Pending deprecation: use GrpcClient#loadFromProto.
    * @param {String} protoPath - The directory to search for the protofile.
    * @param {String} filename - The filename of the proto to be loaded.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
@@ -209,26 +248,38 @@ export class GrpcClient {
     throw new Error(filename + ' could not be found in ' + protoPath);
   }
 
-  metadataBuilder(headers: IncomingHttpHeaders) {
+  metadataBuilder(headers: OutgoingHttpHeaders) {
     const Metadata = this.grpc.Metadata;
     const baseMetadata = new Metadata();
     // tslint:disable-next-line forin
     for (const key in headers) {
-      baseMetadata.set(key, headers[key]);
+      const value = headers[key];
+      if (Array.isArray(value)) {
+        value.forEach(v => baseMetadata.add(key, v));
+      } else {
+        baseMetadata.set(key, `${value}`);
+      }
     }
     return function buildMetadata(
-        abTests?: {}, moreHeaders?: IncomingHttpHeaders) {
+        abTests?: {}, moreHeaders?: OutgoingHttpHeaders) {
       // TODO: bring the A/B testing info into the metadata.
       let copied = false;
       let metadata = baseMetadata;
-      for (const key in moreHeaders!) {
-        if (key.toLowerCase() !== 'x-goog-api-client' &&
-            moreHeaders!.hasOwnProperty(key)) {
-          if (!copied) {
-            copied = true;
-            metadata = metadata.clone();
+      if (moreHeaders) {
+        for (const key in moreHeaders) {
+          if (key.toLowerCase() !== 'x-goog-api-client' &&
+              moreHeaders!.hasOwnProperty(key)) {
+            if (!copied) {
+              copied = true;
+              metadata = metadata.clone();
+            }
+            const value = moreHeaders[key];
+            if (Array.isArray(value)) {
+              value.forEach(v => metadata.add(key, v));
+            } else {
+              metadata.set(key, `${value}`);
+            }
           }
-          metadata.set(key, moreHeaders![key]);
         }
       }
       return metadata;
@@ -248,7 +299,7 @@ export class GrpcClient {
    */
   constructSettings(
       serviceName: string, clientConfig: gax.ClientConfig,
-      configOverrides: gax.ClientConfig, headers: IncomingHttpHeaders) {
+      configOverrides: gax.ClientConfig, headers: OutgoingHttpHeaders) {
     return gax.constructSettings(
         serviceName, clientConfig, configOverrides, this.grpc.status,
         {metadataBuilder: this.metadataBuilder(headers)}, this.promise);
@@ -262,7 +313,7 @@ export class GrpcClient {
    *   gRPC client too.
    * @param {string} options.servicePath - The name of the server of the service.
    * @param {number} options.port - The port of the service.
-   * @param {grpc.ClientCredentials=} options.sslCreds - The credentials to be used
+   * @param {grpcTypes.ClientCredentials=} options.sslCreds - The credentials to be used
    *   to set up gRPC connection.
    * @return {Promise} A promse which resolves to a gRPC stub instance.
    */
