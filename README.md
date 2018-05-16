@@ -1,61 +1,40 @@
-Google API Extensions for Node.js
-=================================
+<img src="https://avatars0.githubusercontent.com/u/1342004?v=3&s=96" alt="Google Inc. logo" title="Google" align="right" height="96" width="96"/>
 
-[![CircleCI](https://circleci.com/gh/googleapis/gax-nodejs.svg?style=shield)](https://circleci.com/gh/googleapis/gax-nodejs)
-[![Code Coverage](https://img.shields.io/codecov/c/github/googleapis/gax-nodejs.svg)](https://codecov.io/github/googleapis/gax-nodejs)
-[![Dependencies](https://david-dm.org/googleapis/gax-nodejs.svg)](https://david-dm.org/googleapis/gax-nodejs)
+# Google API Extensions for Node.js
 
-Google API Extensions for Node.js (gax-nodejs) is a set of modules which aids
-the development of APIs for clients and servers based on [gRPC][] and Google API
-conventions.
+[![Release Level][releaselevelimg]][releaselevel]
+[![npm version][npmimg]][npm]
+[![CircleCI][circleimg]][circle]
+[![Code Coverage][codecovimg]][codecov]
 
-Application code will rarely need to use most of the classes within this library
-directly, but code generated automatically from the API definition files in
-[Google APIs][] can use services such as page streaming and request bundling to
-provide a more convenient and idiomatic API surface to callers.
+Google API Extensions for Node.js (gax-nodejs) is a set of modules which aids the development of APIs for clients and servers based on [gRPC][grpc] and Google API conventions.
 
-[gRPC]: http://grpc.io
-[Google APIs]: https://github.com/googleapis/googleapis/
+Application code will rarely need to use most of the classes within this library directly, but code generated automatically from the API definition files in [Google APIs][googleapis] can use services such as page streaming and request bundling to provide a more convenient and idiomatic API surface to callers.
 
+## Installation
+```sh
+$ npm install google-gax
+```
 
-Node.js Versions
-----------------
+## Contributing
+Contributions to this library are always welcome and highly encouraged.  See the [CONTRIBUTING][contributing] documentation for more information on how to get started.
 
-gax-nodejs is currently tested with Node.js 4.2.3
+## Details
+For detailed documentation of the modules in gax-nodejs, please check out the [docs][docs].
 
+## License
+BSD - See [LICENSE][license] for more information.
 
-Contributing
-------------
-
-Contributions to this library are always welcome and highly encouraged.
-
-See the [CONTRIBUTING][] documentation for more information on how to get started.
-
-[CONTRIBUTING]: https://github.com/googleapis/gax-nodejs/blob/master/CONTRIBUTING.md
-
-
-Versioning
-----------
-
-This library follows [Semantic Versioning][].
-
-It is currently in major version zero (``0.y.z``), which means that anything
-may change at any time and the public API should not be considered
-stable.
-
-[Semantic Versioning]: http://semver.org/
-
-
-Details
--------
-
-For detailed documentation of the modules in gax-nodejs, please watch [DOCUMENTATION].
-
-
-License
--------
-
-BSD - See [LICENSE][] for more information.
-
-[LICENSE]: https://github.com/googleapis/gax-nodejs/blob/master/LICENSE
-[DOCUMENTATION]: http://googleapis.github.io/gax-nodejs/
+[circle]: https://circleci.com/gh/googleapis/gax-nodejs
+[circleimg]: https://circleci.com/gh/googleapis/gax-nodejs.svg?style=shield
+[codecovimg]: https://codecov.io/github/googleapis/gax-nodejs/coverage.svg?branch=master
+[codecov]: https://codecov.io/github/googleapis/gax-nodejs?branch=master
+[contributing]: https://github.com/googleapis/gax-nodejs/blob/master/CONTRIBUTING.md
+[docs]: http://googleapis.github.io/gax-nodejs/
+[license]: https://github.com/googleapis/gax-nodejs/blob/master/LICENSE
+[npmimg]: https://img.shields.io/npm/v/google-gax.svg
+[npm]: https://www.npmjs.org/package/google-gax
+[googleapis]: https://github.com/googleapis/googleapis/
+[grpc]: http://grpc.io
+[releaselevel]: https://cloud.google.com/terms/launch-stages
+[releaselevelimg]: https://img.shields.io/badge/Release%20Level-Alpha-ff69b4.svg
