@@ -36,9 +36,10 @@
 'use strict';
 
 import * as util from 'util';
-import {RetryOptions} from './gax';
+import {RetryOptions, CallSettings} from './gax';
 import {Duplex} from 'stream';
 import {GoogleError} from './GoogleError';
+import {BundleDescriptor, PageDescriptor} from '.';
 
 export interface ArgumentFunction {
   (argument: {}, callback: APICallback): void;
@@ -159,13 +160,14 @@ export class PromiseCanceller<T = any> extends Canceller {
   constructor(PromiseCtor: PromiseConstructor) {
     super();
     this.promise = new PromiseCtor((resolve, reject) => {
-                     this.callback = (err, ...args) => {
-                       if (err) {
-                         reject(err);
-                       } else {
-                         resolve(args);
-                       }
-                     };
+                     this.callback =
+                         (err, response?: {}, next?: {}, rawResponse?: {}) => {
+                           if (err) {
+                             reject(err);
+                           } else {
+                             resolve([response, next, rawResponse]);
+                           }
+                         };
                    }) as CancellablePromise;
     this.promise.cancel = () => {
       this.cancel();
@@ -274,28 +276,29 @@ function retryable(
 
       retries++;
       const toCall = addTimeoutArg(aFunc, timeout, otherArgs);
-      canceller = toCall(argument, (err, ...args) => {
-        if (!err) {
-          args.unshift(null);
-          callback.apply(null, args);
-          return;
-        }
-        canceller = null;
-        if (retry.retryCodes.indexOf(err!.code!) < 0) {
-          err.note = 'Exception occurred in retry method that was ' +
-              'not classified as transient';
-          callback(err);
-        } else {
-          const toSleep = Math.random() * delay;
-          timeoutId = setTimeout(() => {
-            now = new Date();
-            delay = Math.min(delay * delayMult, maxDelay);
-            timeout = Math.min(
-                timeout * timeoutMult, maxTimeout, deadline - now.getTime());
-            repeat();
-          }, toSleep);
-        }
-      });
+      canceller = toCall(
+          argument, (err, response?: {}, next?: {}, rawResponse?: {}) => {
+            if (!err) {
+              callback(null, response, next, rawResponse);
+              return;
+            }
+            canceller = null;
+            if (retry.retryCodes.indexOf(err!.code!) < 0) {
+              err.note = 'Exception occurred in retry method that was ' +
+                  'not classified as transient';
+              callback(err);
+            } else {
+              const toSleep = Math.random() * delay;
+              timeoutId = setTimeout(() => {
+                now = new Date();
+                delay = Math.min(delay * delayMult, maxDelay);
+                timeout = Math.min(
+                    timeout * timeoutMult, maxTimeout,
+                    deadline - now.getTime());
+                repeat();
+              }, toSleep);
+            }
+          });
     }
 
     if (maxRetries && deadline!) {
@@ -340,18 +343,21 @@ export class NormalApiCaller {
     return func;
   }
 
-  call(apiCall, argument, settings, canceller): void {
+  call(
+      apiCall: APICall, argument: {}, settings: {},
+      canceller: PromiseCanceller): void {
     canceller.call(apiCall, argument);
   }
 
-  fail(canceller, err): void {
-    canceller.callback(err);
+  fail(canceller: PromiseCanceller, err: GoogleError): void {
+    canceller.callback!(err);
   }
 
-  result(canceller) {
+  result(canceller: PromiseCanceller) {
     if (canceller.promise) {
       return canceller.promise;
     }
+    return;
   }
 }
 
@@ -375,7 +381,10 @@ export class NormalApiCaller {
  * @return {APICall} func - a bound method on a request stub used
  *   to make an rpc call.
  */
-export function createApiCall(funcWithAuth, settings, optDescriptor?): APICall {
+export function createApiCall(
+    funcWithAuth: Promise<APIFunc>, settings: CallSettings,
+    // tslint:disable-next-line no-any
+    optDescriptor?: any): APICall {
   const apiCaller =
       optDescriptor ? optDescriptor.apiCaller(settings) : new NormalApiCaller();
 

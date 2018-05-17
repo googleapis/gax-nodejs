@@ -32,6 +32,8 @@
  */
 'use strict';
 
+import {GoogleError} from './GoogleError';
+
 /**
  * @callback GetCredentialsFunc
  *
@@ -55,7 +57,8 @@
  *   getCredentials.
  * @return {Promise} A promise which resolves to the credential.
  */
-export function createCredPromise(getCredentials, opts?) {
+export function createCredPromise(
+    getCredentials: GetCredentialsFunc, opts?: {}) {
   return new Promise((resolve, reject) => {
     getCredentials((err, credentials) => {
       if (err) {
@@ -66,3 +69,8 @@ export function createCredPromise(getCredentials, opts?) {
     }, opts);
   });
 }
+
+export type GetCredentialsCallback = (err: GoogleError|null, credentials: {}) =>
+    void;
+export type GetCredentialsFunc =
+    (callback: GetCredentialsCallback, opts?: {}) => void;
