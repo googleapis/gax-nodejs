@@ -381,9 +381,9 @@ export class NormalApiCaller {
  * @return {APICall} func - a bound method on a request stub used
  *   to make an rpc call.
  */
-// tslint:disable-next-line no-any
 export function createApiCall(
     funcWithAuth: Promise<APIFunc>, settings: CallSettings,
+    // tslint:disable-next-line no-any
     optDescriptor?: any): APICall {
   const apiCaller =
       optDescriptor ? optDescriptor.apiCaller(settings) : new NormalApiCaller();
