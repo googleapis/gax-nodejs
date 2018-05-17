@@ -57,7 +57,7 @@ function noop() {}
  *   discriminator.
  *   fields do not exist.
  */
-export function computeBundleId(obj, discriminatorFields) {
+export function computeBundleId(obj: {}, discriminatorFields: string[]) {
   // tslint:disable-next-line no-any
   const ids: any[] = [];
   let hasIds = false;
@@ -76,6 +76,12 @@ export function computeBundleId(obj, discriminatorFields) {
   return JSON.stringify(ids);
 }
 
+export interface SubResponseInfo {
+  field: string;
+  start: number;
+  end: number;
+}
+
 /**
  * Creates a deep copy of the object with the consideration of subresponse
  * fields for bundling.
@@ -91,7 +97,8 @@ export function computeBundleId(obj, discriminatorFields) {
  * @return {Object} The copied object.
  * @private
  */
-export function deepCopyForResponse(obj, subresponseInfo) {
+export function deepCopyForResponse(
+    obj, subresponseInfo: SubResponseInfo|null) {
   let result;
   if (obj === null) {
     return null;
