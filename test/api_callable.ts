@@ -438,11 +438,11 @@ describe('retryable', () => {
       expect(err!.note).to.be.ok;
       const now = new Date();
       expect(now.getTime() - startTime.getTime())
-          .to.be.at.least(backoff.totalTimeoutMillis);
-      const callsLowerBound = backoff.totalTimeoutMillis /
-          (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis);
+          .to.be.at.least(backoff.totalTimeoutMillis!);
+      const callsLowerBound = backoff.totalTimeoutMillis! /
+          (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis!);
       const callsUpperBound =
-          backoff.totalTimeoutMillis / backoff.initialRetryDelayMillis;
+          backoff.totalTimeoutMillis! / backoff.initialRetryDelayMillis;
       expect(spy.callCount).to.be.above(callsLowerBound);
       expect(spy.callCount).to.be.below(callsUpperBound);
       done();

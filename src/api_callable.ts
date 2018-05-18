@@ -51,7 +51,9 @@ export interface ArgumentFunction {
  * @param {?Object} response
  */
 export type APICallback =
-    (err: GoogleError|null, response?: {}, next?: {}, rawResponse?: {}) => void;
+    // tslint:disable-next-line no-any
+    (err: GoogleError|null, response?: any, next?: {}|null,
+     rawResponse?: {}|null) => void;
 
 /**
  * @callback APIFunc
@@ -160,14 +162,13 @@ export class PromiseCanceller<T = any> extends Canceller {
   constructor(PromiseCtor: PromiseConstructor) {
     super();
     this.promise = new PromiseCtor((resolve, reject) => {
-                     this.callback =
-                         (err, response?: {}, next?: {}, rawResponse?: {}) => {
-                           if (err) {
-                             reject(err);
-                           } else {
-                             resolve([response, next, rawResponse]);
-                           }
-                         };
+                     this.callback = (err, response, next, rawResponse) => {
+                       if (err) {
+                         reject(err);
+                       } else {
+                         resolve([response, next, rawResponse]);
+                       }
+                     };
                    }) as CancellablePromise;
     this.promise.cancel = () => {
       this.cancel();
@@ -275,30 +276,28 @@ function retryable(
       }
 
       retries++;
-      const toCall = addTimeoutArg(aFunc, timeout, otherArgs);
-      canceller = toCall(
-          argument, (err, response?: {}, next?: {}, rawResponse?: {}) => {
-            if (!err) {
-              callback(null, response, next, rawResponse);
-              return;
-            }
-            canceller = null;
-            if (retry.retryCodes.indexOf(err!.code!) < 0) {
-              err.note = 'Exception occurred in retry method that was ' +
-                  'not classified as transient';
-              callback(err);
-            } else {
-              const toSleep = Math.random() * delay;
-              timeoutId = setTimeout(() => {
-                now = new Date();
-                delay = Math.min(delay * delayMult, maxDelay);
-                timeout = Math.min(
-                    timeout * timeoutMult, maxTimeout,
-                    deadline - now.getTime());
-                repeat();
-              }, toSleep);
-            }
-          });
+      const toCall = addTimeoutArg(aFunc, timeout!, otherArgs);
+      canceller = toCall(argument, (err, response, next, rawResponse) => {
+        if (!err) {
+          callback(null, response, next, rawResponse);
+          return;
+        }
+        canceller = null;
+        if (retry.retryCodes.indexOf(err!.code!) < 0) {
+          err.note = 'Exception occurred in retry method that was ' +
+              'not classified as transient';
+          callback(err);
+        } else {
+          const toSleep = Math.random() * delay;
+          timeoutId = setTimeout(() => {
+            now = new Date();
+            delay = Math.min(delay * delayMult, maxDelay);
+            timeout = Math.min(
+                timeout! * timeoutMult!, maxTimeout!, deadline - now.getTime());
+            repeat();
+          }, toSleep);
+        }
+      });
     }
 
     if (maxRetries && deadline!) {
@@ -397,10 +396,13 @@ export function createApiCall(
           func = apiCaller.wrap(func);
           const retry = thisSettings.retry;
           if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
-            return retryable(func, thisSettings.retry, thisSettings.otherArgs);
+            return retryable(
+                func, thisSettings.retry!,
+                thisSettings.otherArgs as ApiCallOtherArgs);
           }
           return addTimeoutArg(
-              func, thisSettings.timeout, thisSettings.otherArgs);
+              func, thisSettings.timeout,
+              thisSettings.otherArgs as ApiCallOtherArgs);
         })
         .then(apiCall => {
           apiCaller.call(apiCall, request, thisSettings, status);

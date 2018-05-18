@@ -39,6 +39,7 @@ import * as globby from 'globby';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
+import {IncomingHttpHeaders} from 'http';
 let googleProtoFilesDir = require('google-proto-files')('..');
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
@@ -164,13 +165,13 @@ export class GrpcClient {
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-  loadProto(protoPath, filename) {
+  loadProto(protoPath: string, filename: string) {
     const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
     return this.grpc.loadObject(
         protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
   }
 
-  static _resolveFile(protoPath, filename) {
+  static _resolveFile(protoPath: string, filename: string) {
     if (fs.existsSync(path.join(protoPath, filename))) {
       return path.join(protoPath, filename);
     } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
@@ -179,7 +180,7 @@ export class GrpcClient {
     throw new Error(filename + ' could not be found in ' + protoPath);
   }
 
-  metadataBuilder(headers) {
+  metadataBuilder(headers: IncomingHttpHeaders) {
     const Metadata = this.grpc.Metadata;
     const baseMetadata = new Metadata();
     // tslint:disable-next-line forin
@@ -215,7 +216,8 @@ export class GrpcClient {
    *   its value.
    * @return {Object} A mapping of method names to CallSettings.
    */
-  constructSettings(serviceName, clientConfig, configOverrides, headers) {
+  constructSettings(
+      serviceName: string, clientConfig, configOverrides, headers) {
     return gax.constructSettings(
         serviceName, clientConfig, configOverrides, this.grpc.status,
         {metadataBuilder: this.metadataBuilder(headers)}, this.promise);
@@ -271,7 +273,7 @@ export class GoogleProtoFilesRoot extends protobuf.Root {
 
   // Causes the loading of an included proto to check if it is a common
   // proto. If it is a common proto, use the google-proto-files proto.
-  resolvePath(originPath, includePath) {
+  resolvePath(originPath: string, includePath: string) {
     originPath = path.normalize(originPath);
     includePath = path.normalize(includePath);
 
@@ -290,7 +292,7 @@ export class GoogleProtoFilesRoot extends protobuf.Root {
     return GoogleProtoFilesRoot._findIncludePath(originPath, includePath);
   }
 
-  static _findIncludePath(originPath, includePath) {
+  static _findIncludePath(originPath: string, includePath: string) {
     originPath = path.normalize(originPath);
     includePath = path.normalize(includePath);
 

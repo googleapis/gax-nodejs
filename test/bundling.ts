@@ -407,7 +407,7 @@ describe('Task', () => {
       callback();
     });
 
-    task.cancel(cancelId);
+    task.cancel(cancelId!);
     task.run();
   });
 
@@ -443,7 +443,7 @@ describe('Task', () => {
       return data.callback.id;
     });
     cancelIds.forEach(id => {
-      task.cancel(id);
+      task.cancel(id!);
     });
   });
 
@@ -477,7 +477,7 @@ describe('Task', () => {
       callback();
     });
     task.run();
-    task.cancel(cancelId);
+    task.cancel(cancelId!);
   });
 });
 
@@ -544,7 +544,7 @@ describe('Executor', () => {
       done();
     }
     executor.schedule(spy, {field1: [1, 2], field2: 'id1'}, (err, resp) => {
-      expect(resp.field1).to.deep.eq([1, 2]);
+      expect(resp!.field1).to.deep.eq([1, 2]);
       expect(unbundledCallCounter).to.eq(2);
       counter++;
       if (counter === 4) {
