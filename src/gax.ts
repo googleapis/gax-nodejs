@@ -35,6 +35,8 @@
 
 'use strict';
 
+import {BundleOptions} from './bundling';
+
 /**
  * Encapsulates the overridable settings for a particular API call.
  *
@@ -123,10 +125,10 @@ export interface BackoffSettings {
   initialRetryDelayMillis: number;
   retryDelayMultiplier: number;
   maxRetryDelayMillis: number;
-  initialRpcTimeoutMillis: number;
-  maxRpcTimeoutMillis: number;
-  totalTimeoutMillis: number;
-  rpcTimeoutMultiplier: number;
+  initialRpcTimeoutMillis: number|null;
+  maxRpcTimeoutMillis: number|null;
+  totalTimeoutMillis: number|null;
+  rpcTimeoutMultiplier: number|null;
 }
 
 /**
@@ -158,16 +160,30 @@ export interface BackoffSettings {
  *   element in the bundle was added to it.
  */
 
+export interface CallOptions {
+  timeout?: number;
+  retry?: RetryOptions|null;
+  autoPaginate?: boolean;
+  pageToken?: number;
+  maxResults?: number;
+  maxRetries?: number;
+  otherArgs?: {};
+  bundleOptions?: BundleOptions|null;
+  isBundling?: boolean;
+  longrunning?: boolean|null;
+  promise?: PromiseConstructor;
+}
+
 export class CallSettings {
   timeout: number;
-  retry: RetryOptions;
-  autoPaginate: boolean;
-  pageToken: number;
-  maxResults: number;
-  otherArgs;
-  bundleOptions;
+  retry?: RetryOptions|null;
+  autoPaginate?: boolean;
+  pageToken?: number;
+  maxResults?: number;
+  otherArgs: {};
+  bundleOptions?: BundleOptions|null;
   isBundling: boolean;
-  longrunning: boolean;
+  longrunning?: boolean|null;
   promise: PromiseConstructor;
 
   /**
@@ -191,7 +207,7 @@ export class CallSettings {
    *
    * @constructor
    */
-  constructor(settings?) {
+  constructor(settings?: CallOptions) {
     settings = settings || {};
     this.timeout = settings.timeout || 30 * 1000;
     this.retry = settings.retry;
@@ -201,9 +217,9 @@ export class CallSettings {
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
     this.bundleOptions = settings.bundleOptions;
-    this.isBundling = 'isBundling' in settings ? settings.isBundling : true;
+    this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
     this.longrunning = 'longrunning' in settings ? settings.longrunning : null;
-    this.promise = 'promise' in settings ? settings.promise : Promise;
+    this.promise = 'promise' in settings ? settings.promise! : Promise;
   }
 
   /**
@@ -214,7 +230,7 @@ export class CallSettings {
    *   object
    * @return {CallSettings} The merged CallSettings instance.
    */
-  merge(options) {
+  merge(options?: CallOptions|null) {
     if (!options) {
       return new CallSettings(this);
     }
@@ -228,7 +244,7 @@ export class CallSettings {
     let longrunning = this.longrunning;
     let promise = this.promise;
     if ('timeout' in options) {
-      timeout = options.timeout;
+      timeout = options.timeout!;
     }
     if ('retry' in options) {
       retry = options.retry;
@@ -254,18 +270,18 @@ export class CallSettings {
         otherArgs[key] = this.otherArgs[key];
       }
       // tslint:disable-next-line forin
-      for (const optionsKey in options.otherArgs) {
-        otherArgs[optionsKey] = options.otherArgs[optionsKey];
+      for (const optionsKey in options.otherArgs!) {
+        otherArgs[optionsKey] = options.otherArgs![optionsKey];
       }
     }
 
     if ('isBundling' in options) {
-      isBundling = options.isBundling;
+      isBundling = options.isBundling!;
     }
 
     if ('maxRetries' in options) {
-      retry.backoffSettings.maxRetries = options.maxRetries;
-      delete retry.backoffSettings.totalTimeoutMillis;
+      retry!.backoffSettings!.maxRetries = options.maxRetries;
+      delete retry!.backoffSettings!.totalTimeoutMillis;
     }
 
     if ('longrunning' in options) {
@@ -273,7 +289,7 @@ export class CallSettings {
     }
 
     if ('promise' in options) {
-      promise = options.promise;
+      promise = options.promise!;
     }
 
     return new CallSettings({
@@ -301,7 +317,8 @@ export class CallSettings {
  * @return {RetryOptions} A new RetryOptions object.
  *
  */
-export function createRetryOptions(retryCodes, backoffSettings) {
+export function createRetryOptions(
+    retryCodes: number[], backoffSettings: BackoffSettings): RetryOptions {
   return {
     retryCodes,
     backoffSettings,
@@ -334,9 +351,10 @@ export function createRetryOptions(retryCodes, backoffSettings) {
  *
  */
 export function createBackoffSettings(
-    initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
-    initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis,
-    totalTimeoutMillis) {
+    initialRetryDelayMillis: number, retryDelayMultiplier: number,
+    maxRetryDelayMillis: number, initialRpcTimeoutMillis: number|null,
+    rpcTimeoutMultiplier: number|null, maxRpcTimeoutMillis: number|null,
+    totalTimeoutMillis: number|null): BackoffSettings {
   return {
     initialRetryDelayMillis,
     retryDelayMultiplier,
@@ -374,9 +392,10 @@ export function createBackoffSettings(
  *
  */
 export function createMaxRetriesBackoffSettings(
-    initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
-    initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis,
-    maxRetries) {
+    initialRetryDelayMillis: number, retryDelayMultiplier: number,
+    maxRetryDelayMillis: number, initialRpcTimeoutMillis: number,
+    rpcTimeoutMultiplier: number, maxRpcTimeoutMillis: number,
+    maxRetries: number) {
   return {
     initialRetryDelayMillis,
     retryDelayMultiplier,
@@ -396,7 +415,7 @@ export function createMaxRetriesBackoffSettings(
  *   properties for the content of options.
  * @return {BundleOptions} - A new options.
  */
-export function createBundleOptions(options) {
+export function createBundleOptions(options: BundlingConfig): BundleOptions {
   const params = [
     'element_count_threshold',
     'element_count_limit',
@@ -406,7 +425,7 @@ export function createBundleOptions(options) {
   ];
   params.forEach(param => {
     if (param in options && typeof options[param] !== 'number') {
-      throw new Error(param + ' should be a number');
+      throw new Error(`${param} should be a number`);
     }
   });
 
@@ -448,29 +467,33 @@ export function createBundleOptions(options) {
  *   status codes.
  * @return {?RetryOptions} The new retry options.
  */
-function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
+function constructRetry(
+    methodConfig: MethodConfig, retryCodes: {[index: string]: string[]},
+    retryParams: {[index: string]: {}},
+    retryNames: {[index: string]: {}}): RetryOptions|null|undefined {
   if (!methodConfig) {
     return null;
   }
 
-  let codes = null;
+  let codes: number[]|null = null;
   if (retryCodes && 'retry_codes_name' in methodConfig) {
-    const retryCodesName = methodConfig.retry_codes_name;
+    const retryCodesName = methodConfig['retry_codes_name'];
     codes = (retryCodes[retryCodesName] || []).map(name => {
-      return retryNames[name];
+      return Number(retryNames[name]);
     });
   }
 
-  let backoffSettings: {}|null = null;
+  let backoffSettings: BackoffSettings|null = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
-    const params = retryParams[methodConfig.retry_params_name];
+    const params =
+        retryParams[methodConfig.retry_params_name] as RetryParamsConfig;
     backoffSettings = createBackoffSettings(
         params.initial_retry_delay_millis, params.retry_delay_multiplier,
         params.max_retry_delay_millis, params.initial_rpc_timeout_millis,
         params.rpc_timeout_multiplier, params.max_rpc_timeout_millis,
         params.total_timeout_millis);
   }
-  return createRetryOptions(codes, backoffSettings);
+  return createRetryOptions(codes!, backoffSettings!);
 }
 
 /**
@@ -486,7 +509,8 @@ function constructRetry(methodConfig, retryCodes, retryParams, retryNames) {
  *   ignore the base retry and return null.
  * @return {?RetryOptions} The merged RetryOptions.
  */
-function mergeRetryOptions(retry, overrides) {
+function mergeRetryOptions(
+    retry: RetryOptions, overrides: RetryOptions): RetryOptions|null {
   if (!overrides) {
     return null;
   }
@@ -504,6 +528,42 @@ function mergeRetryOptions(retry, overrides) {
     backoffSettings = overrides.backoffSettings;
   }
   return createRetryOptions(codes, backoffSettings);
+}
+
+export interface ServiceConfig {
+  retry_codes: {[index: string]: string[]};
+  retry_params: {[index: string]: RetryParamsConfig};
+  methods: {[index: string]: MethodConfig};
+}
+
+export interface RetryParamsConfig {
+  initial_retry_delay_millis: number;
+  retry_delay_multiplier: number;
+  max_retry_delay_millis: number;
+  initial_rpc_timeout_millis: number;
+  rpc_timeout_multiplier: number;
+  max_rpc_timeout_millis: number;
+  total_timeout_millis: number;
+}
+
+export interface MethodConfig {
+  retry_codes_name: string;
+  retry_params_name: string;
+  bundling: BundlingConfig;
+  timeout_millis?: number;
+}
+
+export interface BundlingConfig {
+  [index: string]: number;
+  element_count_threshold: number;
+  element_count_limit: number;
+  request_byte_threshold: number;
+  request_byte_limit: number;
+  delay_threshold_millis: number;
+}
+
+export interface ClientConfig {
+  interfaces?: {[index: string]: ServiceConfig};
 }
 
 /**
@@ -569,8 +629,9 @@ function mergeRetryOptions(retry, overrides) {
  *   service is not found in the config.
  */
 export function constructSettings(
-    serviceName, clientConfig, configOverrides, retryNames, otherArgs?, promise?
-) {
+    serviceName: string, clientConfig: ClientConfig,
+    configOverrides: ClientConfig, retryNames: {[index: string]: number},
+    otherArgs?: {}, promise?: PromiseConstructor) {
   otherArgs = otherArgs || {};
   // tslint:disable-next-line no-any
   const defaults: any = {};
@@ -581,7 +642,6 @@ export function constructSettings(
   }
 
   const overrides = (configOverrides.interfaces || {})[serviceName] || {};
-
   const methods = serviceConfig.methods;
   const overridingMethods = overrides.methods || {};
   // tslint:disable-next-line forin
@@ -605,10 +665,10 @@ export function constructSettings(
         }
       }
       retry = mergeRetryOptions(
-          retry,
+          retry!,
           constructRetry(
               overridingMethod, overrides.retry_codes, overrides.retry_params,
-              retryNames));
+              retryNames)!);
     }
 
     defaults[jsName] = new CallSettings({

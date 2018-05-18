@@ -37,7 +37,9 @@
 
 import * as _ from 'lodash';
 import * as util from 'util';
-import {NormalApiCaller} from './api_callable';
+import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './api_callable';
+import {GoogleError} from './GoogleError';
+import {CallSettings} from './gax';
 
 /**
  * A function which does nothing. Used for an empty cancellation funciton.
@@ -58,8 +60,7 @@ function noop() {}
  *   fields do not exist.
  */
 export function computeBundleId(obj: {}, discriminatorFields: string[]) {
-  // tslint:disable-next-line no-any
-  const ids: any[] = [];
+  const ids: Array<{}|null> = [];
   let hasIds = false;
   for (let i = 0; i < discriminatorFields.length; ++i) {
     const id = _.at(obj, discriminatorFields[i])[0];
@@ -78,8 +79,21 @@ export function computeBundleId(obj: {}, discriminatorFields: string[]) {
 
 export interface SubResponseInfo {
   field: string;
-  start: number;
-  end: number;
+  start?: number;
+  end?: number;
+}
+
+export interface TaskElement {}
+
+export interface TaskData {
+  elements: TaskElement[];
+  bytes: number;
+  callback: TaskCallback;
+  cancelled?: boolean;
+}
+
+export interface TaskCallback extends APICallback {
+  id?: string;
 }
 
 /**
@@ -98,8 +112,10 @@ export interface SubResponseInfo {
  * @private
  */
 export function deepCopyForResponse(
-    obj, subresponseInfo: SubResponseInfo|null) {
-  let result;
+    // tslint:disable-next-line no-any
+    obj: any, subresponseInfo: SubResponseInfo|null) {
+  // tslint:disable-next-line no-any
+  let result: any;
   if (obj === null) {
     return null;
   }
@@ -140,15 +156,12 @@ export function deepCopyForResponse(
 }
 
 export class Task {
-  // tslint:disable-next-line no-any
-  _apiCall: any;
-  _request: {};
+  _apiCall: APICall;
+  _request: {[index: string]: TaskElement[]};
   _bundledField: string;
-  _subresponseField?: string;
-  // tslint:disable-next-line no-any
-  _data: any[];
-  // tslint:disable-next-line no-any
-  callCanceller?: any;
+  _subresponseField?: string|null;
+  _data: TaskData[];
+  callCanceller?: PromiseCanceller;
 
   /**
    * A task coordinates the execution of a single bundle.
@@ -163,7 +176,9 @@ export class Task {
    * @constructor
    * @private
    */
-  constructor(apiCall, bundlingRequest, bundledField, subresponseField) {
+  constructor(
+      apiCall: APICall, bundlingRequest: {}, bundledField: string,
+      subresponseField?: string|null) {
     this._apiCall = apiCall;
     this._request = bundlingRequest;
     this._bundledField = bundledField;
@@ -204,50 +219,49 @@ export class Task {
       return [];
     }
     const request = this._request;
-    const elements = [];
-    // tslint:disable-next-line no-any
-    const ids: any[] = [];
+    const elements: TaskElement[] = [];
+    const ids: string[] = [];
     for (let i = 0; i < this._data.length; ++i) {
       elements.push.apply(elements, this._data[i].elements);
-      ids.push(this._data[i].callback.id);
+      ids.push(this._data[i].callback.id!);
     }
     request[this._bundledField] = elements;
 
     const self = this;
-    this.callCanceller = this._apiCall(request, (err, response) => {
-      // tslint:disable-next-line no-any
-      const responses: any[] = [];
-      if (err) {
-        self._data.forEach(() => {
-          responses.push(null);
-        });
-      } else {
-        // tslint:disable-next-line no-any
-        let subresponseInfo: any = null;
-        if (self._subresponseField) {
-          subresponseInfo = {
-            field: self._subresponseField,
-            start: 0,
-          };
-        }
-        self._data.forEach(data => {
-          if (subresponseInfo) {
-            subresponseInfo.end = subresponseInfo.start + data.elements.length;
+    this.callCanceller =
+        this._apiCall(request, (err: GoogleError|null, response?: {}) => {
+          const responses: Array<{}|null> = [];
+          if (err) {
+            self._data.forEach(() => {
+              responses.push(null);
+            });
+          } else {
+            let subresponseInfo: SubResponseInfo|null = null;
+            if (self._subresponseField) {
+              subresponseInfo = {
+                field: self._subresponseField,
+                start: 0,
+              };
+            }
+            self._data.forEach(data => {
+              if (subresponseInfo) {
+                subresponseInfo.end =
+                    subresponseInfo.start! + data.elements.length;
+              }
+              responses.push(deepCopyForResponse(response, subresponseInfo));
+              if (subresponseInfo) {
+                subresponseInfo.start = subresponseInfo.end;
+              }
+            });
           }
-          responses.push(deepCopyForResponse(response, subresponseInfo));
-          if (subresponseInfo) {
-            subresponseInfo.start = subresponseInfo.end;
+          for (let i = 0; i < self._data.length; ++i) {
+            if (self._data[i].cancelled) {
+              self._data[i].callback(new Error('cancelled'));
+            } else {
+              self._data[i].callback(err, responses[i]);
+            }
           }
         });
-      }
-      for (let i = 0; i < self._data.length; ++i) {
-        if (self._data[i].cancelled) {
-          self._data[i].callback(new Error('cancelled'));
-        } else {
-          self._data[i].callback(err, responses[i]);
-        }
-      }
-    });
     return ids;
   }
 
@@ -257,7 +271,7 @@ export class Task {
    * @param {number} bytes - the byte size required to encode elements in the API.
    * @param {APICallback} callback - the callback of the method call.
    */
-  extend(elements, bytes, callback) {
+  extend(elements: TaskElement[], bytes: number, callback: TaskCallback) {
     this._data.push({
       elements,
       bytes,
@@ -270,7 +284,7 @@ export class Task {
    * @param {string} id - The identifier of the part of elements.
    * @return {boolean} Whether the entire task will be canceled or not.
    */
-  cancel(id) {
+  cancel(id: string) {
     if (this.callCanceller) {
       let allCancelled = true;
       this._data.forEach(d => {
@@ -297,13 +311,20 @@ export class Task {
   }
 }
 
+export interface BundleOptions {
+  elementCountLimit: number;
+  requestByteLimit: number;
+  elementCountThreshold: number;
+  requestByteThreshold: number;
+  delayThreshold: number;
+}
+
 export class BundleExecutor {
-  // tslint:disable-next-line no-any
-  _options: any;
+  _options: BundleOptions;
   _descriptor: BundleDescriptor;
-  _tasks: {};
-  _timers: {};
-  _invocations: {};
+  _tasks: {[index: string]: Task};
+  _timers: {[index: string]: NodeJS.Timer};
+  _invocations: {[index: string]: string};
   _invocationId: number;
   /**
    * Organizes requests for an api service that requires to bundle them.
@@ -313,7 +334,8 @@ export class BundleExecutor {
    * @param {BundleDescriptor} bundleDescriptor - the description of the bundling.
    * @constructor
    */
-  constructor(bundleOptions, bundleDescriptor) {
+  constructor(
+      bundleOptions: BundleOptions, bundleDescriptor: BundleDescriptor) {
     this._options = bundleOptions;
     this._descriptor = bundleDescriptor;
     this._tasks = {};
@@ -330,12 +352,12 @@ export class BundleExecutor {
    * @param {APICallback} callback - the callback to be called when the method finished.
    * @return {function()} - the function to cancel the scheduled invocation.
    */
-  schedule(apiCall, request, callback?) {
+  schedule(
+      apiCall: APICall, request: {[index: string]: Array<{}>|string},
+      callback?: TaskCallback) {
     const bundleId =
         computeBundleId(request, this._descriptor.requestDiscriminatorFields);
-    if (!callback) {
-      callback = noop;
-    }
+    callback = (callback || noop) as TaskCallback;
     if (bundleId === undefined) {
       console.warn(
           'The request does not have enough information for request bundling. ' +
@@ -354,7 +376,7 @@ export class BundleExecutor {
     callback.id = String(this._invocationId++);
     this._invocations[callback.id] = bundleId;
 
-    const bundledField = request[this._descriptor.bundledField];
+    const bundledField = request[this._descriptor.bundledField] as Array<{}>;
     const elementCount = bundledField.length;
     let requestBytes = 0;
     const self = this;
@@ -396,7 +418,7 @@ export class BundleExecutor {
     task.extend(bundledField, requestBytes, callback);
     const ret = {
       cancel() {
-        self._cancel(callback.id);
+        self._cancel(callback!.id!);
       },
     };
 
@@ -425,7 +447,7 @@ export class BundleExecutor {
    *   cleared.
    * @private
    */
-  _maybeClearTimeout(bundleId) {
+  _maybeClearTimeout(bundleId: string) {
     if (bundleId in this._timers) {
       const timerId = this._timers[bundleId];
       delete this._timers[bundleId];
@@ -439,7 +461,7 @@ export class BundleExecutor {
    * @param {String} id - The id for the event in the task.
    * @private
    */
-  _cancel(id) {
+  _cancel(id: string) {
     if (!(id in this._invocations)) {
       return;
     }
@@ -462,7 +484,7 @@ export class BundleExecutor {
    * @param {String} bundleId - The id for the task.
    * @private
    */
-  _runNow(bundleId) {
+  _runNow(bundleId: string) {
     if (!(bundleId in this._tasks)) {
       console.warn('no such bundleid: ' + bundleId);
       return;
@@ -478,8 +500,7 @@ export class BundleExecutor {
 }
 
 export class Bundleable extends NormalApiCaller {
-  // tslint:disable-next-line no-any
-  bundler: any;
+  bundler: BundleExecutor;
   /**
    * Creates an API caller that bundles requests.
    *
@@ -487,14 +508,15 @@ export class Bundleable extends NormalApiCaller {
    * @constructor
    * @param {BundleExecutor} bundler - bundles API calls.
    */
-  constructor(bundler) {
+  constructor(bundler: BundleExecutor) {
     super();
     this.bundler = bundler;
   }
 
-  call(apiCall, argument, settings, status) {
+  // tslint:disable-next-line no-any
+  call(apiCall: APICall, argument: {}, settings: CallSettings, status: any) {
     if (settings.isBundling) {
-      status.call((argument, callback) => {
+      status.call((argument: {}, callback: TaskCallback) => {
         this.bundler.schedule(apiCall, argument, callback);
       }, argument);
     } else {
@@ -539,7 +561,7 @@ export class BundleDescriptor {
    */
   constructor(
       bundledField: string, requestDiscriminatorFields: string[],
-      subresponseField: string|null, byteLengthFunction) {
+      subresponseField: string|null, byteLengthFunction: Function) {
     if (!byteLengthFunction && typeof subresponseField === 'function') {
       byteLengthFunction = subresponseField;
       subresponseField = null;
@@ -557,7 +579,7 @@ export class BundleDescriptor {
    * @param {CallSettings} settings - the current settings.
    * @return {Bundleable} - the new bundling API caller.
    */
-  apiCaller(settings) {
-    return new Bundleable(new BundleExecutor(settings.bundleOptions, this));
+  apiCaller(settings: CallSettings) {
+    return new Bundleable(new BundleExecutor(settings.bundleOptions!, this));
   }
 }
