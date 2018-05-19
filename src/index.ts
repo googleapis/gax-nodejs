@@ -47,7 +47,7 @@ export {createApiCall} from './api_callable';
 
 const grpc = require('./grpc');
 
-function lro(options) {
+function lro(options: {}) {
   options = extend(
       {
         // tslint:disable-next-line no-any

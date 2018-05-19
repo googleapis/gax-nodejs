@@ -125,7 +125,7 @@ export class OperationsClient {
    * @aram {function(Error, string)} callback - the callback to be called with
    *   the current project Id.
    */
-  getProjectId(callback) {
+  getProjectId(callback: (err: Error|null, projectId?: string) => void) {
     return this.auth.getProjectId(callback);
   }
 
@@ -168,7 +168,7 @@ export class OperationsClient {
    *     console.error(err);
    * });
    */
-  getOperation(request, options, callback?) {
+  getOperation(request: {}, options: {}, callback?) {
     if (options instanceof Function && callback === undefined) {
       callback = options;
       options = {};

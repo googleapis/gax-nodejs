@@ -34,9 +34,9 @@ import extend from 'extend';
 import * as through2 from 'through2';
 import ended from 'is-stream-ended';
 import * as util from 'util';
-import {Stream, Readable, Transform} from 'stream';
+import {Stream, Transform} from 'stream';
 
-import {NormalApiCaller} from './api_callable';
+import {NormalApiCaller, APICall, APICallback} from './api_callable';
 
 export class PagedIteration extends NormalApiCaller {
   pageDescriptor: PageDescriptor;
@@ -53,9 +53,10 @@ export class PagedIteration extends NormalApiCaller {
     this.pageDescriptor = pageDescriptor;
   }
 
-  createActualCallback(request, callback) {
+  createActualCallback(request: {[index: string]: {}}, callback: APICallback) {
     const self = this;
-    return function fetchNextPageToken(err, response) {
+    return function fetchNextPageToken(
+        err: Error|null, response: {[index: string]: {}}) {
       if (err) {
         callback(err);
         return;
@@ -80,11 +81,11 @@ export class PagedIteration extends NormalApiCaller {
     };
   }
 
-  init(settings, callback) {
+  init(settings: {}, callback: APICallback) {
     return NormalApiCaller.prototype.init.call(this, settings, callback);
   }
 
-  call(apiCall, argument, settings, canceller) {
+  call(apiCall: APICall, argument: {[index: string]: {}}, settings, canceller) {
     argument = extend({}, argument);
     if (settings.pageToken) {
       argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;

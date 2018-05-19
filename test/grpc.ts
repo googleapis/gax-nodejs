@@ -80,7 +80,7 @@ describe('grpc', () => {
       const builder = grpcClient.metadataBuilder(headers);
       const abTesting = null;
       const moreHeaders = {foo: 'bar'};
-      const metadata = builder(abTesting, moreHeaders);
+      const metadata = builder(abTesting!, moreHeaders);
       expect(metadata.get('foo')).to.deep.eq(['bar']);
     });
 
@@ -93,7 +93,7 @@ describe('grpc', () => {
       const builder = grpcClient.metadataBuilder(headers);
       const abTesting = null;
       const moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
-      const metadata = builder(abTesting, moreHeaders);
+      const metadata = builder(abTesting!, moreHeaders);
       expect(metadata.get('x-goog-api-client')).to.deep.eq([
         'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       ]);
