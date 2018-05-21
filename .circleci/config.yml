@@ -2,27 +2,19 @@ version: 2
 workflows:
   version: 2
   tests:
-    jobs: &workflow_jobs
+    jobs: &master_and_releases
       - node4:
-          filters:
+          filters: &all_commits
             tags:
               only: /.*/
       - node6:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - node8:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - node9:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - node10:
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - lint:
           requires:
             - node4
@@ -30,9 +22,7 @@ workflows:
             - node8
             - node9
             - node10
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - docs:
           requires:
             - node4
@@ -40,9 +30,7 @@ workflows:
             - node8
             - node9
             - node10
-          filters:
-            tags:
-              only: /.*/
+          filters: *all_commits
       - publish_npm:
           requires:
             - lint
@@ -59,15 +47,15 @@ workflows:
           filters:
             branches:
               only: master
-    jobs: *workflow_jobs
+    jobs: *master_and_releases
 jobs:
   node4:
     docker:
       - image: 'node:4'
         user: node
-    steps: &unit_tests_steps
+    steps: &releases
       - checkout
-      - run: &remove_package_lock
+      - run: &workflow_jobs
           name: Remove package-lock.json if needed.
           command: |
             WORKFLOW_NAME=`python .circleci/get_workflow_name.py`
@@ -78,9 +66,15 @@ jobs:
             else
               echo "Not a nightly build, skipping this step."
             fi
-      - run:
-          name: Install modules and dependencies.
-          command: npm install
+      - run: &unit_tests_steps
+          name: Install and link the module
+          command: |-
+            mkdir -p /home/node/.npm-global
+            npm install
+            npm link
+            chmod +x node_modules/@google-cloud/nodejs-repo-tools/bin/tools
+          environment:
+            NPM_CONFIG_PREFIX: /home/node/.npm-global
       - run:
           name: Run unit tests.
           command: npm run test-only
@@ -92,37 +86,30 @@ jobs:
     docker:
       - image: 'node:6'
         user: node
-    steps: *unit_tests_steps
+    steps: *releases
   node8:
     docker:
       - image: 'node:8'
         user: node
-    steps: *unit_tests_steps
+    steps: *releases
   node9:
     docker:
       - image: 'node:9'
         user: node
-    steps: *unit_tests_steps
+    steps: *releases
   node10:
     docker:
       - image: 'node:10'
         user: node
-    steps: *unit_tests_steps
+    steps: *releases
   lint:
     docker:
       - image: 'node:8'
         user: node
     steps:
       - checkout
-      - run: *remove_package_lock
-      - run:
-          name: Install modules and dependencies.
-          command: |
-            mkdir -p /home/node/.npm-global
-            npm install
-            npm link
-          environment:
-            NPM_CONFIG_PREFIX: /home/node/.npm-global
+      - run: *workflow_jobs
+      - run: *unit_tests_steps
       - run:
           name: Run linting.
           command: npm run check
@@ -134,10 +121,8 @@ jobs:
         user: node
     steps:
       - checkout
-      - run: *remove_package_lock
-      - run:
-          name: Install modules and dependencies.
-          command: npm install
+      - run: *workflow_jobs
+      - run: *unit_tests_steps
       - run:
           name: Build documentation.
           command: npm run docs
@@ -150,9 +135,7 @@ jobs:
       - run:
           name: Set NPM authentication.
           command: 'echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc'
-      - run:
-          name: Install dependencies
-          command: npm install --unsafe-perm
+      - run: *unit_tests_steps
       - run:
           name: Publish the module to npm.
           command: npm publish
