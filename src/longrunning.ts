@@ -33,9 +33,10 @@ import * as events from 'events';
 import {EventEmitter} from 'events';
 import * as util from 'util';
 
-import {CancellablePromise, NormalApiCaller} from './api_callable';
-import {BackoffSettings, createBackoffSettings} from './gax';
+import {APICall, APICallback, CancellablePromise, NormalApiCaller, PromiseCanceller} from './api_callable';
+import {BackoffSettings, CallOptions, createBackoffSettings} from './gax';
 import {GoogleError} from './GoogleError';
+import {Metadata, MetadataValue} from './grpc';
 import {OperationsClient} from './operations_client';
 
 /**
@@ -45,7 +46,18 @@ import {OperationsClient} from './operations_client';
  * @return {Object} - The unpacked message.
  */
 export interface AnyDecoder {
-  (message: {}): {};
+  (message: {}): Metadata;
+}
+
+/**
+ * @callback GetOperationCallback
+ * @param {?Error} error
+ * @param {?Object} result
+ * @param {?Object} metadata
+ * @param {?google.longrunning.Operation} rawResponse
+ */
+export interface GetOperationCallback {
+  (err?: Error|null, result?: {}, metadata?: {}, rawResponse?: Operation): void;
 }
 
 export class LongrunningDescriptor {
@@ -99,28 +111,34 @@ export class LongrunningApiCaller extends NormalApiCaller {
   }
 
 
-  call(apiCall, argument, settings, canceller) {
+  call(
+      apiCall: APICall, argument: {}, settings: CallOptions,
+      canceller: PromiseCanceller) {
     canceller.call((argument, callback) => {
-      this._wrapOperation(apiCall, settings, argument, callback);
+      return this._wrapOperation(apiCall, settings, argument, callback);
     }, argument);
   }
 
-  _wrapOperation(apiCall, settings, argument, callback) {
-    let backoffSettings = settings.longrunning;
+  _wrapOperation(
+      apiCall: APICall, settings: CallOptions, argument: {},
+      callback: APICallback) {
+    // TODO: this code defies all logic, and just can't be accurate.
+    // tslint:disable-next-line no-any
+    let backoffSettings: any = settings.longrunning;
     if (!backoffSettings) {
       backoffSettings =
           createBackoffSettings(100, 1.3, 60000, null, null, null, null);
     }
 
     const longrunningDescriptor = this.longrunningDescriptor;
-    return apiCall(argument, (err, rawResponse) => {
+    return apiCall(argument, (err: Error, rawResponse: Operation) => {
       if (err) {
         callback(err, null, rawResponse);
         return;
       }
 
       const operation = new Operation(
-          rawResponse, longrunningDescriptor, backoffSettings, settings);
+          rawResponse, longrunningDescriptor, backoffSettings!, settings);
 
       callback(null, operation, rawResponse);
     });
@@ -132,14 +150,15 @@ export class Operation extends EventEmitter {
   hasActiveListeners: boolean;
   latestResponse: Operation;
   longrunningDescriptor: LongrunningDescriptor;
-  result;
-  metadata;
+  result: {}|null;
+  metadata: Metadata|null;
   backoffSettings: BackoffSettings;
-  _callOptions;
+  _callOptions?: CallOptions;
   currentCallPromise_?: CancellablePromise;
   name?: string;
   done?: boolean;
   error?: GoogleError;
+  response?: {value: {}};
 
   /**
    * Wrapper for a google.longrunnung.Operation.
@@ -156,7 +175,7 @@ export class Operation extends EventEmitter {
    */
   constructor(
       grpcOp: Operation, longrunningDescriptor: LongrunningDescriptor,
-      backoffSettings: BackoffSettings, callOptions) {
+      backoffSettings: BackoffSettings, callOptions?: CallOptions) {
     super();
     this.completeListeners = 0;
     this.hasActiveListeners = false;
@@ -214,14 +233,6 @@ export class Operation extends EventEmitter {
   }
 
   /**
-   * @callback GetOperationCallback
-   * @param {?Error} error
-   * @param {?Object} result
-   * @param {?Object} metadata
-   * @param {?google.longrunning.Operation} rawResponse
-   */
-
-  /**
    * Get the updated status of the operation. If the Operation has previously
    * completed, this will use the status of the cached completed operation.
    *
@@ -237,14 +248,16 @@ export class Operation extends EventEmitter {
    * raw response of the api call. The promise rejects if the operation returns
    * an error.
    */
-  getOperation(callback) {
+  getOperation(): Promise<{}>;
+  getOperation(callback: GetOperationCallback): void;
+  getOperation(callback?: GetOperationCallback): Promise<{}>|void {
     const self = this;
     const operationsClient = this.longrunningDescriptor.operationsClient;
 
     function promisifyResponse() {
       if (!callback) {
         // tslint:disable-next-line variable-name
-        const PromiseCtor = self._callOptions.promise;
+        const PromiseCtor = self._callOptions!.promise!;
         return new PromiseCtor((resolve, reject) => {
           if (self.latestResponse.error) {
             const error = new GoogleError(self.latestResponse.error.message);
@@ -264,12 +277,12 @@ export class Operation extends EventEmitter {
     }
 
     this.currentCallPromise_ = operationsClient.getOperation(
-        {name: this.latestResponse.name}, this._callOptions);
+        {name: this.latestResponse.name}, this._callOptions!);
 
     const noCallbackPromise = this.currentCallPromise_!.then(responses => {
       self.latestResponse = responses[0];
       self._unpackResponse(responses[0], callback);
-      return promisifyResponse();
+      return promisifyResponse()!;
     });
 
     if (!callback) {
@@ -277,16 +290,16 @@ export class Operation extends EventEmitter {
     }
   }
 
-  _unpackResponse(op, callback?) {
+  _unpackResponse(op: Operation, callback?: GetOperationCallback) {
     const responseDecoder = this.longrunningDescriptor.responseDecoder;
     const metadataDecoder = this.longrunningDescriptor.metadataDecoder;
-    let response;
-    let metadata;
+    let response: {};
+    let metadata: Metadata;
 
     if (op.done) {
       if (op.result === 'error') {
-        const error = new GoogleError(op.error.message);
-        error.code = op.error.code;
+        const error = new GoogleError(op.error!.message);
+        error.code = op.error!.code;
         if (callback) {
           callback(error);
         }
@@ -304,7 +317,7 @@ export class Operation extends EventEmitter {
       this.metadata = metadata;
     }
     if (callback) {
-      callback(null, response, metadata, op);
+      callback(null, response!, metadata!, op);
     }
   }
 
@@ -328,7 +341,7 @@ export class Operation extends EventEmitter {
     if (this.backoffSettings.totalTimeoutMillis) {
       deadline = now.getTime() + this.backoffSettings.totalTimeoutMillis;
     }
-    let previousMetadataBytes;
+    let previousMetadataBytes: MetadataValue;
     if (this.latestResponse.metadata) {
       previousMetadataBytes = this.latestResponse.metadata.value;
     }
@@ -358,11 +371,11 @@ export class Operation extends EventEmitter {
         }
 
         if (!result) {
-          if (rawResponse.metadata &&
+          if (rawResponse!.metadata &&
               (!previousMetadataBytes ||
-               !rawResponse.metadata.value.equals(previousMetadataBytes))) {
+               !rawResponse!.metadata!.value.equals(previousMetadataBytes))) {
             setImmediate(emit, 'progress', metadata, rawResponse);
-            previousMetadataBytes = rawResponse.metadata.value;
+            previousMetadataBytes = rawResponse!.metadata!.value;
           }
           setTimeout(() => {
             now = new Date();
@@ -387,7 +400,7 @@ export class Operation extends EventEmitter {
   promise() {
     const self = this;
     // tslint:disable-next-line variable-name
-    const PromiseCtor = this._callOptions.promise;
+    const PromiseCtor = this._callOptions!.promise!;
     return new PromiseCtor((resolve, reject) => {
       self.on('error', reject)
           .on('complete', (result, metadata, rawResponse) => {
@@ -411,6 +424,7 @@ export class Operation extends EventEmitter {
  * requests.
  */
 export function operation(
-    op, longrunningDescriptor, backoffSettings, callOptions?) {
+    op: Operation, longrunningDescriptor: LongrunningDescriptor,
+    backoffSettings: BackoffSettings, callOptions?: CallOptions) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
 }

@@ -167,7 +167,8 @@ export interface CallOptions {
   pageToken?: number;
   maxResults?: number;
   maxRetries?: number;
-  otherArgs?: {};
+  // tslint:disable-next-line no-any
+  otherArgs?: {[index: string]: any};
   bundleOptions?: BundleOptions|null;
   isBundling?: boolean;
   longrunning?: boolean|null;
@@ -180,7 +181,8 @@ export class CallSettings {
   autoPaginate?: boolean;
   pageToken?: number;
   maxResults?: number;
-  otherArgs: {};
+  // tslint:disable-next-line no-any
+  otherArgs: {[index: string]: any};
   bundleOptions?: BundleOptions|null;
   isBundling: boolean;
   longrunning?: boolean|null;

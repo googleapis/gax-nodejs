@@ -40,6 +40,7 @@ import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import {IncomingHttpHeaders} from 'http';
+import {AnyDecoder} from './longrunning';
 let googleProtoFilesDir = require('google-proto-files')('..');
 
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
@@ -69,12 +70,54 @@ const COMMON_PROTO_FILES =
           return filename.substring(googleProtoFilesDir.length + 1);
         });
 
+export interface GoogleAutoAuth {
+  getAuthClient: (callback: (err: Error|null, client?: {}) => void) => void;
+}
+
+export interface GrpcClientOptions {
+  auth: GoogleAutoAuth;
+  promise?: PromiseConstructor;
+  grpc?: GrpcModule;
+}
+
+export interface MetadataValue {
+  equals: Function;
+}
+
+export interface Metadata {
+  new(): Metadata;
+  set: (key: {}, value?: {}|null) => void;
+  clone: () => Metadata;
+  value: MetadataValue;
+  get: (key: {}) => {};
+}
+
+export interface GrpcModule {
+  credentials: {
+    createSsl(): void; combineChannelCredentials: Function;
+    createFromGoogleCredential: Function;
+  };
+  load: Function;
+  loadObject: Function;
+  Metadata: Metadata;
+  status: {[index: string]: number;};
+}
+
+export interface StubOptions {
+  [index: string]: {};
+  servicePath: string;
+  port: number;
+  sslCreds: boolean;
+}
+
+export interface Stub {
+  new(serviceAddress: string, credentials: {}, grpcOptions: {}): Stub;
+}
+
 export class GrpcClient {
-  // tslint:disable-next-line no-any
-  auth: any;
+  auth: GoogleAutoAuth;
   promise: PromiseConstructor;
-  // tslint:disable-next-line no-any
-  grpc: any;
+  grpc: GrpcModule;
   grpcVersion: string;
 
   /**
@@ -94,7 +137,7 @@ export class GrpcClient {
    * promises will be used.
    * @constructor
    */
-  constructor(options) {
+  constructor(options: GrpcClientOptions) {
     // if (!(this instanceof GrpcClient)) {
     //   return new GrpcClient(options);
     // }
@@ -102,7 +145,7 @@ export class GrpcClient {
     this.auth = options.auth || autoAuth(options);
     this.promise = options.promise || Promise;
     if ('grpc' in options) {
-      this.grpc = options.grpc;
+      this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
       this.grpc = require('grpc');
@@ -118,7 +161,7 @@ export class GrpcClient {
    *   of default channel credentials.
    * @return {Promise} The promise which will be resolved to the gRPC credential.
    */
-  _getCredentials(opts) {
+  _getCredentials(opts: StubOptions) {
     // tslint:disable-next-line variable-name
     const PromiseCtor = this.promise;
     if (opts.sslCreds) {
@@ -128,7 +171,7 @@ export class GrpcClient {
     const getAuthClient = this.auth.getAuthClient.bind(this.auth);
     const sslCreds = grpc.credentials.createSsl();
     return new PromiseCtor((resolve, reject) => {
-      getAuthClient((err, auth) => {
+      getAuthClient((err: Error|null, auth: {}) => {
         if (err) {
           reject(err);
         } else {
@@ -145,7 +188,7 @@ export class GrpcClient {
    * @param {Array=} args - The argument list to be passed to grpc.load().
    * @return {Object} The gRPC loaded result (the toplevel namespace object).
    */
-  load(args) {
+  load(args: Array<{}>) {
     if (!args) {
       args = [];
     } else if (!Array.isArray(args)) {
@@ -187,18 +230,19 @@ export class GrpcClient {
     for (const key in headers) {
       baseMetadata.set(key, headers[key]);
     }
-    return function buildMetadata(abTests?, moreHeaders?) {
+    return function buildMetadata(
+        abTests?: {}, moreHeaders?: IncomingHttpHeaders) {
       // TODO: bring the A/B testing info into the metadata.
       let copied = false;
       let metadata = baseMetadata;
-      for (const key in moreHeaders) {
+      for (const key in moreHeaders!) {
         if (key.toLowerCase() !== 'x-goog-api-client' &&
-            moreHeaders.hasOwnProperty(key)) {
+            moreHeaders!.hasOwnProperty(key)) {
           if (!copied) {
             copied = true;
             metadata = metadata.clone();
           }
-          metadata.set(key, moreHeaders[key]);
+          metadata.set(key, moreHeaders![key]);
         }
       }
       return metadata;
@@ -217,7 +261,8 @@ export class GrpcClient {
    * @return {Object} A mapping of method names to CallSettings.
    */
   constructSettings(
-      serviceName: string, clientConfig, configOverrides, headers) {
+      serviceName: string, clientConfig: gax.ClientConfig,
+      configOverrides: gax.ClientConfig, headers: IncomingHttpHeaders) {
     return gax.constructSettings(
         serviceName, clientConfig, configOverrides, this.grpc.status,
         {metadataBuilder: this.metadataBuilder(headers)}, this.promise);
@@ -236,10 +281,10 @@ export class GrpcClient {
    * @return {Promise} A promse which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
-  createStub(CreateStub, options) {
+  createStub(CreateStub: Stub, options: StubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     return this._getCredentials(options).then(credentials => {
-      const grpcOptions = {};
+      const grpcOptions: {[index: string]: {}} = {};
       Object.keys(options).forEach(key => {
         if (key.indexOf('grpc.') === 0) {
           grpcOptions[key] = options[key];
@@ -259,8 +304,13 @@ export class GrpcClient {
    * @return {function(Object):number} - a function to compute the byte length
    *   for an object.
    */
-  static createByteLengthFunction(message) {
-    return function getByteLength(obj) {
+  static createByteLengthFunction(message: {
+    encode:
+        (obj: {}) => {
+          finish: () => Array<{}>
+        }
+  }) {
+    return function getByteLength(obj: {}) {
       return message.encode(obj).finish().length;
     };
   }

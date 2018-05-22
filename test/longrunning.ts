@@ -178,7 +178,8 @@ describe('longrunning', () => {
       const backoff = gax.createBackoffSettings(
           initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
           unusedRpcValue, unusedRpcValue, unusedRpcValue, totalTimeoutMillis);
-      const operation = longrunning.operation(SUCCESSFUL_OP, desc, backoff);
+      const operation = longrunning.operation(
+          SUCCESSFUL_OP as {} as longrunning.Operation, desc, backoff);
       expect(operation).to.be.an('object');
       expect(operation).to.have.property('backoffSettings');
       expect(operation.backoffSettings.initialRetryDelayMillis)
@@ -422,9 +423,10 @@ describe('longrunning', () => {
           called = true;
           return promise;
         }
-        const operation = longrunning.operation(SUCCESSFUL_OP, desc, backoff, {
-          promise: MockPromise,
-        });
+        const operation = longrunning.operation(
+            SUCCESSFUL_OP as {} as longrunning.Operation, desc, backoff, {
+              promise: MockPromise as {} as PromiseConstructor,
+            });
         operation.promise();
         // tslint:disable-next-line no-unused-expression
         expect(called).to.be.true;
@@ -582,6 +584,7 @@ describe('longrunning', () => {
         })
             .then(responses => {
               const operation = responses[0];
+              console.log(operation);
               operation.on('complete', () => {
                 done(new Error('Should not get here.'));
               });
