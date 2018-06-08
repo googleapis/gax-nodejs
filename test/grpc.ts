@@ -129,7 +129,7 @@ describe('grpc', () => {
     }
     let grpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
-    const stubAuth = {getAuthClient: sinon.stub()};
+    const stubAuth = {getClient: sinon.stub()};
     const stubGrpc = {
       credentials: {
         createSsl: sinon.stub(),
@@ -142,12 +142,12 @@ describe('grpc', () => {
       const dummyAuth = {authData: 'dummyAuth'};
       const dummySslCreds = {sslCreds: 'dummySslCreds'};
       const dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
-      stubAuth.getAuthClient.reset();
+      stubAuth.getClient.reset();
       stubGrpc.credentials.createSsl.reset();
       stubGrpc.credentials.combineChannelCredentials.reset();
       stubGrpc.credentials.createFromGoogleCredential.reset();
 
-      stubAuth.getAuthClient.callsArgWith(0, null, dummyAuth);
+      stubAuth.getClient.resolves(dummyAuth);
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
       stubGrpc.credentials.createFromGoogleCredential.withArgs(dummyAuth)
           .returns(dummyGrpcAuth);
@@ -198,7 +198,7 @@ describe('grpc', () => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(customCreds);
-        expect(stubAuth.getAuthClient.callCount).to.eq(0);
+        expect(stubAuth.getClient.callCount).to.eq(0);
         const credentials = stubGrpc.credentials;
         expect(credentials.createSsl.callCount).to.eq(0);
         expect(credentials.combineChannelCredentials.callCount).to.eq(0);
