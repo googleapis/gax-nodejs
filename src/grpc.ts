@@ -31,13 +31,12 @@
  */
 'use strict';
 
-const autoAuth = require('google-auto-auth');
-
 import * as fs from 'fs';
 import * as util from 'util';
 import * as globby from 'globby';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
+import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as gax from './gax';
 import {IncomingHttpHeaders} from 'http';
 import {AnyDecoder} from './longrunning';
@@ -70,12 +69,9 @@ const COMMON_PROTO_FILES =
           return filename.substring(googleProtoFilesDir.length + 1);
         });
 
-export interface GoogleAutoAuth {
-  getAuthClient: (callback: (err: Error|null, client?: {}) => void) => void;
-}
 
-export interface GrpcClientOptions {
-  auth: GoogleAutoAuth;
+export interface GrpcClientOptions extends GoogleAuthOptions {
+  auth: GoogleAuth;
   promise?: PromiseConstructor;
   grpc?: GrpcModule;
 }
@@ -107,7 +103,7 @@ export interface StubOptions {
   [index: string]: {};
   servicePath: string;
   port: number;
-  sslCreds: boolean;
+  sslCreds: {};
 }
 
 export interface Stub {
@@ -115,7 +111,7 @@ export interface Stub {
 }
 
 export class GrpcClient {
-  auth: GoogleAutoAuth;
+  auth: GoogleAuth;
   promise: PromiseConstructor;
   grpc: GrpcModule;
   grpcVersion: string;
@@ -124,9 +120,9 @@ export class GrpcClient {
    * A class which keeps the context of gRPC and auth for the gRPC.
    *
    * @param {Object=} options - The optional parameters. It will be directly
-   *   passed to google-auto-auth library, so parameters like keyFile or
+   *   passed to google-auth-library library, so parameters like keyFile or
    *   credentials will be valid.
-   * @param {Object=} options.auth - An instance of google-auto-auth.
+   * @param {Object=} options.auth - An instance of google-auth-library.
    *   When specified, this auth instance will be used instead of creating
    *   a new one.
    * @param {Object=} options.grpc - When specified, this will be used
@@ -142,7 +138,7 @@ export class GrpcClient {
     //   return new GrpcClient(options);
     // }
     options = options || {};
-    this.auth = options.auth || autoAuth(options);
+    this.auth = options.auth || new GoogleAuth(options);
     this.promise = options.promise || Promise;
     if ('grpc' in options) {
       this.grpc = options.grpc!;
@@ -161,26 +157,16 @@ export class GrpcClient {
    *   of default channel credentials.
    * @return {Promise} The promise which will be resolved to the gRPC credential.
    */
-  _getCredentials(opts: StubOptions) {
-    // tslint:disable-next-line variable-name
-    const PromiseCtor = this.promise;
+  async _getCredentials(opts: StubOptions) {
     if (opts.sslCreds) {
-      return PromiseCtor.resolve(opts.sslCreds);
+      return opts.sslCreds;
     }
     const grpc = this.grpc;
-    const getAuthClient = this.auth.getAuthClient.bind(this.auth);
     const sslCreds = grpc.credentials.createSsl();
-    return new PromiseCtor((resolve, reject) => {
-      getAuthClient((err: Error|null, auth: {}) => {
-        if (err) {
-          reject(err);
-        } else {
-          const credentials = grpc.credentials.combineChannelCredentials(
-              sslCreds, grpc.credentials.createFromGoogleCredential(auth));
-          resolve(credentials);
-        }
-      });
-    });
+    const client = await this.auth.getClient();
+    const credentials = grpc.credentials.combineChannelCredentials(
+        sslCreds, grpc.credentials.createFromGoogleCredential(client));
+    return credentials;
   }
 
   /**
