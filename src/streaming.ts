@@ -36,6 +36,8 @@ import * as util from 'util';
 import Duplexify from 'duplexify';
 import {Stream, Duplex, DuplexOptions} from 'stream';
 
+const retryRequest = require('retry-request');
+
 /**
  * The type of gRPC streaming.
  * @enum {number}
@@ -84,19 +86,16 @@ export class StreamProxy extends Duplexify {
   }
 
   /**
-   * Specifies the target stream.
-   * @param {ApiCall} apiCall - the API function to be called.
-   * @param {Object} argument - the argument to be passed to the apiCall.
+   * Forward events from an API request stream to the user's stream.
+   * @param {Stream} stream - The API request stream.
    */
-  setStream(apiCall, argument) {
-    const stream = apiCall(argument, this._callback);
-    this.stream = stream;
-    ['metadata', 'status'].forEach(event => {
-      stream.on(event, (...args: Array<{}>) => {
-        args.unshift(event);
-        this.emit.apply(this, args);
-      });
+  forwardEvents(stream: Stream) {
+    const eventsToForward = ['metadata', 'response', 'status'];
+
+    eventsToForward.forEach(event => {
+      stream.on(event, this.emit.bind(this, event));
     });
+
     // We also want to supply the status data as 'response' event to support
     // the behavior of google-cloud-node expects.
     // see:
@@ -106,21 +105,56 @@ export class StreamProxy extends Duplexify {
       // Create a response object with succeeds.
       // TODO: unify this logic with the decoration of gRPC response when it's
       // added. see: https://github.com/googleapis/gax-nodejs/issues/65
-      this.emit('response', {
+      stream.emit('response', {
         code: 200,
         details: '',
         message: 'OK',
         metadata,
       });
     });
-    if (this.type !== StreamType.CLIENT_STREAMING) {
-      this.setReadable(stream);
+  }
+
+  /**
+   * Specifies the target stream.
+   * @param {ApiCall} apiCall - the API function to be called.
+   * @param {Object} argument - the argument to be passed to the apiCall.
+   */
+  setStream(apiCall, argument) {
+    if (this.type === StreamType.SERVER_STREAMING) {
+      const retryStream = retryRequest(null, {
+        objectMode: true,
+        request: () => {
+          if (this._isCancelCalled) {
+            if (this.stream) {
+              this.stream.cancel();
+            }
+            return;
+          }
+          const stream = apiCall(argument, this._callback);
+          this.stream = stream;
+          this.forwardEvents(stream);
+          return stream;
+        },
+      });
+      this.setReadable(retryStream);
+      return;
     }
-    if (this.type !== StreamType.SERVER_STREAMING) {
+
+    const stream = apiCall(argument, this._callback);
+    this.stream = stream;
+    this.forwardEvents(stream);
+
+    if (this.type === StreamType.CLIENT_STREAMING) {
       this.setWritable(stream);
     }
-    if (this._isCancelCalled) {
-      stream.cancel();
+
+    if (this.type === StreamType.BIDI_STREAMING) {
+      this.setReadable(stream);
+      this.setWritable(stream);
+    }
+
+    if (this._isCancelCalled && this.stream) {
+      this.stream.cancel();
     }
   }
 }
