@@ -65,4 +65,4 @@ function lro(options: {}) {
 export {lro};
 export {grpc};
 exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.version = require('./package').version;
+exports.version = require('../../package.json').version;
