@@ -17,6 +17,7 @@
     "is-stream-ended": "^0.1.4",
     "lodash": "^4.17.10",
     "protobufjs": "^6.8.6",
+    "retry-request": "^4.0.0",
     "through2": "^2.0.3"
   },
   "devDependencies": {
