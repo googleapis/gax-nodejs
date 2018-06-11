@@ -86,38 +86,40 @@ export class StreamProxy extends Duplexify {
   }
 
   /**
+   * Forward events from an API request stream to the user's stream.
+   * @param {Stream} stream - The API request stream.
+   */
+  forwardEvents(stream: Stream) {
+    const eventsToForward = ['metadata', 'response', 'status'];
+
+    eventsToForward.forEach(event => {
+      stream.on(event, this.emit.bind(this, event));
+    });
+
+    // We also want to supply the status data as 'response' event to support
+    // the behavior of google-cloud-node expects.
+    // see:
+    // https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
+    // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/116436fa789d8b0f7fc5100b19b424e3ec63e6bf/packages/common/src/grpc-service.js#L355
+    stream.on('metadata', metadata => {
+      // Create a response object with succeeds.
+      // TODO: unify this logic with the decoration of gRPC response when it's
+      // added. see: https://github.com/googleapis/gax-nodejs/issues/65
+      stream.emit('response', {
+        code: 200,
+        details: '',
+        message: 'OK',
+        metadata,
+      });
+    });
+  }
+
+  /**
    * Specifies the target stream.
    * @param {ApiCall} apiCall - the API function to be called.
    * @param {Object} argument - the argument to be passed to the apiCall.
    */
   setStream(apiCall, argument) {
-    const setStream = (stream) => {
-      this.stream = stream;
-
-      const eventsToForward = ['metadata', 'response', 'status'];
-
-      eventsToForward.forEach(event => {
-        stream.on(event, this.emit.bind(this, event));
-      });
-
-      // We also want to supply the status data as 'response' event to support
-      // the behavior of google-cloud-node expects.
-      // see:
-      // https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
-      // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/116436fa789d8b0f7fc5100b19b424e3ec63e6bf/packages/common/src/grpc-service.js#L355
-      stream.on('metadata', metadata => {
-        // Create a response object with succeeds.
-        // TODO: unify this logic with the decoration of gRPC response when it's
-        // added. see: https://github.com/googleapis/gax-nodejs/issues/65
-        stream.emit('response', {
-          code: 200,
-          details: '',
-          message: 'OK',
-          metadata,
-        });
-      });
-    };
-
     if (this.type === StreamType.SERVER_STREAMING) {
       const retryStream = retryRequest(null, {
         objectMode: true,
@@ -129,14 +131,24 @@ export class StreamProxy extends Duplexify {
             return;
           }
           const stream = apiCall(argument, this._callback);
-          setStream(stream);
+          this.stream = stream;
+          this.forwardEvents(stream);
           return stream;
         },
       });
       this.setReadable(retryStream);
-    } else {
-      const stream = apiCall(argument, this._callback);
-      setStream(stream);
+      return;
+    }
+
+    const stream = apiCall(argument, this._callback);
+    this.stream = stream;
+    this.forwardEvents(stream);
+
+    if (this.type === StreamType.CLIENT_STREAMING) {
+      this.setWritable(stream);
+    }
+
+    if (this.type === StreamType.BIDI_STREAMING) {
       this.setReadable(stream);
       this.setWritable(stream);
     }
