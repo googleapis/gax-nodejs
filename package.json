@@ -62,7 +62,7 @@
     "publish-gh-pages": "bash ./publish-gh-pages.sh",
     "check": "gts check",
     "clean": "gts clean",
-    "compile": "tsc -p .",
+    "compile": "tsc -p . && cp src/operations_client_config.json build/src",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest-only": "npm run compile",
