@@ -55,6 +55,9 @@ describe('streaming', () => {
       s.push({resources: [1, 2]});
       s.push({resources: [3, 4, 5]});
       s.push(null);
+      setImmediate(() => {
+        s.emit('metadata');
+      });
       return s;
     });
 
@@ -113,6 +116,9 @@ describe('streaming', () => {
     function func() {
       expect(arguments.length).to.eq(2);
       const s = through2.obj();
+      setImmediate(() => {
+        s.emit('metadata');
+      });
       return s;
     }
 
@@ -203,6 +209,9 @@ describe('streaming', () => {
         s.end();
         s.emit('error', cancelError);
       };
+      setImmediate(() => {
+        s.emit('metadata');
+      });
       return s;
     }
     const apiCall = createApiCall(func, streaming.StreamType.SERVER_STREAMING);
