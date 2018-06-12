@@ -32,9 +32,9 @@
 
 /* This file describes the gRPC-streaming. */
 
-import * as util from 'util';
 import Duplexify from 'duplexify';
 import {Stream, Duplex, DuplexOptions} from 'stream';
+import {APICallback, APICall} from './api_callable';
 
 const retryRequest = require('retry-request');
 
@@ -66,7 +66,7 @@ export class StreamProxy extends Duplexify {
    * @param {StreamType} type - the type of gRPC stream.
    * @param {ApiCallback} callback - the callback for further API call.
    */
-  constructor(type: StreamType, callback) {
+  constructor(type: StreamType, callback: APICallback) {
     super(undefined, undefined, {
       objectMode: true,
       readable: type !== StreamType.CLIENT_STREAMING,
@@ -119,7 +119,7 @@ export class StreamProxy extends Duplexify {
    * @param {ApiCall} apiCall - the API function to be called.
    * @param {Object} argument - the argument to be passed to the apiCall.
    */
-  setStream(apiCall, argument) {
+  setStream(apiCall: APICall, argument: {}) {
     if (this.type === StreamType.SERVER_STREAMING) {
       const retryStream = retryRequest(null, {
         objectMode: true,
@@ -168,26 +168,26 @@ export class GrpcStreamable {
    * @constructor
    * @param {StreamDescriptor} descriptor - the descriptor of the method structure.
    */
-  constructor(descriptor) {
+  constructor(descriptor: StreamDescriptor) {
     this.descriptor = descriptor;
   }
 
-  init(settings, callback): StreamProxy {
+  init(settings: {}, callback: APICallback): StreamProxy {
     return new StreamProxy(this.descriptor.type, callback);
   }
 
-  wrap(func) {
+  wrap(func: Function) {
     switch (this.descriptor.type) {
       case StreamType.SERVER_STREAMING:
-        return (argument, metadata, options) => {
+        return (argument: {}, metadata: {}, options: {}) => {
           return func(argument, metadata, options);
         };
       case StreamType.CLIENT_STREAMING:
-        return (argument, metadata, options, callback) => {
+        return (argument: {}, metadata: {}, options: {}, callback: {}) => {
           return func(metadata, options, callback);
         };
       case StreamType.BIDI_STREAMING:
-        return (argument, metadata, options) => {
+        return (argument: {}, metadata: {}, options: {}) => {
           return func(metadata, options);
         };
       default:
@@ -196,15 +196,15 @@ export class GrpcStreamable {
     return func;
   }
 
-  call(apiCall, argument, settings, stream) {
+  call(apiCall: APICall, argument: {}, settings: {}, stream: StreamProxy) {
     stream.setStream(apiCall, argument);
   }
 
-  fail(stream, err) {
+  fail(stream: Stream, err: Error) {
     stream.emit('error', err);
   }
 
-  result(stream) {
+  result(stream: Stream) {
     return stream;
   }
 }
@@ -216,11 +216,11 @@ export class StreamDescriptor {
    * @constructor
    * @param {StreamType} streamType - the type of streaming.
    */
-  constructor(streamType) {
+  constructor(streamType: StreamType) {
     this.type = streamType;
   }
 
-  apiCaller(settings): GrpcStreamable {
+  apiCaller(settings: {retry: null}): GrpcStreamable {
     // Right now retrying does not work with gRPC-streaming, because retryable
     // assumes an API call returns an event emitter while gRPC-streaming methods
     // return Stream.

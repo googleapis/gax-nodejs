@@ -33,8 +33,7 @@
 import extend from 'extend';
 import * as through2 from 'through2';
 import ended from 'is-stream-ended';
-import * as util from 'util';
-import {Stream, Transform} from 'stream';
+import {Transform} from 'stream';
 
 import {NormalApiCaller, APICall, APICallback} from './api_callable';
 
