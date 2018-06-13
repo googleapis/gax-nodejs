@@ -54,7 +54,7 @@ const PAGE_DESCRIPTORS = {
  * The scopes needed to make gRPC calls to all of the methods defined in
  * this service.
  */
-export const ALL_SCOPES = [];
+export const ALL_SCOPES: string[] = [];
 
 /**
  * Manages long-running operations with an API service.
