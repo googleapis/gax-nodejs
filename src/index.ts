@@ -44,17 +44,18 @@ export {BundleDescriptor, BundleExecutor} from './bundling';
 export {PathTemplate} from './path_template';
 export {PageDescriptor} from './paged_iteration';
 export {createApiCall} from './api_callable';
+export {GrpcClient, GrpcClientOptions, GrpcModule, GoogleProtoFilesRoot, Metadata, MetadataValue, Stub, StubOptions} from './grpc';
 
-const grpc = require('./grpc');
+import {GrpcClient, GrpcClientOptions} from './grpc';
 
-function lro(options: {}) {
+function lro(options: GrpcClientOptions) {
   options = extend(
       {
         // tslint:disable-next-line no-any
         scopes: (lro as any).ALL_SCOPES,
       },
       options);
-  const gaxGrpc = grpc(options);
+  const gaxGrpc = new GrpcClient(options);
   return new operationsClient.OperationsClientBuilder(gaxGrpc);
 }
 // tslint:disable-next-line no-any
@@ -63,6 +64,5 @@ function lro(options: {}) {
 (lro as any).ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 export {lro};
-export {grpc};
-exports.createByteLengthFunction = grpc.createByteLengthFunction;
-exports.version = require('../../package.json').version;
+export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
+export const version = require('../../package.json').version;
