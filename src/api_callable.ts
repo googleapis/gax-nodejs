@@ -263,7 +263,7 @@ function retryable(
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         callback(new Error(
-            'Retry total timeout exceeded before any' +
+            'Retry total timeout exceeded before any ' +
             'response was received'));
         return;
       }
@@ -413,3 +413,4 @@ export function createApiCall(
     return apiCaller.result(status);
   };
 }
+                                    
