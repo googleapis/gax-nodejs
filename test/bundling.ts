@@ -795,7 +795,7 @@ describe('Executor', () => {
       executor.schedule(spy, {field1: [0], field2: 'id'}, () => {
         expect(spy.callCount).to.eq(1);
         const firstEnded = new Date().getTime();
-        expect(firstEnded - start).to.be.least(50);
+        expect(firstEnded - start).to.be.least(49);
 
         executor.schedule(spy, {field1: [1], field2: 'id'}, () => {
           expect(spy.callCount).to.eq(2);
