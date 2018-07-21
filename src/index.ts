@@ -31,7 +31,7 @@
 
 'use strict';
 
-import extend from 'extend';
+import * as extend from 'extend';
 
 import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
