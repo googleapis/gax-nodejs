@@ -215,7 +215,10 @@ describe('grpc', () => {
     const grpcClient = gaxGrpc();
 
     it('should load the test file', () => {
-      const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      // no-any disabled because if the accessed fields are non-existent, this
+      // test will fail anyway.
+      // tslint:disable-next-line:no-any
+      const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
       expect(protos.google.example.library.v1.LibraryService)
           .to.be.a('Function');
       expect(protos.test.TestMessage).to.be.an('object');
@@ -224,7 +227,10 @@ describe('grpc', () => {
     it('should load a common proto', () => {
       const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
-      const protos = grpcClient.loadProto(nonExistentDir, iamService);
+      // no-any disabled because if the accessed fields are non-existent, this
+      // test will fail anyway.
+      // tslint:disable-next-line:no-any
+      const protos = grpcClient.loadProto(nonExistentDir, iamService) as any;
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
 

@@ -35,6 +35,7 @@ import * as extend from 'extend';
 
 import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
+import {GrpcClient, GrpcClientOptions, GoogleProtoFilesRoot} from './grpc';
 
 export {routingHeader};
 export {constructSettings} from './gax';
@@ -45,8 +46,6 @@ export {PathTemplate} from './path_template';
 export {PageDescriptor} from './paged_iteration';
 export {createApiCall} from './api_callable';
 export {GrpcClient, GrpcClientOptions, GrpcModule, GoogleProtoFilesRoot, Metadata, MetadataValue, Stub, StubOptions} from './grpc';
-
-import {GrpcClient, GrpcClientOptions} from './grpc';
 
 function lro(options: GrpcClientOptions) {
   options = extend(
