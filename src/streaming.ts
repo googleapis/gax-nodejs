@@ -32,7 +32,7 @@
 
 /* This file describes the gRPC-streaming. */
 
-import Duplexify from 'duplexify';
+import * as Duplexify from 'duplexify';
 import {Stream, Duplex, DuplexOptions} from 'stream';
 import {APICallback, APICall} from './api_callable';
 

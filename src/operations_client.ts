@@ -27,7 +27,7 @@
 /* jscs: disable maximumLineLength */
 'use strict';
 
-import extend from 'extend';
+import * as extend from 'extend';
 import * as apiCallable from './api_callable';
 import * as gax from './gax';
 import * as pathTemplate from './path_template';
