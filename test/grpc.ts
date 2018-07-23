@@ -34,7 +34,7 @@ import {GrpcClient, GoogleProtoFilesRoot} from '../src/grpc';
 import {expect} from 'chai';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import proxyquire from 'proxyquire';
+import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 
 function gaxGrpc(options?) {
