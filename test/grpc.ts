@@ -35,7 +35,13 @@ import {expect} from 'chai';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as proxyquire from 'proxyquire';
+import * as semver from 'semver';
 import * as sinon from 'sinon';
+
+// When this flag is set, tests that have to do with loadProto will be skipped.
+// They are known to not work with grpc-js, as they use a now-deprecated API.
+const USE_GRPC_JS = !!process.env.GOOGLE_CLOUD_USE_GRPC_JS &&
+    semver.satisfies(process.version, '>=8');
 
 function gaxGrpc(options?) {
   return new GrpcClient(options);
@@ -44,7 +50,8 @@ function gaxGrpc(options?) {
 describe('grpc', () => {
   describe('grpcVersion', () => {
     it('holds the proper grpc version', () => {
-      const grpcVersion = require('grpc/package.json').version;
+      const grpcModule = USE_GRPC_JS ? '@grpc/grpc-js' : 'grpc';
+      const grpcVersion = require(`${grpcModule}/package.json`).version;
       expect(gaxGrpc().grpcVersion).to.eq(grpcVersion);
     });
 
@@ -207,7 +214,7 @@ describe('grpc', () => {
     });
   });
 
-  describe('loadProto', () => {
+  (USE_GRPC_JS ? describe.skip : describe)('loadProto', () => {
     const TEST_FILE = path.join(
         'fixtures', 'google', 'example', 'library', 'v1', 'library.proto');
     // const RESOLVED_TEST_FILE = path.resolve(`../`)

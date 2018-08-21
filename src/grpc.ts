@@ -32,12 +32,12 @@
 'use strict';
 
 import * as fs from 'fs';
-import * as util from 'util';
 import * as globby from 'globby';
 import * as grpcTypes from 'grpc';                           // for types only
 import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
+import * as semver from 'semver';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as gax from './gax';
 import {OutgoingHttpHeaders} from 'http';
@@ -169,8 +169,16 @@ export class GrpcClient {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
-      this.grpc = require('grpc');
-      this.grpcVersion = require('grpc/package.json').version;
+      // EXPERIMENTAL: If GOOGLE_CLOUD_USE_GRPC_JS is set, use the JS-based
+      // implementation of the gRPC client instead. Requires http2 (Node 8+).
+      if (semver.satisfies(process.version, '8.x') &&
+          process.env.GOOGLE_CLOUD_USE_GRPC_JS) {
+        this.grpc = require('@grpc/grpc-js');
+        this.grpcVersion = require('@grpc/grpc-js/package.json').version;
+      } else {
+        this.grpc = require('grpc');
+        this.grpcVersion = require('grpc/package.json').version;
+      }
     }
     this.grpcProtoLoader = require('@grpc/proto-loader');
   }
