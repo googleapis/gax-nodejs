@@ -225,7 +225,6 @@ describe('grpc', () => {
       // test will fail anyway.
       // tslint:disable-next-line:no-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
-      console.log(protos);
       expect(protos.google.example.library.v1.LibraryService)
           .to.be.a('Function');
     });

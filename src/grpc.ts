@@ -187,9 +187,7 @@ export class GrpcClient {
    * @param options Options for loading the proto file.
    */
   loadFromProto(filename: string, options: grpcProtoLoaderTypes.Options) {
-    console.log('load:', filename);
     const packageDef = grpcProtoLoaderTypes.loadSync(filename, options);
-    console.log('def:', packageDef);
     return this.grpc.loadPackageDefinition(packageDef);
   }
 
@@ -212,7 +210,6 @@ export class GrpcClient {
       oneofs: true,
       includeDirs: INCLUDE_DIRS
     };
-    console.log(INCLUDE_DIRS);
     return this.loadFromProto(filename, options);
   }
 
