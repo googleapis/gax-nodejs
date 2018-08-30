@@ -202,13 +202,15 @@ export class GrpcClient {
   loadProto(protoPath: string, filename: string) {
     // This set of @grpc/proto-loader options
     // 'closely approximates the existing behavior of grpc.load'
+    const includeDirs = INCLUDE_DIRS.slice();
+    includeDirs.unshift(protoPath);
     const options = {
       keepCase: true,
       longs: String,
       enums: String,
       defaults: true,
       oneofs: true,
-      includeDirs: INCLUDE_DIRS
+      includeDirs
     };
     return this.loadFromProto(filename, options);
   }

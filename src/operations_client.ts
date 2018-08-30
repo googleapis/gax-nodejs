@@ -440,7 +440,7 @@ export class OperationsClientBuilder {
   constructor(gaxGrpc) {
     const protoFilesRoot = require('google-proto-files')('..');
     const operationsClient = gaxGrpc.loadProto(
-        path.join(protoFilesRoot, 'google/longrunning/operations.proto'));
+        protoFilesRoot, 'google/longrunning/operations.proto');
     extend(this, operationsClient.google.longrunning);
 
     /**
