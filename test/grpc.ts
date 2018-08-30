@@ -208,20 +208,19 @@ describe('grpc', () => {
   });
 
   describe('loadProto', () => {
-    const TEST_FILE = path.join(
-        'fixtures', 'google', 'example', 'library', 'v1', 'library.proto');
-    // const RESOLVED_TEST_FILE = path.resolve(`../`)
-    const TEST_PATH = path.resolve(__dirname, '../../test');
     const grpcClient = gaxGrpc();
+    const TEST_FILE =
+        path.join('google', 'example', 'library', 'v1', 'library.proto');
+    const TEST_PATH = path.resolve(__dirname, '../../test/fixtures');
 
     it('should load the test file', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
       // tslint:disable-next-line:no-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
+      console.log(protos);
       expect(protos.google.example.library.v1.LibraryService)
           .to.be.a('Function');
-      expect(protos.test.TestMessage).to.be.an('object');
     });
 
     it('should load a common proto', () => {
