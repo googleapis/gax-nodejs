@@ -42,39 +42,17 @@ import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as gax from './gax';
 import {OutgoingHttpHeaders} from 'http';
 import {AnyDecoder} from './longrunning';
-let googleProtoFilesDir = require('google-proto-files')('..');
 
+let googleProtoFilesDir = require('google-proto-files')('..');
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
 
-/**
- * Options accepted by grpc.load, which was formerly called by GrpcClient#load.
- */
-export interface GrpcLoadOldOptions {
-  convertFieldsToCamelCase?: boolean;
-  binaryAsBase64?: boolean;
-  longsAsStrings?: boolean;
-  enumsAsStrings?: boolean;
-}
 
-/**
- * Acceptable types for values of `filename` in GrpcClient#load.
- */
-export type GrpcLoadFileArg = string|{
-  root?: string;
-  file: string;
-};
+// INCLUDE_DIRS is passed to @grpc/proto-loader
+const INCLUDE_DIRS: string[] = [];
+INCLUDE_DIRS.push(googleProtoFilesDir);
 
-/**
- * Options accepted by GrpcClient#load.
- */
-export type GrpcLoadOptions = GrpcLoadOldOptions&grpcProtoLoaderTypes.Options;
-
-/**
- * GrpcClient#load accepts its arguments in either load(args) or load(...args)
- * format. This is the type of `args` in the former of the two.
- */
-export type GrpcLoadArgs = [GrpcLoadFileArg, null, GrpcLoadOptions];
-
+// COMMON_PROTO_FILES logic is here for protobufjs loads (see
+// GoogleProtoFilesRoot below)
 const COMMON_PROTO_DIRS = [
   // This list of directories is defined here:
   // https://github.com/googleapis/googleapis/blob/master/gapic/packaging/common_protos.yaml
@@ -99,7 +77,6 @@ const COMMON_PROTO_FILES =
         .map(filename => {
           return filename.substring(googleProtoFilesDir.length + 1);
         });
-
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth: GoogleAuth;
@@ -215,45 +192,27 @@ export class GrpcClient {
   }
 
   /**
-   * Load grpc proto services with the specific arguments.
-   * Pending deprecation: use GrpcClient#loadFromProto.
-   * @param {Array=} args - The argument list to be passed to grpc.load().
-   * @return {Object} The gRPC loaded result (the toplevel namespace object).
-   */
-  load(args: Array<{}>) {
-    if (!args) {
-      args = [];
-    } else if (!Array.isArray(args)) {
-      args = [args];
-    }
-    if (args.length === 1) {
-      args.push('proto', {convertFieldsToCamelCase: true});
-    }
-    return this.grpc.load.apply(this.grpc, args);
-  }
-
-  /**
    * Load grpc proto service from a filename hooking in googleapis common protos
    * when necessary.
-   * Pending deprecation: use GrpcClient#loadFromProto.
    * @param {String} protoPath - The directory to search for the protofile.
    * @param {String} filename - The filename of the proto to be loaded.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
   loadProto(protoPath: string, filename: string) {
-    const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
-    return this.grpc.loadObject(
-        protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
-  }
-
-  static _resolveFile(protoPath: string, filename: string) {
-    if (fs.existsSync(path.join(protoPath, filename))) {
-      return path.join(protoPath, filename);
-    } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
-      return path.join(googleProtoFilesDir, filename);
-    }
-    throw new Error(filename + ' could not be found in ' + protoPath);
+    // This set of @grpc/proto-loader options
+    // 'closely approximates the existing behavior of grpc.load'
+    const includeDirs = INCLUDE_DIRS.slice();
+    includeDirs.unshift(protoPath);
+    const options = {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+      includeDirs
+    };
+    return this.loadFromProto(filename, options);
   }
 
   metadataBuilder(headers: OutgoingHttpHeaders) {

@@ -27,6 +27,7 @@
 /* jscs: disable maximumLineLength */
 'use strict';
 
+import * as path from 'path';
 import * as extend from 'extend';
 import * as apiCallable from './api_callable';
 import * as gax from './gax';
@@ -437,12 +438,9 @@ export class OperationsClient {
 }
 export class OperationsClientBuilder {
   constructor(gaxGrpc) {
-    const operationsClient = gaxGrpc.load([
-      {
-        root: require('google-proto-files')('..'),
-        file: 'google/longrunning/operations.proto',
-      },
-    ]);
+    const protoFilesRoot = require('google-proto-files')('..');
+    const operationsClient = gaxGrpc.loadProto(
+        protoFilesRoot, 'google/longrunning/operations.proto');
     extend(this, operationsClient.google.longrunning);
 
     /**
