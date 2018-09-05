@@ -4,6 +4,16 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.20.0
+
+### Implementation Changes
+- feat: use @grpc/proto-loader instead of deprecated grpc load (#291)
+- fix(deps): update dependency google-auth-library to v2 (#290)
+
+### Internal / Testing Changes
+- Add synth script and update CI (#294)
+- Retry npm install in CI (#293)
+
 ## v0.18.0
 
 ### Implementation Changes
