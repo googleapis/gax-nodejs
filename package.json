@@ -54,18 +54,20 @@
   },
   "scripts": {
     "codecov": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --reporter spec --slow 500 && ./node_modules/codecov/bin/codecov",
-    "docs": "jsdoc -c .jsdoc.js -d doc",
+    "docs": "echo no docs 📗",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
     "test": "npm run test-only",
     "test-only": "istanbul test ./node_modules/mocha/bin/_mocha -- build/test --reporter spec --slow 500",
     "publish-gh-pages": "bash ./publish-gh-pages.sh",
-    "check": "gts check",
+    "lint": "gts check",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/operations_client_config.json build/src",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest-only": "npm run compile",
-    "posttest": "npm run check"
+    "posttest": "npm run lint",
+    "system-test": "echo no system tests 😱",
+    "samples-test": "echo no sample tests 😱"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [

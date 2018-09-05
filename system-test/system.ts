@@ -1,4 +1,4 @@
-/*!
+/**
  * Copyright 2018 Google LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,32 +14,4 @@
  * limitations under the License.
  */
 
-'use strict';
-
-module.exports = {
-  opts: {
-    readme: './README.md',
-    package: './package.json',
-    template: './node_modules/ink-docstrap/template',
-    recurse: true,
-    verbose: true,
-    destination: './docs/'
-  },
-  plugins: [
-    'plugins/markdown'
-  ],
-  source: {
-    excludePattern: '(^|\\/|\\\\)[._]',
-    include: [
-      'src'
-    ],
-    includePattern: '\\.js$'
-  },
-  templates: {
-    copyright: 'Copyright 2018 Google, LLC.',
-    includeDate: false,
-    sourceFiles: false,
-    systemName: 'google-gax',
-    theme: 'lumen'
-  }
-};
+console.warn(`no system tests available 👻`);
