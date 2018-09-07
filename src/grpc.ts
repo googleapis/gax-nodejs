@@ -212,7 +212,10 @@ export class GrpcClient {
       oneofs: true,
       includeDirs
     };
-    return this.loadFromProto(filename, options);
+    const retval = this.loadFromProto(filename, options);
+    console.log('loadProto', protoPath, filename);
+    console.log(JSON.stringify(retval, null, '  '));
+    return retval;
   }
 
   metadataBuilder(headers: OutgoingHttpHeaders) {
