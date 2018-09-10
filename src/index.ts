@@ -35,7 +35,7 @@ import * as extend from 'extend';
 
 import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
-import {GrpcClient, GrpcClientOptions } from './grpc';
+import {GrpcClient, GrpcClientOptions} from './grpc';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {routingHeader};
