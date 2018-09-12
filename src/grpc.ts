@@ -200,24 +200,23 @@ export class GrpcClient {
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
+
   loadProto(protoPath: string, filename: string) {
-    // This set of @grpc/proto-loader options
-    // 'closely approximates the existing behavior of grpc.load'
-    const includeDirs = INCLUDE_DIRS.slice();
-    includeDirs.unshift(protoPath);
-    const options = {
-      keepCase: true,
-      longs: String,
-      enums: String,
-      defaults: true,
-      oneofs: true,
-      includeDirs
-    };
-    console.log(options);
-    const retval = this.loadFromProto(filename, options);
+    const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
+    const retval = this.grpc.loadObject(
+        protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
     console.log('loadProto', protoPath, filename);
     console.log(JSON.stringify(retval, null, '  '));
     return retval;
+  }
+
+  static _resolveFile(protoPath: string, filename: string) {
+    if (fs.existsSync(path.join(protoPath, filename))) {
+      return path.join(protoPath, filename);
+    } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
+      return path.join(googleProtoFilesDir, filename);
+    }
+    throw new Error(filename + ' could not be found in ' + protoPath);
   }
 
   metadataBuilder(headers: OutgoingHttpHeaders) {
