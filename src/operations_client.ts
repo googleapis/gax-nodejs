@@ -441,9 +441,6 @@ export class OperationsClientBuilder {
     const protoFilesRoot = require('google-proto-files')('..');
     const operationsClient = gaxGrpc.loadProto(
         protoFilesRoot, 'google/longrunning/operations.proto');
-    console.log(
-        'loaded operationsClient:',
-        JSON.stringify(operationsClient, null, '  '));
     extend(this, operationsClient.google.longrunning);
 
     /**

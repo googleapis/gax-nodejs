@@ -188,7 +188,6 @@ export class GrpcClient {
    */
   loadFromProto(filename: string, options: grpcProtoLoaderTypes.Options) {
     const packageDef = grpcProtoLoaderTypes.loadSync(filename, options);
-    console.log('loaded packageDef:', JSON.stringify(packageDef, null, '  '));
     return this.grpc.loadPackageDefinition(packageDef);
   }
 
@@ -205,8 +204,6 @@ export class GrpcClient {
     const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
     const retval = this.grpc.loadObject(
         protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
-    console.log('loadProto', protoPath, filename);
-    console.log(JSON.stringify(retval, null, '  '));
     return retval;
   }
 
