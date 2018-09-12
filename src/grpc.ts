@@ -41,7 +41,6 @@ import * as semver from 'semver';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as gax from './gax';
 import {OutgoingHttpHeaders} from 'http';
-import {AnyDecoder} from './longrunning';
 
 let googleProtoFilesDir = require('google-proto-files')('..');
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);

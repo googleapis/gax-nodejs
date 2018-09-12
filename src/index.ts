@@ -35,8 +35,9 @@ import * as extend from 'extend';
 
 import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
-import {GrpcClient, GrpcClientOptions, GoogleProtoFilesRoot} from './grpc';
+import {GrpcClient, GrpcClientOptions} from './grpc';
 
+export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {routingHeader};
 export {constructSettings} from './gax';
 export {StreamType, StreamDescriptor} from './streaming';
