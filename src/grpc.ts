@@ -41,7 +41,6 @@ import * as semver from 'semver';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as gax from './gax';
 import {OutgoingHttpHeaders} from 'http';
-import {AnyDecoder} from './longrunning';
 
 let googleProtoFilesDir = require('google-proto-files')('..');
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);
@@ -199,20 +198,21 @@ export class GrpcClient {
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
+
   loadProto(protoPath: string, filename: string) {
-    // This set of @grpc/proto-loader options
-    // 'closely approximates the existing behavior of grpc.load'
-    const includeDirs = INCLUDE_DIRS.slice();
-    includeDirs.unshift(protoPath);
-    const options = {
-      keepCase: true,
-      longs: String,
-      enums: String,
-      defaults: true,
-      oneofs: true,
-      includeDirs
-    };
-    return this.loadFromProto(filename, options);
+    const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
+    const retval = this.grpc.loadObject(
+        protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
+    return retval;
+  }
+
+  static _resolveFile(protoPath: string, filename: string) {
+    if (fs.existsSync(path.join(protoPath, filename))) {
+      return path.join(protoPath, filename);
+    } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
+      return path.join(googleProtoFilesDir, filename);
+    }
+    throw new Error(filename + ' could not be found in ' + protoPath);
   }
 
   metadataBuilder(headers: OutgoingHttpHeaders) {
