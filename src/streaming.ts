@@ -32,7 +32,7 @@
 
 /* This file describes the gRPC-streaming. */
 
-import * as duplexify from 'duplexify';
+import * as Duplexify from 'duplexify';
 import {Stream, Duplex, DuplexOptions} from 'stream';
 import {APICallback, APICall} from './api_callable';
 
@@ -53,7 +53,7 @@ export enum StreamType {
   BIDI_STREAMING = 3,
 }
 
-export class StreamProxy extends duplexify {
+export class StreamProxy extends Duplexify {
   type: {};
   private _callback?: Function;
   private _isCancelCalled: boolean;
