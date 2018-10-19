@@ -39,7 +39,7 @@ import {GrpcClient, GrpcClientOptions} from './grpc';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {routingHeader};
-export {constructSettings} from './gax';
+export {constructSettings, ClientConfig} from './gax';
 export {StreamType, StreamDescriptor} from './streaming';
 export {LongrunningDescriptor, operation} from './longrunning';
 export {BundleDescriptor, BundleExecutor} from './bundling';
