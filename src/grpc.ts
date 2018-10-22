@@ -77,6 +77,8 @@ const COMMON_PROTO_FILES =
           return filename.substring(googleProtoFilesDir.length + 1);
         });
 
+export {GrpcObject} from 'grpc';
+
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth: GoogleAuth;
   promise?: PromiseConstructor;
