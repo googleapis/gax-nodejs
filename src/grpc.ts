@@ -77,7 +77,7 @@ const COMMON_PROTO_FILES =
           return filename.substring(googleProtoFilesDir.length + 1);
         });
 
-export {Client, ChannelCredentials, GrpcObject} from 'grpc';
+export {Client, GrpcObject} from 'grpc';
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth: GoogleAuth;
@@ -105,11 +105,12 @@ export interface StubOptions {
   [index: string]: {};
   servicePath: string;
   port: number;
-  sslCreds: {};
+  sslCreds: grpcTypes.ChannelCredentials;
 }
 
 export interface Stub {
-  new(serviceAddress: string, credentials: {}, grpcOptions: {}): Stub;
+  new(serviceAddress: string, credentials: grpcTypes.ChannelCredentials,
+      grpcOptions: {}): Stub;
 }
 
 export class GrpcClient {
