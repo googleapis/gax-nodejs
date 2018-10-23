@@ -101,16 +101,11 @@ export type GrpcModule = typeof grpcTypes&{
   status: {[index: string]: number;};
 };
 
-export interface StubOptions {
+export interface ClientOptions {
   [index: string]: {};
   servicePath: string;
   port: number;
   sslCreds: grpcTypes.ChannelCredentials;
-}
-
-export interface Stub {
-  new(serviceAddress: string, credentials: grpcTypes.ChannelCredentials,
-      grpcOptions: {}): Stub;
 }
 
 export class GrpcClient {
@@ -170,7 +165,7 @@ export class GrpcClient {
    *   of default channel credentials.
    * @return {Promise} The promise which will be resolved to the gRPC credential.
    */
-  async _getCredentials(opts: StubOptions) {
+  async _getCredentials(opts: ClientOptions) {
     if (opts.sslCreds) {
       return opts.sslCreds;
     }
@@ -288,7 +283,7 @@ export class GrpcClient {
    * @return {Promise} A promse which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
-  createStub(CreateStub: Stub, options: StubOptions) {
+  createStub(CreateStub: typeof grpcTypes.Client, options: ClientOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     return this._getCredentials(options).then(credentials => {
       const grpcOptions: {[index: string]: {}} = {};
