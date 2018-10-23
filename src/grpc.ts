@@ -77,7 +77,11 @@ const COMMON_PROTO_FILES =
           return filename.substring(googleProtoFilesDir.length + 1);
         });
 
-export {Client, GrpcObject} from 'grpc';
+export {GrpcObject} from 'grpc';
+
+export class ClientStub extends grpcTypes.Client {
+  [name: string]: Function;
+}
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth: GoogleAuth;
@@ -282,7 +286,7 @@ export class GrpcClient {
    * @return {Promise} A promse which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
-  createStub(CreateStub: typeof grpcTypes.Client, options: ClientOptions) {
+  createStub(CreateStub: typeof ClientStub, options: ClientOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     return this._getCredentials(options).then(credentials => {
       const grpcOptions: {[index: string]: {}} = {};
