@@ -79,10 +79,6 @@ const COMMON_PROTO_FILES =
 
 export {GrpcObject} from 'grpc';
 
-export class ClientStub extends grpcTypes.Client {
-  [name: string]: Function;
-}
-
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth: GoogleAuth;
   promise?: PromiseConstructor;
@@ -105,10 +101,14 @@ export type GrpcModule = typeof grpcTypes&{
   status: {[index: string]: number;};
 };
 
-export interface ClientOptions {
+export interface ClientStubOptions {
   servicePath: string;
   port: number;
   sslCreds: grpcTypes.ChannelCredentials;
+}
+
+export class ClientStub extends grpcTypes.Client {
+  [name: string]: Function;
 }
 
 export class GrpcClient {
@@ -168,7 +168,7 @@ export class GrpcClient {
    *   of default channel credentials.
    * @return {Promise} The promise which will be resolved to the gRPC credential.
    */
-  async _getCredentials(opts: ClientOptions) {
+  async _getCredentials(opts: ClientStubOptions) {
     if (opts.sslCreds) {
       return opts.sslCreds;
     }
@@ -286,7 +286,7 @@ export class GrpcClient {
    * @return {Promise} A promse which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
-  createStub(CreateStub: typeof ClientStub, options: ClientOptions) {
+  createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     return this._getCredentials(options).then(credentials => {
       const grpcOptions: {[index: string]: {}} = {};
