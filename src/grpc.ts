@@ -102,7 +102,7 @@ export type GrpcModule = typeof grpcTypes&{
 };
 
 export interface ClientOptions {
-  [index: string]: {};
+  [index: string]: object;
   servicePath: string;
   port: number;
   sslCreds: grpcTypes.ChannelCredentials;
