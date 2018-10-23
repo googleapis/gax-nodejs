@@ -39,14 +39,14 @@ import {GrpcClient, GrpcClientOptions} from './grpc';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {routingHeader};
-export {constructSettings} from './gax';
+export {constructSettings, CallOptions, ClientConfig} from './gax';
 export {StreamType, StreamDescriptor} from './streaming';
 export {LongrunningDescriptor, operation} from './longrunning';
 export {BundleDescriptor, BundleExecutor} from './bundling';
 export {PathTemplate} from './path_template';
 export {PageDescriptor} from './paged_iteration';
 export {createApiCall} from './api_callable';
-export {GrpcClient, GrpcClientOptions, GrpcModule, GoogleProtoFilesRoot, Metadata, MetadataValue, Stub, StubOptions} from './grpc';
+export {ClientStub, ClientStubOptions, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, GoogleProtoFilesRoot, Metadata, MetadataValue} from './grpc';
 
 function lro(options: GrpcClientOptions) {
   options = extend(
