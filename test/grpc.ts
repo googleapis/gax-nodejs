@@ -188,8 +188,8 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
-          'grpc.max_send_message_length',
-          'grpc.initial_reconnect_backoff_ms',
+          'max_send_message_length',
+          'initial_reconnect_backoff_ms',
         ]);
       });
     });

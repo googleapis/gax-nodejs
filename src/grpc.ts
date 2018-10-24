@@ -291,8 +291,9 @@ export class GrpcClient {
     return this._getCredentials(options).then(credentials => {
       const grpcOptions: {[index: string]: {}} = {};
       Object.keys(options).forEach(key => {
-        if (key.indexOf('grpc.') === 0) {
-          grpcOptions[key] = options[key];
+        const match = key.match(/^grpc\.(.*)$/);
+        if (match) {
+          grpcOptions[match[1]] = options[key];
         }
       });
       return new CreateStub(serviceAddress, credentials, grpcOptions);
