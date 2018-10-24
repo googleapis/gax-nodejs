@@ -146,10 +146,10 @@ export class GrpcClient {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
-      // EXPERIMENTAL: If GOOGLE_CLOUD_USE_GRPC_JS is set, use the JS-based
-      // implementation of the gRPC client instead. Requires http2 (Node 8+).
-      if (semver.satisfies(process.version, '8.x') &&
-          process.env.GOOGLE_CLOUD_USE_GRPC_JS) {
+      // EXPERIMENTAL: If GOOGLE_CLOUD_USE_GRPC_JS is set, or Node.js 11+, use
+      // the JS-based implementation of the gRPC client instead. Requires http2
+      // (Node 8+).
+      if (this.isUseGrpcJs()) {
         this.grpc = require('@grpc/grpc-js');
         this.grpcVersion = require('@grpc/grpc-js/package.json').version;
       } else {
@@ -297,6 +297,18 @@ export class GrpcClient {
       });
       return new CreateStub(serviceAddress, credentials, grpcOptions);
     });
+  }
+
+  /**
+   * Use the JS-based implementation of gRPC client if env is Node 11+,
+   * or GOOGLE_CLOUD_USE_GRPC_JS is set. Requires http2 (Node 8+).
+   *
+   * @return {boolean} Returns true if grpc-js is to be used.
+   */
+  private isUseGrpcJs(): boolean {
+    return semver.satisfies(process.version, '>=11') ||
+        (semver.satisfies(process.version, '>=8') &&
+         !!process.env.GOOGLE_CLOUD_USE_GRPC_JS);
   }
 
   /**
