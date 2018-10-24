@@ -191,6 +191,10 @@ describe('grpc', () => {
           'max_send_message_length',
           'initial_reconnect_backoff_ms',
         ]);
+        // tslint:disable-next-line no-any
+        (expect(stub.options).to.not.have as any).key([
+          'servicePath', 'port', 'other_dummy_options'
+        ]);
       });
     });
 
