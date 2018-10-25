@@ -4,32 +4,30 @@ about: Create a report to help us improve
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+Thanks for stopping by to let us know something could be better!
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**PLEASE READ**: If you have a support contract with Google, please create an issue in the [support console](https://cloud.google.com/support/) instead of filing on GitHub. This will ensure a timely response.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+Please run down the following list and make sure you've tried the usual "quick fixes":
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+  - Search the issues already opened: https://github.com/googleapis/gax-nodejs/issues
+  - Search the issues on our "catch-all" repository: https://github.com/googleapis/google-cloud-node
+  - Search StackOverflow: http://stackoverflow.com/questions/tagged/google-cloud-platform+node.js
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+If you are still having issues, please be sure to include as much information as possible:
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+#### Environment details
 
-**Additional context**
-Add any other context about the problem here.
+  - OS:
+  - Node.js version:
+  - npm version:
+  - `google-gax` version:
+
+#### Steps to reproduce
+
+  1. ?
+  2. ?
+
+Making sure to follow these steps will guarantee the quickest resolution possible.
+
+Thanks!
