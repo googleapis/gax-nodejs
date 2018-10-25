@@ -291,8 +291,13 @@ export class GrpcClient {
     return this._getCredentials(options).then(credentials => {
       const grpcOptions: {[index: string]: {}} = {};
       Object.keys(options).forEach(key => {
-        if (key.indexOf('grpc.') === 0 || key.indexOf('grpcgcp.') === 0) {
+        if (key.indexOf('grpc.') === 0) {
           grpcOptions[key] = options[key];
+        } else if (key.indexOf('grpc_gcp.') === 0) {
+          // This prefix is used to pass additional arguments that aren't
+          // options for grpc. Strip the prefix before passing.
+          const prefixLength = 'grpc_gcp.'.length;
+          grpcOptions[key.substr(prefixLength)] = options[key];
         }
       });
       return new CreateStub(serviceAddress, credentials, grpcOptions);
