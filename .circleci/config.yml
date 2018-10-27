@@ -27,6 +27,7 @@ workflows:
           requires:
             - lint
             - docs
+          filters: *all_commits
 #          filters: &master_and_releases
 #            branches:
 #              only: master
