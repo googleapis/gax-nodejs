@@ -37,7 +37,11 @@ workflows:
           requires:
             - lint
             - docs
-          filters: *master_and_releases
+          filters: &master_and_releases
+            branches:
+              only: master
+            tags: &releases
+              only: '/^v[\d.]+$/'
       - publish_npm:
           requires:
             - system_tests
