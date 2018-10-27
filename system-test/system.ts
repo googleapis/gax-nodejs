@@ -40,9 +40,10 @@ interface ExecuteResult {
 
 async function execute(command: string, cwd?: string) {
   cwd = cwd || process.cwd();
+  const maxBuffer = 10 * 1024 * 1024;
   console.log(`Execute: ${command} [cwd: ${cwd}]`);
   return new Promise<ExecuteResult>((resolve, reject) => {
-    cp.exec(command, {cwd}, (err, stdout, stderr) => {
+    cp.exec(command, {cwd, maxBuffer}, (err, stdout, stderr) => {
       if (err) {
         reject(new Error(`Command ${command} terminated with error ${err}`));
       } else {
