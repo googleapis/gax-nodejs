@@ -27,21 +27,16 @@ workflows:
           requires:
             - lint
             - docs
-          filters: *all_commits
-#          filters: &master_and_releases
-#            branches:
-#              only: master
-#            tags: &releases
-#              only: '/^v[\d.]+$/'
-      - sample_tests:
-          requires:
-            - lint
-            - docs
           filters: &master_and_releases
             branches:
               only: master
             tags: &releases
               only: '/^v[\d.]+$/'
+      - sample_tests:
+          requires:
+            - lint
+            - docs
+          filters: *master_and_releases
       - publish_npm:
           requires:
             - system_tests
