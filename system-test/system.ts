@@ -38,7 +38,7 @@ interface ExecuteResult {
   stderr: string;
 }
 
-async function execute(command: string, cwd?: string) {
+async function execute(command: string, cwd?: string): Promise<ExecuteResult> {
   cwd = cwd || process.cwd();
   const maxBuffer = 10 * 1024 * 1024;
   console.log(`Execute: ${command} [cwd: ${cwd}]`);
@@ -53,7 +53,8 @@ async function execute(command: string, cwd?: string) {
   });
 }
 
-async function spawn(command: string, args?: string[], cwd?: string) {
+async function spawn(
+    command: string, args?: string[], cwd?: string): Promise<void> {
   cwd = cwd || process.cwd();
   args = args || [];
   console.log(`Execute: ${command} ${args.join(' ')} [cwd: ${cwd}]`);
@@ -77,7 +78,7 @@ async function spawn(command: string, args?: string[], cwd?: string) {
   });
 }
 
-async function latestRelease(cwd: string) {
+async function latestRelease(cwd: string): Promise<string> {
   const gitTagOutput = (await execute('git tag --list', cwd)).stdout;
   const tags =
       gitTagOutput.split('\n')
@@ -101,7 +102,7 @@ async function latestRelease(cwd: string) {
   return tags[tags.length - 1];
 }
 
-async function preparePackage(packageName) {
+async function preparePackage(packageName: string): Promise<void> {
   await spawn(
       'git', ['clone', `${baseRepoUrl}${packageName}.git`, packageName]);
   const tag = await latestRelease(packageName);
@@ -111,7 +112,7 @@ async function preparePackage(packageName) {
   await execute('node .circleci/npm-install-retry.js', packageName);
 }
 
-async function runSystemTest(packageName) {
+async function runSystemTest(packageName: string): Promise<void> {
   await spawn('npm', ['run', 'system-test'], packageName);
 }
 
@@ -131,7 +132,7 @@ describe('Run system tests for some libraries', () => {
       await runSystemTest('nodejs-video-intelligence');
     });
   });
-  // Pub/Sub has streaming methods
+  // Pub/Sub has streaming methods and pagination
   describe('pubsub', () => {
     before(async () => {
       await preparePackage('nodejs-pubsub');
