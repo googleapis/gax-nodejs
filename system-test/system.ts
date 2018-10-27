@@ -106,7 +106,8 @@ async function preparePackage(packageName) {
   const tag = await latestRelease(packageName);
   await spawn('git', ['checkout', tag], packageName);
   await spawn('npm', ['link', '../../'], packageName);
-  await spawn('node', ['.circleci/npm-install-retry.js'], packageName);
+  // npm-install-retry prints a lot, so run it silently
+  await execute('node .circleci/npm-install-retry.js', packageName);
 }
 
 async function runSystemTest(packageName) {
