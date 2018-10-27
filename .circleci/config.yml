@@ -27,11 +27,11 @@ workflows:
           requires:
             - lint
             - docs
-          filters: &master_and_releases
-            branches:
-              only: master
-            tags: &releases
-              only: '/^v[\d.]+$/'
+#          filters: &master_and_releases
+#            branches:
+#              only: master
+#            tags: &releases
+#              only: '/^v[\d.]+$/'
       - sample_tests:
           requires:
             - lint
@@ -160,6 +160,7 @@ jobs:
           environment:
             GCLOUD_PROJECT: long-door-651
             GOOGLE_APPLICATION_CREDENTIALS: .circleci/key.json
+            NPM_CONFIG_PREFIX: /home/node/.npm-global
       - run:
           name: Remove unencrypted key.
           command: |
