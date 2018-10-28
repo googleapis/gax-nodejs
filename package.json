@@ -33,6 +33,7 @@
     "@types/node": "^10.3.2",
     "@types/proxyquire": "^1.3.28",
     "@types/pumpify": "^1.4.1",
+    "@types/rimraf": "^2.0.2",
     "@types/semver": "^5.5.0",
     "@types/sinon": "^5.0.1",
     "@types/source-map-support": "^0.4.1",
@@ -45,9 +46,11 @@
     "istanbul": "~0.4.5",
     "jsdoc": "^3.5.5",
     "mocha": "~5.2.0",
+    "nyc": "^13.1.0",
     "pegjs": "~0.10.0",
     "proxyquire": "^2.0.1",
     "pumpify": "^1.5.1",
+    "rimraf": "^2.6.2",
     "sinon": "^7.0.0",
     "source-map-support": "^0.5.6",
     "stream-events": "^1.0.4",
@@ -67,7 +70,7 @@
     "prepare": "npm run compile",
     "pretest-only": "npm run compile",
     "posttest": "npm run lint",
-    "system-test": "echo no system tests 😱",
+    "system-test": "nyc mocha --timeout 1200000 build/system-test/system.js",
     "samples-test": "echo no sample tests 😱"
   },
   "repository": "googleapis/gax-nodejs",
@@ -82,5 +85,11 @@
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
     "node": ">=6.0.0"
+  },
+  "nyc": {
+    "exclude": [
+      "build/system-test/**",
+      "system-test-run/**"
+    ]
   }
 }
