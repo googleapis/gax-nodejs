@@ -70,7 +70,7 @@
     "prepare": "npm run compile",
     "pretest-only": "npm run compile",
     "posttest": "npm run lint",
-    "system-test": "nyc mocha --no-timeouts build/system-test/system.js",
+    "system-test": "nyc mocha --timeout 1200000 build/system-test/system.js",
     "samples-test": "echo no sample tests 😱"
   },
   "repository": "googleapis/gax-nodejs",
@@ -87,11 +87,9 @@
     "node": ">=6.0.0"
   },
   "nyc": {
-    "include": [
-      "build/**"
-    ],
     "exclude": [
-      "build/system-test/**"
+      "build/system-test/**",
+      "system-test-run/**"
     ]
   }
 }

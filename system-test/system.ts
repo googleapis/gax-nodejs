@@ -59,21 +59,16 @@ async function spawn(
   args = args || [];
   console.log(`Execute: ${command} ${args.join(' ')} [cwd: ${cwd}]`);
   return new Promise<void>((resolve, reject) => {
-    const child =
-        cp.spawn(command, args || [], {cwd})
-            .on('close', (code: number|null, signal: string|null) => {
-              if (code === 0) {
-                resolve();
-              } else {
-                reject(new Error(`Command ${command} terminated with code ${
-                    code}, signal ${signal}`));
-              }
-            });
-    child.stdout.on('data', (chunk: Buffer) => {
-      process.stdout.write(chunk);
-    });
-    child.stderr.on('data', (chunk: Buffer) => {
-      process.stderr.write(chunk);
+    const child = cp.spawn(command, args || [], {
+                      cwd,
+                      stdio: 'inherit'
+                    }).on('close', (code: number|null, signal: string|null) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Command ${command} terminated with code ${
+            code}, signal ${signal}`));
+      }
     });
   });
 }
