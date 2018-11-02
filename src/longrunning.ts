@@ -29,10 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as events from 'events';
 import {EventEmitter} from 'events';
-import * as util from 'util';
-
 import {APICall, APICallback, CancellablePromise, NormalApiCaller, PromiseCanceller} from './api_callable';
 import {BackoffSettings, CallOptions, createBackoffSettings} from './gax';
 import {GoogleError} from './GoogleError';
