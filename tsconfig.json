@@ -4,8 +4,7 @@
     "rootDir": ".",
     "outDir": "build",
     "noImplicitAny": false,
-    "noImplicitThis": false,
-    "target": "es5"
+    "noImplicitThis": false
   },
   "include": [
     "src/*.ts",
