@@ -31,8 +31,7 @@
 
 import * as extend from 'extend';
 import * as ended from 'is-stream-ended';
-import {Transform} from 'stream';
-import * as through2 from 'through2';
+import {PassThrough, Transform} from 'stream';
 
 import {APICall, APICallback, NormalApiCaller} from './api_callable';
 
@@ -160,7 +159,7 @@ export class PageDescriptor {
    * @return {Stream} - a new object Stream.
    */
   createStream(apiCall, request, options): Transform {
-    const stream = through2.obj();
+    const stream = new PassThrough({objectMode: true});
     options = extend({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
