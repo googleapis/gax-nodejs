@@ -80,7 +80,7 @@ const COMMON_PROTO_FILES =
 export {GrpcObject} from 'grpc';
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
-  auth: GoogleAuth;
+  auth?: GoogleAuth;
   promise?: PromiseConstructor;
   grpc?: GrpcModule;
 }
@@ -135,11 +135,7 @@ export class GrpcClient {
    * promises will be used.
    * @constructor
    */
-  constructor(options: GrpcClientOptions) {
-    // if (!(this instanceof GrpcClient)) {
-    //   return new GrpcClient(options);
-    // }
-    options = options || {};
+  constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
     this.promise = options.promise || Promise;
     if ('grpc' in options) {

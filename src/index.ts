@@ -46,6 +46,7 @@ export {BundleDescriptor, BundleExecutor} from './bundling';
 export {PathTemplate} from './path_template';
 export {PageDescriptor} from './paged_iteration';
 export {createApiCall} from './api_callable';
+export {GoogleError} from './GoogleError';
 export {ClientStub, ClientStubOptions, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, GoogleProtoFilesRoot, Metadata, MetadataValue} from './grpc';
 
 function lro(options: GrpcClientOptions) {

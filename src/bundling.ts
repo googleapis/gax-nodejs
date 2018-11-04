@@ -36,7 +36,6 @@
 'use strict';
 
 import * as _ from 'lodash';
-import * as util from 'util';
 import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './api_callable';
 import {GoogleError} from './GoogleError';
 import {CallSettings} from './gax';

@@ -21,17 +21,10 @@ import * as rimraf from 'rimraf';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
 const rmrf = util.promisify(rimraf);
 
 const baseRepoUrl = 'https://github.com/googleapis/';
-const gaxPath = process.cwd();
 const testDir = path.join(process.cwd(), 'system-test-run');
-
-interface PackageJson {
-  dependencies: {[name: string]: string;};
-}
 
 interface ExecuteResult {
   stdout: string;
