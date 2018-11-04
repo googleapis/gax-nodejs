@@ -167,8 +167,8 @@ describe('PathTemplate', () => {
       '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
     };
 
-    Object.keys(tests).forEach(want => {
-      const template = tests[want];
+    Object.keys(tests).forEach(template => {
+      const want = tests[template];
       it(`should render template ${template} ok`, () => {
         const t = new PathTemplate(template);
         expect(t.inspect()).to.eql(want);

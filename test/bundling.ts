@@ -500,7 +500,7 @@ describe('Executor', () => {
 
     expect(executor._tasks).to.have.property('["id1"]');
     expect(executor._tasks).to.have.property('["id2"]');
-    expect(Object.keys(executor._tasks)).to.eq(2);
+    expect(Object.keys(executor._tasks).length).to.eq(2);
 
     let task = executor._tasks['["id1"]'];
     expect(task._data.length).to.eq(2);
@@ -650,7 +650,7 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [2], field2: 'id2'});
     expect(spy.callCount).to.eq(2);
 
-    expect(Object.keys(executor._tasks)).to.eq(0);
+    expect(Object.keys(executor._tasks).length).to.eq(0);
   });
 
   it('respects bytes count', () => {
@@ -676,7 +676,7 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [2], field2: 'id2'});
     expect(spy.callCount).to.eq(2);
 
-    expect(Object.keys(executor._tasks)).to.eq(0);
+    expect(Object.keys(executor._tasks).length).to.eq(0);
   });
 
   it('respects element limit', (done) => {
@@ -693,15 +693,15 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [1, 2], field2: 'id'});
     executor.schedule(spy, {field1: [3, 4], field2: 'id'});
     expect(spy.callCount).to.eq(0);
-    expect(Object.keys(executor._tasks)).to.eq(1);
+    expect(Object.keys(executor._tasks).length).to.eq(1);
 
     executor.schedule(spy, {field1: [5, 6, 7], field2: 'id'});
     expect(spy.callCount).to.eq(1);
-    expect(Object.keys(executor._tasks)).to.eq(1);
+    expect(Object.keys(executor._tasks).length).to.eq(1);
 
     executor.schedule(spy, {field1: [8, 9, 10, 11, 12], field2: 'id'});
     expect(spy.callCount).to.eq(3);
-    expect(Object.keys(executor._tasks)).to.eq(0);
+    expect(Object.keys(executor._tasks).length).to.eq(0);
 
     executor.schedule(
         spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'}, err => {
@@ -725,15 +725,15 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [1, 2], field2: 'id'});
     executor.schedule(spy, {field1: [3, 4], field2: 'id'});
     expect(spy.callCount).to.eq(0);
-    expect(Object.keys(executor._tasks)).to.eq(1);
+    expect(Object.keys(executor._tasks).length).to.eq(1);
 
     executor.schedule(spy, {field1: [5, 6, 7], field2: 'id'});
     expect(spy.callCount).to.eq(1);
-    expect(Object.keys(executor._tasks)).to.eq(1);
+    expect(Object.keys(executor._tasks).length).to.eq(1);
 
     executor.schedule(spy, {field1: [8, 9, 0, 1, 2], field2: 'id'});
     expect(spy.callCount).to.eq(3);
-    expect(Object.keys(executor._tasks)).to.eq(0);
+    expect(Object.keys(executor._tasks).length).to.eq(0);
 
     executor.schedule(
         spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'}, err => {
