@@ -30,7 +30,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
 
 import {expect} from 'chai';
 import * as sinon from 'sinon';

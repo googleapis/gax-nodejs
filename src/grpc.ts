@@ -29,18 +29,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
 
+import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as fs from 'fs';
 import * as globby from 'globby';
-import * as grpcTypes from 'grpc';                           // for types only
-import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
+import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import * as grpcTypes from 'grpc';  // for types only
+import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as semver from 'semver';
-import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+
 import * as gax from './gax';
-import {OutgoingHttpHeaders} from 'http';
 
 let googleProtoFilesDir = require('google-proto-files')('..');
 googleProtoFilesDir = path.normalize(googleProtoFilesDir);

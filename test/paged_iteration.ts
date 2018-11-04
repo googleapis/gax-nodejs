@@ -28,17 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* jshint expr: true*/
-
-'use strict';
-
-import * as util from './utils';
-import {PageDescriptor} from '../src/paged_iteration';
 import {expect} from 'chai';
 import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
+
+import {PageDescriptor} from '../src/paged_iteration';
+
+import * as util from './utils';
 
 describe('paged iteration', () => {
   const pageSize = 3;

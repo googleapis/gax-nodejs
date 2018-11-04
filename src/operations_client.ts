@@ -23,15 +23,13 @@
  * The only allowed edits are to method and file documentation. A 3-way
  * merge preserves those additions if the generated source changes.
  */
-/* TODO: introduce line-wrapping so that it never exceeds the limit. */
-/* jscs: disable maximumLineLength */
-'use strict';
 
 import * as extend from 'extend';
+
 import * as apiCallable from './api_callable';
 import * as gax from './gax';
-import * as pathTemplate from './path_template';
 import * as pagedIteration from './paged_iteration';
+import * as pathTemplate from './path_template';
 
 const configData = require('./operations_client_config');
 

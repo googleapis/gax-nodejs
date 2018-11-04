@@ -30,10 +30,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
 
 import * as util from 'util';
-import * as _ from 'lodash';
 import {Segment} from './path_template';
 
 /* constants used in the pegjs parser */
@@ -73,10 +71,7 @@ function allowOnePathWildcard(segments: Segment[]) {
  * @return {number} the number of terminal segments in the template
  */
 function countTerminals(segments: Segment[]) {
-  const terms = _.filter(segments, x => {
-    return x.kind === TERMINAL;
-  });
-  return terms.length;
+  return segments.filter(x => x.kind === TERMINAL).length;
 }
 
 /**

@@ -33,9 +33,7 @@
  * Provides behavior that supports request bundling.
  */
 
-'use strict';
-
-import * as _ from 'lodash';
+import at = require('lodash.at');
 import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './api_callable';
 import {GoogleError} from './GoogleError';
 import {CallSettings} from './gax';
@@ -62,7 +60,7 @@ export function computeBundleId(obj: {}, discriminatorFields: string[]) {
   const ids: Array<{}|null> = [];
   let hasIds = false;
   for (let i = 0; i < discriminatorFields.length; ++i) {
-    const id = _.at(obj, discriminatorFields[i])[0];
+    const id = at(obj, discriminatorFields[i])[0];
     if (id === undefined) {
       ids.push(null);
     } else {
