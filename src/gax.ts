@@ -33,8 +33,6 @@
  * Google API Extensions
  */
 
-'use strict';
-
 import {BundleOptions} from './bundling';
 
 /**

@@ -28,13 +28,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
 
 /* This file describes the gRPC-streaming. */
 
 import * as Duplexify from 'duplexify';
-import {Stream, Duplex, DuplexOptions} from 'stream';
-import {APICallback, APICall} from './api_callable';
+import {Duplex, DuplexOptions, Stream} from 'stream';
+
+import {APICall, APICallback} from './api_callable';
 
 const retryRequest = require('retry-request');
 

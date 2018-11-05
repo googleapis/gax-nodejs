@@ -34,10 +34,9 @@
  * allowing that causes another errors of non-camelcase symbols anyways.
  * Therefore quote-props is disabled explicitly only in this file. */
 
-'use strict';
+import {expect} from 'chai';
 
 import * as gax from '../src/gax';
-import {expect} from 'chai';
 
 const SERVICE_NAME = 'test.interface.v1.api';
 

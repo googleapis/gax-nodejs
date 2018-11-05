@@ -30,13 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
 
 /*
  * Path template utility.
  */
 
-import * as _ from 'lodash';
+import has = require('lodash.has');
 import * as util from 'util';
 import * as extras from './parser_extras';
 const parser = require('./path_template_parser');
@@ -134,7 +133,7 @@ export class PathTemplate {
     let inABinding = false;
     this.segments.forEach(segment => {
       if (segment.kind === extras.BINDING) {
-        if (!_.has(bindings, segment.literal)) {
+        if (!has(bindings, segment.literal)) {
           const msg = util.format(
               'Value for key %s is not provided in %s', segment.literal,
               bindings);

@@ -28,16 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* jshint expr: true*/
-
-'use strict';
+import {expect} from 'chai';
+import * as sinon from 'sinon';
+import * as through2 from 'through2';
 
 import * as apiCallable from '../src/api_callable';
 import * as gax from '../src/gax';
 import * as streaming from '../src/streaming';
-import {expect} from 'chai';
-import * as sinon from 'sinon';
-import * as through2 from 'through2';
 
 function createApiCall(func, type) {
   // can't use "createApiCall" in util.js because argument list is different
