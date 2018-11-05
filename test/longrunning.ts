@@ -28,16 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* jshint expr: true*/
-
-'use strict';
+import {expect} from 'chai';
+import * as sinon from 'sinon';
 
 import * as gax from '../src/gax';
 import * as longrunning from '../src/longrunning';
-import {expect} from 'chai';
-import * as sinon from 'sinon';
-import * as utils from './utils';
 import {OperationsClient} from '../src/operations_client';
+
+import * as utils from './utils';
 
 // tslint:disable-next-line no-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;

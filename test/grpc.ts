@@ -28,15 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
-
-import {GrpcClient, GoogleProtoFilesRoot} from '../src/grpc';
 import {expect} from 'chai';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as semver from 'semver';
 import * as sinon from 'sinon';
+
+import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
 
 // When this flag is set, tests that have to do with loadProto will be skipped.
 // They are known to not work with grpc-js, as they use a now-deprecated API.
@@ -129,10 +128,8 @@ describe('grpc', () => {
   });
 
   describe('createStub', () => {
-    function DummyStub(address, creds, options) {
-      this.address = address;
-      this.creds = creds;
-      this.options = options;
+    class DummyStub {
+      constructor(public address, public creds, public options) {}
     }
     let grpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};

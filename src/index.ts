@@ -29,40 +29,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
-
 import * as extend from 'extend';
 
+import {GrpcClient, GrpcClientOptions} from './grpc';
 import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
-import {GrpcClient, GrpcClientOptions} from './grpc';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {routingHeader};
-export {constructSettings, CallOptions, ClientConfig} from './gax';
-export {StreamType, StreamDescriptor} from './streaming';
-export {LongrunningDescriptor, operation} from './longrunning';
-export {BundleDescriptor, BundleExecutor} from './bundling';
-export {PathTemplate} from './path_template';
-export {PageDescriptor} from './paged_iteration';
 export {createApiCall} from './api_callable';
+export {BundleDescriptor, BundleExecutor} from './bundling';
+export {CallOptions, ClientConfig, constructSettings} from './gax';
 export {GoogleError} from './GoogleError';
-export {ClientStub, ClientStubOptions, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, GoogleProtoFilesRoot, Metadata, MetadataValue} from './grpc';
+export {ClientStub, ClientStubOptions, GoogleProtoFilesRoot, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, Metadata, MetadataValue} from './grpc';
+export {LongrunningDescriptor, operation} from './longrunning';
+export {PageDescriptor} from './paged_iteration';
+export {PathTemplate} from './path_template';
+export {StreamDescriptor, StreamType} from './streaming';
+export {routingHeader};
 
 function lro(options: GrpcClientOptions) {
-  options = extend(
-      {
-        // tslint:disable-next-line no-any
-        scopes: (lro as any).ALL_SCOPES,
-      },
-      options);
+  options = extend({scopes: lro.ALL_SCOPES}, options);
   const gaxGrpc = new GrpcClient(options);
   return new operationsClient.OperationsClientBuilder(gaxGrpc);
 }
-// tslint:disable-next-line no-any
-(lro as any).SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
-// tslint:disable-next-line no-any
-(lro as any).ALL_SCOPES = operationsClient.ALL_SCOPES;
+
+lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
+lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 export {lro};
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;

@@ -28,14 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* jshint expr: true*/
-
-'use strict';
-
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-import {GoogleError} from '../src/GoogleError';
+
 import * as gax from '../src/gax';
+import {GoogleError} from '../src/GoogleError';
+
 import * as utils from './utils';
 
 const fail = utils.fail;

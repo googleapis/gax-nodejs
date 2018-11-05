@@ -30,9 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
 
-import * as _ from 'lodash';
 import {expect} from 'chai';
 import {PathTemplate} from '../src/path_template';
 
@@ -169,8 +167,9 @@ describe('PathTemplate', () => {
       '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
     };
 
-    _.forEach(tests, (want, template) => {
-      it('should render template ' + template + ' ok', () => {
+    Object.keys(tests).forEach(template => {
+      const want = tests[template];
+      it(`should render template ${template} ok`, () => {
         const t = new PathTemplate(template);
         expect(t.inspect()).to.eql(want);
       });
