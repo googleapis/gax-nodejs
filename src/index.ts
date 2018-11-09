@@ -29,8 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as extend from 'extend';
-
 import {GrpcClient, GrpcClientOptions} from './grpc';
 import * as operationsClient from './operations_client';
 import * as routingHeader from './routing_header';
@@ -48,7 +46,7 @@ export {StreamDescriptor, StreamType} from './streaming';
 export {routingHeader};
 
 function lro(options: GrpcClientOptions) {
-  options = extend({scopes: lro.ALL_SCOPES}, options);
+  options = Object.assign({scopes: lro.ALL_SCOPES}, options);
   const gaxGrpc = new GrpcClient(options);
   return new operationsClient.OperationsClientBuilder(gaxGrpc);
 }
