@@ -51,11 +51,12 @@ module.exports = (() => {
     const peg$c9 = '}';
     const peg$c10 = {type: 'literal', value: '}', description: '"}"'};
     const peg$c11 = (l, segments) => {
-      return flatten([
-        {kind: extras.BINDING, literal: l},
-        segments,
-        {kind: extras.END_BINDING, literal: ''},
-      ]);
+      return ([
+               {kind: extras.BINDING, literal: l},
+               segments,
+               {kind: extras.END_BINDING, literal: ''},
+             ])
+          .reduce((a, b) => a.concat(b), []);
     };
     const peg$c12 = l => {
       return [
@@ -617,7 +618,6 @@ module.exports = (() => {
       return s0;
     }
 
-    const flatten = require('lodash.flatten');
     const extras = require('./parser_extras');
 
     peg$result = peg$startRuleFunction();

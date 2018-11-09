@@ -32,7 +32,6 @@
  */
 
 {
-   const flatten = require('lodash.flatten');
    const extras = require('./parser_extras');
 }
 
@@ -55,11 +54,11 @@ bound_segment
 
 variable
   = '{' l:literal '=' segments:unbound_segments '}' {
-    return flatten([
+    return ([
       { kind: extras.BINDING,     literal: l },
       segments,
       { kind: extras.END_BINDING, literal: '' }
-    ]);
+    ]).reduce((a, b) => a.concat(b), []);
   }
   / '{' l:literal '}' {
     return [

@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as extend from 'extend';
 import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
@@ -83,7 +82,7 @@ export class PagedIteration extends NormalApiCaller {
   }
 
   call(apiCall: APICall, argument: {[index: string]: {}}, settings, canceller) {
-    argument = extend({}, argument);
+    argument = Object.assign({}, argument);
     if (settings.pageToken) {
       argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
     }
@@ -160,7 +159,7 @@ export class PageDescriptor {
    */
   createStream(apiCall, request, options): Transform {
     const stream = new PassThrough({objectMode: true});
-    options = extend({}, options, {autoPaginate: false});
+    options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
