@@ -32,13 +32,13 @@
 
 import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as fs from 'fs';
-import * as globby from 'globby';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as grpcTypes from 'grpc';  // for types only
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as semver from 'semver';
+import * as walk from 'walkdir';
 
 import * as gax from './gax';
 
@@ -62,20 +62,18 @@ const COMMON_PROTO_DIRS = [
   'protobuf',  // This is an additional path that the common protos depend on.
   'rpc',
   'type',
-];
+].map(dir => path.join(googleProtoFilesDir, 'google', dir));
 
-const COMMON_PROTO_GLOB_PATTERNS = COMMON_PROTO_DIRS.map(dir => {
-  return path.join(googleProtoFilesDir, 'google', dir, '**', '*.proto');
-});
 
-const COMMON_PROTO_FILES =
-    globby.sync(COMMON_PROTO_GLOB_PATTERNS)
-        .map(filename => {
-          return path.normalize(filename);
-        })
-        .map(filename => {
-          return filename.substring(googleProtoFilesDir.length + 1);
-        });
+const COMMON_PROTO_FILES = COMMON_PROTO_DIRS
+                               .map(dir => {
+                                 return (walk.sync(dir) as string[])
+                                     .filter(f => path.extname(f) === '.proto')
+                                     .map(
+                                         f => path.normalize(f).substring(
+                                             googleProtoFilesDir.length + 1));
+                               })
+                               .reduce((a, c) => a.concat(c), []);
 
 export {GrpcObject} from 'grpc';
 
