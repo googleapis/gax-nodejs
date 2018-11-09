@@ -97,7 +97,7 @@ module.exports = (() => {
     let peg$savedPos = 0;
     const peg$posDetailsCache = [{line: 1, column: 1, seenCR: false}];
     let peg$maxFailPos = 0;
-    let peg$maxFailExpected: Array<{}> = [];
+    let peg$maxFailExpected = [];
     const peg$silentFails = 0;
     let peg$result;
 
