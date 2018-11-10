@@ -24,6 +24,8 @@
  * merge preserves those additions if the generated source changes.
  */
 
+import {getProtoPath} from 'google-proto-files';
+
 import * as apiCallable from './api_callable';
 import * as gax from './gax';
 import * as pagedIteration from './paged_iteration';
@@ -431,9 +433,10 @@ export class OperationsClient {
     return this['_deleteOperation'](request, options, callback);
   }
 }
+
 export class OperationsClientBuilder {
   constructor(gaxGrpc) {
-    const protoFilesRoot = require('google-proto-files')('..');
+    const protoFilesRoot = getProtoPath('..');
     const operationsClient = gaxGrpc.loadProto(
         protoFilesRoot, 'google/longrunning/operations.proto');
     Object.assign(this, operationsClient.google.longrunning);

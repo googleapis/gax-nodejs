@@ -33,6 +33,7 @@
 import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import {getProtoPath} from 'google-proto-files';
 import * as grpcTypes from 'grpc';  // for types only
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
@@ -42,9 +43,7 @@ import * as walk from 'walkdir';
 
 import * as gax from './gax';
 
-let googleProtoFilesDir = require('google-proto-files')('..');
-googleProtoFilesDir = path.normalize(googleProtoFilesDir);
-
+const googleProtoFilesDir = path.normalize(getProtoPath('..'));
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
