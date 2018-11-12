@@ -13,7 +13,7 @@
     "duplexify": "^3.6.0",
     "google-auth-library": "^2.0.0",
     "google-proto-files": "^0.18.0",
-    "grpc": "^1.15.1",
+    "grpc": "^1.16.0",
     "is-stream-ended": "^0.1.4",
     "lodash.at": "^4.6.0",
     "lodash.has": "^4.5.2",
