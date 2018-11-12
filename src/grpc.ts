@@ -286,6 +286,11 @@ export class GrpcClient {
       Object.keys(options).forEach(key => {
         if (key.indexOf('grpc.') === 0) {
           grpcOptions[key] = options[key];
+        } else if (key.indexOf('grpc_gcp.') === 0) {
+          // This prefix is used to pass additional arguments that aren't
+          // options for grpc. Strip the prefix before passing.
+          const prefixLength = 'grpc_gcp.'.length;
+          grpcOptions[key.substr(prefixLength)] = options[key];
         }
       });
       return new CreateStub(serviceAddress, credentials, grpcOptions);

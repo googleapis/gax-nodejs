@@ -177,6 +177,7 @@ describe('grpc', () => {
         port: 443,
         'grpc.max_send_message_length': 10 * 1024 * 1024,
         'grpc.initial_reconnect_backoff_ms': 10000,
+        'grpc_gcp.non_grpc_option': 1,
         other_dummy_options: 'test',
       };
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -185,8 +186,12 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
-          'grpc.max_send_message_length',
-          'grpc.initial_reconnect_backoff_ms',
+          'grpc.max_send_message_length', 'grpc.initial_reconnect_backoff_ms',
+          'non_grpc_option'
+        ]);
+        // tslint:disable-next-line no-any
+        (expect(stub.options).to.not.have as any).key([
+          'servicePath', 'port', 'other_dummy_options'
         ]);
       });
     });
