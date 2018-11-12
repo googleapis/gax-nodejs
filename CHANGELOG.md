@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.22.0
+
+11-12-2018 15:05 PST
+
+### New Features
+- feat: to support GRPC-GCP Extension, include additional options in grpcOptions ([#328](https://github.com/googleapis/gax-nodejs/pull/328))
+
 ## v0.21.0
 
 ### 11-10-2018 11:27 PST
