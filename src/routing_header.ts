@@ -38,8 +38,6 @@
  * Generally, these headers are specified as gRPC metadata.
  */
 
-'use strict';
-
 /**
  * Constructs the routing header from the given params
  *

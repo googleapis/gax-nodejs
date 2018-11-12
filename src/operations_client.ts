@@ -23,22 +23,19 @@
  * The only allowed edits are to method and file documentation. A 3-way
  * merge preserves those additions if the generated source changes.
  */
-/* TODO: introduce line-wrapping so that it never exceeds the limit. */
-/* jscs: disable maximumLineLength */
-'use strict';
 
-import * as path from 'path';
-import * as extend from 'extend';
+import {getProtoPath} from 'google-proto-files';
+
 import * as apiCallable from './api_callable';
 import * as gax from './gax';
-import * as pathTemplate from './path_template';
 import * as pagedIteration from './paged_iteration';
+import * as pathTemplate from './path_template';
 
 const configData = require('./operations_client_config');
 
-extend(gax, apiCallable);
-extend(gax, pathTemplate);
-extend(gax, pagedIteration);
+Object.assign(gax, apiCallable);
+Object.assign(gax, pathTemplate);
+Object.assign(gax, pagedIteration);
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 
@@ -79,7 +76,7 @@ export class OperationsClient {
   auth;
 
   constructor(gaxGrpc, grpcClients, opts) {
-    opts = extend(
+    opts = Object.assign(
         {
           servicePath: SERVICE_ADDRESS,
           port: DEFAULT_SERVICE_PORT,
@@ -436,12 +433,13 @@ export class OperationsClient {
     return this['_deleteOperation'](request, options, callback);
   }
 }
+
 export class OperationsClientBuilder {
   constructor(gaxGrpc) {
-    const protoFilesRoot = require('google-proto-files')('..');
+    const protoFilesRoot = getProtoPath('..');
     const operationsClient = gaxGrpc.loadProto(
         protoFilesRoot, 'google/longrunning/operations.proto');
-    extend(this, operationsClient.google.longrunning);
+    Object.assign(this, operationsClient.google.longrunning);
 
     /**
      * Build a new instance of {@link OperationsClient}.
@@ -460,6 +458,6 @@ export class OperationsClientBuilder {
     this['operationsClient'] = opts => {
       return new OperationsClient(gaxGrpc, operationsClient, opts);
     };
-    extend(this['operationsClient'], OperationsClient);
+    Object.assign(this['operationsClient'], OperationsClient);
   }
 }

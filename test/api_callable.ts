@@ -28,14 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* jshint expr: true*/
-
-'use strict';
-
 import {expect} from 'chai';
 import * as sinon from 'sinon';
-import {GoogleError} from '../src/GoogleError';
+
 import * as gax from '../src/gax';
+import {GoogleError} from '../src/GoogleError';
 import * as utils from './utils';
 
 const fail = utils.fail;
@@ -47,8 +44,8 @@ const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
   it('calls api call', (done) => {
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: {};
+    function func(argument: {}, metadata: {}, options, callback) {
       deadlineArg = options.deadline;
       callback(null, argument);
     }

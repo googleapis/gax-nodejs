@@ -28,11 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
-
-import {GoogleError} from '../src/GoogleError';
-import * as gax from '../src/gax';
 import * as apiCallable from '../src/api_callable';
+import * as gax from '../src/gax';
+import {GoogleError} from '../src/GoogleError';
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 

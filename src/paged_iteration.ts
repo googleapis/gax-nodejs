@@ -28,14 +28,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-'use strict';
 
-import * as extend from 'extend';
-import * as through2 from 'through2';
 import * as ended from 'is-stream-ended';
-import {Transform} from 'stream';
+import {PassThrough, Transform} from 'stream';
 
-import {NormalApiCaller, APICall, APICallback} from './api_callable';
+import {APICall, APICallback, NormalApiCaller} from './api_callable';
 
 export class PagedIteration extends NormalApiCaller {
   pageDescriptor: PageDescriptor;
@@ -85,7 +82,7 @@ export class PagedIteration extends NormalApiCaller {
   }
 
   call(apiCall: APICall, argument: {[index: string]: {}}, settings, canceller) {
-    argument = extend({}, argument);
+    argument = Object.assign({}, argument);
     if (settings.pageToken) {
       argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
     }
@@ -161,8 +158,8 @@ export class PageDescriptor {
    * @return {Stream} - a new object Stream.
    */
   createStream(apiCall, request, options): Transform {
-    const stream = through2.obj();
-    options = extend({}, options, {autoPaginate: false});
+    const stream = new PassThrough({objectMode: true});
+    options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;

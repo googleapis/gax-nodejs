@@ -33,13 +33,8 @@
  * Provides function wrappers that implement page streaming and retrying.
  */
 
-'use strict';
-
-import * as util from 'util';
-import {RetryOptions, CallSettings} from './gax';
-import {Duplex} from 'stream';
+import {CallSettings, RetryOptions} from './gax';
 import {GoogleError} from './GoogleError';
-import {BundleDescriptor, PageDescriptor} from '.';
 
 export interface ArgumentFunction {
   (argument: {}, callback: APICallback): void;

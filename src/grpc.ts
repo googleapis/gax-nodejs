@@ -29,22 +29,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-'use strict';
 
-import * as fs from 'fs';
-import * as globby from 'globby';
-import * as grpcTypes from 'grpc';                           // for types only
 import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
+import * as fs from 'fs';
+import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import {getProtoPath} from 'google-proto-files';
+import * as grpcTypes from 'grpc';  // for types only
+import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as semver from 'semver';
-import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import * as walk from 'walkdir';
+
 import * as gax from './gax';
-import {OutgoingHttpHeaders} from 'http';
 
-let googleProtoFilesDir = require('google-proto-files')('..');
-googleProtoFilesDir = path.normalize(googleProtoFilesDir);
-
+const googleProtoFilesDir = path.normalize(getProtoPath('..'));
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
@@ -62,25 +61,23 @@ const COMMON_PROTO_DIRS = [
   'protobuf',  // This is an additional path that the common protos depend on.
   'rpc',
   'type',
-];
+].map(dir => path.join(googleProtoFilesDir, 'google', dir));
 
-const COMMON_PROTO_GLOB_PATTERNS = COMMON_PROTO_DIRS.map(dir => {
-  return path.join(googleProtoFilesDir, 'google', dir, '**', '*.proto');
-});
 
-const COMMON_PROTO_FILES =
-    globby.sync(COMMON_PROTO_GLOB_PATTERNS)
-        .map(filename => {
-          return path.normalize(filename);
-        })
-        .map(filename => {
-          return filename.substring(googleProtoFilesDir.length + 1);
-        });
+const COMMON_PROTO_FILES = COMMON_PROTO_DIRS
+                               .map(dir => {
+                                 return (walk.sync(dir) as string[])
+                                     .filter(f => path.extname(f) === '.proto')
+                                     .map(
+                                         f => path.normalize(f).substring(
+                                             googleProtoFilesDir.length + 1));
+                               })
+                               .reduce((a, c) => a.concat(c), []);
 
 export {GrpcObject} from 'grpc';
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
-  auth: GoogleAuth;
+  auth?: GoogleAuth;
   promise?: PromiseConstructor;
   grpc?: GrpcModule;
 }
@@ -135,11 +132,7 @@ export class GrpcClient {
    * promises will be used.
    * @constructor
    */
-  constructor(options: GrpcClientOptions) {
-    // if (!(this instanceof GrpcClient)) {
-    //   return new GrpcClient(options);
-    // }
-    options = options || {};
+  constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
     this.promise = options.promise || Promise;
     if ('grpc' in options) {
