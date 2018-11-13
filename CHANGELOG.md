@@ -4,6 +4,17 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.22.1
+
+11-12-2018 16:56 PST
+
+
+### Dependencies
+- Update grpc dependency ([#353](https://github.com/googleapis/gax-nodejs/pull/353))
+
+### Internal / Testing Changes
+- Update eslintignore config ([#352](https://github.com/googleapis/gax-nodejs/pull/352))
+
 ## v0.22.0
 
 11-12-2018 15:05 PST
