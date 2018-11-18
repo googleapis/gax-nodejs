@@ -24,7 +24,7 @@ const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 
 const baseRepoUrl = 'https://github.com/googleapis/';
-const testDir = path.join(process.cwd(), 'system-test-run');
+const testDir = path.join(process.cwd(), '.system-test-run');
 
 interface ExecuteResult {
   stdout: string;
