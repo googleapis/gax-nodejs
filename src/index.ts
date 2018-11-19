@@ -36,7 +36,7 @@ import * as routingHeader from './routing_header';
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {createApiCall} from './api_callable';
 export {BundleDescriptor, BundleExecutor} from './bundling';
-export {CallOptions, ClientConfig, constructSettings} from './gax';
+export {CallOptions, CallSettings, ClientConfig, constructSettings, RetryOptions} from './gax';
 export {GoogleError} from './GoogleError';
 export {ClientStub, ClientStubOptions, GoogleProtoFilesRoot, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, Metadata, MetadataValue} from './grpc';
 export {LongrunningDescriptor, operation} from './longrunning';
