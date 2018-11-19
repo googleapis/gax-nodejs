@@ -38,6 +38,10 @@
     "@types/through2": "^2.0.33",
     "chai": "*",
     "codecov": "^3.1.0",
+    "eslint": "^5.9.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-prettier": "^3.0.0",
     "gts": "^0.9.0",
     "ink-docstrap": "^1.3.2",
     "intelli-espower-loader": "^1.0.1",
@@ -46,6 +50,7 @@
     "mocha": "~5.2.0",
     "nyc": "^13.1.0",
     "pegjs": "~0.10.0",
+    "prettier": "^1.15.2",
     "proxyquire": "^2.0.1",
     "pumpify": "^1.5.1",
     "rimraf": "^2.6.2",
@@ -61,11 +66,10 @@
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
     "test": "npm run test-only",
     "test-only": "nyc mocha build/test --reporter spec --slow 500",
-    "publish-gh-pages": "bash ./publish-gh-pages.sh",
-    "lint": "gts check",
+    "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src",
-    "fix": "gts fix",
+    "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile",
     "pretest-only": "npm run compile",
     "posttest": "npm run lint",
@@ -88,7 +92,7 @@
   "nyc": {
     "exclude": [
       "build/system-test/**",
-      "system-test-run/**"
+      ".system-test-run/**"
     ]
   }
 }

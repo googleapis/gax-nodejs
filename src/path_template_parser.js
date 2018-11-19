@@ -35,7 +35,7 @@ module.exports = (() => {
     let peg$startRuleFunction = peg$parsetemplate;
     const peg$c0 = '/';
     const peg$c1 = {type: 'literal', value: '/', description: '"/"'};
-    const peg$c2 = (segments) => {
+    const peg$c2 = segments => {
       return segments;
     };
     const peg$c3 = (s, segments) => {
@@ -51,12 +51,11 @@ module.exports = (() => {
     const peg$c9 = '}';
     const peg$c10 = {type: 'literal', value: '}', description: '"}"'};
     const peg$c11 = (l, segments) => {
-      return ([
-               {kind: extras.BINDING, literal: l},
-               segments,
-               {kind: extras.END_BINDING, literal: ''},
-             ])
-          .reduce((a, b) => a.concat(b), []);
+      return [
+        {kind: extras.BINDING, literal: l},
+        segments,
+        {kind: extras.END_BINDING, literal: ''},
+      ].reduce((a, b) => a.concat(b), []);
     };
     const peg$c12 = l => {
       return [
@@ -104,7 +103,8 @@ module.exports = (() => {
     if ('startRule' in options) {
       if (!(options.startRule in peg$startRuleFunctions)) {
         throw new Error(
-            'Can\'t start parsing from rule "' + options.startRule + '".');
+          'Can\'t start parsing from rule "' + options.startRule + '".'
+        );
       }
 
       peg$startRuleFunction = peg$startRuleFunctions[options.startRule];
@@ -120,19 +120,26 @@ module.exports = (() => {
 
     function expected(description) {
       throw peg$buildException(
-          null, [{type: 'other', description}],
-          input.substring(peg$savedPos, peg$currPos),
-          peg$computeLocation(peg$savedPos, peg$currPos));
+        null,
+        [{type: 'other', description}],
+        input.substring(peg$savedPos, peg$currPos),
+        peg$computeLocation(peg$savedPos, peg$currPos)
+      );
     }
 
     function error(message) {
       throw peg$buildException(
-          message, null, input.substring(peg$savedPos, peg$currPos),
-          peg$computeLocation(peg$savedPos, peg$currPos));
+        message,
+        null,
+        input.substring(peg$savedPos, peg$currPos),
+        peg$computeLocation(peg$savedPos, peg$currPos)
+      );
     }
 
     function peg$computePosDetails(pos) {
-      let details = peg$posDetailsCache[pos], p, ch;
+      let details = peg$posDetailsCache[pos],
+        p,
+        ch;
 
       if (details) {
         return details;
@@ -176,7 +183,7 @@ module.exports = (() => {
 
     function peg$computeLocation(startPos, endPos) {
       const startPosDetails = peg$computePosDetails(startPos),
-            endPosDetails = peg$computePosDetails(endPos);
+        endPosDetails = peg$computePosDetails(endPos);
 
       return {
         start: {
@@ -231,34 +238,32 @@ module.exports = (() => {
       function buildMessage(expected, found) {
         function stringEscape(s) {
           function hex(ch) {
-            return ch.charCodeAt(0).toString(16).toUpperCase();
+            return ch
+              .charCodeAt(0)
+              .toString(16)
+              .toUpperCase();
           }
 
-          return s.replace(/\\/g, '\\\\')
-              .replace(/"/g, '\\"')
-              .replace(/\x08/g, '\\b')
-              .replace(/\t/g, '\\t')
-              .replace(/\n/g, '\\n')
-              .replace(/\f/g, '\\f')
-              .replace(/\r/g, '\\r')
-              .replace(
-                  /[\x00-\x07\x0B\x0E\x0F]/g,
-                  ch => {
-                    return '\\x0' + hex(ch);
-                  })
-              .replace(
-                  /[\x10-\x1F\x80-\xFF]/g,
-                  ch => {
-                    return '\\x' + hex(ch);
-                  })
-              .replace(
-                  /[\u0100-\u0FFF]/g,
-                  ch => {
-                    return '\\u0' + hex(ch);
-                  })
-              .replace(/[\u1000-\uFFFF]/g, ch => {
-                return '\\u' + hex(ch);
-              });
+          return s
+            .replace(/\\/g, '\\\\')
+            .replace(/"/g, '\\"')
+            .replace(/\x08/g, '\\b')
+            .replace(/\t/g, '\\t')
+            .replace(/\n/g, '\\n')
+            .replace(/\f/g, '\\f')
+            .replace(/\r/g, '\\r')
+            .replace(/[\x00-\x07\x0B\x0E\x0F]/g, ch => {
+              return '\\x0' + hex(ch);
+            })
+            .replace(/[\x10-\x1F\x80-\xFF]/g, ch => {
+              return '\\x' + hex(ch);
+            })
+            .replace(/[\u0100-\u0FFF]/g, ch => {
+              return '\\u0' + hex(ch);
+            })
+            .replace(/[\u1000-\uFFFF]/g, ch => {
+              return '\\u' + hex(ch);
+            });
         }
 
         const expectedDescs = new Array(expected.length);
@@ -268,10 +273,12 @@ module.exports = (() => {
           expectedDescs[i] = expected[i].description;
         }
 
-        expectedDesc = expected.length > 1 ?
-            expectedDescs.slice(0, -1).join(', ') + ' or ' +
-                expectedDescs[expected.length - 1] :
-            expectedDescs[0];
+        expectedDesc =
+          expected.length > 1
+            ? expectedDescs.slice(0, -1).join(', ') +
+              ' or ' +
+              expectedDescs[expected.length - 1]
+            : expectedDescs[0];
 
         foundDesc = found ? '"' + stringEscape(found) + '"' : 'end of input';
 
@@ -283,8 +290,11 @@ module.exports = (() => {
       }
 
       return new peg$SyntaxError(
-          message !== null ? message : buildMessage(expected, found), expected,
-          found, location);
+        message !== null ? message : buildMessage(expected, found),
+        expected,
+        found,
+        location
+      );
     }
 
     function peg$parsetemplate() {
@@ -630,11 +640,13 @@ module.exports = (() => {
       }
 
       throw peg$buildException(
-          null, peg$maxFailExpected,
-          peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
-          peg$maxFailPos < input.length ?
-              peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1) :
-              peg$computeLocation(peg$maxFailPos, peg$maxFailPos));
+        null,
+        peg$maxFailExpected,
+        peg$maxFailPos < input.length ? input.charAt(peg$maxFailPos) : null,
+        peg$maxFailPos < input.length
+          ? peg$computeLocation(peg$maxFailPos, peg$maxFailPos + 1)
+          : peg$computeLocation(peg$maxFailPos, peg$maxFailPos)
+      );
     }
   }
 
