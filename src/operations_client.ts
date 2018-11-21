@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc. All rights reserved.
+ * Copyright 2018 Google LLC. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,16 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * EDITING INSTRUCTIONS
- * This file was generated from the file
- * https://github.com/googleapis/googleapis/blob/master/google/longrunning/operations.proto,
- * and updates to that file get reflected here through a refresh process.
- * For the short term, the refresh process will only be runnable by Google
- * engineers.
- *
- * The only allowed edits are to method and file documentation. A 3-way
- * merge preserves those additions if the generated source changes.
  */
 
 import {getProtoPath} from 'google-proto-files';
