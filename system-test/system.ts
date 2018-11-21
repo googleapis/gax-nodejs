@@ -121,14 +121,16 @@ describe('Run system tests for some libraries', () => {
     });
   });
   // Pub/Sub has streaming methods and pagination
-  describe('pubsub', () => {
-    before(async () => {
-      await preparePackage('nodejs-pubsub');
-    });
-    it('should pass system tests', async () => {
-      await runSystemTest('nodejs-pubsub');
-    });
-  });
+  /*  TODO(alexander.fenster): uncomment after Pub/Sub release >0.21.1
+   *  describe('pubsub', () => {
+   *   before(async () => {
+   *     await preparePackage('nodejs-pubsub');
+   *   });
+   *   it('should pass system tests', async () => {
+   *     await runSystemTest('nodejs-pubsub');
+   *   });
+   * });
+   */
   // Speech only has smoke tests, but still...
   describe('speech', () => {
     before(async () => {
