@@ -343,8 +343,9 @@ export class Operation extends EventEmitter {
       previousMetadataBytes = this.latestResponse.metadata.value;
     }
 
-    function emit() {
-      self.emit.apply(self, Array.prototype.slice.call(arguments, 0));
+    // tslint:disable-next-line no-any
+    function emit(event: string|symbol, ...args: any[]) {
+      self.emit(event, ...args);
     }
 
     function retry() {

@@ -32,7 +32,7 @@
 import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
-import {APICall, APICallback, NormalApiCaller} from './api_callable';
+import {APICall, APICallback, NormalApiCaller, NormalApiCallerSettings} from './api_callable';
 
 export class PagedIteration extends NormalApiCaller {
   pageDescriptor: PageDescriptor;
@@ -77,8 +77,8 @@ export class PagedIteration extends NormalApiCaller {
     };
   }
 
-  init(settings: {}, callback: APICallback) {
-    return NormalApiCaller.prototype.init.call(this, settings, callback);
+  init(settings: NormalApiCallerSettings, callback: APICallback) {
+    return super.init(settings, callback);
   }
 
   call(apiCall: APICall, argument: {[index: string]: {}}, settings, canceller) {

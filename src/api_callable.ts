@@ -128,12 +128,9 @@ export class Canceller {
     // tslint:disable-next-line no-any
     const canceller = aFunc(argument, (...args: any[]) => {
       this.completed = true;
-      args.unshift(this.callback);
-      setImmediate.apply(null, args);
+      setImmediate(this.callback!, ...args);
     });
-    this.cancelFunc = () => {
-      canceller.cancel();
-    };
+    this.cancelFunc = () => canceller.cancel();
   }
 }
 
@@ -318,6 +315,10 @@ function retryable(
   };
 }
 
+export interface NormalApiCallerSettings {
+  promise: PromiseConstructor;
+}
+
 /**
  * Creates an API caller for normal methods.
  *
@@ -325,7 +326,7 @@ function retryable(
  * @constructor
  */
 export class NormalApiCaller {
-  init(settings: {promise: PromiseConstructor}, callback: APICallback):
+  init(settings: NormalApiCallerSettings, callback: APICallback):
       PromiseCanceller|Canceller {
     if (callback) {
       return new Canceller(callback);
