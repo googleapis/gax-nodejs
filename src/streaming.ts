@@ -54,7 +54,7 @@ export enum StreamType {
 }
 
 export class StreamProxy extends Duplexify {
-  type: {};
+  type: StreamType;
   private _callback?: Function;
   private _isCancelCalled: boolean;
   stream?: Duplex&{cancel: () => void};
