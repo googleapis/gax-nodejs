@@ -123,10 +123,10 @@ export interface BackoffSettings {
   initialRetryDelayMillis: number;
   retryDelayMultiplier: number;
   maxRetryDelayMillis: number;
-  initialRpcTimeoutMillis: number|null;
-  maxRpcTimeoutMillis: number|null;
-  totalTimeoutMillis: number|null;
-  rpcTimeoutMultiplier: number|null;
+  initialRpcTimeoutMillis?: number|null;
+  maxRpcTimeoutMillis?: number|null;
+  totalTimeoutMillis?: number|null;
+  rpcTimeoutMultiplier?: number|null;
 }
 
 /**
@@ -395,7 +395,7 @@ export function createMaxRetriesBackoffSettings(
     initialRetryDelayMillis: number, retryDelayMultiplier: number,
     maxRetryDelayMillis: number, initialRpcTimeoutMillis: number,
     rpcTimeoutMultiplier: number, maxRpcTimeoutMillis: number,
-    maxRetries: number) {
+    maxRetries: number): BackoffSettings {
   return {
     initialRetryDelayMillis,
     retryDelayMultiplier,

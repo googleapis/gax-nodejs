@@ -61,9 +61,16 @@ export function createApiCall(func, opts?) {
       settings, descriptor);
 }
 
-export function createRetryOptions(backoff, ...args: Array<{}>) {
-  if (args.length > 0) {
-    backoff = gax.createBackoffSettings.apply(null, arguments);
-  }
+export function createRetryOptions(
+    backoffSettingsOrInitialRetryDelayMillis: number|gax.BackoffSettings,
+    retryDelayMultiplier?: number, maxRetryDelayMillis?: number,
+    initialRpcTimeoutMillis?: number, rpcTimeoutMultiplier?: number,
+    maxRpcTimeoutMillis?: number, totalTimeoutMillis?: number) {
+  const backoff = typeof backoffSettingsOrInitialRetryDelayMillis === 'number' ?
+      gax.createBackoffSettings(
+          backoffSettingsOrInitialRetryDelayMillis, retryDelayMultiplier!,
+          maxRetryDelayMillis!, initialRpcTimeoutMillis!, rpcTimeoutMultiplier!,
+          maxRpcTimeoutMillis!, totalTimeoutMillis!) :
+      backoffSettingsOrInitialRetryDelayMillis;
   return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
 }

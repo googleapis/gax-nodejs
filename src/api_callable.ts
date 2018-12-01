@@ -18,7 +18,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * LIMITED T  O, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
@@ -128,12 +128,9 @@ export class Canceller {
     // tslint:disable-next-line no-any
     const canceller = aFunc(argument, (...args: any[]) => {
       this.completed = true;
-      args.unshift(this.callback);
-      setImmediate.apply(null, args);
+      setImmediate(this.callback!, ...args);
     });
-    this.cancelFunc = () => {
-      canceller.cancel();
-    };
+    this.cancelFunc = () => canceller.cancel();
   }
 }
 
@@ -318,6 +315,10 @@ function retryable(
   };
 }
 
+export interface NormalApiCallerSettings {
+  promise: PromiseConstructor;
+}
+
 /**
  * Creates an API caller for normal methods.
  *
@@ -325,7 +326,7 @@ function retryable(
  * @constructor
  */
 export class NormalApiCaller {
-  init(settings: {promise: PromiseConstructor}, callback: APICallback):
+  init(settings: NormalApiCallerSettings, callback: APICallback):
       PromiseCanceller|Canceller {
     if (callback) {
       return new Canceller(callback);
