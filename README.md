@@ -4,7 +4,7 @@
 
 [![Release Level][releaselevelimg]][releaselevel]
 [![npm version][npmimg]][npm]
-[![CircleCI][circleimg]][circle]
+[![npm version](https://img.shields.io/npm/v/google-gax.svg)](https://www.npmjs.org/package/google-gax)
 [![Code Coverage][codecovimg]][codecov]
 
 Google API Extensions for Node.js (gax-nodejs) is a set of modules which aids the development of APIs for clients and servers based on [gRPC][grpc] and Google API conventions.
@@ -38,3 +38,4 @@ BSD - See [LICENSE][license] for more information.
 [grpc]: http://grpc.io
 [releaselevel]: https://cloud.google.com/terms/launch-stages
 [releaselevelimg]: https://img.shields.io/badge/Release%20Level-Alpha-ff69b4.svg
+
