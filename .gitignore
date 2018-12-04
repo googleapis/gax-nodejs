@@ -12,3 +12,4 @@ build
 .vscode
 package-lock.json
 .system-test-run/
+__pycache__

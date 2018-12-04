@@ -61,7 +61,6 @@
     "typescript": "~3.2.0"
   },
   "scripts": {
-    "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
     "docs": "echo no docs 📗",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
     "test": "npm run test-only",
