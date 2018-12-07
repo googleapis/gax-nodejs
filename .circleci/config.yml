@@ -12,39 +12,13 @@ workflows:
       - node10:
           filters: *all_commits
       - lint:
-          requires:
-            - node6
-            - node8
-            - node10
           filters: *all_commits
       - docs:
-          requires:
-            - node6
-            - node8
-            - node10
           filters: *all_commits
       - system_tests:
-          requires:
-            - lint
-            - docs
-          filters: &master_and_releases
-            branches:
-              only: master
-            tags: &releases
-              only: '/^v[\d.]+$/'
+          filters: *all_commits
       - sample_tests:
-          requires:
-            - lint
-            - docs
-          filters: *master_and_releases
-      - publish_npm:
-          requires:
-            - system_tests
-            - sample_tests
-          filters:
-            branches:
-              ignore: /.*/
-            tags: *releases
+          filters: *all_commits
   nightly:
     triggers:
       - schedule:
@@ -168,12 +142,3 @@ jobs:
               rm .circleci/*.json
             fi
           when: always
-  publish_npm:
-    docker:
-      - image: 'node:8'
-        user: node
-    steps:
-      - checkout
-      - run: ./.circleci/npm-install-retry.js
-      - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-      - run: npm publish --access=public
