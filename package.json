@@ -33,7 +33,7 @@
     "@types/pumpify": "^1.4.1",
     "@types/rimraf": "^2.0.2",
     "@types/semver": "^5.5.0",
-    "@types/sinon": "^5.0.1",
+    "@types/sinon": "^7.0.0",
     "@types/source-map-support": "^0.4.1",
     "@types/through2": "^2.0.33",
     "chai": "*",
