@@ -704,7 +704,7 @@ describe('Executor', () => {
     expect(Object.keys(executor._tasks).length).to.eq(0);
 
     executor.schedule(
-        spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'}, err => {
+        spy, {field1: [1, 2, 3, 4, 5, 6, 7, 8], field2: 'id'}, err => {
           expect(err).to.be.an.instanceOf(Error);
           done();
         });

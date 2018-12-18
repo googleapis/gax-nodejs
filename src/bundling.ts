@@ -384,10 +384,10 @@ export class BundleExecutor {
     const countLimit = this._options.elementCountLimit || 0;
     const byteLimit = this._options.requestByteLimit || 0;
 
-    if ((countLimit > 0 && elementCount >= countLimit) ||
+    if ((countLimit > 0 && elementCount > countLimit) ||
         (byteLimit > 0 && requestBytes >= byteLimit)) {
       let message;
-      if (countLimit > 0 && elementCount >= countLimit) {
+      if (countLimit > 0 && elementCount > countLimit) {
         message = 'The number of elements ' + elementCount +
             ' exceeds the limit ' + this._options.elementCountLimit;
       } else {
