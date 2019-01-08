@@ -4,7 +4,6 @@
 
 [![Release Level][releaselevelimg]][releaselevel]
 [![npm version][npmimg]][npm]
-[![CircleCI][circleimg]][circle]
 [![Code Coverage][codecovimg]][codecov]
 
 Google API Extensions for Node.js (gax-nodejs) is a set of modules which aids the development of APIs for clients and servers based on [gRPC][grpc] and Google API conventions.
@@ -25,8 +24,6 @@ For detailed documentation of the modules in gax-nodejs, please check out the [d
 ## License
 BSD - See [LICENSE][license] for more information.
 
-[circle]: https://circleci.com/gh/googleapis/gax-nodejs
-[circleimg]: https://circleci.com/gh/googleapis/gax-nodejs.svg?style=shield
 [codecovimg]: https://codecov.io/github/googleapis/gax-nodejs/coverage.svg?branch=master
 [codecov]: https://codecov.io/github/googleapis/gax-nodejs?branch=master
 [contributing]: https://github.com/googleapis/gax-nodejs/blob/master/CONTRIBUTING.md
