@@ -34,6 +34,7 @@
  */
 
 import at = require('lodash.at');
+import {status} from 'grpc';
 import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './api_callable';
 import {GoogleError} from './GoogleError';
 import {CallSettings} from './gax';
@@ -253,7 +254,9 @@ export class Task {
           }
           for (let i = 0; i < self._data.length; ++i) {
             if (self._data[i].cancelled) {
-              self._data[i].callback(new Error('cancelled'));
+              const error = new GoogleError('cancelled');
+              error.code = status.CANCELLED;
+              self._data[i].callback(error);
             } else {
               self._data[i].callback(err, responses[i]);
             }
@@ -299,7 +302,9 @@ export class Task {
     }
     for (let i = 0; i < this._data.length; ++i) {
       if (this._data[i].callback.id === id) {
-        this._data[i].callback(new Error('cancelled'));
+        const error = new GoogleError('cancelled');
+        error.code = status.CANCELLED;
+        this._data[i].callback(error);
         this._data.splice(i, 1);
         break;
       }
@@ -394,7 +399,9 @@ export class BundleExecutor {
         message = 'The required bytes ' + requestBytes + ' exceeds the limit ' +
             this._options.requestByteLimit;
       }
-      callback(new Error(message));
+      const error = new GoogleError(message);
+      error.code = status.INVALID_ARGUMENT;
+      callback(error);
       return {
         cancel: noop,
       };

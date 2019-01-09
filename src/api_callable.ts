@@ -33,6 +33,7 @@
  * Provides function wrappers that implement page streaming and retrying.
  */
 
+import {status} from 'grpc';
 import {CallSettings, RetryOptions} from './gax';
 import {GoogleError} from './GoogleError';
 
@@ -105,7 +106,9 @@ export class Canceller {
     if (this.cancelFunc) {
       this.cancelFunc();
     } else {
-      this.callback!(new Error('cancelled'));
+      const error = new GoogleError('cancelled');
+      error.code = status.CANCELLED;
+      this.callback!(error);
     }
   }
 
@@ -254,16 +257,19 @@ function retryable(
     function repeat() {
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
-        callback(new Error(
-            'Retry total timeout exceeded before any ' +
-            'response was received'));
+        const error = new GoogleError(
+            'Retry total timeout exceeded before any response was received');
+        error.code = status.DEADLINE_EXCEEDED;
+        callback(error);
         return;
       }
 
       if (retries && retries >= maxRetries) {
-        callback(new Error(
+        const error = new GoogleError(
             'Exceeded maximum number of retries before any ' +
-            'response was received'));
+            'response was received');
+        error.code = status.DEADLINE_EXCEEDED;
+        callback(error);
         return;
       }
 
@@ -293,9 +299,11 @@ function retryable(
     }
 
     if (maxRetries && deadline!) {
-      callback(new Error(
+      const error = new GoogleError(
           'Cannot set both totalTimeoutMillis and maxRetries ' +
-          'in backoffSettings.'));
+          'in backoffSettings.');
+      error.code = status.INVALID_ARGUMENT;
+      callback(error);
     } else {
       repeat();
     }
@@ -308,7 +316,9 @@ function retryable(
         if (canceller) {
           canceller.cancel();
         } else {
-          callback(new Error('cancelled'));
+          const error = new GoogleError('cancelled');
+          error.code = status.CANCELLED;
+          callback(error);
         }
       },
     };

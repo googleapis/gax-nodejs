@@ -30,6 +30,7 @@
  */
 
 import {EventEmitter} from 'events';
+import {status} from 'grpc';
 import {APICall, APICallback, CancellablePromise, NormalApiCaller, PromiseCanceller} from './api_callable';
 import {BackoffSettings, CallOptions, createBackoffSettings} from './gax';
 import {GoogleError} from './GoogleError';
@@ -354,11 +355,10 @@ export class Operation extends EventEmitter {
       }
 
       if (now.getTime() >= deadline) {
-        setImmediate(
-            emit, 'error',
-            new Error(
-                'Total timeout exceeded before ' +
-                'any response was received'));
+        const error = new GoogleError(
+            'Total timeout exceeded before any response was received');
+        error.code = status.DEADLINE_EXCEEDED;
+        setImmediate(emit, 'error', error);
         return;
       }
 
