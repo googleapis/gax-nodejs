@@ -23,6 +23,7 @@
     "walkdir": "0.0.12"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^1.1.7",
     "@types/chai": "^4.1.3",
     "@types/duplexify": "^3.5.0",
     "@types/lodash.at": "^4.6.4",
@@ -43,10 +44,8 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-prettier": "^3.0.0",
     "gts": "^0.9.0",
-    "ink-docstrap": "^1.3.2",
     "intelli-espower-loader": "^1.0.1",
     "istanbul": "~0.4.5",
-    "jsdoc": "^3.5.5",
     "mocha": "~5.2.0",
     "nyc": "^13.1.0",
     "pegjs": "~0.10.0",
@@ -62,16 +61,15 @@
   },
   "scripts": {
     "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
-    "docs": "echo no docs 📗",
+    "docs": "compodoc src/",
     "gen-parser": "pegjs lib/path_template_parser.pegjs",
-    "test": "npm run test-only",
-    "test-only": "nyc mocha build/test --reporter spec --slow 500",
+    "pretest": "npm run compile",
+    "test": "nyc mocha build/test",
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile",
-    "pretest-only": "npm run compile",
     "posttest": "npm run lint",
     "system-test": "nyc mocha --timeout 1200000 build/system-test",
     "samples-test": "echo no sample tests 😱"
