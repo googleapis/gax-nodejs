@@ -29,9 +29,11 @@
  */
 
 import {expect} from 'chai';
+import {status} from 'grpc';
 import * as sinon from 'sinon';
 
 import * as gax from '../src/gax';
+import {GoogleError} from '../src/GoogleError';
 import * as longrunning from '../src/longrunning';
 import {OperationsClient} from '../src/operations_client';
 
@@ -587,7 +589,9 @@ describe('longrunning', () => {
                 done(new Error('Should not get here.'));
               });
               operation.on('error', err => {
-                expect(err.message)
+                expect(err).to.be.instanceOf(GoogleError);
+                expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
+                expect(err!.message)
                     .to.deep.eq(
                         'Total timeout exceeded before ' +
                         'any response was received');
