@@ -29,9 +29,11 @@
  */
 
 import {expect} from 'chai';
+import {status} from 'grpc';
 import * as sinon from 'sinon';
 
 import * as bundling from '../src/bundling';
+import {GoogleError} from '../src/GoogleError';
 
 import {createApiCall} from './utils';
 
@@ -397,7 +399,8 @@ describe('Task', () => {
       callback();
     });
     extendElements(task, [4, 5, 6], err => {
-      expect(err).to.be.an.instanceOf(Error);
+      expect(err).to.be.an.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.CANCELLED);
     });
     const cancelId = task._data[task._data.length - 1].callback.id;
 
@@ -430,11 +433,13 @@ describe('Task', () => {
       }
     });
     extendElements(task, [1, 2, 3], err => {
-      expect(err).to.be.an.instanceOf(Error);
+      expect(err).to.be.an.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
     extendElements(task, [1, 2, 3], err => {
-      expect(err).to.be.an.instanceOf(Error);
+      expect(err).to.be.an.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
     task.run();
@@ -464,7 +469,8 @@ describe('Task', () => {
       }
     });
     extendElements(task, [1, 2, 3], err => {
-      expect(err).to.be.an.instanceOf(Error);
+      expect(err).to.be.an.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
     const cancelId = task._data[task._data.length - 1].callback.id;
@@ -594,8 +600,8 @@ describe('Executor', () => {
     it('shouldn\'t block next event after cancellation', (done) => {
       const canceller =
           executor.schedule(spyApi, {field1: [1, 2], field2: 'id'}, err => {
-            expect(err).to.be.an.instanceOf(Error);
-
+            expect(err).to.be.an.instanceOf(GoogleError);
+            expect(err!.code).to.equal(status.CANCELLED);
             expect(spyApi.callCount).to.eq(0);
 
             executor.schedule(
@@ -624,7 +630,8 @@ describe('Executor', () => {
 
       const canceller =
           executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
-            expect(err).to.be.an.instanceOf(Error);
+            expect(err).to.be.an.instanceOf(GoogleError);
+            expect(err!.code).to.equal(status.CANCELLED);
             counter++;
           });
       canceller.cancel();
@@ -705,7 +712,8 @@ describe('Executor', () => {
 
     executor.schedule(
         spy, {field1: [1, 2, 3, 4, 5, 6, 7, 8], field2: 'id'}, err => {
-          expect(err).to.be.an.instanceOf(Error);
+          expect(err).to.be.an.instanceOf(GoogleError);
+          expect(err!.code).to.equal(status.INVALID_ARGUMENT);
           done();
         });
   });
@@ -737,7 +745,8 @@ describe('Executor', () => {
 
     executor.schedule(
         spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'}, err => {
-          expect(err).to.be.an.instanceOf(Error);
+          expect(err).to.be.an.instanceOf(GoogleError);
+          expect(err!.code).to.equal(status.INVALID_ARGUMENT);
           done();
         });
   });
@@ -884,7 +893,10 @@ describe('bundleable', () => {
     const p = apiCall({field1: [1, 2, 3], field2: 'id'}, null);
     p.then(() => {
        done(new Error('should not succeed'));
-     }).catch(() => {
+     }).catch(err => {
+      expect(err).to.be.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.CANCELLED);
+
       expectedFailure = true;
       if (expectedSuccess && expectedFailure) {
         done();

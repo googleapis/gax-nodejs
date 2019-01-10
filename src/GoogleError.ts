@@ -29,7 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import {status} from 'grpc';
+
 export class GoogleError extends Error {
-  code?: number;
+  code?: status;
   note?: string;
 }

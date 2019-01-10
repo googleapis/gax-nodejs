@@ -29,10 +29,12 @@
  */
 
 import {expect} from 'chai';
+import {status} from 'grpc';
 import * as sinon from 'sinon';
 
 import * as gax from '../src/gax';
 import {GoogleError} from '../src/GoogleError';
+
 import * as utils from './utils';
 
 const fail = utils.fail;
@@ -147,7 +149,9 @@ describe('Promise', () => {
         .then(() => {
           done(new Error('should not reach'));
         })
-        .catch(() => {
+        .catch(err => {
+          expect(err).to.be.an.instanceOf(GoogleError);
+          expect(err.code).to.equal(status.CANCELLED);
           done();
         });
     promise.cancel();
@@ -329,7 +333,8 @@ describe('retryable', () => {
   it('aborts retries', (done) => {
     const apiCall = createApiCall(fail, settings);
     apiCall(null, null, err => {
-      expect(err).to.be.an('error');
+      expect(err).to.be.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
       done();
     });
   });
@@ -361,7 +366,8 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, err => {
-      expect(err).to.be.an('error');
+      expect(err).to.be.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
       expect(spy.callCount).to.eq(toAttempt);
       done();
     });
@@ -380,7 +386,8 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
     apiCall(null, null, err => {
-      expect(err).to.be.an('error');
+      expect(err).to.be.instanceOf(GoogleError);
+      expect(err!.code).to.equal(status.INVALID_ARGUMENT);
       expect(spy.callCount).to.eq(0);
       done();
     });
