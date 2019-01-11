@@ -4,6 +4,41 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.23.0
+
+01-11-2019 13:32 PST
+
+
+### Implementation Changes
+- fix: include status code on errors ([#390](https://github.com/googleapis/gax-nodejs/pull/390))
+- fix: Change to "greater than" for limit on number of elements ([#386](https://github.com/googleapis/gax-nodejs/pull/386))
+- fix(ts): export CallSettings and RetryOptions ([#360](https://github.com/googleapis/gax-nodejs/pull/360))
+
+### Dependencies
+- chore(deps): update dependency @types/sinon to v7 ([#385](https://github.com/googleapis/gax-nodejs/pull/385))
+- chore(deps): update dependency typescript to ~3.2.0 ([#364](https://github.com/googleapis/gax-nodejs/pull/364))
+- chore(deps): update dependency gts to ^0.9.0 ([#355](https://github.com/googleapis/gax-nodejs/pull/355))
+
+### Documentation
+- build: check broken links in generated docs ([#387](https://github.com/googleapis/gax-nodejs/pull/387))
+
+### Internal / Testing Changes
+- chore(build): inject yoshi automation key ([#384](https://github.com/googleapis/gax-nodejs/pull/384))
+- chore: update nyc and eslint configs ([#383](https://github.com/googleapis/gax-nodejs/pull/383))
+- chore: npm-install-retry is not a thing anymore ([#381](https://github.com/googleapis/gax-nodejs/pull/381))
+- chore: fix publish.sh permission +x ([#380](https://github.com/googleapis/gax-nodejs/pull/380))
+- fix(build): fix Kokoro release script ([#379](https://github.com/googleapis/gax-nodejs/pull/379))
+- build: add Kokoro configs for autorelease ([#378](https://github.com/googleapis/gax-nodejs/pull/378))
+- chore: always nyc report before calling codecov ([#375](https://github.com/googleapis/gax-nodejs/pull/375))
+- chore: nyc ignore build/test by default ([#374](https://github.com/googleapis/gax-nodejs/pull/374))
+- chore: update synth metadata ([#372](https://github.com/googleapis/gax-nodejs/pull/372))
+- chore: fix openssl decrypt ([#367](https://github.com/googleapis/gax-nodejs/pull/367))
+- test: enable pub/sub system tests ([#366](https://github.com/googleapis/gax-nodejs/pull/366))
+- chore: don't say operations_client.ts is autogen'd ([#361](https://github.com/googleapis/gax-nodejs/pull/361))
+- test: don't run Pub/Sub system tests ([#362](https://github.com/googleapis/gax-nodejs/pull/362))
+- chore: include format and lint tools for samples ([#359](https://github.com/googleapis/gax-nodejs/pull/359))
+- chore: add a synth.metadata
+
 ## v0.22.1
 
 11-12-2018 16:56 PST
