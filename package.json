@@ -11,7 +11,7 @@
     "@grpc/grpc-js": "^0.3.0",
     "@grpc/proto-loader": "^0.3.0",
     "duplexify": "^3.6.0",
-    "google-auth-library": "^2.0.0",
+    "google-auth-library": "^3.0.0",
     "google-proto-files": "^0.18.0",
     "grpc": "^1.16.0",
     "is-stream-ended": "^0.1.4",
