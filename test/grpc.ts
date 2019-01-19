@@ -196,11 +196,12 @@ describe('grpc', () => {
     });
 
     it('supports grpc-gcp options', () => {
-      const configPath = path.resolve(TEST_PATH, 'test_grpc_config.json');
+      const apiConfigDefinition =
+          require(path.resolve(TEST_PATH, 'test_grpc_config.json'));
       const opts = {
         servicePath: 'foo.example.com',
         port: 443,
-        'grpc_gcp.apiConfigPath': configPath,
+        'grpc_gcp.apiConfig': apiConfigDefinition,
       };
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
@@ -212,7 +213,7 @@ describe('grpc', () => {
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options).to.not.have as any).key([
-          'servicePath', 'port', 'grpc_gcp.apiConfigPath'
+          'servicePath', 'port', 'grpc_gcp.apiConfig'
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options['gcpApiConfig']).has as any).key([

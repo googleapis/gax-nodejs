@@ -289,11 +289,9 @@ export class GrpcClient {
           grpcOptions[key] = options[key];
         }
       });
-      const apiConfigPath = options['grpc_gcp.apiConfigPath'];
-      console.log(apiConfigPath);
-      if (apiConfigPath && fs.existsSync(apiConfigPath)) {
-        const apiConfig = grpcGcp.createGcpApiConfig(
-            JSON.parse(fs.readFileSync(apiConfigPath).toString()));
+      const apiConfigDefition = options['grpc_gcp.apiConfig'];
+      if (apiConfigDefition) {
+        const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefition);
         grpcOptions['channelFactoryOverride'] =
             grpcGcp.gcpChannelFactoryOverride;
         grpcOptions['callInvocationTransformer'] =
