@@ -289,9 +289,9 @@ export class GrpcClient {
           grpcOptions[key] = options[key];
         }
       });
-      const apiConfigDefition = options['grpc_gcp.apiConfig'];
-      if (apiConfigDefition) {
-        const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefition);
+      const apiConfigDefinition = options['grpc_gcp.apiConfig'];
+      if (apiConfigDefinition) {
+        const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefinition);
         grpcOptions['channelFactoryOverride'] =
             grpcGcp.gcpChannelFactoryOverride;
         grpcOptions['callInvocationTransformer'] =
