@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.24.0
+
+01-24-2019 08:49 PST
+
+### Dependencies
+- fix(deps): update dependency @grpc/proto-loader to ^0.4.0 ([#395](https://github.com/googleapis/gax-nodejs/pull/395))
+- fix(deps): update dependency google-auth-library to v3 ([#394](https://github.com/googleapis/gax-nodejs/pull/394))
+
 ## v0.23.0
 
 01-11-2019 13:32 PST
