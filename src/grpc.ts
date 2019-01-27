@@ -141,8 +141,8 @@ export class GrpcClient {
     } else {
       // EXPERIMENTAL: If GOOGLE_CLOUD_USE_GRPC_JS is set, use the JS-based
       // implementation of the gRPC client instead. Requires http2 (Node 8+).
-      if (semver.satisfies(process.version, '8.x') &&
-          process.env.GOOGLE_CLOUD_USE_GRPC_JS) {
+      if (semver.gte(process.version, '8.13.0') &&
+          !!process.env.GOOGLE_CLOUD_USE_GRPC_JS) {
         this.grpc = require('@grpc/grpc-js');
         this.grpcVersion = require('@grpc/grpc-js/package.json').version;
       } else {
