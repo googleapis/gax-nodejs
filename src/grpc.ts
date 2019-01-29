@@ -35,6 +35,7 @@ import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import {getProtoPath} from 'google-proto-files';
 import * as grpcTypes from 'grpc';  // for types only
+import * as grpcGcp from 'grpc-gcp';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
@@ -286,13 +287,17 @@ export class GrpcClient {
       Object.keys(options).forEach(key => {
         if (key.indexOf('grpc.') === 0) {
           grpcOptions[key] = options[key];
-        } else if (key.indexOf('grpc_gcp.') === 0) {
-          // This prefix is used to pass additional arguments that aren't
-          // options for grpc. Strip the prefix before passing.
-          const prefixLength = 'grpc_gcp.'.length;
-          grpcOptions[key.substr(prefixLength)] = options[key];
         }
       });
+      const apiConfigDefinition = options['grpc_gcp.apiConfig'];
+      if (apiConfigDefinition) {
+        const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefinition);
+        grpcOptions['channelFactoryOverride'] =
+            grpcGcp.gcpChannelFactoryOverride;
+        grpcOptions['callInvocationTransformer'] =
+            grpcGcp.gcpCallInvocationTransformer;
+        grpcOptions['gcpApiConfig'] = apiConfig;
+      }
       return new CreateStub(serviceAddress, credentials, grpcOptions);
     });
   }

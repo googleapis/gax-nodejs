@@ -128,6 +128,7 @@ describe('grpc', () => {
   });
 
   describe('createStub', () => {
+    const TEST_PATH = path.resolve(__dirname, '../../test');
     class DummyStub {
       constructor(public address, public creds, public options) {}
     }
@@ -177,7 +178,6 @@ describe('grpc', () => {
         port: 443,
         'grpc.max_send_message_length': 10 * 1024 * 1024,
         'grpc.initial_reconnect_backoff_ms': 10000,
-        'grpc_gcp.non_grpc_option': 1,
         other_dummy_options: 'test',
       };
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -186,12 +186,38 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
-          'grpc.max_send_message_length', 'grpc.initial_reconnect_backoff_ms',
-          'non_grpc_option'
+          'grpc.max_send_message_length', 'grpc.initial_reconnect_backoff_ms'
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options).to.not.have as any).key([
           'servicePath', 'port', 'other_dummy_options'
+        ]);
+      });
+    });
+
+    it('supports grpc-gcp options', () => {
+      const apiConfigDefinition =
+          require(path.resolve(TEST_PATH, 'test_grpc_config.json'));
+      const opts = {
+        servicePath: 'foo.example.com',
+        port: 443,
+        'grpc_gcp.apiConfig': apiConfigDefinition,
+      };
+      return grpcClient.createStub(DummyStub, opts).then(stub => {
+        expect(stub).to.be.an.instanceOf(DummyStub);
+        expect(stub.address).to.eq('foo.example.com:443');
+        expect(stub.creds).to.deep.eq(dummyChannelCreds);
+        // tslint:disable-next-line no-any
+        (expect(stub.options).has as any).key([
+          'channelFactoryOverride', 'callInvocationTransformer', 'gcpApiConfig'
+        ]);
+        // tslint:disable-next-line no-any
+        (expect(stub.options).to.not.have as any).key([
+          'servicePath', 'port', 'grpc_gcp.apiConfig'
+        ]);
+        // tslint:disable-next-line no-any
+        (expect(stub.options['gcpApiConfig']).has as any).key([
+          'channelPool', 'method'
         ]);
       });
     });

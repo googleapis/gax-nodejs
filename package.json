@@ -14,6 +14,7 @@
     "google-auth-library": "^3.0.0",
     "google-proto-files": "^0.18.0",
     "grpc": "^1.16.0",
+    "grpc-gcp": "^0.1.1",
     "is-stream-ended": "^0.1.4",
     "lodash.at": "^4.6.0",
     "lodash.has": "^4.5.2",
