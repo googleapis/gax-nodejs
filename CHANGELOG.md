@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.25.0
+
+01-28-2019 23:31 PST
+
+### New Features
+
+- Add grpc-gcp support in gax ([#396](https://github.com/googleapis/gax-nodejs/pull/396))
+
+### Dependencies
+
+- chore(deps): update dependency eslint-config-prettier to v4 ([#399](https://github.com/googleapis/gax-nodejs/pull/399))
+
 ## v0.24.0
 
 01-24-2019 08:49 PST
