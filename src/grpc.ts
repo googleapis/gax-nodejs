@@ -192,12 +192,20 @@ export class GrpcClient {
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-
   loadProto(protoPath: string, filename: string) {
-    const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
-    const retval = this.grpc.loadObject(
-        protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
-    return retval;
+    // This set of @grpc/proto-loader options
+    // 'closely approximates the existing behavior of grpc.load'
+    const includeDirs = INCLUDE_DIRS.slice();
+    includeDirs.unshift(protoPath);
+    const options = {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+      includeDirs
+    };
+    return this.loadFromProto(filename, options);
   }
 
   static _resolveFile(protoPath: string, filename: string) {
