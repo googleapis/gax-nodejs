@@ -83,7 +83,7 @@ import {BundleOptions} from './bundling';
 /**
  * Per-call configurable settings for retrying upon transient failure.
  * @typedef {Object} RetryOptions
- * @property {String[]} retryCodes
+ * @property {number[]} retryCodes
  * @property {BackoffSettings} backoffSettings
  */
 export class RetryOptions {
