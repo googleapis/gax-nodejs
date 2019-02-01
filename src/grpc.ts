@@ -97,6 +97,7 @@ export interface Metadata {
 
 export type GrpcModule = typeof grpcTypes&{
   status: {[index: string]: number;};
+  isLegacy: boolean;
 };
 
 export interface ClientStubOptions {
@@ -136,6 +137,7 @@ export class GrpcClient {
   constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
     this.promise = options.promise || Promise;
+
     if ('grpc' in options) {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
@@ -145,9 +147,11 @@ export class GrpcClient {
       if (semver.gte(process.version, '8.13.0') &&
           !!process.env.GOOGLE_CLOUD_USE_GRPC_JS) {
         this.grpc = require('@grpc/grpc-js');
+        this.grpc.isLegacy = false;
         this.grpcVersion = require('@grpc/grpc-js/package.json').version;
       } else {
         this.grpc = require('grpc');
+        this.grpc.isLegacy = true;
         this.grpcVersion = require('grpc/package.json').version;
       }
     }
@@ -187,13 +191,28 @@ export class GrpcClient {
 
   /**
    * Load grpc proto service from a filename hooking in googleapis common protos
-   * when necessary.
+   * when necessary. Uses legacy grpc.loadObject.
    * @param {String} protoPath - The directory to search for the protofile.
    * @param {String} filename - The filename of the proto to be loaded.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-  loadProto(protoPath: string, filename: string) {
+  protected loadProtoLegacy(protoPath: string, filename: string) {
+    const resolvedPath = GrpcClient._resolveFile(protoPath, filename);
+    const retval = this.grpc.loadObject(
+        protobuf.loadSync(resolvedPath, new GoogleProtoFilesRoot()));
+    return retval;
+  }
+
+  /**
+   * Load grpc proto service from a filename hooking in googleapis common protos
+   * when necessary. Uses the new shiny @grpc/proto-loader.
+   * @param {String} protoPath - The directory to search for the protofile.
+   * @param {String} filename - The filename of the proto to be loaded.
+   * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
+   *   object).
+   */
+  protected loadProtoGrpcJs(protoPath: string, filename: string) {
     // This set of @grpc/proto-loader options
     // 'closely approximates the existing behavior of grpc.load'
     const includeDirs = INCLUDE_DIRS.slice();
@@ -207,6 +226,20 @@ export class GrpcClient {
       includeDirs
     };
     return this.loadFromProto(filename, options);
+  }
+
+  /**
+   * Load grpc proto service from a filename hooking in googleapis common protos
+   * when necessary. Can use either legacy grpc.loadProto, or new
+   * @grpc/proto-loader, depending on which gRPC backend is used.
+   * @param {String} protoPath - The directory to search for the protofile.
+   * @param {String} filename - The filename of the proto to be loaded.
+   * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
+   *   object).
+   */
+  loadProto(protoPath: string, filename: string) {
+    return this.grpc.isLegacy ? this.loadProtoLegacy(protoPath, filename) :
+                                this.loadProtoGrpcJs(protoPath, filename);
   }
 
   static _resolveFile(protoPath: string, filename: string) {
