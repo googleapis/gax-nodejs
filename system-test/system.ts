@@ -95,8 +95,8 @@ async function preparePackage(packageName: string): Promise<void> {
       'git', ['clone', `${baseRepoUrl}${packageName}.git`, packageName]);
   const tag = await latestRelease(packageName);
   await spawn('git', ['checkout', tag], packageName);
-  await spawn('npm', ['link', '../../'], packageName);
   await spawn('npm', ['install'], packageName);
+  await spawn('npm', ['link', '../../'], packageName);
 }
 
 async function runSystemTest(packageName: string): Promise<void> {
