@@ -310,7 +310,7 @@ export class CallSettings {
 /**
  * Per-call configurable settings for retrying upon transient failure.
  *
- * @param {String[]} retryCodes - a list of Google API canonical error codes
+ * @param {number[]} retryCodes - a list of Google API canonical error codes
  *   upon which a retry should be attempted.
  * @param {BackoffSettings} backoffSettings - configures the retry
  *   exponential backoff algorithm.
