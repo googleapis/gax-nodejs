@@ -63,7 +63,7 @@ const COMMON_PROTO_DIRS = [
   'rpc',
   'type',
 ].map(dir => path.join(googleProtoFilesDir, 'google', dir));
-
+INCLUDE_DIRS.push(...COMMON_PROTO_DIRS);
 
 const COMMON_PROTO_FILES = COMMON_PROTO_DIRS
                                .map(dir => {
@@ -218,7 +218,7 @@ export class GrpcClient {
     const includeDirs = INCLUDE_DIRS.slice();
     includeDirs.unshift(protoPath);
     const options = {
-      keepCase: true,
+      keepCase: false,
       longs: String,
       enums: String,
       defaults: true,
