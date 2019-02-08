@@ -39,8 +39,8 @@ import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
 
 // When this flag is set, tests that have to do with loadProto will be skipped.
 // They are known to not work with grpc-js, as they use a now-deprecated API.
-const USE_GRPC_JS = !!process.env.GOOGLE_CLOUD_USE_GRPC_JS &&
-    semver.satisfies(process.version, '>=8');
+const USE_GRPC_JS = semver.gte(process.version, '8.13.0') &&
+    !!process.env.GOOGLE_CLOUD_USE_GRPC_JS;
 
 function gaxGrpc(options?) {
   return new GrpcClient(options);
