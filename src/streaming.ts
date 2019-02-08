@@ -31,9 +31,8 @@
 
 /* This file describes the gRPC-streaming. */
 
-import * as Duplexify from 'duplexify';
+import {Duplexify} from '@justinbeckwith/duplexify';
 import {Duplex, DuplexOptions, Stream} from 'stream';
-
 import {APICall, APICallback} from './api_callable';
 
 const retryRequest = require('retry-request');
