@@ -4,6 +4,32 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.25.1
+
+02-08-2019 18:01 PST
+
+This is a patch release that fixes the code working with `grpc-js` ([#400](https://github.com/googleapis/gax-nodejs/pull/400)).
+It's not supposed to be used in production (yet), so it's hidden behind a secret environment variable.
+We'll let you know when it's ready to use!
+
+### Dependencies
+
+- fix(deps): update dependency walkdir to v0.3.2 ([#413](https://github.com/googleapis/gax-nodejs/pull/413))
+- fix(deps): update dependency walkdir to v0.2.0 ([#410](https://github.com/googleapis/gax-nodejs/pull/410))
+- fix(deps): update dependency walkdir to v0.1.0 ([#407](https://github.com/googleapis/gax-nodejs/pull/407))
+
+### Documentation
+
+- docs: update contributing guide ([#414](https://github.com/googleapis/gax-nodejs/pull/414))
+- docs: add lint/fix example to contributing guide ([#409](https://github.com/googleapis/gax-nodejs/pull/409))
+- docs: fix type for retryCodes ([#404](https://github.com/googleapis/gax-nodejs/pull/404))
+
+### Internal / Testing Changes
+
+- build: test using @grpc/grpc-js in CI ([#418](https://github.com/googleapis/gax-nodejs/pull/418))
+- chore: don't run system tests with grpc-js ([#417](https://github.com/googleapis/gax-nodejs/pull/417))
+- test: enable testing of grpc-js ([#400](https://github.com/googleapis/gax-nodejs/pull/400))
+
 ## v0.25.0
 
 01-28-2019 23:31 PST
