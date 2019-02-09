@@ -33,7 +33,6 @@
 
 import * as Duplexify from 'duplexify';
 import {Duplex, DuplexOptions, Stream} from 'stream';
-
 import {APICall, APICallback} from './api_callable';
 
 const retryRequest = require('retry-request');

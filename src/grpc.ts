@@ -103,7 +103,7 @@ export type GrpcModule = typeof grpcTypes&{
 export interface ClientStubOptions {
   servicePath: string;
   port: number;
-  sslCreds: grpcTypes.ChannelCredentials;
+  sslCreds?: grpcTypes.ChannelCredentials;
 }
 
 export class ClientStub extends grpcTypes.Client {
@@ -321,26 +321,25 @@ export class GrpcClient {
    * @return {Promise} A promse which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
-  createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
+  async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
-    return this._getCredentials(options).then(credentials => {
-      const grpcOptions: {[index: string]: {}} = {};
-      Object.keys(options).forEach(key => {
-        if (key.indexOf('grpc.') === 0) {
-          grpcOptions[key] = options[key];
-        }
-      });
-      const apiConfigDefinition = options['grpc_gcp.apiConfig'];
-      if (apiConfigDefinition) {
-        const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefinition);
-        grpcOptions['channelFactoryOverride'] =
-            grpcGcp.gcpChannelFactoryOverride;
-        grpcOptions['callInvocationTransformer'] =
-            grpcGcp.gcpCallInvocationTransformer;
-        grpcOptions['gcpApiConfig'] = apiConfig;
+    const creds = await this._getCredentials(options);
+    const grpcOptions: {[index: string]: {}} = {};
+    Object.keys(options).forEach(key => {
+      if (key.indexOf('grpc.') === 0) {
+        grpcOptions[key] = options[key];
       }
-      return new CreateStub(serviceAddress, credentials, grpcOptions);
     });
+    const apiConfigDefinition = options['grpc_gcp.apiConfig'];
+    if (apiConfigDefinition) {
+      const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefinition);
+      grpcOptions['channelFactoryOverride'] = grpcGcp.gcpChannelFactoryOverride;
+      grpcOptions['callInvocationTransformer'] =
+          grpcGcp.gcpCallInvocationTransformer;
+      grpcOptions['gcpApiConfig'] = apiConfig;
+    }
+    const stub = new CreateStub(serviceAddress, creds, grpcOptions);
+    return stub;
   }
 
   /**
