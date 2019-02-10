@@ -396,11 +396,10 @@ export class Operation extends EventEmitter {
    * on operation error.
    */
   promise() {
-    const self = this;
     // tslint:disable-next-line variable-name
     const PromiseCtor = this._callOptions!.promise!;
     return new PromiseCtor((resolve, reject) => {
-      self.on('error', reject)
+      this.on('error', reject)
           .on('complete', (result, metadata, rawResponse) => {
             resolve([result, metadata, rawResponse]);
           });
