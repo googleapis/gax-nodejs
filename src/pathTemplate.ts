@@ -37,8 +37,8 @@
 
 import has = require('lodash.has');
 import * as util from 'util';
-import * as extras from './parser_extras';
-const parser = require('./path_template_parser');
+import * as extras from './parserExtras';
+const parser = require('./pathTemplateParser');
 
 export interface ParseResult {
   size: number;

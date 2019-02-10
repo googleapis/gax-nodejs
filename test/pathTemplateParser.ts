@@ -35,12 +35,12 @@ import {expect} from 'chai';
 
 describe('The PathTemplate parser', () => {
   it('should load the pegjs generated module ok', () => {
-    const parser = require('../src/path_template_parser');
+    const parser = require('../src/pathTemplateParser');
     expect(parser).to.not.eql(null);
   });
 
   describe('function `parse`', () => {
-    const parser = require('../src/path_template_parser');
+    const parser = require('../src/pathTemplateParser');
 
     it('should succeed with valid inputs', () => {
       const shouldPass = () => {

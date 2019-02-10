@@ -64,7 +64,7 @@
   "scripts": {
     "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
     "docs": "compodoc src/",
-    "gen-parser": "pegjs lib/path_template_parser.pegjs",
+    "gen-parser": "pegjs src/pathTemplateParser.pegjs",
     "pretest": "npm run compile",
     "test": "cross-env GOOGLE_CLOUD_USE_GRPC_JS=1 nyc mocha build/test && mocha build/test",
     "lint": "gts check && eslint samples/*.js samples/**/*.js",

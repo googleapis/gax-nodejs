@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as apiCallable from '../src/api_callable';
+import * as apiCallable from '../src/apiCallable';
 import * as gax from '../src/gax';
 import {GoogleError} from '../src/GoogleError';
 
