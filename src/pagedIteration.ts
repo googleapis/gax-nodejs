@@ -157,13 +157,13 @@ export class PageDescriptor {
    * @param {CallOptions=} options - the call options to customize the api call.
    * @return {Stream} - a new object Stream.
    */
-  createStream(apiCall, request, options): Transform {
+  createStream(apiCall: APICall, request, options): Transform {
     const stream = new PassThrough({objectMode: true});
     options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
-    function callback(err, resources, next) {
+    function callback(err: Error|null, resources, next) {
       if (err) {
         stream.emit('error', err);
         return;
