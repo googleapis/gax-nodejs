@@ -32,7 +32,7 @@
 import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
-import {APICall, APICallback, NormalApiCaller, NormalApiCallerSettings} from './api_callable';
+import {APICall, APICallback, NormalApiCaller, NormalApiCallerSettings} from './apiCallable';
 
 export class PagedIteration extends NormalApiCaller {
   pageDescriptor: PageDescriptor;

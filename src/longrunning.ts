@@ -31,11 +31,11 @@
 
 import {EventEmitter} from 'events';
 import {status} from 'grpc';
-import {APICall, APICallback, CancellablePromise, NormalApiCaller, PromiseCanceller} from './api_callable';
+import {APICall, APICallback, CancellablePromise, NormalApiCaller, PromiseCanceller} from './apiCallable';
 import {BackoffSettings, CallOptions, createBackoffSettings} from './gax';
 import {GoogleError} from './GoogleError';
 import {Metadata, MetadataValue} from './grpc';
-import {OperationsClient} from './operations_client';
+import {OperationsClient} from './operationsClient';
 
 /**
  * A callback to upack a google.protobuf.Any message.

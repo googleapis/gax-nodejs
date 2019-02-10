@@ -35,7 +35,7 @@ import * as sinon from 'sinon';
 import * as gax from '../src/gax';
 import {GoogleError} from '../src/GoogleError';
 import * as longrunning from '../src/longrunning';
-import {OperationsClient} from '../src/operations_client';
+import {OperationsClient} from '../src/operationsClient';
 
 import * as utils from './utils';
 

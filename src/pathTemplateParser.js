@@ -628,7 +628,7 @@ module.exports = (() => {
       return s0;
     }
 
-    const extras = require('./parser_extras');
+    const extras = require('./parserExtras');
 
     peg$result = peg$startRuleFunction();
 

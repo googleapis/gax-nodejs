@@ -18,11 +18,11 @@ import {GoogleAuth} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import {getProtoPath} from 'google-proto-files';
 
-import * as apiCallable from './api_callable';
+import * as apiCallable from './apiCallable';
 import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
-import * as pagedIteration from './paged_iteration';
-import * as pathTemplate from './path_template';
+import * as pagedIteration from './pagedIteration';
+import * as pathTemplate from './pathTemplate';
 
 const configData = require('./operations_client_config');
 

@@ -32,7 +32,7 @@ import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
 
-import * as apiCallable from '../src/api_callable';
+import * as apiCallable from '../src/apiCallable';
 import * as gax from '../src/gax';
 import * as streaming from '../src/streaming';
 

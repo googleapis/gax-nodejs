@@ -32,7 +32,7 @@
  */
 
 import {expect} from 'chai';
-import {PathTemplate} from '../src/path_template';
+import {PathTemplate} from '../src/pathTemplate';
 
 describe('PathTemplate', () => {
   describe('constructor', () => {

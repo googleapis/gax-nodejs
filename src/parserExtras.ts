@@ -32,7 +32,7 @@
  */
 
 import * as util from 'util';
-import {Segment} from './path_template';
+import {Segment} from './pathTemplate';
 
 /* constants used in the pegjs parser */
 export const BINDING = 1;

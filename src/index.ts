@@ -30,18 +30,18 @@
  */
 
 import {GrpcClient, GrpcClientOptions} from './grpc';
-import * as operationsClient from './operations_client';
-import * as routingHeader from './routing_header';
+import * as operationsClient from './operationsClient';
+import * as routingHeader from './routingHeader';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {createApiCall} from './api_callable';
+export {createApiCall} from './apiCallable';
 export {BundleDescriptor, BundleExecutor} from './bundling';
 export {CallOptions, CallSettings, ClientConfig, constructSettings, RetryOptions} from './gax';
 export {GoogleError} from './GoogleError';
 export {ClientStub, ClientStubOptions, GoogleProtoFilesRoot, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, Metadata, MetadataValue} from './grpc';
 export {LongrunningDescriptor, operation} from './longrunning';
-export {PageDescriptor} from './paged_iteration';
-export {PathTemplate} from './path_template';
+export {PageDescriptor} from './pagedIteration';
+export {PathTemplate} from './pathTemplate';
 export {StreamDescriptor, StreamType} from './streaming';
 export {routingHeader};
 

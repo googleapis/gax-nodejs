@@ -35,7 +35,7 @@
 
 import at = require('lodash.at');
 import {status} from 'grpc';
-import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './api_callable';
+import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './apiCallable';
 import {GoogleError} from './GoogleError';
 import {CallSettings} from './gax';
 

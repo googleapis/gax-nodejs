@@ -29,7 +29,7 @@
  */
 
 import {expect} from 'chai';
-import {fromParams} from '../src/routing_header';
+import {fromParams} from '../src/routingHeader';
 
 describe('fromParams', () => {
   it('constructs the routing header', () => {
