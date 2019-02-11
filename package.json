@@ -74,7 +74,7 @@
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile",
     "posttest": "npm run lint",
-    "system-test": "cross-env GOOGLE_CLOUD_USE_GRPC_JS=1 nyc mocha --timeout 1200000 build/system-test && mocha build/system-test --timeout 120000",
+    "system-test": "nyc mocha build/system-test --timeout 120000",
     "samples-test": "echo no sample tests 😱",
     "docs-test": "blcl docs -r --exclude www.googleapis.com",
     "predocs-test": "npm run docs"
