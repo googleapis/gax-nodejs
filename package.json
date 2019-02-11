@@ -59,7 +59,8 @@
     "source-map-support": "^0.5.6",
     "stream-events": "^1.0.4",
     "through2": "^3.0.0",
-    "typescript": "~3.3.0"
+    "typescript": "~3.3.0",
+    "broken-link-checker-local": "^0.2.0"
   },
   "scripts": {
     "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
@@ -73,8 +74,10 @@
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile",
     "posttest": "npm run lint",
-    "system-test": "nyc mocha build/system-test --timeout 120000",
-    "samples-test": "echo no sample tests 😱"
+    "system-test": "cross-env GOOGLE_CLOUD_USE_GRPC_JS=1 nyc mocha --timeout 1200000 build/system-test && mocha build/system-test --timeout 120000",
+    "samples-test": "echo no sample tests 😱",
+    "docs-test": "blcl docs -r --exclude www.googleapis.com",
+    "predocs-test": "npm run docs"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
