@@ -34,6 +34,7 @@
 import * as Duplexify from 'duplexify';
 import {Duplex, DuplexOptions, Stream} from 'stream';
 import {APICall, APICallback} from './apiCallable';
+import {warn} from './warnings';
 
 const retryRequest = require('retry-request');
 
@@ -190,7 +191,9 @@ export class GrpcStreamable {
           return func(metadata, options);
         };
       default:
-        console.error('Unknown stream type', this.descriptor.type);
+        warn(
+            'streaming_wrap_unknown_stream_type',
+            `Unknown stream type: ${this.descriptor.type}`);
     }
     return func;
   }

@@ -38,6 +38,7 @@ import {status} from 'grpc';
 import {NormalApiCaller, APICall, PromiseCanceller, APICallback} from './apiCallable';
 import {GoogleError} from './GoogleError';
 import {CallSettings} from './gax';
+import {warn} from './warnings';
 
 /**
  * A function which does nothing. Used for an empty cancellation funciton.
@@ -361,11 +362,20 @@ export class BundleExecutor {
         computeBundleId(request, this._descriptor.requestDiscriminatorFields);
     callback = (callback || noop) as TaskCallback;
     if (bundleId === undefined) {
-      console.warn(
+      warn(
+          'bundling_schedule_bundleid_undefined',
           'The request does not have enough information for request bundling. ' +
-          'Invoking immediately. Request: ' + JSON.stringify(request) +
-          ' discriminator fields: ' +
-          this._descriptor.requestDiscriminatorFields);
+              `Invoking immediately. Request: ${JSON.stringify(request)} ` +
+              `discriminator fields: ${
+                  this._descriptor.requestDiscriminatorFields}`);
+      return apiCall(request, callback);
+    }
+    if (request[this._descriptor.bundledField] === undefined) {
+      warn(
+          'bundling_no_bundled_field',
+          `Request does not contain field ${
+              this._descriptor.bundledField} that must present for bundling. ` +
+              `Invoking immediately. Request: ${JSON.stringify(request)}`);
       return apiCall(request, callback);
     }
 
@@ -490,7 +500,7 @@ export class BundleExecutor {
    */
   _runNow(bundleId: string) {
     if (!(bundleId in this._tasks)) {
-      console.warn('no such bundleid: ' + bundleId);
+      warn('bundle_runnow_bundleid_unknown', `No such bundleid: ${bundleId}`);
       return;
     }
     this._maybeClearTimeout(bundleId);
