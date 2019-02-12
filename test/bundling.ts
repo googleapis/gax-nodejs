@@ -846,6 +846,29 @@ describe('bundleable', () => {
     apiCall({field1: [1, 2, 3], field2: 'id'}, null).then(callback).catch(done);
   });
 
+  it('does not fail if bundle field is not set', (done) => {
+    const spy = sinon.spy(func);
+    const warnStub = sinon.stub(process, 'emitWarning');
+    const callback = sinon.spy(obj => {
+      expect(obj).to.be.an('array');
+      expect(obj[0].field1).to.be.an('undefined');
+      if (callback.callCount === 2) {
+        expect(spy.callCount).to.eq(2);
+        expect(warnStub.callCount).to.eq(1);
+        warnStub.restore();
+        done();
+      }
+    });
+    const apiCall = createApiCall(spy, settings);
+
+    function error(err: Error) {
+      warnStub.restore();
+      done(err);
+    }
+    apiCall({field2: 'id1'}, null).then(callback, error);
+    apiCall({field2: 'id2'}, null).then(callback, error);
+  });
+
   it('suppresses bundling behavior by call options', (done) => {
     const spy = sinon.spy(func);
     let callbackCount = 0;

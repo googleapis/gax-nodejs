@@ -371,10 +371,11 @@ export class BundleExecutor {
       return apiCall(request, callback);
     }
     if (request[this._descriptor.bundledField] === undefined) {
-      console.warn(
+      warn(
+          'bundling_no_bundled_field',
           `Request does not contain field ${
               this._descriptor.bundledField} that must present for bundling. ` +
-          `Invoking immediately. Request: ${JSON.stringify(request)}`);
+              `Invoking immediately. Request: ${JSON.stringify(request)}`);
       return apiCall(request, callback);
     }
 
