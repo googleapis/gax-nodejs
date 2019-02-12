@@ -4,6 +4,23 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.25.2
+
+02-12-2019 01:16 PST
+
+- fix: do not fail if bundledField is missing ([#424](https://github.com/googleapis/gax-nodejs/pull/424))
+- fix: do not use console.warn or console.error ([#426](https://github.com/googleapis/gax-nodejs/pull/426))
+
+### Implementation Changes
+
+- refactor: snake case savagery is for pythonistas 🙅‍♂️🐍 ([#421](https://github.com/googleapis/gax-nodejs/pull/421))
+- refactor: clean up operations client ([#420](https://github.com/googleapis/gax-nodejs/pull/420))
+
+### Internal / Testing Changes
+
+- test: do not use grpc-js in regular system test ([#425](https://github.com/googleapis/gax-nodejs/pull/425))
+- build: create docs test npm scripts ([#423](https://github.com/googleapis/gax-nodejs/pull/423))
+
 ## v0.25.1
 
 02-08-2019 18:01 PST
