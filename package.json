@@ -59,7 +59,7 @@
     "stream-events": "^1.0.4",
     "through2": "^3.0.0",
     "typescript": "~3.3.0",
-    "broken-link-checker-local": "^0.2.0"
+    "linkinator": "^1.1.2"
   },
   "scripts": {
     "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
@@ -75,7 +75,7 @@
     "posttest": "npm run lint",
     "system-test": "nyc mocha build/system-test --timeout 120000",
     "samples-test": "echo no sample tests 😱",
-    "docs-test": "blcl docs -r --exclude www.googleapis.com",
+    "docs-test": "linkinator docs -r --skip www.googleapis.com",
     "predocs-test": "npm run docs"
   },
   "repository": "googleapis/gax-nodejs",
