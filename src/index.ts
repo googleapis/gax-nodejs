@@ -34,12 +34,12 @@ import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {createApiCall} from './apiCallable';
+export {CancellablePromise, Canceller, createApiCall} from './apiCallable';
 export {BundleDescriptor, BundleExecutor} from './bundling';
 export {CallOptions, CallSettings, ClientConfig, constructSettings, RetryOptions} from './gax';
 export {GoogleError} from './GoogleError';
 export {ClientStub, ClientStubOptions, GoogleProtoFilesRoot, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, Metadata, MetadataValue} from './grpc';
-export {LongrunningDescriptor, operation} from './longrunning';
+export {LongrunningDescriptor, Operation, operation} from './longrunning';
 export {PageDescriptor} from './pagedIteration';
 export {PathTemplate} from './pathTemplate';
 export {StreamDescriptor, StreamType} from './streaming';
