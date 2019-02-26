@@ -58,6 +58,7 @@ const COMMON_PROTO_DIRS = [
   'api',
   path.join('iam', 'v1'),
   path.join('logging', 'type'),
+  path.join('monitoring', 'v3'),
   'longrunning',
   'protobuf',  // This is an additional path that the common protos depend on.
   'rpc',
