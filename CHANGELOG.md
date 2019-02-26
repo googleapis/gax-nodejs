@@ -4,6 +4,28 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.25.3
+
+02-26-2019 12:08 PST
+
+### Implementation Changes
+
+- fix: monitoring could be a common proto ([#434](https://github.com/googleapis/gax-nodejs/pull/434))
+- refactor: cleanup unused files ([#422](https://github.com/googleapis/gax-nodejs/pull/422))
+- chore(typescript): export common API call types ([#433](https://github.com/googleapis/gax-nodejs/pull/433))
+
+### Dependencies
+
+- chore(deps): update dependency mocha to v6 ([#430](https://github.com/googleapis/gax-nodejs/pull/430))
+
+### Documentation
+
+- docs: update links in contrib guide ([#429](https://github.com/googleapis/gax-nodejs/pull/429))
+
+### Internal / Testing Changes
+
+- build: use linkinator for docs test ([#428](https://github.com/googleapis/gax-nodejs/pull/428))
+
 ## v0.25.2
 
 02-12-2019 01:16 PST
