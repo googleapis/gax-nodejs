@@ -81,6 +81,11 @@ const ERROR_OP = {
   error: ERROR,
   response: null,
 };
+const BAD_OP = {
+  name: OPERATION_NAME,
+  metadata: METADATA,
+  done: true,
+};
 const mockDecoder = val => {
   return val.toString();
 };
@@ -401,6 +406,27 @@ describe('longrunning', () => {
               expect(client.getOperation.callCount).to.eq(expectedCalls);
               expect(err.code).to.eq(FAKE_STATUS_CODE_1);
               expect(err.message).to.deep.eq('operation error');
+              done();
+            });
+      });
+
+      it('does not hang on invalid API response', done => {
+        const func = (argument, metadata, options, callback) => {
+          callback(null, PENDING_OP);
+        };
+        const client = mockOperationsClient({finalOperation: BAD_OP});
+        const apiCall = createApiCall(func, client);
+        apiCall()
+            .then(responses => {
+              const operation = responses[0];
+              const promise = operation.promise();
+              return promise;
+            })
+            .then(() => {
+              done(new Error('Should not get here.'));
+            })
+            .catch(error => {
+              expect(error).to.be.an('error');
               done();
             });
       });
