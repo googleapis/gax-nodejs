@@ -375,6 +375,16 @@ export class Operation extends EventEmitter {
             setImmediate(emit, 'progress', metadata, rawResponse);
             previousMetadataBytes = rawResponse!.metadata!.value;
           }
+          // special case: some APIs fail to set either result or error
+          // but set done = true (e.g. speech with silent file).
+          // Don't hang forever in this case.
+          if (rawResponse!.done) {
+            const error = new GoogleError(
+                'Long running operation has finished but there was no result');
+            error.code = status.UNKNOWN;
+            setImmediate(emit, 'error', error);
+            return;
+          }
           setTimeout(() => {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
