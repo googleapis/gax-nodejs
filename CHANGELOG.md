@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.25.4
+
+02-28-2019 17:51 PST
+
+### Implementation Changes
+
+- fix: do not hang in LRO forever if API returned nothing ([#436](https://github.com/googleapis/gax-nodejs/pull/436))
+
 ## v0.25.3
 
 02-26-2019 12:08 PST
