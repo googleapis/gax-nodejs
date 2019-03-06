@@ -10,6 +10,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^0.3.0",
     "@grpc/proto-loader": "^0.4.0",
+    "@types/duplexify": "^3.6.0",
     "duplexify": "^3.6.0",
     "google-auth-library": "^3.0.0",
     "google-proto-files": "^0.18.0",
@@ -26,7 +27,6 @@
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.7",
     "@types/chai": "^4.1.3",
-    "@types/duplexify": "^3.5.0",
     "@types/lodash.at": "^4.6.4",
     "@types/lodash.has": "^4.5.4",
     "@types/mocha": "^5.2.1",
@@ -47,6 +47,7 @@
     "eslint-plugin-prettier": "^3.0.0",
     "gts": "^0.9.0",
     "intelli-espower-loader": "^1.0.1",
+    "linkinator": "^1.1.2",
     "mocha": "~6.0.0",
     "nyc": "^13.1.0",
     "pegjs": "~0.10.0",
@@ -58,8 +59,7 @@
     "source-map-support": "^0.5.6",
     "stream-events": "^1.0.4",
     "through2": "^3.0.0",
-    "typescript": "~3.3.0",
-    "linkinator": "^1.1.2"
+    "typescript": "~3.3.0"
   },
   "scripts": {
     "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
