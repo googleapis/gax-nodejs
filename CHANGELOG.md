@@ -22,6 +22,7 @@
 - build: Add docuploader credentials to node publish jobs ([#444](https://github.com/googleapis/gax-nodejs/pull/444))
 - build: use node10 to run samples-test, system-test etc ([#443](https://github.com/googleapis/gax-nodejs/pull/443))
 - build: update kokoro config ([#440](https://github.com/googleapis/gax-nodejs/pull/440))
+- test: longer timeout for Pub/Sub system tests ([#451](https://github.com/googleapis/gax-nodejs/pull/451))
 
 ## v0.25.4
 
