@@ -124,7 +124,9 @@ describe('Run system tests for some libraries', () => {
     before(async () => {
       await preparePackage('nodejs-pubsub');
     });
-    it('should pass system tests', async () => {
+    it('should pass system tests', async function() {
+      // Pub/Sub tests can be slow since they check packaging
+      this.timeout(300000);
       await runSystemTest('nodejs-pubsub');
     });
   });
