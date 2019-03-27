@@ -1,37 +1,78 @@
-<img src="https://avatars0.githubusercontent.com/u/1342004?v=3&s=96" alt="Google Inc. logo" title="Google" align="right" height="96" width="96"/>
+[//]: # "This README.md file is auto-generated, all changes to this file will be lost."
+[//]: # "To regenerate it, use `python -m synthtool`."
+<img src="https://avatars2.githubusercontent.com/u/2810941?v=3&s=96" alt="Google Cloud Platform logo" title="Google Cloud Platform" align="right" height="96" width="96"/>
 
-# Google API Extensions for Node.js
+# [:  Client](https://github.com/)
 
-[![Release Level][releaselevelimg]][releaselevel]
-[![npm version][npmimg]][npm]
-[![Code Coverage][codecovimg]][codecov]
+None
+[![npm version](https://img.shields.io/npm/v/google-gax.svg)](https://www.npmjs.org/package/google-gax)
+[![codecov](https://img.shields.io/codecov/c/github//master.svg?style=flat)](https://codecov.io/gh/)
 
-Google API Extensions for Node.js (gax-nodejs) is a set of modules which aids the development of APIs for clients and servers based on [gRPC][grpc] and Google API conventions.
 
-Application code will rarely need to use most of the classes within this library directly, but code generated automatically from the API definition files in [Google APIs][googleapis] can use services such as page streaming and request bundling to provide a more convenient and idiomatic API surface to callers.
+Google API Extensions
 
-## Installation
-```sh
-$ npm install google-gax
-```
+
+* [Using the client library](#using-the-client-library)
+* [Versioning](#versioning)
+* [Contributing](#contributing)
+* [License](#license)
+
+## Using the client library
+
+1.  [Select or create a Cloud Platform project][projects].
+1.  [Enable the  API][enable_api].
+1.  [Set up authentication with a service account][auth] so you can access the
+    API from your local workstation.
+
+1. Install the client library:
+
+        npm install google-gax
+
+
+
+
+
+The [  Client API Reference][client-docs] documentation
+also contains samples.
+
+## Versioning
+
+This library follows [Semantic Versioning](http://semver.org/).
+
+
+
+
+
+
+More Information: [Google Cloud Platform Launch Stages][launch_stages]
+
+[launch_stages]: https://cloud.google.com/terms/launch-stages
 
 ## Contributing
-Contributions to this library are always welcome and highly encouraged.  See the [CONTRIBUTING][contributing] documentation for more information on how to get started.
 
-## Details
-For detailed documentation of the modules in gax-nodejs, please check out the [docs][docs].
+Contributions welcome! See the [Contributing Guide](https://github.com//blob/master/CONTRIBUTING.md).
 
 ## License
-BSD - See [LICENSE][license] for more information.
 
-[codecovimg]: https://codecov.io/github/googleapis/gax-nodejs/coverage.svg?branch=master
-[codecov]: https://codecov.io/github/googleapis/gax-nodejs?branch=master
-[contributing]: https://github.com/googleapis/gax-nodejs/blob/master/CONTRIBUTING.md
-[docs]: http://googleapis.github.io/gax-nodejs/
-[license]: https://github.com/googleapis/gax-nodejs/blob/master/LICENSE
-[npmimg]: https://img.shields.io/npm/v/google-gax.svg
-[npm]: https://www.npmjs.org/package/google-gax
-[googleapis]: https://github.com/googleapis/googleapis/
-[grpc]: http://grpc.io
-[releaselevel]: https://cloud.google.com/terms/launch-stages
-[releaselevelimg]: https://img.shields.io/badge/Release%20Level-Alpha-ff69b4.svg
+Apache Version 2.0
+
+See [LICENSE](https://github.com//blob/master/LICENSE)
+
+## What's Next
+
+* [ Documentation][product-docs]
+* [  Client API Reference][client-docs]
+* [github.com/](https://github.com/)
+
+Read more about the client libraries for Cloud APIs, including the older
+Google APIs Client Libraries, in [Client Libraries Explained][explained].
+
+[explained]: https://cloud.google.com/apis/docs/client-libraries-explained
+
+[client-docs]: 
+[product-docs]: 
+[shell_img]: https://gstatic.com/cloudssh/images/open-btn.png
+[projects]: https://console.cloud.google.com/project
+[billing]: https://support.google.com/cloud/answer/6293499#enable-billing
+[enable_api]: https://console.cloud.google.com/flows/enableapi?apiid=
+[auth]: https://cloud.google.com/docs/authentication/getting-started
