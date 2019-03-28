@@ -549,7 +549,7 @@ export interface RetryParamsConfig {
 export interface MethodConfig {
   retry_codes_name: string;
   retry_params_name: string;
-  bundling: BundlingConfig;
+  bundling?: BundlingConfig;
   timeout_millis?: number;
 }
 
