@@ -31,12 +31,34 @@
 
 /* This file describes the gRPC-streaming. */
 
-import * as Duplexify from 'duplexify';
-import {Duplex, DuplexOptions, Stream} from 'stream';
+import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
+
 import {APICall, APICallback} from './apiCallable';
 import {warn} from './warnings';
 
+const duplexify: DuplexifyConstructor = require('duplexify');
 const retryRequest = require('retry-request');
+
+// Directly copy over Duplexify interfaces
+export interface DuplexifyOptions extends DuplexOptions {
+  autoDestroy?: boolean;
+  end?: boolean;
+}
+
+export interface Duplexify extends Duplex {
+  readonly destroyed: boolean;
+  setWritable(writable: Writable|false|null): void;
+  setReadable(readable: Readable|false|null): void;
+}
+
+export interface DuplexifyConstructor {
+  obj(writable?: Writable|false|null, readable?: Readable|false|null,
+      options?: DuplexifyOptions): Duplexify;
+  new(writable?: Writable|false|null, readable?: Readable|false|null,
+      options?: DuplexifyOptions): Duplexify;
+  (writable?: Writable|false|null, readable?: Readable|false|null,
+   options?: DuplexifyOptions): Duplexify;
+}
 
 /**
  * The type of gRPC streaming.
@@ -53,7 +75,7 @@ export enum StreamType {
   BIDI_STREAMING = 3,
 }
 
-export class StreamProxy extends Duplexify {
+export class StreamProxy extends duplexify {
   type: StreamType;
   private _callback?: Function;
   private _isCancelCalled: boolean;
