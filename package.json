@@ -20,7 +20,7 @@
     "lodash.has": "^4.5.2",
     "protobufjs": "^6.8.8",
     "retry-request": "^4.0.0",
-    "semver": "^5.5.1",
+    "semver": "^6.0.0",
     "walkdir": "^0.3.2"
   },
   "devDependencies": {
