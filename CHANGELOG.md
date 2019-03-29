@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.25.6
+
+03-28-2019 21:27 PDT
+
+### Fixes
+- fix(deps): update dependency semver to v6
+- fix: bundling is optional in MethodConfig ([#459](https://github.com/googleapis/gax-nodejs/pull/459))
+- fix(ts): drop dependency on @types/duplexify ([#458](https://github.com/googleapis/gax-nodejs/pull/458))
+
+### Internal / Testing Changes
+- chore: publish to npm using wombat ([#453](https://github.com/googleapis/gax-nodejs/pull/453))
+- build: use per-repo publish token ([#449](https://github.com/googleapis/gax-nodejs/pull/449))
+
 ## v0.25.5
 
 03-15-2019 14:01 PDT
