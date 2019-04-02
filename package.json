@@ -58,7 +58,7 @@
     "source-map-support": "^0.5.6",
     "stream-events": "^1.0.4",
     "through2": "^3.0.0",
-    "typescript": "~3.3.0"
+    "typescript": "~3.4.0"
   },
   "scripts": {
     "codecov": "nyc mocha build/test --reporter spec --slow 500 && codecov",
