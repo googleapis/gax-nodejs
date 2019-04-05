@@ -49,6 +49,10 @@ export function createApiCall(func, opts?) {
         if (opts.returnCancelFunc) {
           return {
             cancel: func(argument, metadata, options, callback),
+            completed: true,
+            call: () => {
+              throw new Error('should not be run');
+            }
           };
         }
         func(argument, metadata, options, callback);
@@ -56,6 +60,10 @@ export function createApiCall(func, opts?) {
           cancel: opts.cancel || (() => {
                     callback(new Error('canceled'));
                   }),
+          completed: true,
+          call: () => {
+            throw new Error('should not be run');
+          }
         };
       }),
       settings, descriptor);
