@@ -1,4 +1,4 @@
-/* Copyright 2016, Google Inc.
+/* Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,11 @@ import {expect} from 'chai';
 import {status} from 'grpc';
 import * as sinon from 'sinon';
 
+import {LongrunningDescriptor} from '../src';
+import {GaxCallPromise} from '../src/apitypes';
 import * as gax from '../src/gax';
-import {GoogleError} from '../src/GoogleError';
-import * as longrunning from '../src/longrunning';
+import {GoogleError} from '../src/googleError';
+import * as longrunning from '../src/longRunningCalls/longrunning';
 import {OperationsClient} from '../src/operationsClient';
 
 import * as utils from './utils';
@@ -92,8 +94,8 @@ const mockDecoder = val => {
 
 function createApiCall(func, client?) {
   const descriptor =
-      new longrunning.LongrunningDescriptor(client, mockDecoder, mockDecoder);
-  return utils.createApiCall(func, {descriptor});
+      new LongrunningDescriptor(client, mockDecoder, mockDecoder);
+  return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }
 
 interface SpyableOperationsClient extends OperationsClient {
@@ -144,9 +146,9 @@ describe('longrunning', () => {
       const defaultMaxRetryDelayMillis = 60000;
       const defaultTotalTimeoutMillis = null;
       const apiCall = createApiCall(func);
-      apiCall()
+      apiCall({})
           .then(responses => {
-            const operation = responses[0];
+            const operation = responses[0] as longrunning.Operation;
             const rawResponse = responses[1];
             expect(operation).to.be.an('object');
             expect(operation).to.have.property('backoffSettings');
@@ -173,7 +175,7 @@ describe('longrunning', () => {
   describe('operation', () => {
     it('returns an Operation with correct values', done => {
       const client = mockOperationsClient();
-      const desc = new longrunning.LongrunningDescriptor(
+      const desc = new LongrunningDescriptor(
           client as OperationsClient, mockDecoder, mockDecoder);
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
@@ -211,9 +213,9 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               operation.getOperation((err, result, metadata, rawResponse) => {
                 if (err) {
                   done(err);
@@ -234,9 +236,9 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               operation.getOperation((err, result, metadata, rawResponse) => {
                 if (err) {
                   done(err);
@@ -259,9 +261,9 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               expect(
                   operation.getOperation(
                       (err, result, metadata, rawResponse) => {
@@ -289,9 +291,9 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               return operation.getOperation();
             })
             .then(responses => {
@@ -316,9 +318,9 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               return operation.getOperation();
             })
             .then(() => {
@@ -344,7 +346,8 @@ describe('longrunning', () => {
 
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
-        apiCall(null, {promise: MockPromise}).then(responses => {
+        // @ts-ignore incomplete options
+        apiCall({}, {promise: MockPromise}).then(responses => {
           const operation = responses[0];
           operation.getOperation();
           // tslint:disable-next-line no-unused-expression
@@ -363,9 +366,9 @@ describe('longrunning', () => {
         const client = mockOperationsClient({expectedCalls});
         const apiCall = createApiCall(func, client);
 
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               return operation.promise();
             })
             .then(responses => {
@@ -394,9 +397,9 @@ describe('longrunning', () => {
         });
         const apiCall = createApiCall(func, client);
 
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               return operation.promise();
             })
             .then(() => {
@@ -416,9 +419,9 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient({finalOperation: BAD_OP});
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               const promise = operation.promise();
               return promise;
             })
@@ -433,8 +436,8 @@ describe('longrunning', () => {
 
       it('uses provided promise constructor', done => {
         const client = mockOperationsClient();
-        const desc = new longrunning.LongrunningDescriptor(
-            client, mockDecoder, mockDecoder);
+        const desc =
+            new LongrunningDescriptor(client, mockDecoder, mockDecoder);
         const initialRetryDelayMillis = 1;
         const retryDelayMultiplier = 2;
         const maxRetryDelayMillis = 3;
@@ -470,9 +473,9 @@ describe('longrunning', () => {
         });
         const apiCall = createApiCall(func, client);
 
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               const p = operation.promise();
               operation.cancel().then(() => {
                 // tslint:disable-next-line no-unused-expression
@@ -502,9 +505,9 @@ describe('longrunning', () => {
           expectedCalls,
         });
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               operation.on('complete', (result, metadata, rawResponse) => {
                 expect(result).to.deep.eq(RESPONSE_VAL);
                 expect(metadata).to.deep.eq(METADATA_VAL);
@@ -531,9 +534,9 @@ describe('longrunning', () => {
           finalOperation: ERROR_OP,
         });
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               operation.on('complete', () => {
                 done(new Error('Should not get here.'));
               });
@@ -573,9 +576,9 @@ describe('longrunning', () => {
           finalOperation: updatedOp,
         });
         const apiCall = createApiCall(func, client);
-        apiCall()
+        apiCall({})
             .then(responses => {
-              const operation = responses[0];
+              const operation = responses[0] as longrunning.Operation;
               operation.on('complete', () => {
                 done(new Error('Should not get here.'));
               });
@@ -605,12 +608,12 @@ describe('longrunning', () => {
           finalOperation: PENDING_OP,
         });
         const apiCall = createApiCall(func, client);
-        apiCall(null, {
+        // @ts-ignore incomplete options
+        apiCall({}, {
           longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1),
         })
             .then(responses => {
-              const operation = responses[0];
-              console.log(operation);
+              const operation = responses[0] as longrunning.Operation;
               operation.on('complete', () => {
                 done(new Error('Should not get here.'));
               });

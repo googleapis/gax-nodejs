@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2019, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,31 +29,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+import {APICallback, CancellableStream, GRPCCall, ResultTuple, SimpleCallbackFunction} from './apitypes';
+import {CancellablePromise, OngoingCall, OngoingCallPromise} from './call';
+import {Descriptor} from './descriptor';
+import {CallSettings} from './gax';
+import {GoogleError} from './googleError';
+import {NormalApiCaller} from './normalCalls/normalApiCaller';
+import {StreamProxy} from './streamingCalls/streaming';
 
-import {warn} from '../src/warnings';
+export interface ApiCallerSettings {
+  promise: PromiseConstructor;
+}
 
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+/**
+ * An interface for all kinds of API callers (normal, that just calls API, and
+ * all special ones: long-running, paginated, bundled, streaming).
+ */
+export interface APICaller {
+  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
+      |OngoingCall|StreamProxy;
+  wrap(func: GRPCCall): GRPCCall;
+  call(
+      apiCall: SimpleCallbackFunction, argument: {}, settings: {},
+      canceller: OngoingCallPromise|OngoingCall|StreamProxy): void;
+  fail(
+      canceller: OngoingCallPromise|OngoingCall|CancellableStream,
+      err: GoogleError): void;
+  result(canceller: OngoingCallPromise|OngoingCall|
+         CancellableStream): CancellablePromise<ResultTuple>|CancellableStream;
+}
+
+export function createAPICaller(
+    settings: CallSettings, descriptor: Descriptor|undefined): APICaller {
+  if (!descriptor) {
+    return new NormalApiCaller();
+  }
+  return descriptor.getApiCaller(settings);
+}

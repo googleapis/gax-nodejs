@@ -1,6 +1,5 @@
 /*
- *
- * Copyright 2016, Google Inc.
+ * Copyright 2019, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +27,58 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-import {expect} from 'chai';
+import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
+import {OngoingCall, OngoingCallPromise} from '../call';
+import {CallSettings} from '../gax';
+import {GoogleError} from '../googleError';
 
-describe('The PathTemplate parser', () => {
-  it('should load the pegjs generated module ok', () => {
-    const parser = require('../src/pathTemplateParser');
-    expect(parser).to.not.eql(null);
-  });
+import {BundleExecutor} from './bundleExecutor';
+import {TaskCallback} from './task';
 
-  describe('function `parse`', () => {
-    const parser = require('../src/pathTemplateParser');
+/**
+ * An implementation of APICaller for bundled calls.
+ * Uses BundleExecutor to do bundling.
+ */
+export class BundleApiCaller implements APICaller {
+  bundler: BundleExecutor;
 
-    it('should succeed with valid inputs', () => {
-      const shouldPass = () => {
-        parser.parse('a/b/**/*/{a=hello/world}');
-      };
-      expect(shouldPass).to.not.throw();
-    });
+  constructor(bundler: BundleExecutor) {
+    this.bundler = bundler;
+  }
 
-    it('should fail on invalid tokens', () => {
-      const shouldFail = () => {
-        parser.parse('hello/wor* ld}');
-      };
-      expect(shouldFail).to.throw();
-    });
+  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
+      |OngoingCall {
+    if (callback) {
+      return new OngoingCall(callback);
+    }
+    return new OngoingCallPromise(settings.promise);
+  }
 
-    it('should fail on unexpected eof', () => {
-      const shouldFail = () => {
-        parser.parse('a/{hello=world');
-      };
-      expect(shouldFail).to.throw();
-    });
+  wrap(func: GRPCCall): GRPCCall {
+    return func;
+  }
 
-    it('should fail on inner binding', () => {
-      const shouldFail = () => {
-        parser.parse('buckets/{hello={world}}');
-      };
-      expect(shouldFail).to.throw();
-    });
-  });
-});
+  call(
+      apiCall: SimpleCallbackFunction, argument: {}, settings: CallSettings,
+      status: OngoingCallPromise) {
+    if (!settings.isBundling) {
+      throw new GoogleError('Bundling enabled with no isBundling!');
+    }
+
+    status.call((argument: {}, callback: TaskCallback) => {
+      this.bundler.schedule(apiCall, argument, callback);
+      return status;
+    }, argument);
+  }
+
+  fail(canceller: OngoingCallPromise, err: GoogleError): void {
+    canceller.callback!(err);
+  }
+
+  result(canceller: OngoingCallPromise) {
+    return canceller.promise;
+  }
+}

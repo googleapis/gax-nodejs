@@ -68,7 +68,7 @@
     "test": "cross-env GOOGLE_CLOUD_USE_GRPC_JS=1 nyc mocha build/test && mocha build/test",
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src",
+    "compile": "tsc -p . && cp src/*.json build/src",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile",
     "posttest": "npm run lint",

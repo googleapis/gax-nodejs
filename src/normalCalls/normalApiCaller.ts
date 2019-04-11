@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google LLC
+ * Copyright 2019, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,32 +28,38 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
+import {OngoingCall, OngoingCallPromise} from '../call';
+import {GoogleError} from '../googleError';
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+/**
+ * Creates an API caller for regular unary methods.
+ */
+export class NormalApiCaller implements APICaller {
+  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
+      |OngoingCall {
+    if (callback) {
+      return new OngoingCall(callback);
+    }
+    return new OngoingCallPromise(settings.promise);
+  }
 
-import {warn} from '../src/warnings';
+  wrap(func: GRPCCall): GRPCCall {
+    return func;
+  }
 
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+  call(
+      apiCall: SimpleCallbackFunction, argument: {}, settings: {},
+      canceller: OngoingCallPromise): void {
+    canceller.call(apiCall, argument);
+  }
+
+  fail(canceller: OngoingCallPromise, err: GoogleError): void {
+    canceller.callback!(err);
+  }
+
+  result(canceller: OngoingCallPromise) {
+    return canceller.promise;
+  }
+}

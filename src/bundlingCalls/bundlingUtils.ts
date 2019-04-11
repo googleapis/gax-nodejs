@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Google Inc.
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from 'grpc';
+/**
+ * Provides behavior that supports request bundling.
+ */
 
-export class GoogleError extends Error {
-  code?: status;
-  note?: string;
+import at = require('lodash.at');
+import {RequestType} from '../apitypes';
+
+/**
+ * Compute the identifier of the `obj`. The objects of the same ID
+ * will be bundled together.
+ *
+ * @param {RequestType} obj - The request object.
+ * @param {String[]} discriminatorFields - The array of field names.
+ *   A field name may include '.' as a separator, which is used to
+ *   indicate object traversal.
+ * @return {String|undefined} - the identifier string, or undefined if any
+ *   discriminator fields do not exist.
+ */
+export function computeBundleId(
+    obj: RequestType, discriminatorFields: string[]) {
+  const ids: Array<{}|null> = [];
+  let hasIds = false;
+  for (let i = 0; i < discriminatorFields.length; ++i) {
+    const id = at(obj, discriminatorFields[i])[0];
+    if (id === undefined) {
+      ids.push(null);
+    } else {
+      hasIds = true;
+      ids.push(id);
+    }
+  }
+  if (!hasIds) {
+    return undefined;
+  }
+  return JSON.stringify(ids);
 }

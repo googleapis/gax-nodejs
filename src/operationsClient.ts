@@ -1,42 +1,54 @@
 /*
- * Copyright 2018 Google LLC. All rights reserved.
+ * Copyright 2019 Google LLC
+ * All rights reserved.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import {GoogleAuth} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import {getProtoPath} from 'google-proto-files';
 
-import * as apiCallable from './apiCallable';
+import {GaxCall} from './apitypes';
+import {createApiCall} from './createApiCall';
+import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
-import * as pagedIteration from './pagedIteration';
-import * as pathTemplate from './pathTemplate';
 
 const configData = require('./operations_client_config');
 
-Object.assign(gax, apiCallable);
-Object.assign(gax, pathTemplate);
-Object.assign(gax, pagedIteration);
-
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
+const version = require('../../package.json').version;
 
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 const PAGE_DESCRIPTORS = {
   listOperations:
-      new gax['PageDescriptor']('pageToken', 'nextPageToken', 'operations'),
+      new PageDescriptor('pageToken', 'nextPageToken', 'operations'),
 };
 
 /**
@@ -71,10 +83,10 @@ export interface OperationsClientOptions {
  */
 export class OperationsClient {
   auth: GoogleAuth;
-  private _getOperation!: Function;
-  private _listOperations!: Function;
-  private _cancelOperation!: Function;
-  private _deleteOperation!: Function;
+  private _getOperation!: GaxCall;
+  private _listOperations!: GaxCall;
+  private _cancelOperation!: GaxCall;
+  private _deleteOperation!: GaxCall;
 
   constructor(
       // tslint:disable-next-line no-any
@@ -92,8 +104,7 @@ export class OperationsClient {
       googleApiClient.push(opts.libName + '/' + opts.libVersion);
     }
     googleApiClient.push(
-        CODE_GEN_NAME_VERSION, 'gax/' + gax['version'],
-        'grpc/' + gaxGrpc.grpcVersion);
+        CODE_GEN_NAME_VERSION, 'gax/' + version, 'grpc/' + gaxGrpc.grpcVersion);
 
     const defaults = gaxGrpc.constructSettings(
         'google.longrunning.Operations', configData, opts.clientConfig,
@@ -109,7 +120,7 @@ export class OperationsClient {
       'deleteOperation',
     ];
     operationsStubMethods.forEach(methodName => {
-      this['_' + methodName] = gax['createApiCall'](
+      this['_' + methodName] = createApiCall(
           operationsStub.then(operationsStub => {
             return (...args: Array<{}>) => {
               return operationsStub[methodName].apply(operationsStub, args);
@@ -304,7 +315,7 @@ export class OperationsClient {
    *     console.error(err);
    *   });
    */
-  listOperationsStream(request, options = {}) {
+  listOperationsStream(request: {}, options: gax.CallSettings) {
     return PAGE_DESCRIPTORS.listOperations.createStream(
         this._listOperations, request, options);
   }

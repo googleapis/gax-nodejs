@@ -29,31 +29,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+import {Descriptor} from '../descriptor';
+import {CallSettings} from '../gax';
+import {Metadata} from '../grpc';
+import {OperationsClient} from '../operationsClient';
 
-import {warn} from '../src/warnings';
+import {LongrunningApiCaller} from './longRunningApiCaller';
 
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+/**
+ * A callback to upack a google.protobuf.Any message.
+ */
+export interface AnyDecoder {
+  (message: {}): Metadata;
+}
+
+/**
+ * A descriptor for long-running operations.
+ */
+export class LongRunningDescriptor implements Descriptor {
+  operationsClient: OperationsClient;
+  responseDecoder: AnyDecoder;
+  metadataDecoder: AnyDecoder;
+
+  constructor(
+      operationsClient: OperationsClient, responseDecoder: AnyDecoder,
+      metadataDecoder: AnyDecoder) {
+    this.operationsClient = operationsClient;
+    this.responseDecoder = responseDecoder;
+    this.metadataDecoder = metadataDecoder;
+  }
+
+  getApiCaller(settings: CallSettings) {
+    return new LongrunningApiCaller(this);
+  }
+}

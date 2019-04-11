@@ -1,4 +1,4 @@
-/* Copyright 2016, Google Inc.
+/* Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ import {status} from 'grpc';
 import * as sinon from 'sinon';
 
 import * as gax from '../src/gax';
-import {GoogleError} from '../src/GoogleError';
+import {GoogleError} from '../src/googleError';
 
 import * as utils from './utils';
 
@@ -52,7 +52,7 @@ describe('createApiCall', () => {
       callback(null, argument);
     }
     const apiCall = createApiCall(func);
-    apiCall(42, null, (err, resp) => {
+    apiCall(42, undefined, (err, resp) => {
       expect(resp).to.eq(42);
       // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
@@ -65,7 +65,7 @@ describe('createApiCall', () => {
       callback(null, options.deadline.getTime());
     }
     const apiCall = createApiCall(func, {settings: {timeout: 100}});
-    apiCall(null, {timeout: 200}, (err, resp) => {
+    apiCall({}, {timeout: 200}, (err, resp) => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
@@ -93,7 +93,7 @@ describe('createApiCall', () => {
     });
 
     const start = new Date().getTime();
-    apiCall(null, null, (err, resp) => {
+    apiCall({}, undefined, (err, resp) => {
       // The verifying value is slightly bigger than the expected number
       // 2000 / 30000, because sometimes runtime can consume some time before
       // the call starts.
@@ -126,7 +126,7 @@ describe('Promise', () => {
 
   it('emits error on failure', (done) => {
     const apiCall = createApiCall(fail);
-    apiCall(null, null)
+    apiCall({}, undefined)
         .then(() => {
           done(new Error('should not reach'));
         })
@@ -204,7 +204,7 @@ describe('Promise', () => {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    expect(apiCall(null, null, (err, response) => {
+    expect(apiCall({}, undefined, (err, response) => {
       // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(response).to.eq(42);
@@ -223,7 +223,8 @@ describe('Promise', () => {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    apiCall(null, {promise: MockPromise})
+    // @ts-ignore incomplete options
+    apiCall({}, {promise: MockPromise})
         .then(response => {
           expect(response).to.be.an('array');
           expect(response[0]).to.eq(42);
@@ -252,7 +253,7 @@ describe('retryable', () => {
       callback(null, 1729);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall(null, null, (err, resp) => {
+    apiCall({}, undefined, (err, resp) => {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
       // tslint:disable-next-line no-unused-expression
@@ -274,7 +275,7 @@ describe('retryable', () => {
       callback(null, 1729);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall(null, null)
+    apiCall({}, undefined)
         .then(resp => {
           expect(resp).to.be.an('array');
           expect(resp[0]).to.eq(1729);
@@ -303,7 +304,7 @@ describe('retryable', () => {
       }, 10);
     }
     const apiCall = createApiCall(func, settings);
-    promise = apiCall(null, null);
+    promise = apiCall({}, undefined);
     promise
         .then(() => {
           done(new Error('should not reach'));
@@ -320,7 +321,7 @@ describe('retryable', () => {
     const settings = {settings: {timeout: 0, retry: retryOptions}};
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
       // tslint:disable-next-line no-unused-expression
@@ -332,7 +333,7 @@ describe('retryable', () => {
 
   it('aborts retries', (done) => {
     const apiCall = createApiCall(fail, settings);
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
       done();
@@ -343,7 +344,7 @@ describe('retryable', () => {
     const toAttempt = 3;
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
       // tslint:disable-next-line no-unused-expression
@@ -365,7 +366,7 @@ describe('retryable', () => {
     };
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
       expect(spy.callCount).to.eq(toAttempt);
@@ -385,7 +386,7 @@ describe('retryable', () => {
     };
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.INVALID_ARGUMENT);
       expect(spy.callCount).to.eq(0);
@@ -401,7 +402,7 @@ describe('retryable', () => {
     }
     const spy = sinon.spy(func);
     const apiCall = createApiCall(spy, settings);
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_2);
       // tslint:disable-next-line no-unused-expression
@@ -416,7 +417,7 @@ describe('retryable', () => {
       callback(null, null);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall(null, null, (err, resp) => {
+    apiCall({}, undefined, (err, resp) => {
       // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       // tslint:disable-next-line no-unused-expression
@@ -435,7 +436,7 @@ describe('retryable', () => {
       settings: {timeout: 0, retry: retryOptions},
     });
 
-    apiCall(null, null, err => {
+    apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
       // tslint:disable-next-line no-unused-expression
@@ -467,14 +468,14 @@ describe('retryable', () => {
     };
     const apiCall = createApiCall(func, settings);
     mockBuilder.withExactArgs({retry: '2'});
-    return apiCall(null, null)
+    return apiCall({}, undefined)
         .then(() => {
           mockBuilder.verify();
           mockBuilder.reset();
           const backoff =
               gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, 5);
           mockBuilder.withExactArgs({retry: '1'});
-          return apiCall(null, {retry: utils.createRetryOptions(backoff)});
+          return apiCall({}, {retry: utils.createRetryOptions(backoff)});
         })
         .then(() => {
           mockBuilder.verify();
@@ -483,7 +484,7 @@ describe('retryable', () => {
           const options = {
             retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
           };
-          return apiCall(null, options);
+          return apiCall({}, options);
         })
         .then(() => {
           mockBuilder.verify();
@@ -492,7 +493,7 @@ describe('retryable', () => {
 
   it('forwards metadata to builder', (done) => {
     function func(argument, metadata, options, callback) {
-      callback();
+      callback(null, {});
     }
 
     let gotHeaders;
@@ -509,7 +510,7 @@ describe('retryable', () => {
       h1: 'val1',
       h2: 'val2',
     };
-    apiCall(null, {otherArgs: {headers}}).then(() => {
+    apiCall({}, {otherArgs: {headers}}).then(() => {
       expect(gotHeaders.h1).to.deep.equal('val1');
       expect(gotHeaders.h2).to.deep.equal('val2');
       done();
