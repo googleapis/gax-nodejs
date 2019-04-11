@@ -38,20 +38,20 @@ import {GoogleError} from '../googleError';
 import {addTimeoutArg} from './timeout';
 
 /**
- * Creates a function equivalent to aFunc, but that retries on certain
+ * Creates a function equivalent to func, but that retries on certain
  * exceptions.
  *
  * @private
  *
- * @param {GRPCCall} aFunc - A function.
+ * @param {GRPCCall} func - A function.
  * @param {RetryOptions} retry - Configures the exceptions upon which the
  *   function eshould retry, and the parameters to the exponential backoff retry
  *   algorithm.
- * @param {GRPCCallOtherArgs} otherArgs - the additional arguments to be passed to aFunc.
+ * @param {GRPCCallOtherArgs} otherArgs - the additional arguments to be passed to func.
  * @return {SimpleCallbackFunction} A function that will retry.
  */
 export function retryable(
-    aFunc: GRPCCall, retry: RetryOptions,
+    func: GRPCCall, retry: RetryOptions,
     otherArgs: GRPCCallOtherArgs): SimpleCallbackFunction {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
@@ -62,7 +62,7 @@ export function retryable(
   let timeout = retry.backoffSettings.initialRpcTimeoutMillis;
 
   /**
-   * Equivalent to ``aFunc``, but retries upon transient failure.
+   * Equivalent to ``func``, but retries upon transient failure.
    *
    * Retrying is done through an exponential backoff algorithm configured
    * by the options in ``retry``.
@@ -103,7 +103,7 @@ export function retryable(
       }
 
       retries++;
-      const toCall = addTimeoutArg(aFunc, timeout!, otherArgs);
+      const toCall = addTimeoutArg(func, timeout!, otherArgs);
       canceller = toCall(argument, (err, response, next, rawResponse) => {
         if (!err) {
           callback(null, response, next, rawResponse);

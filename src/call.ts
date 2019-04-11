@@ -76,17 +76,17 @@ export class OngoingCall {
    * Call calls the specified function. Result will be used to fulfill
    * the promise.
    *
-   * @param {function(Object, APICallback=)} aFunc
+   * @param {SimpleCallbackFunction} func
    *   A function for an API call.
    * @param {Object} argument
    *   A request object.
    */
-  call(aFunc: SimpleCallbackFunction, argument: RequestType): void {
+  call(func: SimpleCallbackFunction, argument: RequestType): void {
     if (this.completed) {
       return;
     }
     // tslint:disable-next-line no-any
-    const canceller = aFunc(argument, (...args: any[]) => {
+    const canceller = func(argument, (...args: any[]) => {
       this.completed = true;
       setImmediate(this.callback!, ...args);
     });
