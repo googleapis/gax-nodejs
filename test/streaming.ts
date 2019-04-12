@@ -1,4 +1,5 @@
-/* Copyright 2016, Google Inc.
+/*
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,16 +33,17 @@ import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
 
-import * as apiCallable from '../src/apiCallable';
+import {GaxCallStream} from '../src/apitypes';
+import {createApiCall} from '../src/createApiCall';
 import * as gax from '../src/gax';
-import * as streaming from '../src/streaming';
+import {StreamDescriptor} from '../src/streamingCalls/streamDescriptor';
+import * as streaming from '../src/streamingCalls/streaming';
 
-function createApiCall(func, type) {
-  // can't use "createApiCall" in util.js because argument list is different
-  // in streaming API call.
+function createApiCallStreaming(func, type) {
   const settings = new gax.CallSettings();
-  return apiCallable.createApiCall(
-      Promise.resolve(func), settings, new streaming.StreamDescriptor(type));
+  return createApiCall(
+             Promise.resolve(func), settings, new StreamDescriptor(type)) as
+      GaxCallStream;
 }
 
 describe('streaming', () => {
@@ -58,8 +60,9 @@ describe('streaming', () => {
       return s;
     });
 
-    const apiCall = createApiCall(spy, streaming.StreamType.SERVER_STREAMING);
-    const s = apiCall(null, null);
+    const apiCall =
+        createApiCallStreaming(spy, streaming.StreamType.SERVER_STREAMING);
+    const s = apiCall({}, undefined);
     const callback = sinon.spy(data => {
       if (callback.callCount === 1) {
         expect(data).to.deep.equal({resources: [1, 2]});
@@ -93,8 +96,9 @@ describe('streaming', () => {
       return s;
     }
 
-    const apiCall = createApiCall(func, streaming.StreamType.CLIENT_STREAMING);
-    const s = apiCall(null, null, (err, response) => {
+    const apiCall =
+        createApiCallStreaming(func, streaming.StreamType.CLIENT_STREAMING);
+    const s = apiCall({}, undefined, (err, response) => {
       // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(response).to.deep.eq(['foo', 'bar']);
@@ -119,8 +123,9 @@ describe('streaming', () => {
       return s;
     }
 
-    const apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
-    const s = apiCall(null, null);
+    const apiCall =
+        createApiCallStreaming(func, streaming.StreamType.BIDI_STREAMING);
+    const s = apiCall({}, undefined);
     const arg = {foo: 'bar'};
     const callback = sinon.spy(data => {
       expect(data).to.eq(arg);
@@ -158,11 +163,12 @@ describe('streaming', () => {
       });
       return s;
     }
-    const apiCall = createApiCall(func, streaming.StreamType.BIDI_STREAMING);
-    const s = apiCall(null, null);
-    let receivedMetadata;
-    let receivedStatus;
-    let receivedResponse;
+    const apiCall =
+        createApiCallStreaming(func, streaming.StreamType.BIDI_STREAMING);
+    const s = apiCall({}, undefined);
+    let receivedMetadata: {};
+    let receivedStatus: {};
+    let receivedResponse: {};
     s.on('metadata', data => {
       receivedMetadata = data;
     });
@@ -211,8 +217,9 @@ describe('streaming', () => {
       });
       return s;
     }
-    const apiCall = createApiCall(func, streaming.StreamType.SERVER_STREAMING);
-    const s = apiCall(null, null);
+    const apiCall =
+        createApiCallStreaming(func, streaming.StreamType.SERVER_STREAMING);
+    const s = apiCall({}, undefined);
     let counter = 0;
     const expectedCount = 5;
     s.on('data', data => {

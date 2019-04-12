@@ -29,31 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+import {APICaller} from '../apiCaller';
+import {Descriptor} from '../descriptor';
+import {CallSettings} from '../gax';
 
-import {warn} from '../src/warnings';
+import {StreamType} from './streaming';
+import {StreamingApiCaller} from './streamingApiCaller';
 
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+/**
+ * A descriptor for streaming calls.
+ */
+export class StreamDescriptor implements Descriptor {
+  type: StreamType;
+
+  constructor(streamType: StreamType) {
+    this.type = streamType;
+  }
+
+  getApiCaller(settings: CallSettings): APICaller {
+    // Right now retrying does not work with gRPC-streaming, because retryable
+    // assumes an API call returns an event emitter while gRPC-streaming methods
+    // return Stream.
+    // TODO: support retrying.
+    settings.retry = null;
+    return new StreamingApiCaller(this);
+  }
+}

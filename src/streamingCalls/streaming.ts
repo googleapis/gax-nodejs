@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Google Inc.
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,7 @@
 
 import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
 
-import {APICall, APICallback} from './apiCallable';
-import {warn} from './warnings';
+import {APICallback, CancellableStream, GRPCCallResult, SimpleCallbackFunction} from '../apitypes';
 
 const duplexify: DuplexifyConstructor = require('duplexify');
 const retryRequest = require('retry-request');
@@ -75,11 +74,11 @@ export enum StreamType {
   BIDI_STREAMING = 3,
 }
 
-export class StreamProxy extends duplexify {
+export class StreamProxy extends duplexify implements GRPCCallResult {
   type: StreamType;
-  private _callback?: Function;
+  private _callback: APICallback;
   private _isCancelCalled: boolean;
-  stream?: Duplex&{cancel: () => void};
+  stream?: CancellableStream;
   /**
    * StreamProxy is a proxy to gRPC-streaming method.
    *
@@ -141,7 +140,7 @@ export class StreamProxy extends duplexify {
    * @param {ApiCall} apiCall - the API function to be called.
    * @param {Object} argument - the argument to be passed to the apiCall.
    */
-  setStream(apiCall: APICall, argument: {}) {
+  setStream(apiCall: SimpleCallbackFunction, argument: {}) {
     if (this.type === StreamType.SERVER_STREAMING) {
       const retryStream = retryRequest(null, {
         objectMode: true,
@@ -152,7 +151,7 @@ export class StreamProxy extends duplexify {
             }
             return;
           }
-          const stream = apiCall(argument, this._callback);
+          const stream = apiCall(argument, this._callback) as CancellableStream;
           this.stream = stream;
           this.forwardEvents(stream);
           return stream;
@@ -162,7 +161,7 @@ export class StreamProxy extends duplexify {
       return;
     }
 
-    const stream = apiCall(argument, this._callback);
+    const stream = apiCall(argument, this._callback) as CancellableStream;
     this.stream = stream;
     this.forwardEvents(stream);
 
@@ -178,78 +177,5 @@ export class StreamProxy extends duplexify {
     if (this._isCancelCalled && this.stream) {
       this.stream.cancel();
     }
-  }
-}
-
-export class GrpcStreamable {
-  descriptor: StreamDescriptor;
-
-  /**
-   * An API caller for methods of gRPC streaming.
-   * @private
-   * @constructor
-   * @param {StreamDescriptor} descriptor - the descriptor of the method structure.
-   */
-  constructor(descriptor: StreamDescriptor) {
-    this.descriptor = descriptor;
-  }
-
-  init(settings: {}, callback: APICallback): StreamProxy {
-    return new StreamProxy(this.descriptor.type, callback);
-  }
-
-  wrap(func: Function) {
-    switch (this.descriptor.type) {
-      case StreamType.SERVER_STREAMING:
-        return (argument: {}, metadata: {}, options: {}) => {
-          return func(argument, metadata, options);
-        };
-      case StreamType.CLIENT_STREAMING:
-        return (argument: {}, metadata: {}, options: {}, callback: {}) => {
-          return func(metadata, options, callback);
-        };
-      case StreamType.BIDI_STREAMING:
-        return (argument: {}, metadata: {}, options: {}) => {
-          return func(metadata, options);
-        };
-      default:
-        warn(
-            'streaming_wrap_unknown_stream_type',
-            `Unknown stream type: ${this.descriptor.type}`);
-    }
-    return func;
-  }
-
-  call(apiCall: APICall, argument: {}, settings: {}, stream: StreamProxy) {
-    stream.setStream(apiCall, argument);
-  }
-
-  fail(stream: Stream, err: Error) {
-    stream.emit('error', err);
-  }
-
-  result(stream: Stream) {
-    return stream;
-  }
-}
-
-export class StreamDescriptor {
-  type: StreamType;
-  /**
-   * Describes the structure of gRPC streaming call.
-   * @constructor
-   * @param {StreamType} streamType - the type of streaming.
-   */
-  constructor(streamType: StreamType) {
-    this.type = streamType;
-  }
-
-  apiCaller(settings: {retry: null}): GrpcStreamable {
-    // Right now retrying does not work with gRPC-streaming, because retryable
-    // assumes an API call returns an event emitter while gRPC-streaming methods
-    // return Stream.
-    // TODO: support retrying.
-    settings.retry = null;
-    return new GrpcStreamable(this);
   }
 }

@@ -1,4 +1,5 @@
-/* Copyright 2016, Google Inc.
+/*
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,9 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as apiCallable from '../src/apiCallable';
+import {GaxCallPromise} from '../src/apitypes';
+import {createApiCall as realCreateApiCall} from '../src/createApiCall';
 import * as gax from '../src/gax';
-import {GoogleError} from '../src/GoogleError';
+import {GoogleError} from '../src/googleError';
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
@@ -44,29 +46,29 @@ export function createApiCall(func, opts?) {
   opts = opts || {};
   const settings = new gax.CallSettings(opts.settings || {});
   const descriptor = opts.descriptor;
-  return apiCallable.createApiCall(
-      Promise.resolve((argument, metadata, options, callback) => {
-        if (opts.returnCancelFunc) {
-          return {
-            cancel: func(argument, metadata, options, callback),
-            completed: true,
-            call: () => {
-              throw new Error('should not be run');
-            }
-          };
-        }
-        func(argument, metadata, options, callback);
-        return {
-          cancel: opts.cancel || (() => {
-                    callback(new Error('canceled'));
-                  }),
-          completed: true,
-          call: () => {
-            throw new Error('should not be run');
-          }
-        };
-      }),
-      settings, descriptor);
+  return realCreateApiCall(
+             Promise.resolve((argument, metadata, options, callback) => {
+               if (opts.returnCancelFunc) {
+                 return {
+                   cancel: func(argument, metadata, options, callback),
+                   completed: true,
+                   call: () => {
+                     throw new Error('should not be run');
+                   }
+                 };
+               }
+               func(argument, metadata, options, callback);
+               return {
+                 cancel: opts.cancel || (() => {
+                           callback(new Error('canceled'));
+                         }),
+                 completed: true,
+                 call: () => {
+                   throw new Error('should not be run');
+                 }
+               };
+             }),
+             settings, descriptor) as GaxCallPromise;
 }
 
 export function createRetryOptions(

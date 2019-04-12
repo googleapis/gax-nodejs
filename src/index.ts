@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Google Inc.
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,15 +34,15 @@ import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {CancellablePromise, Canceller, createApiCall} from './apiCallable';
-export {BundleDescriptor, BundleExecutor} from './bundling';
+export {CancellablePromise, OngoingCall} from './call';
+export {createApiCall} from './createApiCall';
+export {BundleDescriptor, LongrunningDescriptor, PageDescriptor, StreamDescriptor} from './descriptor';
 export {CallOptions, CallSettings, ClientConfig, constructSettings, RetryOptions} from './gax';
-export {GoogleError} from './GoogleError';
+export {GoogleError} from './googleError';
 export {ClientStub, ClientStubOptions, GoogleProtoFilesRoot, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, Metadata, MetadataValue} from './grpc';
-export {LongrunningDescriptor, Operation, operation} from './longrunning';
-export {PageDescriptor} from './pagedIteration';
+export {Operation, operation} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
-export {StreamDescriptor, StreamType} from './streaming';
+export {StreamType} from './streamingCalls/streaming';
 export {routingHeader};
 
 function lro(options: GrpcClientOptions) {

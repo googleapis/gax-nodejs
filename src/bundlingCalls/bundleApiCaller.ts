@@ -1,5 +1,5 @@
 /*
- * Copyright 2018, Google Inc.
+ * Copyright 2019, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,56 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from 'grpc';
+import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
+import {OngoingCall, OngoingCallPromise} from '../call';
+import {CallSettings} from '../gax';
+import {GoogleError} from '../googleError';
 
-export class GoogleError extends Error {
-  code?: status;
-  note?: string;
+import {BundleExecutor} from './bundleExecutor';
+import {TaskCallback} from './task';
+
+/**
+ * An implementation of APICaller for bundled calls.
+ * Uses BundleExecutor to do bundling.
+ */
+export class BundleApiCaller implements APICaller {
+  bundler: BundleExecutor;
+
+  constructor(bundler: BundleExecutor) {
+    this.bundler = bundler;
+  }
+
+  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
+      |OngoingCall {
+    if (callback) {
+      return new OngoingCall(callback);
+    }
+    return new OngoingCallPromise(settings.promise);
+  }
+
+  wrap(func: GRPCCall): GRPCCall {
+    return func;
+  }
+
+  call(
+      apiCall: SimpleCallbackFunction, argument: {}, settings: CallSettings,
+      status: OngoingCallPromise) {
+    if (!settings.isBundling) {
+      throw new GoogleError('Bundling enabled with no isBundling!');
+    }
+
+    status.call((argument: {}, callback: TaskCallback) => {
+      this.bundler.schedule(apiCall, argument, callback);
+      return status;
+    }, argument);
+  }
+
+  fail(canceller: OngoingCallPromise, err: GoogleError): void {
+    canceller.callback!(err);
+  }
+
+  result(canceller: OngoingCallPromise) {
+    return canceller.promise;
+  }
 }

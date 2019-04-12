@@ -29,31 +29,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+/**
+ * Provides behavior that supports request bundling.
+ */
 
-import {warn} from '../src/warnings';
+import at = require('lodash.at');
+import {RequestType} from '../apitypes';
 
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+/**
+ * Compute the identifier of the `obj`. The objects of the same ID
+ * will be bundled together.
+ *
+ * @param {RequestType} obj - The request object.
+ * @param {String[]} discriminatorFields - The array of field names.
+ *   A field name may include '.' as a separator, which is used to
+ *   indicate object traversal.
+ * @return {String|undefined} - the identifier string, or undefined if any
+ *   discriminator fields do not exist.
+ */
+export function computeBundleId(
+    obj: RequestType, discriminatorFields: string[]) {
+  const ids: Array<{}|null> = [];
+  let hasIds = false;
+  for (let i = 0; i < discriminatorFields.length; ++i) {
+    const id = at(obj, discriminatorFields[i])[0];
+    if (id === undefined) {
+      ids.push(null);
+    } else {
+      hasIds = true;
+      ids.push(id);
+    }
+  }
+  if (!hasIds) {
+    return undefined;
+  }
+  return JSON.stringify(ids);
+}

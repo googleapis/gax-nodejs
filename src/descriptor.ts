@@ -29,31 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+// Descriptors are passed by client libraries to `createApiCall` if a call must
+// have special features, such as: support auto-pagination, be a long-running
+// operation, a streaming method, or support bundling. Each type of descriptor
+// can create its own apiCaller that will handle all the specifics for the given
+// call type.
 
-import {warn} from '../src/warnings';
+import {APICaller} from './apiCaller';
+import {CallSettings} from './gax';
 
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+export interface Descriptor {
+  getApiCaller(settings: CallSettings): APICaller;
+}
+
+export {LongRunningDescriptor as LongrunningDescriptor} from './longRunningCalls/longRunningDescriptor';
+export {PageDescriptor} from './paginationCalls/pageDescriptor';
+export {StreamDescriptor} from './streamingCalls/streamDescriptor';
+export {BundleDescriptor} from './bundlingCalls/bundleDescriptor';

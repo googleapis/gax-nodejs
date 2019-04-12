@@ -1,5 +1,5 @@
 /*
- * Copyright 2016, Google Inc.
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,21 +31,14 @@
 
 import {EventEmitter} from 'events';
 import {status} from 'grpc';
-import {APICall, APICallback, CancellablePromise, NormalApiCaller, PromiseCanceller} from './apiCallable';
-import {BackoffSettings, CallOptions, createBackoffSettings} from './gax';
-import {GoogleError} from './GoogleError';
-import {Metadata, MetadataValue} from './grpc';
-import {OperationsClient} from './operationsClient';
 
-/**
- * A callback to upack a google.protobuf.Any message.
- * @callback anyDecoder
- * @param {google.protobuf.Any} message - The message to unpacked.
- * @return {Object} - The unpacked message.
- */
-export interface AnyDecoder {
-  (message: {}): Metadata;
-}
+import {GaxCallPromise, ResultTuple} from '../apitypes';
+import {CancellablePromise} from '../call';
+import {BackoffSettings, CallOptions} from '../gax';
+import {GoogleError} from '../googleError';
+import {Metadata, MetadataValue} from '../grpc';
+
+import {LongRunningDescriptor} from './longRunningDescriptor';
 
 /**
  * @callback GetOperationCallback
@@ -58,101 +51,16 @@ export interface GetOperationCallback {
   (err?: Error|null, result?: {}, metadata?: {}, rawResponse?: Operation): void;
 }
 
-export class LongrunningDescriptor {
-  operationsClient: OperationsClient;
-  responseDecoder: AnyDecoder;
-  metadataDecoder: AnyDecoder;
-
-  /**
-   * Describes the structure of a page-streaming call.
-   *
-   * @property {OperationsClient} operationsClient
-   * @property {anyDecoder} responseDecoder
-   * @property {anyDecoder} metadataDecoder
-   *
-   * @param {OperationsClient} operationsClient - The client used to poll or
-   *   cancel an operation.
-   * @param {anyDecoder=} responseDecoder - The decoder to unpack
-   *   the response message.
-   * @param {anyDecoder=} metadataDecoder - The decoder to unpack
-   *   the metadata message.
-   *
-   * @constructor
-   */
-  constructor(
-      operationsClient: OperationsClient, responseDecoder: AnyDecoder,
-      metadataDecoder: AnyDecoder) {
-    this.operationsClient = operationsClient;
-    this.responseDecoder = responseDecoder;
-    this.metadataDecoder = metadataDecoder;
-  }
-
-  apiCaller() {
-    return new LongrunningApiCaller(this);
-  }
-}
-
-export class LongrunningApiCaller extends NormalApiCaller {
-  longrunningDescriptor: LongrunningDescriptor;
-  /**
-   * Creates an API caller that performs polling on a long running operation.
-   *
-   * @private
-   * @constructor
-   * @param {LongrunningDescriptor} longrunningDescriptor - Holds the
-   * decoders used for unpacking responses and the operationsClient
-   * used for polling the operation.
-   */
-  constructor(longrunningDescriptor: LongrunningDescriptor) {
-    super();
-    this.longrunningDescriptor = longrunningDescriptor;
-  }
-
-
-  call(
-      apiCall: APICall, argument: {}, settings: CallOptions,
-      canceller: PromiseCanceller) {
-    canceller.call((argument, callback) => {
-      return this._wrapOperation(apiCall, settings, argument, callback);
-    }, argument);
-  }
-
-  _wrapOperation(
-      apiCall: APICall, settings: CallOptions, argument: {},
-      callback: APICallback) {
-    // TODO: this code defies all logic, and just can't be accurate.
-    // tslint:disable-next-line no-any
-    let backoffSettings: any = settings.longrunning;
-    if (!backoffSettings) {
-      backoffSettings =
-          createBackoffSettings(100, 1.3, 60000, null, null, null, null);
-    }
-
-    const longrunningDescriptor = this.longrunningDescriptor;
-    return apiCall(argument, (err: Error, rawResponse: Operation) => {
-      if (err) {
-        callback(err, null, rawResponse);
-        return;
-      }
-
-      const operation = new Operation(
-          rawResponse, longrunningDescriptor, backoffSettings!, settings);
-
-      callback(null, operation, rawResponse);
-    });
-  }
-}
-
 export class Operation extends EventEmitter {
   completeListeners: number;
   hasActiveListeners: boolean;
   latestResponse: Operation;
-  longrunningDescriptor: LongrunningDescriptor;
+  longrunningDescriptor: LongRunningDescriptor;
   result: {}|null;
   metadata: Metadata|null;
   backoffSettings: BackoffSettings;
   _callOptions?: CallOptions;
-  currentCallPromise_?: CancellablePromise;
+  currentCallPromise_?: CancellablePromise<ResultTuple>;
   name?: string;
   done?: boolean;
   error?: GoogleError;
@@ -164,15 +72,15 @@ export class Operation extends EventEmitter {
    * @constructor
    *
    * @param {google.longrunning.Operation} grpcOp - The operation to be wrapped.
-   * @param {LongrunningDescriptor} longrunningDescriptor - This defines the
+   * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
    * operations service client and unpacking mechanisms for the operation.
    * @param {BackoffSettings} backoffSettings - The backoff settings used in
    * in polling the operation.
-   * @param {CallOptions=} callOptions - CallOptions used in making get operation
+   * @param {CallOptions} callOptions - CallOptions used in making get operation
    * requests.
    */
   constructor(
-      grpcOp: Operation, longrunningDescriptor: LongrunningDescriptor,
+      grpcOp: Operation, longrunningDescriptor: LongRunningDescriptor,
       backoffSettings: BackoffSettings, callOptions?: CallOptions) {
     super();
     this.completeListeners = 0;
@@ -227,7 +135,8 @@ export class Operation extends EventEmitter {
       this.currentCallPromise_.cancel();
     }
     const operationsClient = this.longrunningDescriptor.operationsClient;
-    return operationsClient.cancelOperation({name: this.latestResponse.name});
+    return operationsClient.cancelOperation({name: this.latestResponse.name}) as
+        CancellablePromise<ResultTuple>;
   }
 
   /**
@@ -274,12 +183,13 @@ export class Operation extends EventEmitter {
       return promisifyResponse();
     }
 
-    this.currentCallPromise_ = operationsClient.getOperation(
-        {name: this.latestResponse.name}, this._callOptions!);
+    this.currentCallPromise_ =
+        (operationsClient.getOperation as GaxCallPromise)(
+            {name: this.latestResponse.name}, this._callOptions!);
 
     const noCallbackPromise = this.currentCallPromise_!.then(responses => {
-      self.latestResponse = responses[0];
-      self._unpackResponse(responses[0], callback);
+      self.latestResponse = responses[0] as Operation;
+      self._unpackResponse(responses[0] as Operation, callback);
       return promisifyResponse()!;
     });
 
@@ -423,7 +333,7 @@ export class Operation extends EventEmitter {
  * @constructor
  *
  * @param {google.longrunning.Operation} op - The operation to be wrapped.
- * @param {LongrunningDescriptor} longrunningDescriptor - This defines the
+ * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
  * operations service client and unpacking mechanisms for the operation.
  * @param {BackoffSettings} backoffSettings - The backoff settings used in
  * in polling the operation.
@@ -431,7 +341,7 @@ export class Operation extends EventEmitter {
  * requests.
  */
 export function operation(
-    op: Operation, longrunningDescriptor: LongrunningDescriptor,
+    op: Operation, longrunningDescriptor: LongRunningDescriptor,
     backoffSettings: BackoffSettings, callOptions?: CallOptions) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016, Google Inc.
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
  * Google API Extensions
  */
 
-import {BundleOptions} from './bundling';
+import {BundleOptions} from './bundlingCalls/bundleExecutor';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -162,14 +162,15 @@ export interface CallOptions {
   timeout?: number;
   retry?: RetryOptions|null;
   autoPaginate?: boolean;
-  pageToken?: number;
+  pageToken?: string;
+  pageSize?: number;
   maxResults?: number;
   maxRetries?: number;
   // tslint:disable-next-line no-any
   otherArgs?: {[index: string]: any};
   bundleOptions?: BundleOptions|null;
   isBundling?: boolean;
-  longrunning?: boolean|null;
+  longrunning?: BackoffSettings;
   promise?: PromiseConstructor;
 }
 
@@ -177,13 +178,14 @@ export class CallSettings {
   timeout: number;
   retry?: RetryOptions|null;
   autoPaginate?: boolean;
-  pageToken?: number;
+  pageToken?: string;
+  pageSize?: number;
   maxResults?: number;
   // tslint:disable-next-line no-any
   otherArgs: {[index: string]: any};
   bundleOptions?: BundleOptions|null;
   isBundling: boolean;
-  longrunning?: boolean|null;
+  longrunning?: BackoffSettings;
   promise: PromiseConstructor;
 
   /**
@@ -218,7 +220,8 @@ export class CallSettings {
     this.otherArgs = settings.otherArgs || {};
     this.bundleOptions = settings.bundleOptions;
     this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
-    this.longrunning = 'longrunning' in settings ? settings.longrunning : null;
+    this.longrunning =
+        'longrunning' in settings ? settings.longrunning : undefined;
     this.promise = 'promise' in settings ? settings.promise! : Promise;
   }
 
@@ -238,6 +241,7 @@ export class CallSettings {
     let retry = this.retry;
     let autoPaginate = this.autoPaginate;
     let pageToken = this.pageToken;
+    let pageSize = this.pageSize;
     let maxResults = this.maxResults;
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
@@ -257,6 +261,10 @@ export class CallSettings {
     if ('pageToken' in options) {
       autoPaginate = false;
       pageToken = options.pageToken;
+    }
+
+    if ('pageSize' in options) {
+      pageSize = options.pageSize;
     }
 
     if ('maxResults' in options) {
@@ -299,6 +307,7 @@ export class CallSettings {
       longrunning,
       autoPaginate,
       pageToken,
+      pageSize,
       maxResults,
       otherArgs,
       isBundling,
@@ -364,6 +373,10 @@ export function createBackoffSettings(
     maxRpcTimeoutMillis,
     totalTimeoutMillis,
   };
+}
+
+export function createDefaultBackoffSettings() {
+  return createBackoffSettings(100, 1.3, 60000, null, null, null, null);
 }
 
 /**

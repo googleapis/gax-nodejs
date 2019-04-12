@@ -1,4 +1,4 @@
-/* Copyright 2016, Google Inc.
+/* Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
-import {PageDescriptor} from '../src/pagedIteration';
+import {PageDescriptor} from '../src/paginationCalls/pageDescriptor';
 
 import * as util from './utils';
 
@@ -66,7 +66,7 @@ describe('paged iteration', () => {
     for (let i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }
-    apiCall({}, null)
+    apiCall({}, undefined)
         .then(results => {
           expect(results).to.be.an('array');
           expect(results[0]).to.deep.equal(expected);
@@ -81,7 +81,7 @@ describe('paged iteration', () => {
     for (let i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }
-    apiCall({}, null, (err, results) => {
+    apiCall({}, undefined, (err, results) => {
       // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(results).to.deep.equal(expected);
@@ -97,8 +97,10 @@ describe('paged iteration', () => {
         .then(response => {
           expect(response).to.be.an('array');
           expect(response[0]).to.be.an('array');
+          // @ts-ignore response type
           expect(response[0].length).to.eq(pageSize);
           for (let i = 0; i < pageSize; ++i) {
+            // @ts-ignore response type
             expect(response[0][i]).to.eq(expected);
             expected++;
           }
@@ -106,6 +108,7 @@ describe('paged iteration', () => {
           expect(response[1]).to.have.property('pageToken');
           expect(response[2]).to.be.an('object');
           expect(response[2]).to.have.property('nums');
+          // @ts-ignore response type
           return apiCall(response[1], {autoPaginate: false});
         })
         .then(response => {
@@ -155,9 +158,10 @@ describe('paged iteration', () => {
       }
     }
     const apiCall = util.createApiCall(failingFunc, createOptions);
-    apiCall({}, null)
+    apiCall({}, undefined)
         .then(resources => {
           expect(resources).to.be.an('array');
+          // @ts-ignore response type
           expect(resources[0].length).to.eq(pageSize * pagesToStream);
           done();
         })
@@ -170,9 +174,12 @@ describe('paged iteration', () => {
     return apiCall({}, {maxResults: pageSize * 2 + 2}).then(response => {
       expect(response).to.be.an('array');
       expect(response[0]).to.be.an('array');
+      // @ts-ignore response type
       expect(response[0].length).to.eq(pageSize * 2 + 2);
       let expected = 0;
+      // @ts-ignore response type
       for (let i = 0; i < response[0].length; ++i) {
+        // @ts-ignore response type
         expect(response[0][i]).to.eq(expected);
         expected++;
       }
@@ -205,12 +212,14 @@ describe('paged iteration', () => {
     }
 
     it('returns a stream', done => {
+      // @ts-ignore incomplete options
       streamChecker(descriptor.createStream(apiCall, {}, null), () => {
         expect(spy.callCount).to.eq(pagesToStream + 1);
       }, done, 0);
     });
 
     it('stops in the middle', done => {
+      // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       stream.on('data', data => {
         if (Number(data) === pageSize + 1) {
@@ -227,6 +236,7 @@ describe('paged iteration', () => {
       // pageSize which will be used so that the stream will start from the
       // specified token.
       const options = {pageToken: pageSize, autoPaginate: false};
+      // @ts-ignore incomplete options
       streamChecker(descriptor.createStream(apiCall, {}, options), () => {
         expect(spy.callCount).to.eq(pagesToStream);
       }, done, pageSize);
@@ -235,6 +245,7 @@ describe('paged iteration', () => {
     it('caps the elements by maxResults', done => {
       const onData = sinon.spy();
       const stream =
+          // @ts-ignore incomplete options
           descriptor.createStream(apiCall, {}, {maxResults: pageSize * 2 + 2});
       stream.on('data', onData);
       streamChecker(stream, () => {
@@ -244,6 +255,7 @@ describe('paged iteration', () => {
     });
 
     it('does not call API eagerly', done => {
+      // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       setTimeout(() => {
         expect(spy.callCount).to.eq(0);
@@ -254,6 +266,7 @@ describe('paged iteration', () => {
     });
 
     it('does not start calls when it is already started', done => {
+      // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       stream.on('end', () => {
         expect(spy.callCount).to.eq(pagesToStream + 1);
@@ -271,6 +284,7 @@ describe('paged iteration', () => {
       // tslint:disable-next-line no-any
       const output = streamEvents((pumpify as any).obj()) as pumpify;
       output.once('reading', () => {
+        // @ts-ignore incomplete options
         stream = descriptor.createStream(apiCall, {}, null);
         output.setPipeline(stream, through2.obj());
       });

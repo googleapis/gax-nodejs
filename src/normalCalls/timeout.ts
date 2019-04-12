@@ -29,31 +29,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {assert} from 'chai';
-import * as sinon from 'sinon';
+import {GRPCCall, GRPCCallOtherArgs, SimpleCallbackFunction, UnaryCall} from '../apitypes';
 
-import {warn} from '../src/warnings';
-
-describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('code1', 'message1-1');
-    warn('code1', 'message1-2');
-    warn('code1', 'message1-3');
-    assert(stub.calledOnceWith('message1-1'));
-    stub.restore();
-    done();
-  });
-  it('should warn each code once', (done) => {
-    const stub = sinon.stub(process, 'emitWarning');
-    warn('codeA', 'messageA-1');
-    warn('codeB', 'messageB-1');
-    warn('codeA', 'messageA-2');
-    warn('codeB', 'messageB-2');
-    warn('codeC', 'messageC-1');
-    warn('codeA', 'messageA-3');
-    assert.strictEqual(stub.callCount, 3);
-    stub.restore();
-    done();
-  });
-});
+/**
+ * Updates func so that it gets called with the timeout as its final arg.
+ *
+ * This converts a function, func, into another function with updated deadline.
+ *
+ * @private
+ *
+ * @param {GRPCCall} func - a function to be updated.
+ * @param {number} timeout - to be added to the original function as it final
+ *   positional arg.
+ * @param {Object} otherArgs - the additional arguments to be passed to func.
+ * @param {Object=} abTests - the A/B testing key/value pairs.
+ * @return {function(Object, APICallback)}
+ *  the function with other arguments and the timeout.
+ */
+export function addTimeoutArg(
+    func: GRPCCall, timeout: number, otherArgs: GRPCCallOtherArgs,
+    abTests?: {}): SimpleCallbackFunction {
+  // TODO: this assumes the other arguments consist of metadata and options,
+  // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
+  return (argument, callback) => {
+    const now = new Date();
+    const options = otherArgs.options || {};
+    options.deadline = new Date(now.getTime() + timeout);
+    const metadata = otherArgs.metadataBuilder ?
+        otherArgs.metadataBuilder(abTests, otherArgs.headers || {}) :
+        null;
+    return (func as UnaryCall)(argument, metadata!, options, callback);
+  };
+}
