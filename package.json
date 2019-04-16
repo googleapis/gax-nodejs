@@ -48,7 +48,7 @@
     "intelli-espower-loader": "^1.0.1",
     "linkinator": "^1.1.2",
     "mocha": "^6.1.0",
-    "nyc": "^13.1.0",
+    "nyc": "^14.0.0",
     "pegjs": "~0.10.0",
     "prettier": "^1.15.2",
     "proxyquire": "^2.0.1",
