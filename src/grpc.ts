@@ -33,7 +33,6 @@
 import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-import {getProtoPath} from 'google-proto-files';
 import * as grpcTypes from 'grpc';  // for types only
 import * as grpcGcp from 'grpc-gcp';
 import {OutgoingHttpHeaders} from 'http';
@@ -44,7 +43,8 @@ import * as walk from 'walkdir';
 
 import * as gax from './gax';
 
-const googleProtoFilesDir = path.normalize(getProtoPath('..'));
+const googleProtoFilesDir = path.join(__dirname, '..', '..');
+console.log(googleProtoFilesDir);
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
@@ -371,7 +371,7 @@ export class GoogleProtoFilesRoot extends protobuf.Root {
   }
 
   // Causes the loading of an included proto to check if it is a common
-  // proto. If it is a common proto, use the google-proto-files proto.
+  // proto. If it is a common proto, use the bundled proto.
   resolvePath(originPath: string, includePath: string) {
     originPath = path.normalize(originPath);
     includePath = path.normalize(includePath);
