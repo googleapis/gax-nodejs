@@ -31,6 +31,7 @@
  */
 
 import * as fs from 'fs-extra';
+import {getProtoPath} from 'google-proto-files';
 import * as path from 'path';
 
 const subdirs = [
@@ -43,8 +44,7 @@ async function main() {
   await fs.ensureDir('google');
 
   subdirs.forEach(async (subdir) => {
-    const src =
-        path.join('node_modules', 'google-proto-files', 'google', subdir);
+    const src = getProtoPath(subdir);
     const target = path.join('google', subdir);
     await fs.copy(src, target);
   });
