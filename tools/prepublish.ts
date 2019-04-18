@@ -32,6 +32,7 @@
 
 import {promisify} from '@google-cloud/promisify';
 import * as path from 'path';
+import * as fs from 'fs';
 
 const execAsync = promisify(require('child_process').exec);
 const subdirs = [
@@ -41,13 +42,14 @@ const subdirs = [
 
 async function main() {
   await execAsync('rm -rf google');
-  await execAsync('mkdir google');
+  fs.mkdirSync('google', {recursive: true});
+
   subdirs.forEach(async (subdir) => {
     const parent = path.dirname(subdir);
     let target = 'google/';
     if (parent !== '.') {
       target += parent;
-      await execAsync(`mkdir -p ${target}`);
+      fs.mkdirSync(target, {recursive: true});
     }
     await execAsync(
         `cp -r ./node_modules/google-proto-files/google/${subdir} ${target}`);
