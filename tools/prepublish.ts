@@ -30,29 +30,23 @@
  *
  */
 
-import {promisify} from '@google-cloud/promisify';
+import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as fs from 'fs';
 
-const execAsync = promisify(require('child_process').exec);
 const subdirs = [
   'api', 'iam/v1', 'logging/type', 'monitoring/v3', 'longrunning', 'protobuf',
   'rpc', 'type'
 ];
 
 async function main() {
-  await execAsync('rm -rf google');
-  fs.mkdirSync('google', {recursive: true});
+  await fs.remove('google');
+  fs.ensureDir('google');
 
   subdirs.forEach(async (subdir) => {
-    const parent = path.dirname(subdir);
-    let target = 'google/';
-    if (parent !== '.') {
-      target += parent;
-      fs.mkdirSync(target, {recursive: true});
-    }
-    await execAsync(
-        `cp -r ./node_modules/google-proto-files/google/${subdir} ${target}`);
+    const src =
+        path.join('node_modules', 'google-proto-files', 'google', subdir);
+    const target = path.join('google', subdir);
+    await fs.copy(src, target);
   });
 }
 
