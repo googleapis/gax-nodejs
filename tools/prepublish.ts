@@ -40,7 +40,7 @@ const subdirs = [
 
 async function main() {
   await fs.remove('google');
-  fs.ensureDir('google');
+  await fs.ensureDir('google');
 
   subdirs.forEach(async (subdir) => {
     const src =
