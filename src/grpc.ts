@@ -51,29 +51,10 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
-const COMMON_PROTO_DIRS = [
-  // This list of directories is defined here:
-  // https://github.com/googleapis/googleapis/blob/master/gapic/packaging/common_protos.yaml
-  'api',
-  path.join('iam', 'v1'),
-  path.join('logging', 'type'),
-  path.join('monitoring', 'v3'),
-  'longrunning',
-  'protobuf',  // This is an additional path that the common protos depend on.
-  'rpc',
-  'type',
-].map(dir => path.join(googleProtoFilesDir, 'google', dir));
-INCLUDE_DIRS.push(...COMMON_PROTO_DIRS);
-
-const COMMON_PROTO_FILES = COMMON_PROTO_DIRS
-                               .map(dir => {
-                                 return (walk.sync(dir) as string[])
-                                     .filter(f => path.extname(f) === '.proto')
-                                     .map(
-                                         f => path.normalize(f).substring(
-                                             googleProtoFilesDir.length + 1));
-                               })
-                               .reduce((a, c) => a.concat(c), []);
+const COMMON_PROTO_FILES =
+    walk.sync(googleProtoFilesDir)
+        .filter(f => path.extname(f) === '.proto')
+        .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
 
 export {GrpcObject} from 'grpc';
 
