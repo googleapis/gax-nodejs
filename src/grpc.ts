@@ -43,7 +43,7 @@ import * as walk from 'walkdir';
 
 import * as gax from './gax';
 
-const googleProtoFilesDir = path.join(__dirname, '..', '..');
+const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];

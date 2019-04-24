@@ -40,12 +40,12 @@ const subdirs = [
 ];
 
 async function main() {
-  await fs.remove('google');
-  await fs.ensureDir('google');
+  await fs.remove('protos');
+  await fs.ensureDir(path.join('protos', 'google'));
 
   subdirs.forEach(async (subdir) => {
     const src = getProtoPath(subdir);
-    const target = path.join('google', subdir);
+    const target = path.join('protos', 'google', subdir);
     await fs.copy(src, target);
   });
 }
