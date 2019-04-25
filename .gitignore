@@ -12,4 +12,6 @@ build
 .vscode
 package-lock.json
 .system-test-run/
+.kitchen-sink/
 __pycache__
+doc/
