@@ -72,6 +72,7 @@ async function preparePackage(packageName: string): Promise<void> {
       {stdio: 'inherit'});
   const tag = await latestRelease(packageName);
   await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
+  await execa('npm', ['link', '../../'], {cwd: packageName, stdio: 'inherit'});
   await execa('npm', ['install'], {cwd: packageName, stdio: 'inherit'});
   await execa('npm', ['link', '../../'], {cwd: packageName, stdio: 'inherit'});
 }
