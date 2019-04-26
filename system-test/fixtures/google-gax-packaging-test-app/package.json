@@ -10,8 +10,8 @@
   "license": "Apache-2.0",
   "keywords": [],
   "scripts": {
-    "lint": "eslint src/ samples/ system-test/ test/",
-    "prettier": "prettier --write src/*.js src/*/*.js samples/*.js samples/*/*.js test/*.js test/*/*.js system-test/*.js system-test/*/*.js",
+    "lint": "eslint **/*.js",
+    "prettier": "prettier --write **/*.js",
     "start": "node src/index.js",
     "test": "mocha test/*.js"
   },
@@ -20,11 +20,9 @@
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-node": "^8.0.1",
     "eslint-plugin-prettier": "^3.0.1",
-    "gts": "^1.0.0-0",
     "mocha": "^6.1.4",
     "prettier": "^1.17.0",
-    "through2": "^3.0.1",
-    "typescript": "~3.3.0"
+    "through2": "^3.0.1"
   },
   "dependencies": {
     "@grpc/grpc-js": "^0.3.6",

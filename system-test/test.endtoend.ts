@@ -29,13 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as execa from 'execa';
 import * as fs from 'fs';
 import {ncp} from 'ncp';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
-
-import {KillablePromise, spawn, spawnKillable} from './util';
 
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
@@ -60,10 +59,10 @@ const testAppSource = path.join(fixturesDir, testAppName);
 const testAppDestination = path.join(testDir, testAppName);
 
 describe('Run end-to-end test', () => {
-  let grpcServer: KillablePromise<void>;
+  let grpcServer: execa.ExecaChildProcess;
   before(async () => {
     console.log('Packing google-gax...');
-    await spawn('npm', ['pack'], gaxDir);
+    await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
 
     if (!fs.existsSync(gaxTarball)) {
       throw new Error(`npm pack tarball ${gaxTarball} does not exist`);
@@ -75,9 +74,13 @@ describe('Run end-to-end test', () => {
 
     const showcasePath = path.join(testDir, 'gapic-showcase');
     const grpcServerPath = path.join(showcasePath, 'nodejs-server');
-    await spawn('git', ['clone', showcaseRepoUrl, 'gapic-showcase'], testDir);
-    await spawn('npm', ['install'], grpcServerPath);
-    grpcServer = spawnKillable('node', ['build/src/index.js'], grpcServerPath);
+    await execa(
+        'git', ['clone', showcaseRepoUrl, 'gapic-showcase'],
+        {cwd: testDir, stdio: 'inherit'});
+    await execa('npm', ['install'], {cwd: grpcServerPath, stdio: 'inherit'});
+    grpcServer = execa(
+        'node', ['build/src/index.js'],
+        {cwd: grpcServerPath, stdio: 'inherit'});
     console.log('gRPC server is started.');
     grpcServer.then(
         () => {
@@ -91,22 +94,19 @@ describe('Run end-to-end test', () => {
   it('should be able to prepare test app', async () => {
     await ncpp(testAppSource, testAppDestination);
     await ncpp(gaxTarball, path.join(testAppDestination, 'google-gax.tgz'));
-    await spawn('npm', ['install'], testAppDestination);
+    await execa(
+        'npm', ['install'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
   it('should be able to run unit tests of test app', async () => {
-    await spawn('npm', ['test'], testAppDestination);
+    await execa('npm', ['test'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
   it('should be able to run tests against gRPC server', async () => {
-    await spawn('npm', ['start'], testAppDestination);
+    await execa('npm', ['start'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
   after(async () => {
     grpcServer.kill();
   });
-});
-
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at: Promise', p, 'reason:', reason);
 });

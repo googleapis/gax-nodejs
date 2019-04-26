@@ -26,6 +26,7 @@
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.7",
     "@types/chai": "^4.1.3",
+    "@types/execa": "^0.9.0",
     "@types/lodash.at": "^4.6.4",
     "@types/lodash.has": "^4.5.4",
     "@types/mocha": "^5.2.1",
@@ -45,6 +46,7 @@
     "eslint-config-prettier": "^4.0.0",
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-prettier": "^3.0.0",
+    "execa": "^1.0.0",
     "gts": "^0.9.0",
     "intelli-espower-loader": "^1.0.1",
     "linkinator": "^1.1.2",
