@@ -31,7 +31,7 @@
 
 import {GoogleAuth} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import {getProtoPath} from 'google-proto-files';
+import * as path from 'path';
 
 import {GaxCall} from './apitypes';
 import {createApiCall} from './createApiCall';
@@ -401,7 +401,7 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient) {
-    const protoFilesRoot = getProtoPath('..');
+    const protoFilesRoot = path.join(__dirname, '..', '..');
     // tslint:disable-next-line no-any
     const operationsClient: any = gaxGrpc.loadProto(
         protoFilesRoot, 'google/longrunning/operations.proto');

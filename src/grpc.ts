@@ -33,7 +33,6 @@
 import * as grpcProtoLoaderTypes from '@grpc/proto-loader';  // for types only
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-import {getProtoPath} from 'google-proto-files';
 import * as grpcTypes from 'grpc';  // for types only
 import * as grpcGcp from 'grpc-gcp';
 import {OutgoingHttpHeaders} from 'http';
@@ -44,7 +43,7 @@ import * as walk from 'walkdir';
 
 import * as gax from './gax';
 
-const googleProtoFilesDir = path.normalize(getProtoPath('..'));
+const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
@@ -52,29 +51,10 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
-const COMMON_PROTO_DIRS = [
-  // This list of directories is defined here:
-  // https://github.com/googleapis/googleapis/blob/master/gapic/packaging/common_protos.yaml
-  'api',
-  path.join('iam', 'v1'),
-  path.join('logging', 'type'),
-  path.join('monitoring', 'v3'),
-  'longrunning',
-  'protobuf',  // This is an additional path that the common protos depend on.
-  'rpc',
-  'type',
-].map(dir => path.join(googleProtoFilesDir, 'google', dir));
-INCLUDE_DIRS.push(...COMMON_PROTO_DIRS);
-
-const COMMON_PROTO_FILES = COMMON_PROTO_DIRS
-                               .map(dir => {
-                                 return (walk.sync(dir) as string[])
-                                     .filter(f => path.extname(f) === '.proto')
-                                     .map(
-                                         f => path.normalize(f).substring(
-                                             googleProtoFilesDir.length + 1));
-                               })
-                               .reduce((a, c) => a.concat(c), []);
+const COMMON_PROTO_FILES =
+    walk.sync(googleProtoFilesDir)
+        .filter(f => path.extname(f) === '.proto')
+        .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
 
 export {GrpcObject} from 'grpc';
 
@@ -371,7 +351,7 @@ export class GoogleProtoFilesRoot extends protobuf.Root {
   }
 
   // Causes the loading of an included proto to check if it is a common
-  // proto. If it is a common proto, use the google-proto-files proto.
+  // proto. If it is a common proto, use the bundled proto.
   resolvePath(originPath: string, includePath: string) {
     originPath = path.normalize(originPath);
     includePath = path.normalize(includePath);
