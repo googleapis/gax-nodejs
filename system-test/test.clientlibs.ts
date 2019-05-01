@@ -40,6 +40,7 @@ const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 
 const baseRepoUrl = 'https://github.com/googleapis/';
+const baseDir = process.cwd();
 const testDir = path.join(process.cwd(), '.system-test-run');
 
 async function latestRelease(cwd: string): Promise<string> {
@@ -83,7 +84,8 @@ async function runSystemTest(packageName: string): Promise<void> {
 }
 
 async function cleanup(): Promise<void> {
-  process.chdir(__dirname);
+  await execa('npm', ['unlink'], {stdio: 'inherit'});
+  process.chdir(baseDir);
   await rmrf(testDir);
   await mkdir(testDir);
   process.chdir(testDir);
