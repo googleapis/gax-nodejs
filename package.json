@@ -101,5 +101,6 @@
       "build/system-test/**",
       ".system-test-run/**"
     ]
-  }
+  },
+  "dummy": "42"
 }
