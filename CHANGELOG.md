@@ -4,6 +4,35 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## v0.26.0
+
+04-30-2019 20:45 PDT
+
+### Implementation Changes
+
+- refactor: a huge refactor of call handling ([#467](https://github.com/googleapis/gax-nodejs/pull/467))
+- feat: do not use legacy grpc loadObject ([#477](https://github.com/googleapis/gax-nodejs/pull/477))
+
+### New Features
+
+- feat: turned google-proto-files into a dev dependency ([#470](https://github.com/googleapis/gax-nodejs/pull/470))
+
+### Dependencies
+
+- chore(deps): unpin grpc ([#475](https://github.com/googleapis/gax-nodejs/pull/475))
+- fix: pin grpc 1.20.0 ([#474](https://github.com/googleapis/gax-nodejs/pull/474))
+- chore(deps): update dependency nyc to v14 ([#468](https://github.com/googleapis/gax-nodejs/pull/468))
+- fix(deps): update dependency @grpc/proto-loader to ^0.5.0 ([#466](https://github.com/googleapis/gax-nodejs/pull/466))
+- chore(deps): update dependency mocha to ~6.1.0 ([#464](https://github.com/googleapis/gax-nodejs/pull/464))
+- chore(deps): update dependency typescript to ~3.4.0
+- chore(deps): update dependency @types/semver to v6
+
+### Internal / Testing Changes
+
+- test: end-to-end system test ([#471](https://github.com/googleapis/gax-nodejs/pull/471))
+- update to .nycrc with --all enabled ([#476](https://github.com/googleapis/gax-nodejs/pull/476))
+- test: better return type for typescript 3.4.0 ([#463](https://github.com/googleapis/gax-nodejs/pull/463))
+
 ## v0.25.6
 
 03-28-2019 21:27 PDT
