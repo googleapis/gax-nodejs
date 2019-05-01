@@ -31,7 +31,14 @@
 
 import {status} from 'grpc';
 
-import {APICallback, GRPCCall, GRPCCallOtherArgs, GRPCCallResult, RequestType, SimpleCallbackFunction} from '../apitypes';
+import {
+  APICallback,
+  GRPCCall,
+  GRPCCallOtherArgs,
+  GRPCCallResult,
+  RequestType,
+  SimpleCallbackFunction,
+} from '../apitypes';
 import {RetryOptions} from '../gax';
 import {GoogleError} from '../googleError';
 
@@ -51,8 +58,10 @@ import {addTimeoutArg} from './timeout';
  * @return {SimpleCallbackFunction} A function that will retry.
  */
 export function retryable(
-    func: GRPCCall, retry: RetryOptions,
-    otherArgs: GRPCCallOtherArgs): SimpleCallbackFunction {
+  func: GRPCCall,
+  retry: RetryOptions,
+  otherArgs: GRPCCallOtherArgs
+): SimpleCallbackFunction {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
   const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
@@ -71,8 +80,8 @@ export function retryable(
    * @return {GRPCCall}
    */
   return (argument: RequestType, callback: APICallback) => {
-    let canceller: GRPCCallResult|null;
-    let timeoutId: NodeJS.Timer|null;
+    let canceller: GRPCCallResult | null;
+    let timeoutId: NodeJS.Timer | null;
     let now = new Date();
     let deadline: number;
     if (retry.backoffSettings.totalTimeoutMillis) {
@@ -87,7 +96,8 @@ export function retryable(
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         const error = new GoogleError(
-            'Retry total timeout exceeded before any response was received');
+          'Retry total timeout exceeded before any response was received'
+        );
         error.code = status.DEADLINE_EXCEEDED;
         callback(error);
         return;
@@ -95,8 +105,9 @@ export function retryable(
 
       if (retries && retries >= maxRetries) {
         const error = new GoogleError(
-            'Exceeded maximum number of retries before any ' +
-            'response was received');
+          'Exceeded maximum number of retries before any ' +
+            'response was received'
+        );
         error.code = status.DEADLINE_EXCEEDED;
         callback(error);
         return;
@@ -111,8 +122,9 @@ export function retryable(
         }
         canceller = null;
         if (retry.retryCodes.indexOf(err!.code!) < 0) {
-          err.note = 'Exception occurred in retry method that was ' +
-              'not classified as transient';
+          err.note =
+            'Exception occurred in retry method that was ' +
+            'not classified as transient';
           callback(err);
         } else {
           const toSleep = Math.random() * delay;
@@ -120,7 +132,10 @@ export function retryable(
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
             timeout = Math.min(
-                timeout! * timeoutMult!, maxTimeout!, deadline - now.getTime());
+              timeout! * timeoutMult!,
+              maxTimeout!,
+              deadline - now.getTime()
+            );
             repeat();
           }, toSleep);
         }
@@ -129,8 +144,9 @@ export function retryable(
 
     if (maxRetries && deadline!) {
       const error = new GoogleError(
-          'Cannot set both totalTimeoutMillis and maxRetries ' +
-          'in backoffSettings.');
+        'Cannot set both totalTimeoutMillis and maxRetries ' +
+          'in backoffSettings.'
+      );
       error.code = status.INVALID_ARGUMENT;
       callback(error);
     } else {

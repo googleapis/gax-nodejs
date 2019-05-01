@@ -30,5 +30,5 @@
  */
 
 export function isBrowser(): boolean {
-  return typeof (window) !== 'undefined';
+  return typeof window !== 'undefined';
 }

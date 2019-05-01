@@ -30,7 +30,13 @@
  */
 
 import {APICaller, ApiCallerSettings} from '../apiCaller';
-import {GaxCall, GRPCCall, NextPageRequestType, SimpleCallbackFunction, UnaryCall} from '../apitypes';
+import {
+  GaxCall,
+  GRPCCall,
+  NextPageRequestType,
+  SimpleCallbackFunction,
+  UnaryCall,
+} from '../apitypes';
 import {APICallback} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
 import {CallOptions} from '../gax';
@@ -53,17 +59,22 @@ export class PagedApiCaller implements APICaller {
   }
 
   private createActualCallback(
-      request: NextPageRequestType, callback: APICallback): APICallback {
+    request: NextPageRequestType,
+    callback: APICallback
+  ): APICallback {
     const self = this;
     return function fetchNextPageToken(
-        err: Error|null, response: NextPageRequestType|undefined) {
+      err: Error | null,
+      response: NextPageRequestType | undefined
+    ) {
       if (err) {
         callback(err);
         return;
       }
       if (!response) {
-        callback(new GoogleError(
-            'Undefined response in pagination method callback.'));
+        callback(
+          new GoogleError('Undefined response in pagination method callback.')
+        );
         return;
       }
       const resources = response[self.pageDescriptor.resourceField];
@@ -81,8 +92,11 @@ export class PagedApiCaller implements APICaller {
     const self = this;
     return function wrappedCall(argument, metadata, options, callback) {
       return (func as UnaryCall)(
-          argument, metadata, options,
-          self.createActualCallback(argument, callback));
+        argument,
+        metadata,
+        options,
+        self.createActualCallback(argument, callback)
+      );
     };
   }
 
@@ -94,8 +108,11 @@ export class PagedApiCaller implements APICaller {
   }
 
   call(
-      apiCall: SimpleCallbackFunction, argument: {[index: string]: {}},
-      settings: CallOptions, canceller: OngoingCall) {
+    apiCall: SimpleCallbackFunction,
+    argument: {[index: string]: {}},
+    settings: CallOptions,
+    canceller: OngoingCall
+  ) {
     argument = Object.assign({}, argument);
     if (settings.pageToken) {
       argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;

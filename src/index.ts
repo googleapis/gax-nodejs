@@ -36,10 +36,31 @@ import * as routingHeader from './routingHeader';
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {CancellablePromise, OngoingCall} from './call';
 export {createApiCall} from './createApiCall';
-export {BundleDescriptor, LongrunningDescriptor, PageDescriptor, StreamDescriptor} from './descriptor';
-export {CallOptions, CallSettings, ClientConfig, constructSettings, RetryOptions} from './gax';
+export {
+  BundleDescriptor,
+  LongrunningDescriptor,
+  PageDescriptor,
+  StreamDescriptor,
+} from './descriptor';
+export {
+  CallOptions,
+  CallSettings,
+  ClientConfig,
+  constructSettings,
+  RetryOptions,
+} from './gax';
 export {GoogleError} from './googleError';
-export {ClientStub, ClientStubOptions, GoogleProtoFilesRoot, GrpcClient, GrpcClientOptions, GrpcModule, GrpcObject, Metadata, MetadataValue} from './grpc';
+export {
+  ClientStub,
+  ClientStubOptions,
+  GoogleProtoFilesRoot,
+  GrpcClient,
+  GrpcClientOptions,
+  GrpcModule,
+  GrpcObject,
+  Metadata,
+  MetadataValue,
+} from './grpc';
 export {Operation, operation} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
 export {StreamType} from './streamingCalls/streaming';

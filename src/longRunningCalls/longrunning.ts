@@ -48,7 +48,12 @@ import {LongRunningDescriptor} from './longRunningDescriptor';
  * @param {?google.longrunning.Operation} rawResponse
  */
 export interface GetOperationCallback {
-  (err?: Error|null, result?: {}, metadata?: {}, rawResponse?: Operation): void;
+  (
+    err?: Error | null,
+    result?: {},
+    metadata?: {},
+    rawResponse?: Operation
+  ): void;
 }
 
 export class Operation extends EventEmitter {
@@ -56,8 +61,8 @@ export class Operation extends EventEmitter {
   hasActiveListeners: boolean;
   latestResponse: Operation;
   longrunningDescriptor: LongRunningDescriptor;
-  result: {}|null;
-  metadata: Metadata|null;
+  result: {} | null;
+  metadata: Metadata | null;
   backoffSettings: BackoffSettings;
   _callOptions?: CallOptions;
   currentCallPromise_?: CancellablePromise<ResultTuple>;
@@ -80,8 +85,11 @@ export class Operation extends EventEmitter {
    * requests.
    */
   constructor(
-      grpcOp: Operation, longrunningDescriptor: LongRunningDescriptor,
-      backoffSettings: BackoffSettings, callOptions?: CallOptions) {
+    grpcOp: Operation,
+    longrunningDescriptor: LongRunningDescriptor,
+    backoffSettings: BackoffSettings,
+    callOptions?: CallOptions
+  ) {
     super();
     this.completeListeners = 0;
     this.hasActiveListeners = false;
@@ -135,8 +143,9 @@ export class Operation extends EventEmitter {
       this.currentCallPromise_.cancel();
     }
     const operationsClient = this.longrunningDescriptor.operationsClient;
-    return operationsClient.cancelOperation({name: this.latestResponse.name}) as
-        CancellablePromise<ResultTuple>;
+    return operationsClient.cancelOperation({
+      name: this.latestResponse.name,
+    }) as CancellablePromise<ResultTuple>;
   }
 
   /**
@@ -157,7 +166,7 @@ export class Operation extends EventEmitter {
    */
   getOperation(): Promise<{}>;
   getOperation(callback: GetOperationCallback): void;
-  getOperation(callback?: GetOperationCallback): Promise<{}>|void {
+  getOperation(callback?: GetOperationCallback): Promise<{}> | void {
     const self = this;
     const operationsClient = this.longrunningDescriptor.operationsClient;
 
@@ -183,9 +192,10 @@ export class Operation extends EventEmitter {
       return promisifyResponse();
     }
 
-    this.currentCallPromise_ =
-        (operationsClient.getOperation as GaxCallPromise)(
-            {name: this.latestResponse.name}, this._callOptions!);
+    this.currentCallPromise_ = (operationsClient.getOperation as GaxCallPromise)(
+      {name: this.latestResponse.name},
+      this._callOptions!
+    );
 
     const noCallbackPromise = this.currentCallPromise_!.then(responses => {
       self.latestResponse = responses[0] as Operation;
@@ -255,7 +265,7 @@ export class Operation extends EventEmitter {
     }
 
     // tslint:disable-next-line no-any
-    function emit(event: string|symbol, ...args: any[]) {
+    function emit(event: string | symbol, ...args: any[]) {
       self.emit(event, ...args);
     }
 
@@ -266,7 +276,8 @@ export class Operation extends EventEmitter {
 
       if (now.getTime() >= deadline) {
         const error = new GoogleError(
-            'Total timeout exceeded before any response was received');
+          'Total timeout exceeded before any response was received'
+        );
         error.code = status.DEADLINE_EXCEEDED;
         setImmediate(emit, 'error', error);
         return;
@@ -279,9 +290,11 @@ export class Operation extends EventEmitter {
         }
 
         if (!result) {
-          if (rawResponse!.metadata &&
-              (!previousMetadataBytes ||
-               !rawResponse!.metadata!.value.equals(previousMetadataBytes))) {
+          if (
+            rawResponse!.metadata &&
+            (!previousMetadataBytes ||
+              !rawResponse!.metadata!.value.equals(previousMetadataBytes))
+          ) {
             setImmediate(emit, 'progress', metadata, rawResponse);
             previousMetadataBytes = rawResponse!.metadata!.value;
           }
@@ -290,7 +303,8 @@ export class Operation extends EventEmitter {
           // Don't hang forever in this case.
           if (rawResponse!.done) {
             const error = new GoogleError(
-                'Long running operation has finished but there was no result');
+              'Long running operation has finished but there was no result'
+            );
             error.code = status.UNKNOWN;
             setImmediate(emit, 'error', error);
             return;
@@ -319,10 +333,12 @@ export class Operation extends EventEmitter {
     // tslint:disable-next-line variable-name
     const PromiseCtor = this._callOptions!.promise!;
     return new PromiseCtor((resolve, reject) => {
-      this.on('error', reject)
-          .on('complete', (result, metadata, rawResponse) => {
-            resolve([result, metadata, rawResponse]);
-          });
+      this.on('error', reject).on(
+        'complete',
+        (result, metadata, rawResponse) => {
+          resolve([result, metadata, rawResponse]);
+        }
+      );
     });
   }
 }
@@ -341,7 +357,10 @@ export class Operation extends EventEmitter {
  * requests.
  */
 export function operation(
-    op: Operation, longrunningDescriptor: LongRunningDescriptor,
-    backoffSettings: BackoffSettings, callOptions?: CallOptions) {
+  op: Operation,
+  longrunningDescriptor: LongRunningDescriptor,
+  backoffSettings: BackoffSettings,
+  callOptions?: CallOptions
+) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
 }

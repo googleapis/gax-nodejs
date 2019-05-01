@@ -31,7 +31,15 @@
 
 import {status} from 'grpc';
 
-import {APICallback, NextPageRequestType, RawResponseType, RequestType, ResponseType, ResultTuple, SimpleCallbackFunction} from './apitypes';
+import {
+  APICallback,
+  NextPageRequestType,
+  RawResponseType,
+  RequestType,
+  ResponseType,
+  ResultTuple,
+  SimpleCallbackFunction,
+} from './apitypes';
 import {GoogleError} from './googleError';
 
 export class OngoingCall {
@@ -112,20 +120,21 @@ export class OngoingCallPromise extends OngoingCall {
   constructor(PromiseCtor: PromiseConstructor) {
     super();
     this.promise = new PromiseCtor((resolve, reject) => {
-                     this.callback =
-                         (err: GoogleError|null, response?: ResponseType,
-                          next?: NextPageRequestType|null,
-                          rawResponse?: RawResponseType) => {
-                           if (err) {
-                             reject(err);
-                           } else if (response !== undefined) {
-                             resolve([response, next, rawResponse]);
-                           } else {
-                             throw new GoogleError(
-                                 'Neither error nor response are defined');
-                           }
-                         };
-                   }) as CancellablePromise<ResultTuple>;
+      this.callback = (
+        err: GoogleError | null,
+        response?: ResponseType,
+        next?: NextPageRequestType | null,
+        rawResponse?: RawResponseType
+      ) => {
+        if (err) {
+          reject(err);
+        } else if (response !== undefined) {
+          resolve([response, next, rawResponse]);
+        } else {
+          throw new GoogleError('Neither error nor response are defined');
+        }
+      };
+    }) as CancellablePromise<ResultTuple>;
     this.promise.cancel = () => {
       this.cancel();
     };

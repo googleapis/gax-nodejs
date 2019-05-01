@@ -45,7 +45,7 @@ const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
-  it('calls api call', (done) => {
+  it('calls api call', done => {
     let deadlineArg: {};
     function func(argument: {}, metadata: {}, options, callback) {
       deadlineArg = options.deadline;
@@ -60,7 +60,7 @@ describe('createApiCall', () => {
     });
   });
 
-  it('is customized by call options', (done) => {
+  it('is customized by call options', done => {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
@@ -75,7 +75,7 @@ describe('createApiCall', () => {
     });
   });
 
-  it('chooses the proper timeout', (done) => {
+  it('chooses the proper timeout', done => {
     function func(argument, metadata, options, callback) {
       callback(null, options.deadline.getTime());
     }
@@ -87,8 +87,9 @@ describe('createApiCall', () => {
       settings: {
         timeout: 30000,
         retry: gax.createRetryOptions(
-            [],
-            gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)),
+          [],
+          gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)
+        ),
       },
     });
 
@@ -105,7 +106,7 @@ describe('createApiCall', () => {
 });
 
 describe('Promise', () => {
-  it('calls api call', (done) => {
+  it('calls api call', done => {
     let deadlineArg;
     function func(argument, metadata, options, callback) {
       deadlineArg = options.deadline;
@@ -114,29 +115,29 @@ describe('Promise', () => {
     const apiCall = createApiCall(func);
     // tslint:disable-next-line no-any
     (apiCall as any)(null)
-        .then(response => {
-          expect(response).to.be.an('array');
-          expect(response[0]).to.eq(42);
-          // tslint:disable-next-line no-unused-expression
-          expect(deadlineArg).to.be.ok;
-          done();
-        })
-        .catch(done);
+      .then(response => {
+        expect(response).to.be.an('array');
+        expect(response[0]).to.eq(42);
+        // tslint:disable-next-line no-unused-expression
+        expect(deadlineArg).to.be.ok;
+        done();
+      })
+      .catch(done);
   });
 
-  it('emits error on failure', (done) => {
+  it('emits error on failure', done => {
     const apiCall = createApiCall(fail);
     apiCall({}, undefined)
-        .then(() => {
-          done(new Error('should not reach'));
-        })
-        .catch(err => {
-          expect(err).to.be.an.instanceOf(Error);
-          done();
-        });
+      .then(() => {
+        done(new Error('should not reach'));
+      })
+      .catch(err => {
+        expect(err).to.be.an.instanceOf(Error);
+        done();
+      });
   });
 
-  it('has cancel method', (done) => {
+  it('has cancel method', done => {
     function func(argument, metadata, options, callback) {
       setTimeout(() => {
         callback(null, 42);
@@ -146,18 +147,18 @@ describe('Promise', () => {
     // tslint:disable-next-line no-any
     const promise = (apiCall as any)(null);
     promise
-        .then(() => {
-          done(new Error('should not reach'));
-        })
-        .catch(err => {
-          expect(err).to.be.an.instanceOf(GoogleError);
-          expect(err.code).to.equal(status.CANCELLED);
-          done();
-        });
+      .then(() => {
+        done(new Error('should not reach'));
+      })
+      .catch(err => {
+        expect(err).to.be.an.instanceOf(GoogleError);
+        expect(err.code).to.equal(status.CANCELLED);
+        done();
+      });
     promise.cancel();
   });
 
-  it('cancels retrying call', (done) => {
+  it('cancels retrying call', done => {
     const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
 
     let callCount = 0;
@@ -186,33 +187,35 @@ describe('Promise', () => {
     // tslint:disable-next-line no-any
     const promise = (apiCall as any)(null);
     promise
-        .then(() => {
-          done(new Error('should not reach'));
-        })
-        .catch(() => {
-          expect(callCount).to.be.below(4);
-          done();
-        })
-        .catch(done);
+      .then(() => {
+        done(new Error('should not reach'));
+      })
+      .catch(() => {
+        expect(callCount).to.be.below(4);
+        done();
+      })
+      .catch(done);
     setTimeout(() => {
       promise.cancel();
     }, 15);
   });
 
-  it('does not return promise when callback is supplied', (done) => {
+  it('does not return promise when callback is supplied', done => {
     function func(argument, metadata, options, callback) {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    expect(apiCall({}, undefined, (err, response) => {
-      // tslint:disable-next-line no-unused-expression
-      expect(err).to.be.null;
-      expect(response).to.eq(42);
-      done();
-    })).to.be.undefined;
+    expect(
+      apiCall({}, undefined, (err, response) => {
+        // tslint:disable-next-line no-unused-expression
+        expect(err).to.be.null;
+        expect(response).to.eq(42);
+        done();
+      })
+    ).to.be.undefined;
   });
 
-  it('uses a provided promise module.', (done) => {
+  it('uses a provided promise module.', done => {
     let called = false;
     function MockPromise(resolver) {
       called = true;
@@ -225,14 +228,14 @@ describe('Promise', () => {
     const apiCall = createApiCall(func);
     // @ts-ignore incomplete options
     apiCall({}, {promise: MockPromise})
-        .then(response => {
-          expect(response).to.be.an('array');
-          expect(response[0]).to.eq(42);
-          // tslint:disable-next-line no-unused-expression
-          expect(called).to.be.true;
-          done();
-        })
-        .catch(done);
+      .then(response => {
+        expect(response).to.be.an('array');
+        expect(response[0]).to.eq(42);
+        // tslint:disable-next-line no-unused-expression
+        expect(called).to.be.true;
+        done();
+      })
+      .catch(done);
   });
 });
 
@@ -240,7 +243,7 @@ describe('retryable', () => {
   const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
   const settings = {settings: {timeout: 0, retry: retryOptions}};
 
-  it('retries the API call', (done) => {
+  it('retries the API call', done => {
     let toAttempt = 3;
     let deadlineArg;
     function func(argument, metadata, options, callback) {
@@ -262,7 +265,7 @@ describe('retryable', () => {
     });
   });
 
-  it('retries the API call with promise', (done) => {
+  it('retries the API call with promise', done => {
     let toAttempt = 3;
     let deadlineArg;
     function func(argument, metadata, options, callback) {
@@ -276,18 +279,18 @@ describe('retryable', () => {
     }
     const apiCall = createApiCall(func, settings);
     apiCall({}, undefined)
-        .then(resp => {
-          expect(resp).to.be.an('array');
-          expect(resp[0]).to.eq(1729);
-          expect(toAttempt).to.eq(0);
-          // tslint:disable-next-line no-unused-expression
-          expect(deadlineArg).to.be.ok;
-          done();
-        })
-        .catch(done);
+      .then(resp => {
+        expect(resp).to.be.an('array');
+        expect(resp[0]).to.eq(1729);
+        expect(toAttempt).to.eq(0);
+        // tslint:disable-next-line no-unused-expression
+        expect(deadlineArg).to.be.ok;
+        done();
+      })
+      .catch(done);
   });
 
-  it('cancels in the middle of retries', (done) => {
+  it('cancels in the middle of retries', done => {
     let callCount = 0;
     let promise;
     function func(argument, metadata, options, callback) {
@@ -306,18 +309,20 @@ describe('retryable', () => {
     const apiCall = createApiCall(func, settings);
     promise = apiCall({}, undefined);
     promise
-        .then(() => {
-          done(new Error('should not reach'));
-        })
-        .catch(err => {
-          expect(err).to.be.an.instanceOf(Error);
-          done();
-        });
+      .then(() => {
+        done(new Error('should not reach'));
+      })
+      .catch(err => {
+        expect(err).to.be.an.instanceOf(Error);
+        done();
+      });
   });
 
-  it('doesn\'t retry if no codes', (done) => {
+  it("doesn't retry if no codes", done => {
     const retryOptions = gax.createRetryOptions(
-        [], gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7));
+      [],
+      gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7)
+    );
     const settings = {settings: {timeout: 0, retry: retryOptions}};
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
@@ -331,7 +336,7 @@ describe('retryable', () => {
     });
   });
 
-  it('aborts retries', (done) => {
+  it('aborts retries', done => {
     const apiCall = createApiCall(fail, settings);
     apiCall({}, undefined, err => {
       expect(err).to.be.instanceOf(GoogleError);
@@ -340,7 +345,7 @@ describe('retryable', () => {
     });
   });
 
-  it.skip('times out', (done) => {
+  it.skip('times out', done => {
     const toAttempt = 3;
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
@@ -355,10 +360,17 @@ describe('retryable', () => {
   });
 
   // maxRetries is unsupported, and intended for internal use only.
-  it('errors on maxRetries', (done) => {
+  it('errors on maxRetries', done => {
     const toAttempt = 5;
-    const backoff =
-        gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, toAttempt);
+    const backoff = gax.createMaxRetriesBackoffSettings(
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      toAttempt
+    );
     const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
 
     const maxRetrySettings = {
@@ -375,10 +387,17 @@ describe('retryable', () => {
   });
 
   // maxRetries is unsupported, and intended for internal use only.
-  it('errors when totalTimeoutMillis and maxRetries set', (done) => {
+  it('errors when totalTimeoutMillis and maxRetries set', done => {
     const maxRetries = 5;
-    const backoff =
-        gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, maxRetries);
+    const backoff = gax.createMaxRetriesBackoffSettings(
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      maxRetries
+    );
     const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
     const maxRetrySettings = {
@@ -394,7 +413,7 @@ describe('retryable', () => {
     });
   });
 
-  it('aborts on unexpected exception', (done) => {
+  it('aborts on unexpected exception', done => {
     function func(argument, metadata, options, callback) {
       const error = new GoogleError();
       error.code = FAKE_STATUS_CODE_2;
@@ -412,7 +431,7 @@ describe('retryable', () => {
     });
   });
 
-  it('does not retry even when no responses', (done) => {
+  it('does not retry even when no responses', done => {
     function func(argument, metadata, options, callback) {
       callback(null, null);
     }
@@ -426,7 +445,7 @@ describe('retryable', () => {
     });
   });
 
-  it.skip('retries with exponential backoff', (done) => {
+  it.skip('retries with exponential backoff', done => {
     const startTime = new Date();
     const spy = sinon.spy(fail);
 
@@ -442,12 +461,14 @@ describe('retryable', () => {
       // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       const now = new Date();
-      expect(now.getTime() - startTime.getTime())
-          .to.be.at.least(backoff.totalTimeoutMillis!);
-      const callsLowerBound = backoff.totalTimeoutMillis! /
-          (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis!);
+      expect(now.getTime() - startTime.getTime()).to.be.at.least(
+        backoff.totalTimeoutMillis!
+      );
+      const callsLowerBound =
+        backoff.totalTimeoutMillis! /
+        (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis!);
       const callsUpperBound =
-          backoff.totalTimeoutMillis! / backoff.initialRetryDelayMillis;
+        backoff.totalTimeoutMillis! / backoff.initialRetryDelayMillis;
       expect(spy.callCount).to.be.above(callsLowerBound);
       expect(spy.callCount).to.be.below(callsUpperBound);
       done();
@@ -469,29 +490,36 @@ describe('retryable', () => {
     const apiCall = createApiCall(func, settings);
     mockBuilder.withExactArgs({retry: '2'});
     return apiCall({}, undefined)
-        .then(() => {
-          mockBuilder.verify();
-          mockBuilder.reset();
-          const backoff =
-              gax.createMaxRetriesBackoffSettings(0, 0, 0, 0, 0, 0, 5);
-          mockBuilder.withExactArgs({retry: '1'});
-          return apiCall({}, {retry: utils.createRetryOptions(backoff)});
-        })
-        .then(() => {
-          mockBuilder.verify();
-          mockBuilder.reset();
-          mockBuilder.withExactArgs({retry: '2'});
-          const options = {
-            retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
-          };
-          return apiCall({}, options);
-        })
-        .then(() => {
-          mockBuilder.verify();
-        });
+      .then(() => {
+        mockBuilder.verify();
+        mockBuilder.reset();
+        const backoff = gax.createMaxRetriesBackoffSettings(
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          5
+        );
+        mockBuilder.withExactArgs({retry: '1'});
+        return apiCall({}, {retry: utils.createRetryOptions(backoff)});
+      })
+      .then(() => {
+        mockBuilder.verify();
+        mockBuilder.reset();
+        mockBuilder.withExactArgs({retry: '2'});
+        const options = {
+          retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
+        };
+        return apiCall({}, options);
+      })
+      .then(() => {
+        mockBuilder.verify();
+      });
   });
 
-  it('forwards metadata to builder', (done) => {
+  it('forwards metadata to builder', done => {
     function func(argument, metadata, options, callback) {
       callback(null, {});
     }

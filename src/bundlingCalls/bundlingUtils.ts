@@ -48,8 +48,10 @@ import {RequestType} from '../apitypes';
  *   discriminator fields do not exist.
  */
 export function computeBundleId(
-    obj: RequestType, discriminatorFields: string[]) {
-  const ids: Array<{}|null> = [];
+  obj: RequestType,
+  discriminatorFields: string[]
+) {
+  const ids: Array<{} | null> = [];
   let hasIds = false;
   for (let i = 0; i < discriminatorFields.length; ++i) {
     const id = at(obj, discriminatorFields[i])[0];

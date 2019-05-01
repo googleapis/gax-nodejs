@@ -262,8 +262,9 @@ describe('Task', () => {
           const task = testTask();
           const baseSize = task.getRequestByteSize();
           extendElements(task, t.data);
-          expect(task.getRequestByteSize())
-              .to.eq(baseSize + t.want * sizePerData);
+          expect(task.getRequestByteSize()).to.eq(
+            baseSize + t.want * sizePerData
+          );
         });
       });
     });
@@ -315,7 +316,7 @@ describe('Task', () => {
             }
           });
           // tslint:disable-next-line no-any
-          (t as any).data.forEach((d) => {
+          (t as any).data.forEach(d => {
             extendElements(task, d, callback);
           });
           task.run();
@@ -360,7 +361,7 @@ describe('Task', () => {
 
     describe('calls back with fail if API fails', () => {
       testCases.slice(1).forEach(t => {
-        it(t.message, (done) => {
+        it(t.message, done => {
           const err = new Error('failure');
           const apiCall = sinon.spy((resp, callback) => {
             callback(err);
@@ -377,7 +378,7 @@ describe('Task', () => {
             }
           });
           // tslint:disable-next-line no-any
-          (t as any).data.forEach((d) => {
+          (t as any).data.forEach(d => {
             extendElements(task, d, callback);
           });
           task.run();
@@ -386,7 +387,7 @@ describe('Task', () => {
     });
   });
 
-  it('cancels existing data', (done) => {
+  it('cancels existing data', done => {
     const apiCall = sinon.spy((resp, callback) => {
       callback(null, resp);
     });
@@ -416,7 +417,7 @@ describe('Task', () => {
     task.run();
   });
 
-  it('cancels ongoing API call', (done) => {
+  it('cancels ongoing API call', done => {
     const apiCall = sinon.spy((resp, callback) => {
       const timeoutId = setTimeout(() => {
         callback(null, resp);
@@ -451,7 +452,7 @@ describe('Task', () => {
     });
   });
 
-  it('partially cancels ongoing API call', (done) => {
+  it('partially cancels ongoing API call', done => {
     const apiCall = sinon.spy((resp, callback) => {
       const timeoutId = setTimeout(() => {
         callback(null, resp);
@@ -497,8 +498,12 @@ describe('Executor', () => {
   }
 
   function newExecutor(options) {
-    const descriptor =
-        new BundleDescriptor('field1', ['field2'], 'field1', byteLength);
+    const descriptor = new BundleDescriptor(
+      'field1',
+      ['field2'],
+      'field1',
+      byteLength
+    );
     return new BundleExecutor(options, descriptor);
   }
 
@@ -529,7 +534,7 @@ describe('Executor', () => {
     }
   });
 
-  it('emits errors when the api call fails', (done) => {
+  it('emits errors when the api call fails', done => {
     const executor = newExecutor({delayThreshold: 10});
     const callback = sinon.spy(err => {
       expect(err).to.be.an.instanceOf(Error);
@@ -541,7 +546,7 @@ describe('Executor', () => {
     executor.schedule(failing, {field1: [2], field2: 'id'}, callback);
   });
 
-  it('runs unbundleable tasks immediately', (done) => {
+  it('runs unbundleable tasks immediately', done => {
     const executor = newExecutor({delayThreshold: 10});
     const spy = sinon.spy(apiCall);
     let counter = 0;
@@ -606,26 +611,32 @@ describe('Executor', () => {
       spyApi = sinon.spy(apiCall);
     });
 
-    it('shouldn\'t block next event after cancellation', (done) => {
-      const canceller =
-          executor.schedule(spyApi, {field1: [1, 2], field2: 'id'}, err => {
-            expect(err).to.be.an.instanceOf(GoogleError);
-            expect(err!.code).to.equal(status.CANCELLED);
-            expect(spyApi.callCount).to.eq(0);
+    it("shouldn't block next event after cancellation", done => {
+      const canceller = executor.schedule(
+        spyApi,
+        {field1: [1, 2], field2: 'id'},
+        err => {
+          expect(err).to.be.an.instanceOf(GoogleError);
+          expect(err!.code).to.equal(status.CANCELLED);
+          expect(spyApi.callCount).to.eq(0);
 
-            executor.schedule(
-                spyApi, {field1: [3, 4], field2: 'id'}, (err, resp) => {
-                  // @ts-ignore unknown field
-                  expect(resp.field1).to.deep.equal([3, 4]);
-                  expect(spyApi.callCount).to.eq(1);
-                  done();
-                });
-          });
+          executor.schedule(
+            spyApi,
+            {field1: [3, 4], field2: 'id'},
+            (err, resp) => {
+              // @ts-ignore unknown field
+              expect(resp.field1).to.deep.equal([3, 4]);
+              expect(spyApi.callCount).to.eq(1);
+              done();
+            }
+          );
+        }
+      );
       expect(spyApi.callCount).to.eq(0);
       canceller.cancel();
     });
 
-    it('distinguishes a running task and a scheduled one', (done) => {
+    it('distinguishes a running task and a scheduled one', done => {
       let counter = 0;
       // @ts-ignore cancellation logic is broken here
       executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
@@ -640,12 +651,12 @@ describe('Executor', () => {
       executor._runNow('id');
 
       const canceller =
-          // @ts-ignore cancellation logic is broken here
-          executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
-            expect(err).to.be.an.instanceOf(GoogleError);
-            expect(err!.code).to.equal(status.CANCELLED);
-            counter++;
-          });
+        // @ts-ignore cancellation logic is broken here
+        executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
+          expect(err).to.be.an.instanceOf(GoogleError);
+          expect(err!.code).to.equal(status.CANCELLED);
+          counter++;
+        });
       canceller.cancel();
     });
   });
@@ -700,7 +711,7 @@ describe('Executor', () => {
     expect(Object.keys(executor._tasks).length).to.eq(0);
   });
 
-  it('respects element limit', (done) => {
+  it('respects element limit', done => {
     const threshold = 5;
     const limit = 7;
     const executor = newExecutor({
@@ -726,14 +737,17 @@ describe('Executor', () => {
     expect(Object.keys(executor._tasks).length).to.eq(0);
 
     executor.schedule(
-        spy, {field1: [1, 2, 3, 4, 5, 6, 7, 8], field2: 'id'}, err => {
-          expect(err).to.be.an.instanceOf(GoogleError);
-          expect(err!.code).to.equal(status.INVALID_ARGUMENT);
-          done();
-        });
+      spy,
+      {field1: [1, 2, 3, 4, 5, 6, 7, 8], field2: 'id'},
+      err => {
+        expect(err).to.be.an.instanceOf(GoogleError);
+        expect(err!.code).to.equal(status.INVALID_ARGUMENT);
+        done();
+      }
+    );
   });
 
-  it('respects bytes limit', (done) => {
+  it('respects bytes limit', done => {
     const unitSize = byteLength(1);
     const threshold = 5;
     const limit = 7;
@@ -760,14 +774,17 @@ describe('Executor', () => {
     expect(Object.keys(executor._tasks).length).to.eq(0);
 
     executor.schedule(
-        spy, {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'}, err => {
-          expect(err).to.be.an.instanceOf(GoogleError);
-          expect(err!.code).to.equal(status.INVALID_ARGUMENT);
-          done();
-        });
+      spy,
+      {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'},
+      err => {
+        expect(err).to.be.an.instanceOf(GoogleError);
+        expect(err!.code).to.equal(status.INVALID_ARGUMENT);
+        done();
+      }
+    );
   });
 
-  it('does not invoke runNow twice', (done) => {
+  it('does not invoke runNow twice', done => {
     const threshold = 2;
     const executor = newExecutor({
       elementCountThreshold: threshold,
@@ -789,7 +806,7 @@ describe('Executor', () => {
   });
 
   describe('timer', () => {
-    it('waits on the timer', (done) => {
+    it('waits on the timer', done => {
       const executor = newExecutor({delayThreshold: 50});
       const spy = sinon.spy(apiCall);
       const start = new Date().getTime();
@@ -810,7 +827,7 @@ describe('Executor', () => {
       }
     });
 
-    it('reschedules after timer', (done) => {
+    it('reschedules after timer', done => {
       const executor = newExecutor({delayThreshold: 50});
       const spy = sinon.spy(apiCall);
       const start = new Date().getTime();
@@ -835,14 +852,18 @@ describe('bundleable', () => {
     callback(null, argument);
   }
   const bundleOptions = {elementCountThreshold: 12, delayThreshold: 10};
-  const descriptor =
-      new BundleDescriptor('field1', ['field2'], 'field1', byteLength);
+  const descriptor = new BundleDescriptor(
+    'field1',
+    ['field2'],
+    'field1',
+    byteLength
+  );
   const settings = {
     settings: {bundleOptions},
     descriptor,
   };
 
-  it('bundles requests', (done) => {
+  it('bundles requests', done => {
     const spy = sinon.spy(func);
     const callback = sinon.spy(obj => {
       expect(obj).to.be.an('array');
@@ -861,11 +882,11 @@ describe('bundleable', () => {
       }
     });
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-        .then(callback)
-        .catch(done);
+      .then(callback)
+      .catch(done);
   });
 
-  it('does not fail if bundle field is not set', (done) => {
+  it('does not fail if bundle field is not set', done => {
     const spy = sinon.spy(func);
     const warnStub = sinon.stub(process, 'emitWarning');
     const callback = sinon.spy(obj => {
@@ -888,7 +909,7 @@ describe('bundleable', () => {
     apiCall({field2: 'id2'}, undefined).then(callback, error);
   });
 
-  it('suppresses bundling behavior by call options', (done) => {
+  it('suppresses bundling behavior by call options', done => {
     const spy = sinon.spy(func);
     let callbackCount = 0;
     function bundledCallback(obj) {
@@ -908,35 +929,35 @@ describe('bundleable', () => {
     }
     const apiCall = createApiCall(spy, settings);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-        .then(bundledCallback)
-        .catch(done);
+      .then(bundledCallback)
+      .catch(done);
     apiCall({field1: [1, 2, 3], field2: 'id'}, {isBundling: false})
-        .then(unbundledCallback)
-        .catch(done);
+      .then(unbundledCallback)
+      .catch(done);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-        .then(bundledCallback)
-        .catch(done);
+      .then(bundledCallback)
+      .catch(done);
   });
 
-  it('cancels partially on bundling method', (done) => {
+  it('cancels partially on bundling method', done => {
     const apiCall = createApiCall(func, settings);
     let expectedSuccess = false;
     let expectedFailure = false;
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-        .then(obj => {
-          expect(obj).to.be.an('array');
-          // @ts-ignore response type
-          expect(obj[0].field1).to.deep.equal([1, 2, 3]);
-          expectedSuccess = true;
-          if (expectedSuccess && expectedFailure) {
-            done();
-          }
-        })
-        .catch(done);
+      .then(obj => {
+        expect(obj).to.be.an('array');
+        // @ts-ignore response type
+        expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+        expectedSuccess = true;
+        if (expectedSuccess && expectedFailure) {
+          done();
+        }
+      })
+      .catch(done);
     const p = apiCall({field1: [1, 2, 3], field2: 'id'}, undefined);
     p.then(() => {
-       done(new Error('should not succeed'));
-     }).catch(err => {
+      done(new Error('should not succeed'));
+    }).catch(err => {
       expect(err).to.be.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
 

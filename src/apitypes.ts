@@ -48,57 +48,84 @@ export interface GRPCCallResult {
 // parameter is defined for paginated calls and stores the next page request
 // object, the third parameter stores raw (unprocessed) response object in cases
 // when it might be useful for users.
-export type RequestType = {};
-export type ResponseType = {}|null;
+export interface RequestType {}
+export type ResponseType = {} | null;
 export type NextPageRequestType = {
-  [index: string]: string
-}|null;
-export type RawResponseType = Operation|{};
+  [index: string]: string;
+} | null;
+export type RawResponseType = Operation | {};
 export type ResultTuple = [
-  ResponseType, NextPageRequestType | undefined, RawResponseType | undefined
+  ResponseType,
+  NextPageRequestType | undefined,
+  RawResponseType | undefined
 ];
 
 export interface SimpleCallbackFunction {
   (argument: RequestType, callback: APICallback): GRPCCallResult;
 }
 
-export type APICallback =
-    (err: GoogleError|null, response?: ResponseType, next?: NextPageRequestType,
-     rawResponse?: RawResponseType) => void;
+export type APICallback = (
+  err: GoogleError | null,
+  response?: ResponseType,
+  next?: NextPageRequestType,
+  rawResponse?: RawResponseType
+) => void;
 
 // The following five types mimic various gRPC calls (regular UnaryCall and
 // various streaming calls).
-export type UnaryCall =
-    (argument: {}, metadata: {}, options: {}, callback: APICallback) =>
-        GRPCCallResult;
-export type ServerStreamingCall = (argument: {}, metadata: {}, options: {}) =>
-    Duplex&GRPCCallResult;
-export type ClientStreamingCall =
-    (metadata: {}, options: {}, callback?: APICallback) =>
-        Duplex&GRPCCallResult;
-export type BiDiStreamingCall = (metadata: {}, options: {}) =>
-    Duplex&GRPCCallResult;
+export type UnaryCall = (
+  argument: {},
+  metadata: {},
+  options: {},
+  callback: APICallback
+) => GRPCCallResult;
+export type ServerStreamingCall = (
+  argument: {},
+  metadata: {},
+  options: {}
+) => Duplex & GRPCCallResult;
+export type ClientStreamingCall = (
+  metadata: {},
+  options: {},
+  callback?: APICallback
+) => Duplex & GRPCCallResult;
+export type BiDiStreamingCall = (
+  metadata: {},
+  options: {}
+) => Duplex & GRPCCallResult;
 export type GRPCCall =
-    UnaryCall|ServerStreamingCall|ClientStreamingCall|BiDiStreamingCall;
+  | UnaryCall
+  | ServerStreamingCall
+  | ClientStreamingCall
+  | BiDiStreamingCall;
 
 // GAX wraps gRPC calls so that the wrapper functions return either a
 // cancellable promise, or a stream (also cancellable!)
-export type CancellableStream = Duplex&GRPCCallResult;
-export type GaxCallResult = CancellablePromise<ResultTuple>|CancellableStream;
+export type CancellableStream = Duplex & GRPCCallResult;
+export type GaxCallResult = CancellablePromise<ResultTuple> | CancellableStream;
 export interface GaxCallPromise {
-  (argument: {}, callOptions?: CallOptions,
-   callback?: APICallback): CancellablePromise<ResultTuple>;
+  (
+    argument: {},
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ): CancellablePromise<ResultTuple>;
 }
 export interface GaxCallStream {
-  (argument: {}, callOptions?: CallOptions,
-   callback?: APICallback): CancellableStream;
+  (
+    argument: {},
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ): CancellableStream;
 }
 export interface GaxCall {
-  (argument: {}, callOptions?: CallOptions,
-   callback?: APICallback): GaxCallResult;
+  (
+    argument: {},
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ): GaxCallResult;
 }
 export interface GRPCCallOtherArgs {
-  options?: {deadline?: Date;};
+  options?: {deadline?: Date};
   headers?: {};
   metadataBuilder: (abTests?: {}, headers?: {}) => {};
 }

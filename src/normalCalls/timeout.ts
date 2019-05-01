@@ -29,7 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {GRPCCall, GRPCCallOtherArgs, SimpleCallbackFunction, UnaryCall} from '../apitypes';
+import {
+  GRPCCall,
+  GRPCCallOtherArgs,
+  SimpleCallbackFunction,
+  UnaryCall,
+} from '../apitypes';
 
 /**
  * Updates func so that it gets called with the timeout as its final arg.
@@ -47,17 +52,20 @@ import {GRPCCall, GRPCCallOtherArgs, SimpleCallbackFunction, UnaryCall} from '..
  *  the function with other arguments and the timeout.
  */
 export function addTimeoutArg(
-    func: GRPCCall, timeout: number, otherArgs: GRPCCallOtherArgs,
-    abTests?: {}): SimpleCallbackFunction {
+  func: GRPCCall,
+  timeout: number,
+  otherArgs: GRPCCallOtherArgs,
+  abTests?: {}
+): SimpleCallbackFunction {
   // TODO: this assumes the other arguments consist of metadata and options,
   // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
   return (argument, callback) => {
     const now = new Date();
     const options = otherArgs.options || {};
     options.deadline = new Date(now.getTime() + timeout);
-    const metadata = otherArgs.metadataBuilder ?
-        otherArgs.metadataBuilder(abTests, otherArgs.headers || {}) :
-        null;
+    const metadata = otherArgs.metadataBuilder
+      ? otherArgs.metadataBuilder(abTests, otherArgs.headers || {})
+      : null;
     return (func as UnaryCall)(argument, metadata!, options, callback);
   };
 }

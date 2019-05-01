@@ -47,8 +47,11 @@ const version = require('../../package.json').version;
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 const PAGE_DESCRIPTORS = {
-  listOperations:
-      new PageDescriptor('pageToken', 'nextPageToken', 'operations'),
+  listOperations: new PageDescriptor(
+    'pageToken',
+    'nextPageToken',
+    'operations'
+  ),
 };
 
 /**
@@ -89,30 +92,42 @@ export class OperationsClient {
   private _deleteOperation!: GaxCall;
 
   constructor(
-      // tslint:disable-next-line no-any
-      gaxGrpc: GrpcClient, grpcClients: any, options: OperationsClientOptions) {
-    const opts: OperationsClientOptions&ClientStubOptions = Object.assign(
-        {
-          servicePath: SERVICE_ADDRESS,
-          port: DEFAULT_SERVICE_PORT,
-          clientConfig: {},
-        },
-        options);
+    gaxGrpc: GrpcClient,
+    // tslint:disable-next-line no-any
+    grpcClients: any,
+    options: OperationsClientOptions
+  ) {
+    const opts: OperationsClientOptions & ClientStubOptions = Object.assign(
+      {
+        servicePath: SERVICE_ADDRESS,
+        port: DEFAULT_SERVICE_PORT,
+        clientConfig: {},
+      },
+      options
+    );
 
     const googleApiClient = ['gl-node/' + process.versions.node];
     if (opts.libName && opts.libVersion) {
       googleApiClient.push(opts.libName + '/' + opts.libVersion);
     }
     googleApiClient.push(
-        CODE_GEN_NAME_VERSION, 'gax/' + version, 'grpc/' + gaxGrpc.grpcVersion);
+      CODE_GEN_NAME_VERSION,
+      'gax/' + version,
+      'grpc/' + gaxGrpc.grpcVersion
+    );
 
     const defaults = gaxGrpc.constructSettings(
-        'google.longrunning.Operations', configData, opts.clientConfig,
-        {'x-goog-api-client': googleApiClient.join(' ')});
+      'google.longrunning.Operations',
+      configData,
+      opts.clientConfig,
+      {'x-goog-api-client': googleApiClient.join(' ')}
+    );
 
     this.auth = gaxGrpc.auth;
-    const operationsStub =
-        gaxGrpc.createStub(grpcClients.google.longrunning.Operations, opts);
+    const operationsStub = gaxGrpc.createStub(
+      grpcClients.google.longrunning.Operations,
+      opts
+    );
     const operationsStubMethods = [
       'getOperation',
       'listOperations',
@@ -121,16 +136,16 @@ export class OperationsClient {
     ];
     operationsStubMethods.forEach(methodName => {
       this['_' + methodName] = createApiCall(
-          operationsStub.then(operationsStub => {
-            return (...args: Array<{}>) => {
-              return operationsStub[methodName].apply(operationsStub, args);
-            };
-          }),
-          defaults[methodName], PAGE_DESCRIPTORS[methodName]);
+        operationsStub.then(operationsStub => {
+          return (...args: Array<{}>) => {
+            return operationsStub[methodName].apply(operationsStub, args);
+          };
+        }),
+        defaults[methodName],
+        PAGE_DESCRIPTORS[methodName]
+      );
     });
   }
-
-
 
   /**
    * Get the project ID used by this class.
@@ -139,7 +154,7 @@ export class OperationsClient {
    */
   getProjectId(): Promise<string>;
   getProjectId(callback: ProjectIdCallback): void;
-  getProjectId(callback?: ProjectIdCallback): void|Promise<string> {
+  getProjectId(callback?: ProjectIdCallback): void | Promise<string> {
     return this.auth.getProjectId(callback!);
   }
 
@@ -317,7 +332,10 @@ export class OperationsClient {
    */
   listOperationsStream(request: {}, options: gax.CallSettings) {
     return PAGE_DESCRIPTORS.listOperations.createStream(
-        this._listOperations, request, options);
+      this._listOperations,
+      request,
+      options
+    );
   }
 
   /**
@@ -404,7 +422,9 @@ export class OperationsClientBuilder {
     const protoFilesRoot = path.join(__dirname, '..', '..');
     // tslint:disable-next-line no-any
     const operationsClient: any = gaxGrpc.loadProto(
-        protoFilesRoot, 'google/longrunning/operations.proto');
+      protoFilesRoot,
+      'google/longrunning/operations.proto'
+    );
     Object.assign(this, operationsClient.google.longrunning);
 
     /**

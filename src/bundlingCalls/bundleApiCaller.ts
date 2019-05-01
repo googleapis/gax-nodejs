@@ -49,8 +49,10 @@ export class BundleApiCaller implements APICaller {
     this.bundler = bundler;
   }
 
-  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
-      |OngoingCall {
+  init(
+    settings: ApiCallerSettings,
+    callback?: APICallback
+  ): OngoingCallPromise | OngoingCall {
     if (callback) {
       return new OngoingCall(callback);
     }
@@ -62,8 +64,11 @@ export class BundleApiCaller implements APICaller {
   }
 
   call(
-      apiCall: SimpleCallbackFunction, argument: {}, settings: CallSettings,
-      status: OngoingCallPromise) {
+    apiCall: SimpleCallbackFunction,
+    argument: {},
+    settings: CallSettings,
+    status: OngoingCallPromise
+  ) {
     if (!settings.isBundling) {
       throw new GoogleError('Bundling enabled with no isBundling!');
     }

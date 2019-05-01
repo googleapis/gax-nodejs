@@ -93,13 +93,16 @@ const mockDecoder = val => {
 };
 
 function createApiCall(func, client?) {
-  const descriptor =
-      new LongrunningDescriptor(client, mockDecoder, mockDecoder);
+  const descriptor = new LongrunningDescriptor(
+    client,
+    mockDecoder,
+    mockDecoder
+  );
   return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }
 
 interface SpyableOperationsClient extends OperationsClient {
-  getOperation: sinon.SinonSpy&longrunning.Operation;
+  getOperation: sinon.SinonSpy & longrunning.Operation;
   cancelOperation: sinon.SinonSpy;
   cancelGetOperationSpy: sinon.SinonSpy;
 }
@@ -147,28 +150,32 @@ describe('longrunning', () => {
       const defaultTotalTimeoutMillis = null;
       const apiCall = createApiCall(func);
       apiCall({})
-          .then(responses => {
-            const operation = responses[0] as longrunning.Operation;
-            const rawResponse = responses[1];
-            expect(operation).to.be.an('object');
-            expect(operation).to.have.property('backoffSettings');
-            expect(operation.backoffSettings.initialRetryDelayMillis)
-                .to.eq(defaultInitialRetryDelayMillis);
-            expect(operation.backoffSettings.retryDelayMultiplier)
-                .to.eq(defaultRetryDelayMultiplier);
-            expect(operation.backoffSettings.maxRetryDelayMillis)
-                .to.eq(defaultMaxRetryDelayMillis);
-            expect(operation.backoffSettings.totalTimeoutMillis)
-                .to.eq(defaultTotalTimeoutMillis);
-            expect(operation).to.have.property('longrunningDescriptor');
-            expect(operation.latestResponse).to.deep.eq(PENDING_OP);
-            // tslint:disable-next-line no-unused-expression
-            expect(operation.result).to.be.null;
-            expect(operation.metadata).to.deep.eq(METADATA_VAL);
-            expect(rawResponse).to.deep.eq(PENDING_OP);
-            done();
-          })
-          .catch(done);
+        .then(responses => {
+          const operation = responses[0] as longrunning.Operation;
+          const rawResponse = responses[1];
+          expect(operation).to.be.an('object');
+          expect(operation).to.have.property('backoffSettings');
+          expect(operation.backoffSettings.initialRetryDelayMillis).to.eq(
+            defaultInitialRetryDelayMillis
+          );
+          expect(operation.backoffSettings.retryDelayMultiplier).to.eq(
+            defaultRetryDelayMultiplier
+          );
+          expect(operation.backoffSettings.maxRetryDelayMillis).to.eq(
+            defaultMaxRetryDelayMillis
+          );
+          expect(operation.backoffSettings.totalTimeoutMillis).to.eq(
+            defaultTotalTimeoutMillis
+          );
+          expect(operation).to.have.property('longrunningDescriptor');
+          expect(operation.latestResponse).to.deep.eq(PENDING_OP);
+          // tslint:disable-next-line no-unused-expression
+          expect(operation.result).to.be.null;
+          expect(operation.metadata).to.deep.eq(METADATA_VAL);
+          expect(rawResponse).to.deep.eq(PENDING_OP);
+          done();
+        })
+        .catch(done);
     });
   });
 
@@ -176,27 +183,43 @@ describe('longrunning', () => {
     it('returns an Operation with correct values', done => {
       const client = mockOperationsClient();
       const desc = new LongrunningDescriptor(
-          client as OperationsClient, mockDecoder, mockDecoder);
+        client as OperationsClient,
+        mockDecoder,
+        mockDecoder
+      );
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
       const maxRetryDelayMillis = 3;
       const totalTimeoutMillis = 4;
       const unusedRpcValue = 0;
       const backoff = gax.createBackoffSettings(
-          initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
-          unusedRpcValue, unusedRpcValue, unusedRpcValue, totalTimeoutMillis);
+        initialRetryDelayMillis,
+        retryDelayMultiplier,
+        maxRetryDelayMillis,
+        unusedRpcValue,
+        unusedRpcValue,
+        unusedRpcValue,
+        totalTimeoutMillis
+      );
       const operation = longrunning.operation(
-          SUCCESSFUL_OP as {} as longrunning.Operation, desc, backoff);
+        (SUCCESSFUL_OP as {}) as longrunning.Operation,
+        desc,
+        backoff
+      );
       expect(operation).to.be.an('object');
       expect(operation).to.have.property('backoffSettings');
-      expect(operation.backoffSettings.initialRetryDelayMillis)
-          .to.eq(initialRetryDelayMillis);
-      expect(operation.backoffSettings.retryDelayMultiplier)
-          .to.eq(retryDelayMultiplier);
-      expect(operation.backoffSettings.maxRetryDelayMillis)
-          .to.eq(maxRetryDelayMillis);
-      expect(operation.backoffSettings.totalTimeoutMillis)
-          .to.eq(totalTimeoutMillis);
+      expect(operation.backoffSettings.initialRetryDelayMillis).to.eq(
+        initialRetryDelayMillis
+      );
+      expect(operation.backoffSettings.retryDelayMultiplier).to.eq(
+        retryDelayMultiplier
+      );
+      expect(operation.backoffSettings.maxRetryDelayMillis).to.eq(
+        maxRetryDelayMillis
+      );
+      expect(operation.backoffSettings.totalTimeoutMillis).to.eq(
+        totalTimeoutMillis
+      );
       expect(operation).to.have.property('longrunningDescriptor');
       expect(operation.result).to.deep.eq(RESPONSE_VAL);
       expect(operation.metadata).to.deep.eq(METADATA_VAL);
@@ -214,20 +237,20 @@ describe('longrunning', () => {
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              operation.getOperation((err, result, metadata, rawResponse) => {
-                if (err) {
-                  done(err);
-                }
-                expect(result).to.deep.eq(RESPONSE_VAL);
-                expect(metadata).to.deep.eq(METADATA_VAL);
-                expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect(client.getOperation.callCount).to.eq(0);
-                done();
-              });
-            })
-            .catch(done);
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.getOperation((err, result, metadata, rawResponse) => {
+              if (err) {
+                done(err);
+              }
+              expect(result).to.deep.eq(RESPONSE_VAL);
+              expect(metadata).to.deep.eq(METADATA_VAL);
+              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+              expect(client.getOperation.callCount).to.eq(0);
+              done();
+            });
+          })
+          .catch(done);
       });
 
       it('makes an api call to get the updated operation', done => {
@@ -237,22 +260,22 @@ describe('longrunning', () => {
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              operation.getOperation((err, result, metadata, rawResponse) => {
-                if (err) {
-                  done(err);
-                }
-                expect(result).to.deep.eq(RESPONSE_VAL);
-                expect(metadata).to.deep.eq(METADATA_VAL);
-                expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect(client.getOperation.callCount).to.eq(1);
-                done();
-              });
-            })
-            .catch(error => {
-              done(error);
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.getOperation((err, result, metadata, rawResponse) => {
+              if (err) {
+                done(err);
+              }
+              expect(result).to.deep.eq(RESPONSE_VAL);
+              expect(metadata).to.deep.eq(METADATA_VAL);
+              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+              expect(client.getOperation.callCount).to.eq(1);
+              done();
             });
+          })
+          .catch(error => {
+            done(error);
+          });
       });
 
       it('does not return a promise when given a callback.', done => {
@@ -262,27 +285,25 @@ describe('longrunning', () => {
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              expect(
-                  operation.getOperation(
-                      (err, result, metadata, rawResponse) => {
-                        if (err) {
-                          done(err);
-                        }
-                        expect(result).to.deep.eq(RESPONSE_VAL);
-                        expect(metadata).to.deep.eq(METADATA_VAL);
-                        expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                        expect(client.getOperation.callCount).to.eq(1);
-                        done();
-                      })
-                  // tslint:disable-next-line no-unused-expression
-                  )
-                  .to.be.undefined;
-            })
-            .catch(error => {
-              done(error);
-            });
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            expect(
+              operation.getOperation((err, result, metadata, rawResponse) => {
+                if (err) {
+                  done(err);
+                }
+                expect(result).to.deep.eq(RESPONSE_VAL);
+                expect(metadata).to.deep.eq(METADATA_VAL);
+                expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+                expect(client.getOperation.callCount).to.eq(1);
+                done();
+              })
+              // tslint:disable-next-line no-unused-expression
+            ).to.be.undefined;
+          })
+          .catch(error => {
+            done(error);
+          });
       });
 
       it('returns a promise that resolves to the correct data', done => {
@@ -292,24 +313,24 @@ describe('longrunning', () => {
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              return operation.getOperation();
-            })
-            .then(responses => {
-              const result = responses[0];
-              const metadata = responses[1];
-              const rawResponse = responses[2];
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            return operation.getOperation();
+          })
+          .then(responses => {
+            const result = responses[0];
+            const metadata = responses[1];
+            const rawResponse = responses[2];
 
-              expect(result).to.deep.eq(RESPONSE_VAL);
-              expect(metadata).to.deep.eq(METADATA_VAL);
-              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect(client.getOperation.callCount).to.eq(1);
-              done();
-            })
-            .catch(error => {
-              done(error);
-            });
+            expect(result).to.deep.eq(RESPONSE_VAL);
+            expect(metadata).to.deep.eq(METADATA_VAL);
+            expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+            expect(client.getOperation.callCount).to.eq(1);
+            done();
+          })
+          .catch(error => {
+            done(error);
+          });
       });
 
       it('returns a promise that rejects an operation error.', done => {
@@ -319,17 +340,17 @@ describe('longrunning', () => {
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              return operation.getOperation();
-            })
-            .then(() => {
-              done(new Error('Should not get here.'));
-            })
-            .catch(error => {
-              expect(error).to.be.an('error');
-              done();
-            });
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            return operation.getOperation();
+          })
+          .then(() => {
+            done(new Error('Should not get here.'));
+          })
+          .catch(error => {
+            expect(error).to.be.an('error');
+            done();
+          });
       });
 
       it('uses provided promise constructor.', done => {
@@ -367,23 +388,23 @@ describe('longrunning', () => {
         const apiCall = createApiCall(func, client);
 
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              return operation.promise();
-            })
-            .then(responses => {
-              const result = responses[0];
-              const metadata = responses[1];
-              const rawResponse = responses[2];
-              expect(result).to.deep.eq(RESPONSE_VAL);
-              expect(metadata).to.deep.eq(METADATA_VAL);
-              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect(client.getOperation.callCount).to.eq(expectedCalls);
-              done();
-            })
-            .catch(err => {
-              done(err);
-            });
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            return operation.promise();
+          })
+          .then(responses => {
+            const result = responses[0];
+            const metadata = responses[1];
+            const rawResponse = responses[2];
+            expect(result).to.deep.eq(RESPONSE_VAL);
+            expect(metadata).to.deep.eq(METADATA_VAL);
+            expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+            expect(client.getOperation.callCount).to.eq(expectedCalls);
+            done();
+          })
+          .catch(err => {
+            done(err);
+          });
       });
 
       it('resolves error', done => {
@@ -398,19 +419,19 @@ describe('longrunning', () => {
         const apiCall = createApiCall(func, client);
 
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              return operation.promise();
-            })
-            .then(() => {
-              done(new Error('should not get here'));
-            })
-            .catch(err => {
-              expect(client.getOperation.callCount).to.eq(expectedCalls);
-              expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-              expect(err.message).to.deep.eq('operation error');
-              done();
-            });
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            return operation.promise();
+          })
+          .then(() => {
+            done(new Error('should not get here'));
+          })
+          .catch(err => {
+            expect(client.getOperation.callCount).to.eq(expectedCalls);
+            expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+            expect(err.message).to.deep.eq('operation error');
+            done();
+          });
       });
 
       it('does not hang on invalid API response', done => {
@@ -420,32 +441,41 @@ describe('longrunning', () => {
         const client = mockOperationsClient({finalOperation: BAD_OP});
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              const promise = operation.promise();
-              return promise;
-            })
-            .then(() => {
-              done(new Error('Should not get here.'));
-            })
-            .catch(error => {
-              expect(error).to.be.an('error');
-              done();
-            });
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            const promise = operation.promise();
+            return promise;
+          })
+          .then(() => {
+            done(new Error('Should not get here.'));
+          })
+          .catch(error => {
+            expect(error).to.be.an('error');
+            done();
+          });
       });
 
       it('uses provided promise constructor', done => {
         const client = mockOperationsClient();
-        const desc =
-            new LongrunningDescriptor(client, mockDecoder, mockDecoder);
+        const desc = new LongrunningDescriptor(
+          client,
+          mockDecoder,
+          mockDecoder
+        );
         const initialRetryDelayMillis = 1;
         const retryDelayMultiplier = 2;
         const maxRetryDelayMillis = 3;
         const totalTimeoutMillis = 4;
         const unusedRpcValue = 0;
         const backoff = gax.createBackoffSettings(
-            initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis,
-            unusedRpcValue, unusedRpcValue, unusedRpcValue, totalTimeoutMillis);
+          initialRetryDelayMillis,
+          retryDelayMultiplier,
+          maxRetryDelayMillis,
+          unusedRpcValue,
+          unusedRpcValue,
+          unusedRpcValue,
+          totalTimeoutMillis
+        );
         let called = false;
         function MockPromise(executor) {
           const promise = new Promise(executor);
@@ -453,9 +483,13 @@ describe('longrunning', () => {
           return promise;
         }
         const operation = longrunning.operation(
-            SUCCESSFUL_OP as {} as longrunning.Operation, desc, backoff, {
-              promise: MockPromise as {} as PromiseConstructor,
-            });
+          (SUCCESSFUL_OP as {}) as longrunning.Operation,
+          desc,
+          backoff,
+          {
+            promise: (MockPromise as {}) as PromiseConstructor,
+          }
+        );
         operation.promise();
         // tslint:disable-next-line no-unused-expression
         expect(called).to.be.true;
@@ -474,24 +508,24 @@ describe('longrunning', () => {
         const apiCall = createApiCall(func, client);
 
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              const p = operation.promise();
-              operation.cancel().then(() => {
-                // tslint:disable-next-line no-unused-expression
-                expect(client.cancelOperation.called).to.be.true;
-                // tslint:disable-next-line no-unused-expression no-any
-                expect((client as any).cancelGetOperationSpy.called).to.be.true;
-                done();
-              });
-              return p;
-            })
-            .then(() => {
-              done(new Error('should not get here'));
-            })
-            .catch(err => {
-              done(err);
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            const p = operation.promise();
+            operation.cancel().then(() => {
+              // tslint:disable-next-line no-unused-expression
+              expect(client.cancelOperation.called).to.be.true;
+              // tslint:disable-next-line no-unused-expression no-any
+              expect((client as any).cancelGetOperationSpy.called).to.be.true;
+              done();
             });
+            return p;
+          })
+          .then(() => {
+            done(new Error('should not get here'));
+          })
+          .catch(err => {
+            done(err);
+          });
       });
     });
 
@@ -506,22 +540,22 @@ describe('longrunning', () => {
         });
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              operation.on('complete', (result, metadata, rawResponse) => {
-                expect(result).to.deep.eq(RESPONSE_VAL);
-                expect(metadata).to.deep.eq(METADATA_VAL);
-                expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect(client.getOperation.callCount).to.eq(expectedCalls);
-                done();
-              });
-              operation.on('error', () => {
-                done('should not get here');
-              });
-            })
-            .catch(err => {
-              done(err);
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.on('complete', (result, metadata, rawResponse) => {
+              expect(result).to.deep.eq(RESPONSE_VAL);
+              expect(metadata).to.deep.eq(METADATA_VAL);
+              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
+              expect(client.getOperation.callCount).to.eq(expectedCalls);
+              done();
             });
+            operation.on('error', () => {
+              done('should not get here');
+            });
+          })
+          .catch(err => {
+            done(err);
+          });
       });
 
       it('operation error emits an error', done => {
@@ -535,21 +569,21 @@ describe('longrunning', () => {
         });
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              operation.on('complete', () => {
-                done(new Error('Should not get here.'));
-              });
-              operation.on('error', err => {
-                expect(client.getOperation.callCount).to.eq(expectedCalls);
-                expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-                expect(err.message).to.deep.eq('operation error');
-                done();
-              });
-            })
-            .catch(err => {
-              done(err);
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.on('complete', () => {
+              done(new Error('Should not get here.'));
             });
+            operation.on('error', err => {
+              expect(client.getOperation.callCount).to.eq(expectedCalls);
+              expect(err.code).to.eq(FAKE_STATUS_CODE_1);
+              expect(err.message).to.deep.eq('operation error');
+              done();
+            });
+          })
+          .catch(err => {
+            done(err);
+          });
       });
 
       it('emits progress on updated operations.', done => {
@@ -577,27 +611,27 @@ describe('longrunning', () => {
         });
         const apiCall = createApiCall(func, client);
         apiCall({})
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              operation.on('complete', () => {
-                done(new Error('Should not get here.'));
-              });
-              operation.on('progress', (metadata, rawResponse) => {
-                expect(client.getOperation.callCount).to.eq(expectedCalls);
-                expect(metadata).to.deep.eq(updatedMetadataVal);
-                expect(rawResponse).to.deep.eq(updatedOp);
-                expect(operation.metadata).to.deep.eq(metadata);
-                expect(operation.metadata).to.deep.eq(updatedMetadataVal);
-                // Shows that progress only happens on updated operations since
-                // this will produce a test error if done is called multiple
-                // times, and the same pending operation was polled thrice.
-                operation.removeAllListeners();
-                done();
-              });
-            })
-            .catch(err => {
-              done(err);
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.on('complete', () => {
+              done(new Error('Should not get here.'));
             });
+            operation.on('progress', (metadata, rawResponse) => {
+              expect(client.getOperation.callCount).to.eq(expectedCalls);
+              expect(metadata).to.deep.eq(updatedMetadataVal);
+              expect(rawResponse).to.deep.eq(updatedOp);
+              expect(operation.metadata).to.deep.eq(metadata);
+              expect(operation.metadata).to.deep.eq(updatedMetadataVal);
+              // Shows that progress only happens on updated operations since
+              // this will produce a test error if done is called multiple
+              // times, and the same pending operation was polled thrice.
+              operation.removeAllListeners();
+              done();
+            });
+          })
+          .catch(err => {
+            done(err);
+          });
       });
 
       it('times out when polling', done => {
@@ -609,27 +643,29 @@ describe('longrunning', () => {
         });
         const apiCall = createApiCall(func, client);
         // @ts-ignore incomplete options
-        apiCall({}, {
-          longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1),
-        })
-            .then(responses => {
-              const operation = responses[0] as longrunning.Operation;
-              operation.on('complete', () => {
-                done(new Error('Should not get here.'));
-              });
-              operation.on('error', err => {
-                expect(err).to.be.instanceOf(GoogleError);
-                expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
-                expect(err!.message)
-                    .to.deep.eq(
-                        'Total timeout exceeded before ' +
-                        'any response was received');
-                done();
-              });
-            })
-            .catch(err => {
-              done(err);
+        apiCall(
+          {},
+          {
+            longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1),
+          }
+        )
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.on('complete', () => {
+              done(new Error('Should not get here.'));
             });
+            operation.on('error', err => {
+              expect(err).to.be.instanceOf(GoogleError);
+              expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
+              expect(err!.message).to.deep.eq(
+                'Total timeout exceeded before ' + 'any response was received'
+              );
+              done();
+            });
+          })
+          .catch(err => {
+            done(err);
+          });
       });
     });
   });
