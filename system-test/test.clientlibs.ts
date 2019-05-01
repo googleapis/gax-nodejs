@@ -82,16 +82,19 @@ async function runSystemTest(packageName: string): Promise<void> {
       'npm', ['run', 'system-test'], {cwd: packageName, stdio: 'inherit'});
 }
 
+async function cleanup(): Promise<void> {
+  process.chdir(__dirname);
+  await rmrf(testDir);
+  await mkdir(testDir);
+  process.chdir(testDir);
+  console.log(`Running tests in ${testDir}.`);
+}
+
 describe('Run system tests for some libraries', () => {
-  before(async () => {
-    await rmrf(testDir);
-    await mkdir(testDir);
-    process.chdir(testDir);
-    console.log(`Running tests in ${testDir}.`);
-  });
   // Video intelligence API has long running operations
   describe('video-intelligence', () => {
     before(async () => {
+      await cleanup();
       await preparePackage('nodejs-video-intelligence');
     });
     it('should pass system tests', async () => {
@@ -101,6 +104,7 @@ describe('Run system tests for some libraries', () => {
   // Pub/Sub has streaming methods and pagination
   describe('pubsub', () => {
     before(async () => {
+      await cleanup();
       await preparePackage('nodejs-pubsub');
     });
     it('should pass system tests', async function() {
@@ -112,6 +116,7 @@ describe('Run system tests for some libraries', () => {
   // Speech only has smoke tests, but still...
   describe('speech', () => {
     before(async () => {
+      await cleanup();
       await preparePackage('nodejs-speech');
     });
     it('should pass system tests', async () => {
