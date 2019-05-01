@@ -210,9 +210,9 @@ describe('paged iteration', () => {
     }
 
     it('returns a stream', done => {
-      // @ts-ignore incomplete options
       streamChecker(
-        descriptor.createStream(apiCall, {}, null),
+        // @ts-ignore incomplete options
+        descriptor.createStream(apiCall, {}, {}),
         () => {
           expect(spy.callCount).to.eq(pagesToStream + 1);
         },
@@ -244,8 +244,8 @@ describe('paged iteration', () => {
       // pageSize which will be used so that the stream will start from the
       // specified token.
       const options = {pageToken: pageSize, autoPaginate: false};
-      // @ts-ignore incomplete options
       streamChecker(
+        // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, options),
         () => {
           expect(spy.callCount).to.eq(pagesToStream);

@@ -54,6 +54,7 @@ export function computeBundleId(
   const ids: Array<{} | null> = [];
   let hasIds = false;
   for (let i = 0; i < discriminatorFields.length; ++i) {
+    // @ts-ignore lodash.at types
     const id = at(obj, discriminatorFields[i])[0];
     if (id === undefined) {
       ids.push(null);
