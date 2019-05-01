@@ -37,11 +37,19 @@ import * as rimraf from 'rimraf';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
+const ncpp = util.promisify(ncp);
 const rmrf = util.promisify(rimraf);
+const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
 
 const baseRepoUrl = 'https://github.com/googleapis/';
-const baseDir = process.cwd();
 const testDir = path.join(process.cwd(), '.system-test-run');
+const gaxDir = path.resolve(__dirname, '..', '..');
+
+// We will pack google-gax using `npm pack`, defining some constants to make it
+// easier to consume that tarball
+const pkg = require('../../package.json');
+const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 
 async function latestRelease(cwd: string): Promise<string> {
   const {stdout} = await execa('git', ['tag', '--list'], {cwd});
@@ -73,9 +81,14 @@ async function preparePackage(packageName: string): Promise<void> {
       {stdio: 'inherit'});
   const tag = await latestRelease(packageName);
   await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
-  await execa('npm', ['link', '../../'], {cwd: packageName, stdio: 'inherit'});
+  await ncpp(gaxTarball, path.join(packageName, 'google-gax.tgz'));
+
+  const packageJson = path.join(packageName, 'package.json');
+  const packageJsonStr = (await readFile(packageJson)).toString();
+  const packageJsonObj = JSON.parse(packageJsonStr);
+  packageJsonObj['dependencies']['google-gax'] = 'file:./google-gax.tgz';
+  await writeFile(packageJson, JSON.stringify(packageJsonObj, null, '  '));
   await execa('npm', ['install'], {cwd: packageName, stdio: 'inherit'});
-  await execa('npm', ['link', '../../'], {cwd: packageName, stdio: 'inherit'});
 }
 
 async function runSystemTest(packageName: string): Promise<void> {
@@ -83,20 +96,23 @@ async function runSystemTest(packageName: string): Promise<void> {
       'npm', ['run', 'system-test'], {cwd: packageName, stdio: 'inherit'});
 }
 
-async function cleanup(): Promise<void> {
-  await execa('npm', ['unlink'], {stdio: 'inherit'});
-  process.chdir(baseDir);
-  await rmrf(testDir);
-  await mkdir(testDir);
-  process.chdir(testDir);
-  console.log(`Running tests in ${testDir}.`);
-}
-
 describe('Run system tests for some libraries', () => {
+  before(async () => {
+    console.log('Packing google-gax...');
+    await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
+
+    if (!fs.existsSync(gaxTarball)) {
+      throw new Error(`npm pack tarball ${gaxTarball} does not exist`);
+    }
+
+    await rmrf(testDir);
+    await mkdir(testDir);
+    process.chdir(testDir);
+    console.log(`Running tests in ${testDir}.`);
+  });
   // Video intelligence API has long running operations
   describe('video-intelligence', () => {
     before(async () => {
-      await cleanup();
       await preparePackage('nodejs-video-intelligence');
     });
     it('should pass system tests', async () => {
@@ -106,7 +122,6 @@ describe('Run system tests for some libraries', () => {
   // Pub/Sub has streaming methods and pagination
   describe('pubsub', () => {
     before(async () => {
-      await cleanup();
       await preparePackage('nodejs-pubsub');
     });
     it('should pass system tests', async function() {
@@ -118,7 +133,6 @@ describe('Run system tests for some libraries', () => {
   // Speech only has smoke tests, but still...
   describe('speech', () => {
     before(async () => {
-      await cleanup();
       await preparePackage('nodejs-speech');
     });
     it('should pass system tests', async () => {
