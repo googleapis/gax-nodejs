@@ -31,13 +31,11 @@
 
 import * as execa from 'execa';
 import * as fs from 'fs';
-import {ncp} from 'ncp';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
-const ncpp = util.promisify(ncp);
 const rmrf = util.promisify(rimraf);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -81,12 +79,11 @@ async function preparePackage(packageName: string): Promise<void> {
       {stdio: 'inherit'});
   const tag = await latestRelease(packageName);
   await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
-  await ncpp(gaxTarball, path.join(packageName, 'google-gax.tgz'));
 
   const packageJson = path.join(packageName, 'package.json');
   const packageJsonStr = (await readFile(packageJson)).toString();
   const packageJsonObj = JSON.parse(packageJsonStr);
-  packageJsonObj['dependencies']['google-gax'] = 'file:./google-gax.tgz';
+  packageJsonObj['dependencies']['google-gax'] = `file:${gaxTarball}`;
   await writeFile(packageJson, JSON.stringify(packageJsonObj, null, '  '));
   await execa('npm', ['install'], {cwd: packageName, stdio: 'inherit'});
 }
