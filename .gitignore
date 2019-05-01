@@ -5,6 +5,7 @@ npm-debug.log
 .coverage
 .nyc_output
 docs/
+google/
 out/
 system-test/secrets.js
 system-test/*key.json
@@ -12,4 +13,6 @@ build
 .vscode
 package-lock.json
 .system-test-run/
+.kitchen-sink/
 __pycache__
+doc/
