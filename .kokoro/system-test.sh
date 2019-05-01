@@ -34,6 +34,6 @@ npm --version
 node --version
 npm i npm@latest -g
 npm install
-npm ls`
+npm ls
 
 npm run system-test
