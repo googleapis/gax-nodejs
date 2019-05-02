@@ -51,32 +51,36 @@ const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 
 async function latestRelease(cwd: string): Promise<string> {
   const {stdout} = await execa('git', ['tag', '--list'], {cwd});
-  const tags =
-      stdout.split('\n')
-          .filter(str => str.match(/^v\d+\.\d+\.\d+$/))
-          .sort((tag1: string, tag2: string): number => {
-            const match1 = tag1.match(/^v(\d+)\.(\d+)\.(\d+)$/);
-            const match2 = tag2.match(/^v(\d+)\.(\d+)\.(\d+)$/);
-            if (!match1 || !match2) {
-              throw new Error(`Cannot compare git tags ${tag1} and ${tag2}`);
-            }
-            // compare major version, then minor versions, then patch versions.
-            // return positive number, zero, or negative number
-            for (let idx = 1; idx <= 3; ++idx) {
-              if (match1[idx] !== match2[idx]) {
-                return Number(match1[idx]) - Number(match2[idx]);
-              }
-            }
-            return 0;
-          });
+  const tags = stdout
+    .split('\n')
+    .filter(str => str.match(/^v\d+\.\d+\.\d+$/))
+    .sort(
+      (tag1: string, tag2: string): number => {
+        const match1 = tag1.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+        const match2 = tag2.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+        if (!match1 || !match2) {
+          throw new Error(`Cannot compare git tags ${tag1} and ${tag2}`);
+        }
+        // compare major version, then minor versions, then patch versions.
+        // return positive number, zero, or negative number
+        for (let idx = 1; idx <= 3; ++idx) {
+          if (match1[idx] !== match2[idx]) {
+            return Number(match1[idx]) - Number(match2[idx]);
+          }
+        }
+        return 0;
+      }
+    );
   // the last tag in the list is the latest release
   return tags[tags.length - 1];
 }
 
 async function preparePackage(packageName: string): Promise<void> {
   await execa(
-      'git', ['clone', `${baseRepoUrl}${packageName}.git`, packageName],
-      {stdio: 'inherit'});
+    'git',
+    ['clone', `${baseRepoUrl}${packageName}.git`, packageName],
+    {stdio: 'inherit'}
+  );
   const tag = await latestRelease(packageName);
   await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
 
@@ -89,8 +93,10 @@ async function preparePackage(packageName: string): Promise<void> {
 }
 
 async function runSystemTest(packageName: string): Promise<void> {
-  await execa(
-      'npm', ['run', 'system-test'], {cwd: packageName, stdio: 'inherit'});
+  await execa('npm', ['run', 'system-test'], {
+    cwd: packageName,
+    stdio: 'inherit',
+  });
 }
 
 describe('Run system tests for some libraries', () => {

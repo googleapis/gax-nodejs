@@ -74,28 +74,33 @@ describe('Run end-to-end test', () => {
 
     const showcasePath = path.join(testDir, 'gapic-showcase');
     const grpcServerPath = path.join(showcasePath, 'nodejs-server');
-    await execa(
-        'git', ['clone', showcaseRepoUrl, 'gapic-showcase'],
-        {cwd: testDir, stdio: 'inherit'});
+    await execa('git', ['clone', showcaseRepoUrl, 'gapic-showcase'], {
+      cwd: testDir,
+      stdio: 'inherit',
+    });
     await execa('npm', ['install'], {cwd: grpcServerPath, stdio: 'inherit'});
-    grpcServer = execa(
-        'node', ['build/src/index.js'],
-        {cwd: grpcServerPath, stdio: 'inherit'});
+    grpcServer = execa('node', ['build/src/index.js'], {
+      cwd: grpcServerPath,
+      stdio: 'inherit',
+    });
     console.log('gRPC server is started.');
     grpcServer.then(
-        () => {
-          throw new Error('gRPC server is not supposed to exit normally!');
-        },
-        () => {
-          console.log('gRPC server is terminated.');
-        });
+      () => {
+        throw new Error('gRPC server is not supposed to exit normally!');
+      },
+      () => {
+        console.log('gRPC server is terminated.');
+      }
+    );
   });
 
   it('should be able to prepare test app', async () => {
     await ncpp(testAppSource, testAppDestination);
     await ncpp(gaxTarball, path.join(testAppDestination, 'google-gax.tgz'));
-    await execa(
-        'npm', ['install'], {cwd: testAppDestination, stdio: 'inherit'});
+    await execa('npm', ['install'], {
+      cwd: testAppDestination,
+      stdio: 'inherit',
+    });
   });
 
   it('should be able to run unit tests of test app', async () => {

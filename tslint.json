@@ -1,0 +1,7 @@
+{
+  "extends": "gts/tslint.json",
+  "rules": {
+    "ban-ts-ignore": false,
+    "ban": false
+  }
+}

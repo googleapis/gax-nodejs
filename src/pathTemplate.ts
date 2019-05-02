@@ -48,9 +48,9 @@ export interface Segment {
   literal: string;
 }
 
-export type Bindings = {
-  [index: string]: string
-};
+export interface Bindings {
+  [index: string]: string;
+}
 
 export class PathTemplate {
   private readonly parseResult: ParseResult;
@@ -104,15 +104,20 @@ export class PathTemplate {
           index += 1;
         } else {
           const msg = util.format(
-              'mismatched literal (index=%d): \'%s\' != \'%s\'', index,
-              segment.literal, pathSegments[index]);
+            "mismatched literal (index=%d): '%s' != '%s'",
+            index,
+            segment.literal,
+            pathSegments[index]
+          );
           throw new TypeError(msg);
         }
       }
     });
     if (index !== pathSegments.length || index !== segmentCount) {
       const msg = util.format(
-          'match error: could not instantiate a path template from %s', path);
+        'match error: could not instantiate a path template from %s',
+        path
+      );
       throw new TypeError(msg);
     }
     return bindings;
@@ -133,8 +138,10 @@ export class PathTemplate {
       if (segment.kind === extras.BINDING) {
         if (!has(bindings, segment.literal)) {
           const msg = util.format(
-              'Value for key %s is not provided in %s', segment.literal,
-              bindings);
+            'Value for key %s is not provided in %s',
+            segment.literal,
+            bindings
+          );
           throw new TypeError(msg);
         }
         const tmp = new PathTemplate(bindings[segment.literal]);

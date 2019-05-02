@@ -37,8 +37,10 @@ import {GoogleError} from '../googleError';
  * Creates an API caller for regular unary methods.
  */
 export class NormalApiCaller implements APICaller {
-  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
-      |OngoingCall {
+  init(
+    settings: ApiCallerSettings,
+    callback?: APICallback
+  ): OngoingCallPromise | OngoingCall {
     if (callback) {
       return new OngoingCall(callback);
     }
@@ -50,8 +52,11 @@ export class NormalApiCaller implements APICaller {
   }
 
   call(
-      apiCall: SimpleCallbackFunction, argument: {}, settings: {},
-      canceller: OngoingCallPromise): void {
+    apiCall: SimpleCallbackFunction,
+    argument: {},
+    settings: {},
+    canceller: OngoingCallPromise
+  ): void {
     canceller.call(apiCall, argument);
   }
 

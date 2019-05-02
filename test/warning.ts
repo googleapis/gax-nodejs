@@ -35,7 +35,7 @@ import * as sinon from 'sinon';
 import {warn} from '../src/warnings';
 
 describe('warnings', () => {
-  it('should warn the given code once with the first message', (done) => {
+  it('should warn the given code once with the first message', done => {
     const stub = sinon.stub(process, 'emitWarning');
     warn('code1', 'message1-1');
     warn('code1', 'message1-2');
@@ -44,7 +44,7 @@ describe('warnings', () => {
     stub.restore();
     done();
   });
-  it('should warn each code once', (done) => {
+  it('should warn each code once', done => {
     const stub = sinon.stub(process, 'emitWarning');
     warn('codeA', 'messageA-1');
     warn('codeB', 'messageB-1');

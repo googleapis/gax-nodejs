@@ -42,7 +42,7 @@ import {BundleExecutor} from './bundleExecutor';
 export class BundleDescriptor implements Descriptor {
   bundledField: string;
   requestDiscriminatorFields: string[];
-  subresponseField: string|null;
+  subresponseField: string | null;
   byteLengthFunction: Function;
 
   /**
@@ -73,8 +73,11 @@ export class BundleDescriptor implements Descriptor {
    * @constructor
    */
   constructor(
-      bundledField: string, requestDiscriminatorFields: string[],
-      subresponseField: string|null, byteLengthFunction: Function) {
+    bundledField: string,
+    requestDiscriminatorFields: string[],
+    subresponseField: string | null,
+    byteLengthFunction: Function
+  ) {
     if (!byteLengthFunction && typeof subresponseField === 'function') {
       byteLengthFunction = subresponseField;
       subresponseField = null;
@@ -90,6 +93,7 @@ export class BundleDescriptor implements Descriptor {
       return new NormalApiCaller();
     }
     return new BundleApiCaller(
-        new BundleExecutor(settings.bundleOptions!, this));
+      new BundleExecutor(settings.bundleOptions!, this)
+    );
   }
 }

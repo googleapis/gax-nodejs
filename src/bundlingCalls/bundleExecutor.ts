@@ -72,7 +72,9 @@ export class BundleExecutor {
    * @constructor
    */
   constructor(
-      bundleOptions: BundleOptions, bundleDescriptor: BundleDescriptor) {
+    bundleOptions: BundleOptions,
+    bundleDescriptor: BundleDescriptor
+  ) {
     this._options = bundleOptions;
     this._descriptor = bundleDescriptor;
     this._tasks = {};
@@ -90,33 +92,42 @@ export class BundleExecutor {
    * @return {function()} - the function to cancel the scheduled invocation.
    */
   schedule(
-      apiCall: SimpleCallbackFunction,
-      request: {[index: string]: Array<{}>|string}, callback?: TaskCallback) {
-    const bundleId =
-        computeBundleId(request, this._descriptor.requestDiscriminatorFields);
+    apiCall: SimpleCallbackFunction,
+    request: {[index: string]: Array<{}> | string},
+    callback?: TaskCallback
+  ) {
+    const bundleId = computeBundleId(
+      request,
+      this._descriptor.requestDiscriminatorFields
+    );
     callback = (callback || noop) as TaskCallback;
     if (bundleId === undefined) {
       warn(
-          'bundling_schedule_bundleid_undefined',
-          'The request does not have enough information for request bundling. ' +
-              `Invoking immediately. Request: ${JSON.stringify(request)} ` +
-              `discriminator fields: ${
-                  this._descriptor.requestDiscriminatorFields}`);
+        'bundling_schedule_bundleid_undefined',
+        'The request does not have enough information for request bundling. ' +
+          `Invoking immediately. Request: ${JSON.stringify(request)} ` +
+          `discriminator fields: ${this._descriptor.requestDiscriminatorFields}`
+      );
       return apiCall(request, callback);
     }
     if (request[this._descriptor.bundledField] === undefined) {
       warn(
-          'bundling_no_bundled_field',
-          `Request does not contain field ${
-              this._descriptor.bundledField} that must present for bundling. ` +
-              `Invoking immediately. Request: ${JSON.stringify(request)}`);
+        'bundling_no_bundled_field',
+        `Request does not contain field ${
+          this._descriptor.bundledField
+        } that must present for bundling. ` +
+          `Invoking immediately. Request: ${JSON.stringify(request)}`
+      );
       return apiCall(request, callback);
     }
 
     if (!(bundleId in this._tasks)) {
       this._tasks[bundleId] = new Task(
-          apiCall, request, this._descriptor.bundledField,
-          this._descriptor.subresponseField);
+        apiCall,
+        request,
+        this._descriptor.bundledField,
+        this._descriptor.subresponseField
+      );
     }
     let task = this._tasks[bundleId];
     callback.id = String(this._invocationId++);
@@ -133,15 +144,23 @@ export class BundleExecutor {
     const countLimit = this._options.elementCountLimit || 0;
     const byteLimit = this._options.requestByteLimit || 0;
 
-    if ((countLimit > 0 && elementCount > countLimit) ||
-        (byteLimit > 0 && requestBytes >= byteLimit)) {
+    if (
+      (countLimit > 0 && elementCount > countLimit) ||
+      (byteLimit > 0 && requestBytes >= byteLimit)
+    ) {
       let message;
       if (countLimit > 0 && elementCount > countLimit) {
-        message = 'The number of elements ' + elementCount +
-            ' exceeds the limit ' + this._options.elementCountLimit;
+        message =
+          'The number of elements ' +
+          elementCount +
+          ' exceeds the limit ' +
+          this._options.elementCountLimit;
       } else {
-        message = 'The required bytes ' + requestBytes + ' exceeds the limit ' +
-            this._options.requestByteLimit;
+        message =
+          'The required bytes ' +
+          requestBytes +
+          ' exceeds the limit ' +
+          this._options.requestByteLimit;
       }
       const error = new GoogleError(message);
       error.code = status.INVALID_ARGUMENT;
@@ -154,12 +173,17 @@ export class BundleExecutor {
     const existingCount = task.getElementCount();
     const existingBytes = task.getRequestByteSize();
 
-    if ((countLimit > 0 && elementCount + existingCount >= countLimit) ||
-        (byteLimit > 0 && requestBytes + existingBytes >= byteLimit)) {
+    if (
+      (countLimit > 0 && elementCount + existingCount >= countLimit) ||
+      (byteLimit > 0 && requestBytes + existingBytes >= byteLimit)
+    ) {
       this._runNow(bundleId);
       this._tasks[bundleId] = new Task(
-          apiCall, request, this._descriptor.bundledField,
-          this._descriptor.subresponseField);
+        apiCall,
+        request,
+        this._descriptor.bundledField,
+        this._descriptor.subresponseField
+      );
       task = this._tasks[bundleId];
     }
 
@@ -172,8 +196,10 @@ export class BundleExecutor {
 
     const countThreshold = this._options.elementCountThreshold || 0;
     const sizeThreshold = this._options.requestByteThreshold || 0;
-    if ((countThreshold > 0 && task.getElementCount() >= countThreshold) ||
-        (sizeThreshold > 0 && task.getRequestByteSize() >= sizeThreshold)) {
+    if (
+      (countThreshold > 0 && task.getElementCount() >= countThreshold) ||
+      (sizeThreshold > 0 && task.getRequestByteSize() >= sizeThreshold)
+    ) {
       this._runNow(bundleId);
       return ret;
     }

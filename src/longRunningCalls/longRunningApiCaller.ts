@@ -32,7 +32,13 @@
 import {APICaller, ApiCallerSettings} from '../apiCaller';
 import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
-import {BackoffSettings, CallOptions, CallSettings, createBackoffSettings, createDefaultBackoffSettings} from '../gax';
+import {
+  BackoffSettings,
+  CallOptions,
+  CallSettings,
+  createBackoffSettings,
+  createDefaultBackoffSettings,
+} from '../gax';
 import {GoogleError} from '../googleError';
 
 import {Operation} from './longrunning';
@@ -53,49 +59,61 @@ export class LongrunningApiCaller implements APICaller {
     this.longrunningDescriptor = longrunningDescriptor;
   }
 
-  init(settings: ApiCallerSettings, callback?: APICallback): OngoingCallPromise
-      |OngoingCall {
+  init(
+    settings: ApiCallerSettings,
+    callback?: APICallback
+  ): OngoingCallPromise | OngoingCall {
     if (callback) {
       return new OngoingCall(callback);
     }
     return new OngoingCallPromise(settings.promise);
   }
 
-
   wrap(func: GRPCCall): GRPCCall {
     return func;
   }
 
   call(
-      apiCall: SimpleCallbackFunction, argument: {}, settings: CallOptions,
-      canceller: OngoingCallPromise) {
+    apiCall: SimpleCallbackFunction,
+    argument: {},
+    settings: CallOptions,
+    canceller: OngoingCallPromise
+  ) {
     canceller.call((argument, callback) => {
       return this._wrapOperation(apiCall, settings, argument, callback);
     }, argument);
   }
 
   private _wrapOperation(
-      apiCall: SimpleCallbackFunction, settings: CallOptions, argument: {},
-      callback: APICallback) {
-    let backoffSettings: BackoffSettings|undefined = settings.longrunning;
+    apiCall: SimpleCallbackFunction,
+    settings: CallOptions,
+    argument: {},
+    callback: APICallback
+  ) {
+    let backoffSettings: BackoffSettings | undefined = settings.longrunning;
     if (!backoffSettings) {
       backoffSettings = createDefaultBackoffSettings();
     }
 
     const longrunningDescriptor = this.longrunningDescriptor;
     return apiCall(
-        argument, (err: GoogleError|null, rawResponse: {}|null|undefined) => {
-          if (err) {
-            callback(err, null, null, rawResponse as Operation);
-            return;
-          }
+      argument,
+      (err: GoogleError | null, rawResponse: {} | null | undefined) => {
+        if (err) {
+          callback(err, null, null, rawResponse as Operation);
+          return;
+        }
 
-          const operation = new Operation(
-              rawResponse as Operation, longrunningDescriptor, backoffSettings!,
-              settings);
+        const operation = new Operation(
+          rawResponse as Operation,
+          longrunningDescriptor,
+          backoffSettings!,
+          settings
+        );
 
-          callback(null, operation, rawResponse);
-        });
+        callback(null, operation, rawResponse);
+      }
+    );
   }
 
   fail(canceller: OngoingCallPromise, err: GoogleError): void {

@@ -47,40 +47,54 @@ export function createApiCall(func, opts?) {
   const settings = new gax.CallSettings(opts.settings || {});
   const descriptor = opts.descriptor;
   return realCreateApiCall(
-             Promise.resolve((argument, metadata, options, callback) => {
-               if (opts.returnCancelFunc) {
-                 return {
-                   cancel: func(argument, metadata, options, callback),
-                   completed: true,
-                   call: () => {
-                     throw new Error('should not be run');
-                   }
-                 };
-               }
-               func(argument, metadata, options, callback);
-               return {
-                 cancel: opts.cancel || (() => {
-                           callback(new Error('canceled'));
-                         }),
-                 completed: true,
-                 call: () => {
-                   throw new Error('should not be run');
-                 }
-               };
-             }),
-             settings, descriptor) as GaxCallPromise;
+    Promise.resolve((argument, metadata, options, callback) => {
+      if (opts.returnCancelFunc) {
+        return {
+          cancel: func(argument, metadata, options, callback),
+          completed: true,
+          call: () => {
+            throw new Error('should not be run');
+          },
+        };
+      }
+      func(argument, metadata, options, callback);
+      return {
+        cancel:
+          opts.cancel ||
+          (() => {
+            callback(new Error('canceled'));
+          }),
+        completed: true,
+        call: () => {
+          throw new Error('should not be run');
+        },
+      };
+    }),
+    settings,
+    descriptor
+  ) as GaxCallPromise;
 }
 
 export function createRetryOptions(
-    backoffSettingsOrInitialRetryDelayMillis: number|gax.BackoffSettings,
-    retryDelayMultiplier?: number, maxRetryDelayMillis?: number,
-    initialRpcTimeoutMillis?: number, rpcTimeoutMultiplier?: number,
-    maxRpcTimeoutMillis?: number, totalTimeoutMillis?: number) {
-  const backoff = typeof backoffSettingsOrInitialRetryDelayMillis === 'number' ?
-      gax.createBackoffSettings(
-          backoffSettingsOrInitialRetryDelayMillis, retryDelayMultiplier!,
-          maxRetryDelayMillis!, initialRpcTimeoutMillis!, rpcTimeoutMultiplier!,
-          maxRpcTimeoutMillis!, totalTimeoutMillis!) :
-      backoffSettingsOrInitialRetryDelayMillis;
+  backoffSettingsOrInitialRetryDelayMillis: number | gax.BackoffSettings,
+  retryDelayMultiplier?: number,
+  maxRetryDelayMillis?: number,
+  initialRpcTimeoutMillis?: number,
+  rpcTimeoutMultiplier?: number,
+  maxRpcTimeoutMillis?: number,
+  totalTimeoutMillis?: number
+) {
+  const backoff =
+    typeof backoffSettingsOrInitialRetryDelayMillis === 'number'
+      ? gax.createBackoffSettings(
+          backoffSettingsOrInitialRetryDelayMillis,
+          retryDelayMultiplier!,
+          maxRetryDelayMillis!,
+          initialRpcTimeoutMillis!,
+          rpcTimeoutMultiplier!,
+          maxRpcTimeoutMillis!,
+          totalTimeoutMillis!
+        )
+      : backoffSettingsOrInitialRetryDelayMillis;
   return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
 }

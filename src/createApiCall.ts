@@ -34,7 +34,13 @@
  */
 
 import {createAPICaller} from './apiCaller';
-import {APICallback, GaxCall, GRPCCall, GRPCCallOtherArgs, RequestType} from './apitypes';
+import {
+  APICallback,
+  GaxCall,
+  GRPCCall,
+  GRPCCallOtherArgs,
+  RequestType,
+} from './apitypes';
 import {Descriptor} from './descriptor';
 import {CallOptions, CallSettings} from './gax';
 import {retryable} from './normalCalls/retries';
@@ -60,8 +66,10 @@ import {addTimeoutArg} from './normalCalls/timeout';
  *   to make an rpc call.
  */
 export function createApiCall(
-    func: Promise<GRPCCall>|GRPCCall, settings: CallSettings,
-    descriptor?: Descriptor): GaxCall {
+  func: Promise<GRPCCall> | GRPCCall,
+  settings: CallSettings,
+  descriptor?: Descriptor
+): GaxCall {
   // we want to be able to accept both promise resolving to a function and a
   // function. Currently client librares are only calling this method with a
   // promise, but it will change.
@@ -70,8 +78,11 @@ export function createApiCall(
   // the following apiCaller will be used for all calls of this function...
   const apiCaller = createAPICaller(settings, descriptor);
 
-  return (request: RequestType, callOptions?: CallOptions,
-          callback?: APICallback) => {
+  return (
+    request: RequestType,
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ) => {
     const thisSettings = settings.merge(callOptions);
 
     let currentApiCaller = apiCaller;
@@ -83,24 +94,28 @@ export function createApiCall(
 
     const status = currentApiCaller.init(thisSettings, callback);
     funcPromise
-        .then(func => {
-          func = currentApiCaller.wrap(func);
-          const retry = thisSettings.retry;
-          if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
-            return retryable(
-                func, thisSettings.retry!,
-                thisSettings.otherArgs as GRPCCallOtherArgs);
-          }
-          return addTimeoutArg(
-              func, thisSettings.timeout,
-              thisSettings.otherArgs as GRPCCallOtherArgs);
-        })
-        .then(apiCall => {
-          currentApiCaller.call(apiCall, request, thisSettings, status);
-        })
-        .catch(err => {
-          currentApiCaller.fail(status, err);
-        });
+      .then(func => {
+        func = currentApiCaller.wrap(func);
+        const retry = thisSettings.retry;
+        if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
+          return retryable(
+            func,
+            thisSettings.retry!,
+            thisSettings.otherArgs as GRPCCallOtherArgs
+          );
+        }
+        return addTimeoutArg(
+          func,
+          thisSettings.timeout,
+          thisSettings.otherArgs as GRPCCallOtherArgs
+        );
+      })
+      .then(apiCall => {
+        currentApiCaller.call(apiCall, request, thisSettings, status);
+      })
+      .catch(err => {
+        currentApiCaller.fail(status, err);
+      });
     return currentApiCaller.result(status);
   };
 }

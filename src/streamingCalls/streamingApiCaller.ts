@@ -29,9 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 import {APICaller, ApiCallerSettings} from '../apiCaller';
-import {APICallback, BiDiStreamingCall, CancellableStream, ClientStreamingCall, GRPCCall, ServerStreamingCall, SimpleCallbackFunction} from '../apitypes';
+import {
+  APICallback,
+  BiDiStreamingCall,
+  CancellableStream,
+  ClientStreamingCall,
+  GRPCCall,
+  ServerStreamingCall,
+  SimpleCallbackFunction,
+} from '../apitypes';
 import {warn} from '../warnings';
 
 import {StreamDescriptor} from './streamDescriptor';
@@ -61,8 +68,12 @@ export class StreamingApiCaller implements APICaller {
           return (func as ServerStreamingCall)(argument, metadata, options);
         };
       case StreamType.CLIENT_STREAMING:
-        return (argument: {}, metadata: {}, options: {},
-                callback?: APICallback) => {
+        return (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback?: APICallback
+        ) => {
           return (func as ClientStreamingCall)(metadata, options, callback);
         };
       case StreamType.BIDI_STREAMING:
@@ -71,15 +82,19 @@ export class StreamingApiCaller implements APICaller {
         };
       default:
         warn(
-            'streaming_wrap_unknown_stream_type',
-            `Unknown stream type: ${this.descriptor.type}`);
+          'streaming_wrap_unknown_stream_type',
+          `Unknown stream type: ${this.descriptor.type}`
+        );
     }
     return func;
   }
 
   call(
-      apiCall: SimpleCallbackFunction, argument: {}, settings: {},
-      stream: StreamProxy) {
+    apiCall: SimpleCallbackFunction,
+    argument: {},
+    settings: {},
+    stream: StreamProxy
+  ) {
     stream.setStream(apiCall, argument);
   }
 
