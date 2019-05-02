@@ -94,7 +94,7 @@
   },
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=8.10.0"
   },
   "nyc": {
     "exclude": [
