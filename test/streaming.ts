@@ -42,8 +42,10 @@ import * as streaming from '../src/streamingCalls/streaming';
 function createApiCallStreaming(func, type) {
   const settings = new gax.CallSettings();
   return createApiCall(
-             Promise.resolve(func), settings, new StreamDescriptor(type)) as
-      GaxCallStream;
+    Promise.resolve(func),
+    settings,
+    new StreamDescriptor(type)
+  ) as GaxCallStream;
 }
 
 describe('streaming', () => {
@@ -60,8 +62,10 @@ describe('streaming', () => {
       return s;
     });
 
-    const apiCall =
-        createApiCallStreaming(spy, streaming.StreamType.SERVER_STREAMING);
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
     const s = apiCall({}, undefined);
     const callback = sinon.spy(data => {
       if (callback.callCount === 1) {
@@ -96,8 +100,10 @@ describe('streaming', () => {
       return s;
     }
 
-    const apiCall =
-        createApiCallStreaming(func, streaming.StreamType.CLIENT_STREAMING);
+    const apiCall = createApiCallStreaming(
+      func,
+      streaming.StreamType.CLIENT_STREAMING
+    );
     const s = apiCall({}, undefined, (err, response) => {
       // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
@@ -123,8 +129,10 @@ describe('streaming', () => {
       return s;
     }
 
-    const apiCall =
-        createApiCallStreaming(func, streaming.StreamType.BIDI_STREAMING);
+    const apiCall = createApiCallStreaming(
+      func,
+      streaming.StreamType.BIDI_STREAMING
+    );
     const s = apiCall({}, undefined);
     const arg = {foo: 'bar'};
     const callback = sinon.spy(data => {
@@ -163,8 +171,10 @@ describe('streaming', () => {
       });
       return s;
     }
-    const apiCall =
-        createApiCallStreaming(func, streaming.StreamType.BIDI_STREAMING);
+    const apiCall = createApiCallStreaming(
+      func,
+      streaming.StreamType.BIDI_STREAMING
+    );
     const s = apiCall({}, undefined);
     let receivedMetadata: {};
     let receivedStatus: {};
@@ -217,8 +227,10 @@ describe('streaming', () => {
       });
       return s;
     }
-    const apiCall =
-        createApiCallStreaming(func, streaming.StreamType.SERVER_STREAMING);
+    const apiCall = createApiCallStreaming(
+      func,
+      streaming.StreamType.SERVER_STREAMING
+    );
     const s = apiCall({}, undefined);
     let counter = 0;
     const expectedCount = 5;

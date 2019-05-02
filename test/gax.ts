@@ -92,16 +92,26 @@ function expectRetryOptions(obj) {
 function expectBackoffSettings(obj) {
   expect(obj).to.be.an.instanceOf(Object);
   expect(obj).to.have.all.keys(
-      'initialRetryDelayMillis', 'retryDelayMultiplier', 'maxRetryDelayMillis',
-      'initialRpcTimeoutMillis', 'rpcTimeoutMultiplier', 'maxRpcTimeoutMillis',
-      'totalTimeoutMillis');
+    'initialRetryDelayMillis',
+    'retryDelayMultiplier',
+    'maxRetryDelayMillis',
+    'initialRpcTimeoutMillis',
+    'rpcTimeoutMultiplier',
+    'maxRpcTimeoutMillis',
+    'totalTimeoutMillis'
+  );
 }
 
 describe('gax construct settings', () => {
   it('creates settings', () => {
     const otherArgs = {key: 'value'};
     const defaults = gax.constructSettings(
-        SERVICE_NAME, A_CONFIG, {}, RETRY_DICT, otherArgs);
+      SERVICE_NAME,
+      A_CONFIG,
+      {},
+      RETRY_DICT,
+      otherArgs
+    );
     let settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
     expectRetryOptions(settings.retry);
@@ -125,8 +135,12 @@ describe('gax construct settings', () => {
         },
       },
     };
-    const defaults =
-        gax.constructSettings(SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT);
+    const defaults = gax.constructSettings(
+      SERVICE_NAME,
+      A_CONFIG,
+      overrides,
+      RETRY_DICT
+    );
 
     let settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
@@ -163,8 +177,12 @@ describe('gax construct settings', () => {
       },
     };
 
-    const defaults =
-        gax.constructSettings(SERVICE_NAME, A_CONFIG, overrides, RETRY_DICT);
+    const defaults = gax.constructSettings(
+      SERVICE_NAME,
+      A_CONFIG,
+      overrides,
+      RETRY_DICT
+    );
 
     let settings = defaults.bundlingMethod;
     let backoff = settings.retry.backoffSettings;

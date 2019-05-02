@@ -50,8 +50,10 @@ export class PageDescriptor implements Descriptor {
   resourceField: string;
 
   constructor(
-      requestPageTokenField: string, responsePageTokenField: string,
-      resourceField: string) {
+    requestPageTokenField: string,
+    responsePageTokenField: string,
+    resourceField: string
+  ) {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
     this.resourceField = resourceField;
@@ -60,14 +62,17 @@ export class PageDescriptor implements Descriptor {
   /**
    * Creates a new object Stream which emits the resource on 'data' event.
    */
-  createStream(apiCall: GaxCall, request: {}, options: CallSettings):
-      Transform {
+  createStream(
+    apiCall: GaxCall,
+    request: {},
+    options: CallSettings
+  ): Transform {
     const stream = new PassThrough({objectMode: true});
     options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
-    function callback(err: Error|null, resources, next) {
+    function callback(err: Error | null, resources, next) {
       if (err) {
         stream.emit('error', err);
         return;

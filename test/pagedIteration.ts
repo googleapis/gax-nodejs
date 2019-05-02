@@ -67,12 +67,12 @@ describe('paged iteration', () => {
       expected.push(i);
     }
     apiCall({}, undefined)
-        .then(results => {
-          expect(results).to.be.an('array');
-          expect(results[0]).to.deep.equal(expected);
-          done();
-        })
-        .catch(done);
+      .then(results => {
+        expect(results).to.be.an('array');
+        expect(results[0]).to.deep.equal(expected);
+        done();
+      })
+      .catch(done);
   });
 
   it('calls callback with an Array', done => {
@@ -94,34 +94,34 @@ describe('paged iteration', () => {
     let expected = 0;
     const req = {};
     apiCall(req, {autoPaginate: false})
-        .then(response => {
-          expect(response).to.be.an('array');
-          expect(response[0]).to.be.an('array');
+      .then(response => {
+        expect(response).to.be.an('array');
+        expect(response[0]).to.be.an('array');
+        // @ts-ignore response type
+        expect(response[0].length).to.eq(pageSize);
+        for (let i = 0; i < pageSize; ++i) {
           // @ts-ignore response type
-          expect(response[0].length).to.eq(pageSize);
-          for (let i = 0; i < pageSize; ++i) {
-            // @ts-ignore response type
-            expect(response[0][i]).to.eq(expected);
-            expected++;
-          }
-          expect(response[1]).to.be.an('object');
-          expect(response[1]).to.have.property('pageToken');
-          expect(response[2]).to.be.an('object');
-          expect(response[2]).to.have.property('nums');
-          // @ts-ignore response type
-          return apiCall(response[1], {autoPaginate: false});
-        })
-        .then(response => {
-          expect(response).to.be.an('array');
-          expect(response[0]).to.be.an('array');
-          expect(response[0].length).to.eq(pageSize);
-          for (let i = 0; i < pageSize; ++i) {
-            expect(response[0][i]).to.eq(expected);
-            expected++;
-          }
-          done();
-        })
-        .catch(done);
+          expect(response[0][i]).to.eq(expected);
+          expected++;
+        }
+        expect(response[1]).to.be.an('object');
+        expect(response[1]).to.have.property('pageToken');
+        expect(response[2]).to.be.an('object');
+        expect(response[2]).to.have.property('nums');
+        // @ts-ignore response type
+        return apiCall(response[1], {autoPaginate: false});
+      })
+      .then(response => {
+        expect(response).to.be.an('array');
+        expect(response[0]).to.be.an('array');
+        expect(response[0].length).to.eq(pageSize);
+        for (let i = 0; i < pageSize; ++i) {
+          expect(response[0][i]).to.eq(expected);
+          expected++;
+        }
+        done();
+      })
+      .catch(done);
   });
 
   it('sets additional arguments to the callback', done => {
@@ -159,13 +159,13 @@ describe('paged iteration', () => {
     }
     const apiCall = util.createApiCall(failingFunc, createOptions);
     apiCall({}, undefined)
-        .then(resources => {
-          expect(resources).to.be.an('array');
-          // @ts-ignore response type
-          expect(resources[0].length).to.eq(pageSize * pagesToStream);
-          done();
-        })
-        .catch(done);
+      .then(resources => {
+        expect(resources).to.be.an('array');
+        // @ts-ignore response type
+        expect(resources[0].length).to.eq(pageSize * pagesToStream);
+        done();
+      })
+      .catch(done);
   });
 
   it('caps the results by maxResults', () => {
@@ -198,24 +198,27 @@ describe('paged iteration', () => {
     function streamChecker(stream, onEnd, done, start) {
       let counter = start;
       stream
-          .on('data',
-              data => {
-                expect(data).to.eq(counter);
-                counter++;
-              })
-          .on('end',
-              () => {
-                onEnd();
-                done();
-              })
-          .on('error', done);
+        .on('data', data => {
+          expect(data).to.eq(counter);
+          counter++;
+        })
+        .on('end', () => {
+          onEnd();
+          done();
+        })
+        .on('error', done);
     }
 
     it('returns a stream', done => {
-      // @ts-ignore incomplete options
-      streamChecker(descriptor.createStream(apiCall, {}, null), () => {
-        expect(spy.callCount).to.eq(pagesToStream + 1);
-      }, done, 0);
+      streamChecker(
+        // @ts-ignore incomplete options
+        descriptor.createStream(apiCall, {}, {}),
+        () => {
+          expect(spy.callCount).to.eq(pagesToStream + 1);
+        },
+        done,
+        0
+      );
     });
 
     it('stops in the middle', done => {
@@ -226,9 +229,14 @@ describe('paged iteration', () => {
           stream.end();
         }
       });
-      streamChecker(stream, () => {
-        expect(spy.callCount).to.eq(2);
-      }, done, 0);
+      streamChecker(
+        stream,
+        () => {
+          expect(spy.callCount).to.eq(2);
+        },
+        done,
+        0
+      );
     });
 
     it('ignores autoPaginate options, but respects others', done => {
@@ -236,22 +244,32 @@ describe('paged iteration', () => {
       // pageSize which will be used so that the stream will start from the
       // specified token.
       const options = {pageToken: pageSize, autoPaginate: false};
-      // @ts-ignore incomplete options
-      streamChecker(descriptor.createStream(apiCall, {}, options), () => {
-        expect(spy.callCount).to.eq(pagesToStream);
-      }, done, pageSize);
+      streamChecker(
+        // @ts-ignore incomplete options
+        descriptor.createStream(apiCall, {}, options),
+        () => {
+          expect(spy.callCount).to.eq(pagesToStream);
+        },
+        done,
+        pageSize
+      );
     });
 
     it('caps the elements by maxResults', done => {
       const onData = sinon.spy();
       const stream =
-          // @ts-ignore incomplete options
-          descriptor.createStream(apiCall, {}, {maxResults: pageSize * 2 + 2});
+        // @ts-ignore incomplete options
+        descriptor.createStream(apiCall, {}, {maxResults: pageSize * 2 + 2});
       stream.on('data', onData);
-      streamChecker(stream, () => {
-        expect(spy.callCount).to.eq(3);
-        expect(onData.callCount).to.eq(pageSize * 2 + 2);
-      }, done, 0);
+      streamChecker(
+        stream,
+        () => {
+          expect(spy.callCount).to.eq(3);
+          expect(onData.callCount).to.eq(pageSize * 2 + 2);
+        },
+        done,
+        0
+      );
     });
 
     it('does not call API eagerly', done => {
@@ -259,9 +277,14 @@ describe('paged iteration', () => {
       const stream = descriptor.createStream(apiCall, {}, null);
       setTimeout(() => {
         expect(spy.callCount).to.eq(0);
-        streamChecker(stream, () => {
-          expect(spy.callCount).to.eq(pagesToStream + 1);
-        }, done, 0);
+        streamChecker(
+          stream,
+          () => {
+            expect(spy.callCount).to.eq(pagesToStream + 1);
+          },
+          done,
+          0
+        );
       }, 50);
     });
 
@@ -290,20 +313,18 @@ describe('paged iteration', () => {
       });
       let count = 0;
       output
-          .on('data',
-              () => {
-                count++;
-                if (count === pageSize + 1) {
-                  output.end();
-                }
-              })
-          .on('end',
-              () => {
-                expect(count).to.eq(pageSize + 1);
-                expect(spy.callCount).to.eq(2);
-                done();
-              })
-          .on('error', done);
+        .on('data', () => {
+          count++;
+          if (count === pageSize + 1) {
+            output.end();
+          }
+        })
+        .on('end', () => {
+          expect(count).to.eq(pageSize + 1);
+          expect(spy.callCount).to.eq(2);
+          done();
+        })
+        .on('error', done);
     });
   });
 });

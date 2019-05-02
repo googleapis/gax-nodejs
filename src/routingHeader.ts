@@ -45,5 +45,7 @@
  * @return {string} the routing header value.
  */
 export function fromParams(params: {[index: string]: {}}): string {
-  return Object.keys(params).map(key => `${key}=${params[key]}`).join('&');
+  return Object.keys(params)
+    .map(key => `${key}=${params[key]}`)
+    .join('&');
 }

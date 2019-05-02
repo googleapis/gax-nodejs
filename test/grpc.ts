@@ -39,8 +39,9 @@ import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
 
 // When this flag is set, tests that have to do with loadProto will be skipped.
 // They are known to not work with grpc-js, as they use a now-deprecated API.
-const USE_GRPC_JS = semver.gte(process.version, '8.13.0') &&
-    !!process.env.GOOGLE_CLOUD_USE_GRPC_JS;
+const USE_GRPC_JS =
+  semver.gte(process.version, '8.13.0') &&
+  !!process.env.GOOGLE_CLOUD_USE_GRPC_JS;
 
 function gaxGrpc(options?) {
   return new GrpcClient(options);
@@ -154,11 +155,12 @@ describe('grpc', () => {
 
       stubAuth.getClient.resolves(dummyAuth);
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
-      stubGrpc.credentials.createFromGoogleCredential.withArgs(dummyAuth)
-          .returns(dummyGrpcAuth);
+      stubGrpc.credentials.createFromGoogleCredential
+        .withArgs(dummyAuth)
+        .returns(dummyGrpcAuth);
       stubGrpc.credentials.combineChannelCredentials
-          .withArgs(dummySslCreds, dummyGrpcAuth)
-          .returns(dummyChannelCreds);
+        .withArgs(dummySslCreds, dummyGrpcAuth)
+        .returns(dummyChannelCreds);
       grpcClient = gaxGrpc({auth: stubAuth, grpc: stubGrpc});
     });
 
@@ -186,18 +188,23 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
-          'grpc.max_send_message_length', 'grpc.initial_reconnect_backoff_ms'
+          'grpc.max_send_message_length',
+          'grpc.initial_reconnect_backoff_ms',
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options).to.not.have as any).key([
-          'servicePath', 'port', 'other_dummy_options'
+          'servicePath',
+          'port',
+          'other_dummy_options',
         ]);
       });
     });
 
     it('supports grpc-gcp options', () => {
-      const apiConfigDefinition =
-          require(path.resolve(TEST_PATH, 'test_grpc_config.json'));
+      const apiConfigDefinition = require(path.resolve(
+        TEST_PATH,
+        'test_grpc_config.json'
+      ));
       const opts = {
         servicePath: 'foo.example.com',
         port: 443,
@@ -209,15 +216,20 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
-          'channelFactoryOverride', 'callInvocationTransformer', 'gcpApiConfig'
+          'channelFactoryOverride',
+          'callInvocationTransformer',
+          'gcpApiConfig',
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options).to.not.have as any).key([
-          'servicePath', 'port', 'grpc_gcp.apiConfig'
+          'servicePath',
+          'port',
+          'grpc_gcp.apiConfig',
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options['gcpApiConfig']).has as any).key([
-          'channelPool', 'method'
+          'channelPool',
+          'method',
         ]);
       });
     });
@@ -244,8 +256,13 @@ describe('grpc', () => {
 
   describe('loadProto', () => {
     const grpcClient = gaxGrpc();
-    const TEST_FILE =
-        path.join('google', 'example', 'library', 'v1', 'library.proto');
+    const TEST_FILE = path.join(
+      'google',
+      'example',
+      'library',
+      'v1',
+      'library.proto'
+    );
     const TEST_PATH = path.resolve(__dirname, '../../test/fixtures');
 
     it('should load the test file', () => {
@@ -253,8 +270,9 @@ describe('grpc', () => {
       // test will fail anyway.
       // tslint:disable-next-line:no-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
-      expect(protos.google.example.library.v1.LibraryService)
-          .to.be.a('Function');
+      expect(protos.google.example.library.v1.LibraryService).to.be.a(
+        'Function'
+      );
     });
 
     it('should load a common proto', () => {
@@ -270,94 +288,120 @@ describe('grpc', () => {
     it('should emit an error for not found proto', () => {
       const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       const nonExistentFile = 'nonexistent.proto';
-      expect(grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile))
-          .to.throw();
+      expect(
+        grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile)
+      ).to.throw();
     });
   });
 
   describe('GoogleProtoFilesRoot', () => {
     const FIXTURES_DIR = path.join(
-        path.resolve(__dirname, '../../test'), 'fixtures', 'google', 'example',
-        'library', 'v1');
+      path.resolve(__dirname, '../../test'),
+      'fixtures',
+      'google',
+      'example',
+      'library',
+      'v1'
+    );
     const TEST_FILE = path.join(FIXTURES_DIR, 'library.proto');
-    const NON_EXISTENT_FILE =
-        path.join(__dirname, 'does', 'not', 'exist.proto');
-    const MISSING_INCLUDE_FILE =
-        path.join(FIXTURES_DIR, 'missing_include.proto');
+    const NON_EXISTENT_FILE = path.join(
+      __dirname,
+      'does',
+      'not',
+      'exist.proto'
+    );
+    const MISSING_INCLUDE_FILE = path.join(
+      FIXTURES_DIR,
+      'missing_include.proto'
+    );
 
     describe('use with protobufjs load', () => {
-      it('should not be able to load test file using protobufjs directly',
-         done => {
-           protobuf.load(TEST_FILE)
-               .then(() => {
-                 done(Error('should not get here'));
-               })
-               .catch(() => {
-                 done();
-               });
-         });
+      it('should not be able to load test file using protobufjs directly', done => {
+        protobuf
+          .load(TEST_FILE)
+          .then(() => {
+            done(Error('should not get here'));
+          })
+          .catch(() => {
+            done();
+          });
+      });
 
       it('should load a test file', done => {
-        protobuf.load(TEST_FILE, new GoogleProtoFilesRoot())
-            .then(root => {
-              expect(root).to.be.an.instanceOf(protobuf.Root);
-              expect(root.lookup('google.example.library.v1.LibraryService'))
-                  .to.be.an.instanceOf(protobuf.Service);
-              expect(root.lookup('test.TestMessage'))
-                  .to.be.an.instanceOf(protobuf.Type);
-              done();
-            })
-            .catch(done);
+        protobuf
+          .load(TEST_FILE, new GoogleProtoFilesRoot())
+          .then(root => {
+            expect(root).to.be.an.instanceOf(protobuf.Root);
+            expect(
+              root.lookup('google.example.library.v1.LibraryService')
+            ).to.be.an.instanceOf(protobuf.Service);
+            expect(root.lookup('test.TestMessage')).to.be.an.instanceOf(
+              protobuf.Type
+            );
+            done();
+          })
+          .catch(done);
       });
 
       it('should fail trying to load a non existent file.', done => {
-        protobuf.load(NON_EXISTENT_FILE, new GoogleProtoFilesRoot())
-            .then(() => {
-              done(Error('should not get here'));
-            })
-            .catch(() => {
-              done();
-            });
+        protobuf
+          .load(NON_EXISTENT_FILE, new GoogleProtoFilesRoot())
+          .then(() => {
+            done(Error('should not get here'));
+          })
+          .catch(() => {
+            done();
+          });
       });
 
       it('should fail loading a file with a missing include.', done => {
-        protobuf.load(MISSING_INCLUDE_FILE, new GoogleProtoFilesRoot())
-            .then(() => {
-              done(Error('should not get here'));
-            })
-            .catch(() => {
-              done();
-            });
+        protobuf
+          .load(MISSING_INCLUDE_FILE, new GoogleProtoFilesRoot())
+          .then(() => {
+            done(Error('should not get here'));
+          })
+          .catch(() => {
+            done();
+          });
       });
     });
 
     describe('use with protobufjs loadSync', () => {
-      it('should not be able to load test file using protobufjs directly',
-         () => {
-           const root = protobuf.loadSync(TEST_FILE);
-           // Common proto that should not have been loaded.
-           expect(root.lookup('google.api.Http')).to.eq(null);
-         });
+      it('should not be able to load test file using protobufjs directly', () => {
+        const root = protobuf.loadSync(TEST_FILE);
+        // Common proto that should not have been loaded.
+        expect(root.lookup('google.api.Http')).to.eq(null);
+      });
 
       it('should load a test file that relies on common protos', () => {
         const root = protobuf.loadSync(TEST_FILE, new GoogleProtoFilesRoot());
         expect(root).to.be.an.instanceOf(protobuf.Root);
-        expect(root.lookup('google.example.library.v1.LibraryService'))
-            .to.be.an.instanceOf(protobuf.Service);
-        expect(root.lookup('test.TestMessage'))
-            .to.be.an.instanceOf(protobuf.Type);
+        expect(
+          root.lookup('google.example.library.v1.LibraryService')
+        ).to.be.an.instanceOf(protobuf.Service);
+        expect(root.lookup('test.TestMessage')).to.be.an.instanceOf(
+          protobuf.Type
+        );
       });
 
       it('should fail trying to load a non existent file.', () => {
-        expect(protobuf.loadSync.bind(
-                   null, NON_EXISTENT_FILE, new GoogleProtoFilesRoot()))
-            .to.throw();
+        expect(
+          protobuf.loadSync.bind(
+            null,
+            NON_EXISTENT_FILE,
+            new GoogleProtoFilesRoot()
+          )
+        ).to.throw();
       });
 
       it('should fail loading a file with a missing include', () => {
-        expect(protobuf.loadSync.bind(
-                   null, MISSING_INCLUDE_FILE, new GoogleProtoFilesRoot()))
-            .to.throw();
+        expect(
+          protobuf.loadSync.bind(
+            null,
+            MISSING_INCLUDE_FILE,
+            new GoogleProtoFilesRoot()
+          )
+        ).to.throw();
       });
     });
 
@@ -367,12 +411,12 @@ describe('grpc', () => {
 
       it('should throw an error if a file is not found', () => {
         const findIncludePath = proxyquire('../src/grpc', {
-                                  fs: {
-                                    existsSync: () => {
-                                      return false;
-                                    },
-                                  },
-                                }).GoogleProtoFilesRoot._findIncludePath;
+          fs: {
+            existsSync: () => {
+              return false;
+            },
+          },
+        }).GoogleProtoFilesRoot._findIncludePath;
 
         expect(findIncludePath.bind(null, originPath, includePath)).to.throw();
       });
@@ -380,12 +424,12 @@ describe('grpc', () => {
       it('should return the correct resolved import path', () => {
         const correctPath = path.join('test', 'example', 'import.proto');
         const findIncludePath = proxyquire('../src/grpc', {
-                                  fs: {
-                                    existsSync(path) {
-                                      return path === correctPath;
-                                    },
-                                  },
-                                }).GoogleProtoFilesRoot._findIncludePath;
+          fs: {
+            existsSync(path) {
+              return path === correctPath;
+            },
+          },
+        }).GoogleProtoFilesRoot._findIncludePath;
         expect(findIncludePath(originPath, includePath)).to.equal(correctPath);
       });
     });

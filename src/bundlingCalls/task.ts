@@ -69,8 +69,10 @@ export interface TaskCallback extends APICallback {
  * @private
  */
 export function deepCopyForResponse(
-    // tslint:disable-next-line no-any
-    obj: any, subresponseInfo: SubResponseInfo|null) {
+  // tslint:disable-next-line no-any
+  obj: any,
+  subresponseInfo: SubResponseInfo | null
+) {
   // tslint:disable-next-line no-any
   let result: any;
   if (obj === null) {
@@ -97,12 +99,17 @@ export function deepCopyForResponse(
   if (typeof obj === 'object') {
     result = {};
     Object.keys(obj).forEach(key => {
-      if (subresponseInfo && key === subresponseInfo.field &&
-          Array.isArray(obj[key])) {
+      if (
+        subresponseInfo &&
+        key === subresponseInfo.field &&
+        Array.isArray(obj[key])
+      ) {
         // Note that subresponses are not deep-copied. This is safe because
         // those subresponses are not shared among callbacks.
-        result[key] =
-            obj[key].slice(subresponseInfo.start, subresponseInfo.end);
+        result[key] = obj[key].slice(
+          subresponseInfo.start,
+          subresponseInfo.end
+        );
       } else {
         result[key] = deepCopyForResponse(obj[key], null);
       }
@@ -114,9 +121,9 @@ export function deepCopyForResponse(
 
 export class Task {
   _apiCall: SimpleCallbackFunction;
-  _request: {[index: string]: TaskElement[];};
+  _request: {[index: string]: TaskElement[]};
   _bundledField: string;
-  _subresponseField?: string|null;
+  _subresponseField?: string | null;
   _data: TaskData[];
   callCanceller?: GRPCCallResult;
   /**
@@ -133,8 +140,11 @@ export class Task {
    * @private
    */
   constructor(
-      apiCall: SimpleCallbackFunction, bundlingRequest: {},
-      bundledField: string, subresponseField?: string|null) {
+    apiCall: SimpleCallbackFunction,
+    bundlingRequest: {},
+    bundledField: string,
+    subresponseField?: string | null
+  ) {
     this._apiCall = apiCall;
     this._request = bundlingRequest;
     this._bundledField = bundledField;
@@ -180,42 +190,44 @@ export class Task {
     }
     request[this._bundledField] = elements;
     const self = this;
-    this.callCanceller =
-        this._apiCall(request, (err: GoogleError|null, response?: {}|null) => {
-          const responses: Array<{}|undefined> = [];
-          if (err) {
-            self._data.forEach(() => {
-              responses.push(undefined);
-            });
+    this.callCanceller = this._apiCall(
+      request,
+      (err: GoogleError | null, response?: {} | null) => {
+        const responses: Array<{} | undefined> = [];
+        if (err) {
+          self._data.forEach(() => {
+            responses.push(undefined);
+          });
+        } else {
+          let subresponseInfo: SubResponseInfo | null = null;
+          if (self._subresponseField) {
+            subresponseInfo = {
+              field: self._subresponseField,
+              start: 0,
+            };
+          }
+          self._data.forEach(data => {
+            if (subresponseInfo) {
+              subresponseInfo.end =
+                subresponseInfo.start! + data.elements.length;
+            }
+            responses.push(deepCopyForResponse(response, subresponseInfo));
+            if (subresponseInfo) {
+              subresponseInfo.start = subresponseInfo.end;
+            }
+          });
+        }
+        for (let i = 0; i < self._data.length; ++i) {
+          if (self._data[i].cancelled) {
+            const error = new GoogleError('cancelled');
+            error.code = status.CANCELLED;
+            self._data[i].callback(error);
           } else {
-            let subresponseInfo: SubResponseInfo|null = null;
-            if (self._subresponseField) {
-              subresponseInfo = {
-                field: self._subresponseField,
-                start: 0,
-              };
-            }
-            self._data.forEach(data => {
-              if (subresponseInfo) {
-                subresponseInfo.end =
-                    subresponseInfo.start! + data.elements.length;
-              }
-              responses.push(deepCopyForResponse(response, subresponseInfo));
-              if (subresponseInfo) {
-                subresponseInfo.start = subresponseInfo.end;
-              }
-            });
+            self._data[i].callback(err, responses[i]);
           }
-          for (let i = 0; i < self._data.length; ++i) {
-            if (self._data[i].cancelled) {
-              const error = new GoogleError('cancelled');
-              error.code = status.CANCELLED;
-              self._data[i].callback(error);
-            } else {
-              self._data[i].callback(err, responses[i]);
-            }
-          }
-        });
+        }
+      }
+    );
     return ids;
   }
   /**
