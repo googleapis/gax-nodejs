@@ -125,9 +125,9 @@ describe('Run system tests for some libraries', () => {
   // Pub/Sub has streaming methods and pagination
   describe('pubsub', () => {
     before(async () => {
-      await preparePackage('nodejs-pubsub');
+      // await preparePackage('nodejs-pubsub');
     });
-    it('should pass system tests', async function() {
+    it.skip('should pass system tests', async function() {
       // Pub/Sub tests can be slow since they check packaging
       this.timeout(300000);
       await runSystemTest('nodejs-pubsub');

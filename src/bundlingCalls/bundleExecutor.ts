@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from 'grpc';
+import {status} from '@grpc/grpc-js';
 
 import {SimpleCallbackFunction} from '../apitypes';
 import {GoogleError} from '../googleError';

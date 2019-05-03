@@ -30,7 +30,7 @@
  */
 
 import {EventEmitter} from 'events';
-import {status} from 'grpc';
+import {status} from '@grpc/grpc-js';
 
 import {GaxCallPromise, ResultTuple} from '../apitypes';
 import {CancellablePromise} from '../call';

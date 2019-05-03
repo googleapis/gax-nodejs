@@ -15,13 +15,7 @@
 'use strict';
 
 const assert = require('assert');
-
-let grpc;
-if (process.env['GOOGLE_CLOUD_USE_GRPC_JS']) {
-  grpc = require('@grpc/grpc-js');
-} else {
-  grpc = require('grpc');
-}
+const grpc = require('@grpc/grpc-js');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({

@@ -57,7 +57,6 @@ export {
   GrpcClient,
   GrpcClientOptions,
   GrpcModule,
-  GrpcObject,
   Metadata,
   MetadataValue,
 } from './grpc';
