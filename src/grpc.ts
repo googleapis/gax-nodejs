@@ -78,8 +78,9 @@ export type GrpcModule = typeof grpc;
 export interface ClientStubOptions {
   servicePath: string;
   port: number;
-  // @ts-ignore waiting for grpc-js types
-  sslCreds?: grpc.ChannelCredentials;
+  // TODO: use sslCreds?: grpc.ChannelCredentials;
+  // tslint:disable-next-line no-any
+  sslCreds?: any;
 }
 
 export class ClientStub extends grpc.Client {
