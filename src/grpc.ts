@@ -125,7 +125,6 @@ export class GrpcClient {
         const errorMessage =
           'To use @grpc/grpc-js you must run your code on Node.js v8.13.0 or newer. Please see README if you need to use an older version. ' +
           'https://github.com/googleapis/gax-nodejs/blob/master/README.md';
-        console.error(errorMessage);
         throw new Error(errorMessage);
       }
     }
