@@ -667,7 +667,7 @@ export function constructSettings(
   serviceName: string,
   clientConfig: ClientConfig,
   configOverrides: ClientConfig,
-  retryNames: {[index: string]: number},
+  retryNames: {},
   otherArgs?: {},
   promise?: PromiseConstructor
 ) {

@@ -30,11 +30,10 @@
  *
  */
 
-import * as grpcProtoLoaderTypes from '@grpc/proto-loader'; // for types only
+import * as grpcProtoLoader from '@grpc/proto-loader';
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-import * as grpcTypes from 'grpc'; // for types only
-import * as grpcGcp from 'grpc-gcp';
+import * as grpc from '@grpc/grpc-js';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
@@ -56,8 +55,6 @@ const COMMON_PROTO_FILES = walk
   .filter(f => path.extname(f) === '.proto')
   .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
 
-export {GrpcObject} from 'grpc';
-
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;
   promise?: PromiseConstructor;
@@ -76,17 +73,17 @@ export interface Metadata {
   get: (key: {}) => {};
 }
 
-export type GrpcModule = typeof grpcTypes & {
-  status: {[index: string]: number};
-};
+export type GrpcModule = typeof grpc;
 
 export interface ClientStubOptions {
   servicePath: string;
   port: number;
-  sslCreds?: grpcTypes.ChannelCredentials;
+  // TODO: use sslCreds?: grpc.ChannelCredentials;
+  // tslint:disable-next-line no-any
+  sslCreds?: any;
 }
 
-export class ClientStub extends grpcTypes.Client {
+export class ClientStub extends grpc.Client {
   [name: string]: Function;
 }
 
@@ -95,7 +92,6 @@ export class GrpcClient {
   promise: PromiseConstructor;
   grpc: GrpcModule;
   grpcVersion: string;
-  grpcProtoLoader: typeof grpcProtoLoaderTypes;
 
   /**
    * A class which keeps the context of gRPC and auth for the gRPC.
@@ -122,20 +118,16 @@ export class GrpcClient {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
-      // EXPERIMENTAL: If GOOGLE_CLOUD_USE_GRPC_JS is set, use the JS-based
-      // implementation of the gRPC client instead. Requires http2 (Node 8+).
-      if (
-        semver.gte(process.version, '8.13.0') &&
-        !!process.env.GOOGLE_CLOUD_USE_GRPC_JS
-      ) {
-        this.grpc = require('@grpc/grpc-js');
+      if (semver.gte(process.version, '8.13.0')) {
+        this.grpc = grpc;
         this.grpcVersion = require('@grpc/grpc-js/package.json').version;
       } else {
-        this.grpc = require('grpc');
-        this.grpcVersion = require('grpc/package.json').version;
+        const errorMessage =
+          'To use @grpc/grpc-js you must run your code on Node.js v8.13.0 or newer. Please see README if you need to use an older version. ' +
+          'https://github.com/googleapis/gax-nodejs/blob/master/README.md';
+        throw new Error(errorMessage);
       }
     }
-    this.grpcProtoLoader = require('@grpc/proto-loader');
   }
 
   /**
@@ -166,8 +158,8 @@ export class GrpcClient {
    * @param filename The path to the proto file.
    * @param options Options for loading the proto file.
    */
-  loadFromProto(filename: string, options: grpcProtoLoaderTypes.Options) {
-    const packageDef = grpcProtoLoaderTypes.loadSync(filename, options);
+  loadFromProto(filename: string, options: grpcProtoLoader.Options) {
+    const packageDef = grpcProtoLoader.loadSync(filename, options);
     return this.grpc.loadPackageDefinition(packageDef);
   }
 
@@ -289,20 +281,12 @@ export class GrpcClient {
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
-    const grpcOptions: {[index: string]: {}} = {};
+    const grpcOptions: {[index: string]: string} = {};
     Object.keys(options).forEach(key => {
-      if (key.indexOf('grpc.') === 0) {
-        grpcOptions[key] = options[key];
+      if (key.startsWith('grpc.')) {
+        grpcOptions[key.replace(/^grpc\./, '')] = options[key];
       }
     });
-    const apiConfigDefinition = options['grpc_gcp.apiConfig'];
-    if (apiConfigDefinition) {
-      const apiConfig = grpcGcp.createGcpApiConfig(apiConfigDefinition);
-      grpcOptions['channelFactoryOverride'] = grpcGcp.gcpChannelFactoryOverride;
-      grpcOptions['callInvocationTransformer'] =
-        grpcGcp.gcpCallInvocationTransformer;
-      grpcOptions['gcpApiConfig'] = apiConfig;
-    }
     const stub = new CreateStub(serviceAddress, creds, grpcOptions);
     return stub;
   }

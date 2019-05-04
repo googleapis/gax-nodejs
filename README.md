@@ -15,6 +15,17 @@ Application code will rarely need to use most of the classes within this library
 $ npm install google-gax
 ```
 
+## Supporting older version of Node.js
+
+This library uses [grpc-js](https://www.npmjs.com/package/@grpc/grpc-js) package for communicating with API server, and it uses HTTP/2 functionality
+that is only available in Node.js v8.13.0 or newer. If you need to use this library with older versions of Node.js, you need to make your code depend
+on a legacy gRPC library ([grpc](https://www.npmjs.com/package/grpc)) and pass the instance of gRPC to the client constructor:
+
+```js
+const grpc = require('grpc');
+const client = new APIClient({ grpc }); // APIClient is the client class you use, e.g. SpeechClient, etc.
+```
+
 ## Contributing
 Contributions to this library are always welcome and highly encouraged.  See the [CONTRIBUTING][contributing] documentation for more information on how to get started.
 

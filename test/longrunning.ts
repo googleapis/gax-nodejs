@@ -29,7 +29,7 @@
  */
 
 import {expect} from 'chai';
-import {status} from 'grpc';
+import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
 import {LongrunningDescriptor} from '../src';

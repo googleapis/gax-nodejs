@@ -37,12 +37,6 @@ import * as sinon from 'sinon';
 
 import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
 
-// When this flag is set, tests that have to do with loadProto will be skipped.
-// They are known to not work with grpc-js, as they use a now-deprecated API.
-const USE_GRPC_JS =
-  semver.gte(process.version, '8.13.0') &&
-  !!process.env.GOOGLE_CLOUD_USE_GRPC_JS;
-
 function gaxGrpc(options?) {
   return new GrpcClient(options);
 }
@@ -50,7 +44,7 @@ function gaxGrpc(options?) {
 describe('grpc', () => {
   describe('grpcVersion', () => {
     it('holds the proper grpc version', () => {
-      const grpcModule = USE_GRPC_JS ? '@grpc/grpc-js' : 'grpc';
+      const grpcModule = '@grpc/grpc-js';
       const grpcVersion = require(`${grpcModule}/package.json`).version;
       expect(gaxGrpc().grpcVersion).to.eq(grpcVersion);
     });
@@ -188,48 +182,14 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // tslint:disable-next-line no-any
         (expect(stub.options).has as any).key([
-          'grpc.max_send_message_length',
-          'grpc.initial_reconnect_backoff_ms',
+          'max_send_message_length',
+          'initial_reconnect_backoff_ms',
         ]);
         // tslint:disable-next-line no-any
         (expect(stub.options).to.not.have as any).key([
           'servicePath',
           'port',
           'other_dummy_options',
-        ]);
-      });
-    });
-
-    it('supports grpc-gcp options', () => {
-      const apiConfigDefinition = require(path.resolve(
-        TEST_PATH,
-        'test_grpc_config.json'
-      ));
-      const opts = {
-        servicePath: 'foo.example.com',
-        port: 443,
-        'grpc_gcp.apiConfig': apiConfigDefinition,
-      };
-      return grpcClient.createStub(DummyStub, opts).then(stub => {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        expect(stub.address).to.eq('foo.example.com:443');
-        expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        // tslint:disable-next-line no-any
-        (expect(stub.options).has as any).key([
-          'channelFactoryOverride',
-          'callInvocationTransformer',
-          'gcpApiConfig',
-        ]);
-        // tslint:disable-next-line no-any
-        (expect(stub.options).to.not.have as any).key([
-          'servicePath',
-          'port',
-          'grpc_gcp.apiConfig',
-        ]);
-        // tslint:disable-next-line no-any
-        (expect(stub.options['gcpApiConfig']).has as any).key([
-          'channelPool',
-          'method',
         ]);
       });
     });
