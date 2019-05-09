@@ -4,6 +4,30 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.0.0](https://www.github.com/googleapis/gax-nodejs/compare/v0.26.0...v1.0.0) (2019-05-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ^0.4.0 ([#487](https://www.github.com/googleapis/gax-nodejs/issues/487)) ([981b1ed](https://www.github.com/googleapis/gax-nodejs/commit/981b1ed))
+* **deps:** update dependency google-auth-library to v4 ([#493](https://www.github.com/googleapis/gax-nodejs/issues/493)) ([03236f4](https://www.github.com/googleapis/gax-nodejs/commit/03236f4))
+
+
+### Build System
+
+* upgrade engines field to >=8.10.0 ([#483](https://www.github.com/googleapis/gax-nodejs/issues/483)) ([728678a](https://www.github.com/googleapis/gax-nodejs/commit/728678a))
+
+
+### Features
+
+* use @grpc/grpc-js instead of grpc ([#484](https://www.github.com/googleapis/gax-nodejs/issues/484)) ([b872f2b](https://www.github.com/googleapis/gax-nodejs/commit/b872f2b))
+
+
+### BREAKING CHANGES
+
+* use @grpc/grpc-js instead of grpc (#484)
+* upgrade engines field to >=8.10.0 (#483)
+
 ## v0.26.0
 
 04-30-2019 20:45 PDT
@@ -280,4 +304,3 @@ BREAKING CHANGE:
 - fix: fix typo in a test (#260)
 - fix: update linking for samples (#259)
 - refactor: remove prettier, eslint, jshint (#254)
-
