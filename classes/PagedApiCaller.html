@@ -1,0 +1,837 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content class">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Classes</li>
+  <li>PagedApiCaller</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/paginationCalls/pagedApiCaller.ts</code>
+        </p>
+
+
+
+            <p class="comment">
+                <h3>Implements</h3>
+            </p>
+            <p class="comment">
+                            <code><a href="../interfaces/APICaller.html" target="_self" >APICaller</a></code>
+            </p>
+
+
+            <section>
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#pageDescriptor">pageDescriptor</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#call">call</a>
+                            </li>
+                            <li>
+                                <a href="#fail">fail</a>
+                            </li>
+                            <li>
+                                <a href="#init">init</a>
+                            </li>
+                            <li>
+                                <a href="#result">result</a>
+                            </li>
+                            <li>
+                                <a href="#wrap">wrap</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+            <section>
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor(pageDescriptor: <a href="../interfaces/Descriptor.html">PageDescriptor</a>)</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="48" class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:48</a></div>
+                            </td>
+                        </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                            <div class="io-description"><p>Creates an API caller that returns a stream to performs page-streaming.</p>
+</div>
+                            <div>
+                                    <b>Parameters :</b>
+                                    <table class="params">
+                                        <thead>
+                                            <tr>
+                                                <td>Name</td>
+                                                    <td>Type</td>
+                                                <td>Optional</td>
+                                                    <td>Description</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                        <td>pageDescriptor</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../interfaces/Descriptor.html" target="_self" >PageDescriptor</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                        <td>
+                                                                <code><ul>
+<li>indicates the structure
+of page streaming to be performed.</li>
+</ul>
+</code>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+            <section>
+    
+        <h3 id="inputs">
+            Properties
+        </h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="pageDescriptor"></a>
+                        <span class="name">
+                            <b>
+                            pageDescriptor</b>
+                            <a href="#pageDescriptor"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../interfaces/Descriptor.html" target="_self" >PageDescriptor</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="48" class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:48</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+</section>
+
+            <section>
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="call"></a>
+                    <span class="name">
+                        <b>
+                            call
+                        </b>
+                        <a href="#call"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>call(apiCall: <a href="../interfaces/SimpleCallbackFunction.html">SimpleCallbackFunction</a>, argument: literal type, settings: <a href="../interfaces/CallOptions.html">CallOptions</a>, canceller: <a href="../classes/OngoingCall.html">OngoingCall</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="110"
+                            class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:110</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>apiCall</td>
+                                    <td>
+                                                <code><a href="../interfaces/SimpleCallbackFunction.html" target="_self" >SimpleCallbackFunction</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>argument</td>
+                                    <td>
+                                            <code>literal type</code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>settings</td>
+                                    <td>
+                                                <code><a href="../interfaces/CallOptions.html" target="_self" >CallOptions</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>canceller</td>
+                                    <td>
+                                                <code><a href="../classes/OngoingCall.html" target="_self" >OngoingCall</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="fail"></a>
+                    <span class="name">
+                        <b>
+                            fail
+                        </b>
+                        <a href="#fail"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>fail(canceller: <a href="../classes/OngoingCallPromise.html">OngoingCallPromise</a>, err: <a href="../classes/GoogleError.html">GoogleError</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="154"
+                            class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:154</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>canceller</td>
+                                    <td>
+                                                <code><a href="../classes/OngoingCallPromise.html" target="_self" >OngoingCallPromise</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>err</td>
+                                    <td>
+                                                <code><a href="../classes/GoogleError.html" target="_self" >GoogleError</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="init"></a>
+                    <span class="name">
+                        <b>
+                            init
+                        </b>
+                        <a href="#init"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>init(settings: <a href="../interfaces/ApiCallerSettings.html">ApiCallerSettings</a>, callback?: <a href="../undefineds/APICallback.html">APICallback</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="103"
+                            class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:103</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>settings</td>
+                                    <td>
+                                                <code><a href="../interfaces/ApiCallerSettings.html" target="_self" >ApiCallerSettings</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>callback</td>
+                                    <td>
+                                                <code><a href="../miscellaneous/typealiases.html#APICallback" target="_self" >APICallback</a></code>
+                                    </td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="result"></a>
+                    <span class="name">
+                        <b>
+                            result
+                        </b>
+                        <a href="#result"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>result(canceller: <a href="../classes/OngoingCallPromise.html">OngoingCallPromise</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="158"
+                            class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:158</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>canceller</td>
+                                    <td>
+                                                <code><a href="../classes/OngoingCallPromise.html" target="_self" >OngoingCallPromise</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="wrap"></a>
+                    <span class="name">
+                        <b>
+                            wrap
+                        </b>
+                        <a href="#wrap"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>wrap(func: <a href="../undefineds/GRPCCall.html">GRPCCall</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="91"
+                            class="link-to-prism">src/paginationCalls/pagedApiCaller.ts:91</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>func</td>
+                                    <td>
+                                                <code><a href="../miscellaneous/typealiases.html#GRPCCall" target="_self" >GRPCCall</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="../miscellaneous/typealiases.html#GRPCCall" target="_self" >GRPCCall</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+
+
+
+
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {APICaller, ApiCallerSettings} from &#x27;../apiCaller&#x27;;
+import {
+  GaxCall,
+  GRPCCall,
+  NextPageRequestType,
+  SimpleCallbackFunction,
+  UnaryCall,
+} from &#x27;../apitypes&#x27;;
+import {APICallback} from &#x27;../apitypes&#x27;;
+import {OngoingCall, OngoingCallPromise} from &#x27;../call&#x27;;
+import {CallOptions} from &#x27;../gax&#x27;;
+import {GoogleError} from &#x27;../googleError&#x27;;
+
+import {PageDescriptor} from &#x27;./pageDescriptor&#x27;;
+
+export class PagedApiCaller implements APICaller {
+  pageDescriptor: PageDescriptor;
+  /**
+   * Creates an API caller that returns a stream to performs page-streaming.
+   *
+   * @private
+   * @constructor
+   * @param {PageDescriptor} pageDescriptor - indicates the structure
+   *   of page streaming to be performed.
+   */
+  constructor(pageDescriptor: PageDescriptor) {
+    this.pageDescriptor &#x3D; pageDescriptor;
+  }
+
+  private createActualCallback(
+    request: NextPageRequestType,
+    callback: APICallback
+  ): APICallback {
+    const self &#x3D; this;
+    return function fetchNextPageToken(
+      err: Error | null,
+      response: NextPageRequestType | undefined
+    ) {
+      if (err) {
+        callback(err);
+        return;
+      }
+      if (!response) {
+        callback(
+          new GoogleError(&#x27;Undefined response in pagination method callback.&#x27;)
+        );
+        return;
+      }
+      const resources &#x3D; response[self.pageDescriptor.resourceField];
+      const pageToken &#x3D; response[self.pageDescriptor.responsePageTokenField];
+      if (pageToken) {
+        request![self.pageDescriptor.requestPageTokenField] &#x3D; pageToken;
+        callback(err, resources, request, response);
+      } else {
+        callback(err, resources, null, response);
+      }
+    };
+  }
+
+  wrap(func: GRPCCall): GRPCCall {
+    const self &#x3D; this;
+    return function wrappedCall(argument, metadata, options, callback) {
+      return (func as UnaryCall)(
+        argument,
+        metadata,
+        options,
+        self.createActualCallback(argument, callback)
+      );
+    };
+  }
+
+  init(settings: ApiCallerSettings, callback?: APICallback) {
+    if (callback) {
+      return new OngoingCall(callback);
+    }
+    return new OngoingCallPromise(settings.promise);
+  }
+
+  call(
+    apiCall: SimpleCallbackFunction,
+    argument: {[index: string]: {}},
+    settings: CallOptions,
+    canceller: OngoingCall
+  ) {
+    argument &#x3D; Object.assign({}, argument);
+    if (settings.pageToken) {
+      argument[this.pageDescriptor.requestPageTokenField] &#x3D; settings.pageToken;
+    }
+    if (settings.pageSize) {
+      argument[this.pageDescriptor.requestPageSizeField!] &#x3D; settings.pageSize;
+    }
+    if (!settings.autoPaginate) {
+      // they don&#x27;t want auto-pagination this time - okay, just call once
+      canceller.call(apiCall, argument);
+      return;
+    }
+
+    const maxResults &#x3D; settings.maxResults || -1;
+    const allResources: Array&lt;{}&gt; &#x3D; [];
+    function pushResources(err, resources, next) {
+      if (err) {
+        canceller.callback!(err);
+        return;
+      }
+
+      for (let i &#x3D; 0; i &lt; resources.length; ++i) {
+        allResources.push(resources[i]);
+        if (allResources.length &#x3D;&#x3D;&#x3D; maxResults) {
+          next &#x3D; null;
+          break;
+        }
+      }
+      if (!next) {
+        canceller.callback!(null, allResources);
+        return;
+      }
+      setImmediate(apiCall, next, pushResources);
+    }
+
+    setImmediate(apiCall, argument, pushResources);
+  }
+
+  fail(canceller: OngoingCallPromise, err: GoogleError): void {
+    canceller.callback!(err);
+  }
+
+  result(canceller: OngoingCallPromise) {
+    return canceller.promise;
+  }
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'class';
+            var COMPODOC_CURRENT_PAGE_URL = 'PagedApiCaller.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

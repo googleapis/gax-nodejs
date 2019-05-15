@@ -1,0 +1,285 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Interfaces</li>
+  <li>GaxCall</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/apitypes.ts</code>
+        </p>
+
+
+
+        <section>
+            <h3 id="index">Index</h3>
+            <table class="table table-sm table-bordered index-table">
+                <tbody>
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Properties</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                            <a href="#call-declaration-86010603acdbca2fd9c022a1bc83d3c3">Unamed property</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+
+            <section>
+                <h3 id="inputs">Properties</h3>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Signature :</i>
+                                            <a name="call-declaration-86010603acdbca2fd9c022a1bc83d3c3"></a>
+                                            <code>
+                                                <!--ts.SyntaxKind.CallSignature-->
+                                                    [argument: literal type, callOptions: CallOptions, callback: APICallback]
+                                            </code>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Returns : </i>        <code><a href="../interfaces/GaxCall.html" target="_self" >GaxCallResult</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+            </section>
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {Duplex} from &#x27;stream&#x27;;
+
+import {CancellablePromise} from &#x27;./call&#x27;;
+import {CallOptions} from &#x27;./gax&#x27;;
+import {GoogleError} from &#x27;./googleError&#x27;;
+import {Operation} from &#x27;./longRunningCalls/longrunning&#x27;;
+
+// gRPC functions return object with &#x60;.cancel()&#x60; method that can be used for
+// canceling the ongoing call.
+export interface GRPCCallResult {
+  cancel(): void;
+}
+
+// All GAX calls take RequestType and return ResultTuple, which can contain up
+// to three elements. The first element is always a response (post-processed for
+// special types of call such as pagination or long-running), the second
+// parameter is defined for paginated calls and stores the next page request
+// object, the third parameter stores raw (unprocessed) response object in cases
+// when it might be useful for users.
+export interface RequestType {}
+export type ResponseType &#x3D; {} | null;
+export type NextPageRequestType &#x3D; {
+  [index: string]: string;
+} | null;
+export type RawResponseType &#x3D; Operation | {};
+export type ResultTuple &#x3D; [
+  ResponseType,
+  NextPageRequestType | undefined,
+  RawResponseType | undefined
+];
+
+export interface SimpleCallbackFunction {
+  (argument: RequestType, callback: APICallback): GRPCCallResult;
+}
+
+export type APICallback &#x3D; (
+  err: GoogleError | null,
+  response?: ResponseType,
+  next?: NextPageRequestType,
+  rawResponse?: RawResponseType
+) &#x3D;&gt; void;
+
+// The following five types mimic various gRPC calls (regular UnaryCall and
+// various streaming calls).
+export type UnaryCall &#x3D; (
+  argument: {},
+  metadata: {},
+  options: {},
+  callback: APICallback
+) &#x3D;&gt; GRPCCallResult;
+export type ServerStreamingCall &#x3D; (
+  argument: {},
+  metadata: {},
+  options: {}
+) &#x3D;&gt; Duplex &amp; GRPCCallResult;
+export type ClientStreamingCall &#x3D; (
+  metadata: {},
+  options: {},
+  callback?: APICallback
+) &#x3D;&gt; Duplex &amp; GRPCCallResult;
+export type BiDiStreamingCall &#x3D; (
+  metadata: {},
+  options: {}
+) &#x3D;&gt; Duplex &amp; GRPCCallResult;
+export type GRPCCall &#x3D;
+  | UnaryCall
+  | ServerStreamingCall
+  | ClientStreamingCall
+  | BiDiStreamingCall;
+
+// GAX wraps gRPC calls so that the wrapper functions return either a
+// cancellable promise, or a stream (also cancellable!)
+export type CancellableStream &#x3D; Duplex &amp; GRPCCallResult;
+export type GaxCallResult &#x3D; CancellablePromise&lt;ResultTuple&gt; | CancellableStream;
+export interface GaxCallPromise {
+  (
+    argument: {},
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ): CancellablePromise&lt;ResultTuple&gt;;
+}
+export interface GaxCallStream {
+  (
+    argument: {},
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ): CancellableStream;
+}
+export interface GaxCall {
+  (
+    argument: {},
+    callOptions?: CallOptions,
+    callback?: APICallback
+  ): GaxCallResult;
+}
+export interface GRPCCallOtherArgs {
+  options?: {deadline?: Date};
+  headers?: {};
+  metadataBuilder: (abTests?: {}, headers?: {}) &#x3D;&gt; {};
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'GaxCall.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

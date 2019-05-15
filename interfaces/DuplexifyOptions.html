@@ -1,0 +1,399 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Interfaces</li>
+  <li>DuplexifyOptions</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/streamingCalls/streaming.ts</code>
+        </p>
+
+
+            <p class="comment">
+                <h3>Extends</h3>
+            </p>
+            <p class="comment">
+                    <code>DuplexOptions</code>
+            </p>
+
+        <section>
+            <h3 id="index">Index</h3>
+            <table class="table table-sm table-bordered index-table">
+                <tbody>
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Properties</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#autoDestroy">autoDestroy</a>
+                                </li>
+                                <li>
+                                            <span class="modifier">Optional</span>
+                                        <a href="#end">end</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+
+            <section>
+                <h3 id="inputs">Properties</h3>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="autoDestroy"></a>
+                                        <span class="name"><b>autoDestroy</b><a href="#autoDestroy"><span class="icon ion-ios-link"></span></a></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>autoDestroy:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <a name="end"></a>
+                                        <span class="name"><b>end</b><a href="#end"><span class="icon ion-ios-link"></span></a></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="col-md-4">
+                                        <code>end:         <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+</code>
+                                    </td>
+                                </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Optional</i>
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+            </section>
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {Duplex, DuplexOptions, Readable, Stream, Writable} from &#x27;stream&#x27;;
+
+import {
+  APICallback,
+  CancellableStream,
+  GRPCCallResult,
+  SimpleCallbackFunction,
+} from &#x27;../apitypes&#x27;;
+
+const duplexify: DuplexifyConstructor &#x3D; require(&#x27;duplexify&#x27;);
+const retryRequest &#x3D; require(&#x27;retry-request&#x27;);
+
+// Directly copy over Duplexify interfaces
+export interface DuplexifyOptions extends DuplexOptions {
+  autoDestroy?: boolean;
+  end?: boolean;
+}
+
+export interface Duplexify extends Duplex {
+  readonly destroyed: boolean;
+  setWritable(writable: Writable | false | null): void;
+  setReadable(readable: Readable | false | null): void;
+}
+
+export interface DuplexifyConstructor {
+  obj(
+    writable?: Writable | false | null,
+    readable?: Readable | false | null,
+    options?: DuplexifyOptions
+  ): Duplexify;
+  new (
+    writable?: Writable | false | null,
+    readable?: Readable | false | null,
+    options?: DuplexifyOptions
+  ): Duplexify;
+  (
+    writable?: Writable | false | null,
+    readable?: Readable | false | null,
+    options?: DuplexifyOptions
+  ): Duplexify;
+}
+
+/**
+ * The type of gRPC streaming.
+ * @enum {number}
+ */
+export enum StreamType {
+  /** Client sends a single request, server streams responses. */
+  SERVER_STREAMING &#x3D; 1,
+
+  /** Client streams requests, server returns a single response. */
+  CLIENT_STREAMING &#x3D; 2,
+
+  /** Both client and server stream objects. */
+  BIDI_STREAMING &#x3D; 3,
+}
+
+export class StreamProxy extends duplexify implements GRPCCallResult {
+  type: StreamType;
+  private _callback: APICallback;
+  private _isCancelCalled: boolean;
+  stream?: CancellableStream;
+  /**
+   * StreamProxy is a proxy to gRPC-streaming method.
+   *
+   * @private
+   * @constructor
+   * @param {StreamType} type - the type of gRPC stream.
+   * @param {ApiCallback} callback - the callback for further API call.
+   */
+  constructor(type: StreamType, callback: APICallback) {
+    super(undefined, undefined, {
+      objectMode: true,
+      readable: type !&#x3D;&#x3D; StreamType.CLIENT_STREAMING,
+      writable: type !&#x3D;&#x3D; StreamType.SERVER_STREAMING,
+    } as DuplexOptions);
+    this.type &#x3D; type;
+    this._callback &#x3D; callback;
+    this._isCancelCalled &#x3D; false;
+  }
+
+  cancel() {
+    if (this.stream) {
+      this.stream.cancel();
+    } else {
+      this._isCancelCalled &#x3D; true;
+    }
+  }
+
+  /**
+   * Forward events from an API request stream to the user&#x27;s stream.
+   * @param {Stream} stream - The API request stream.
+   */
+  forwardEvents(stream: Stream) {
+    const eventsToForward &#x3D; [&#x27;metadata&#x27;, &#x27;response&#x27;, &#x27;status&#x27;];
+
+    eventsToForward.forEach(event &#x3D;&gt; {
+      stream.on(event, this.emit.bind(this, event));
+    });
+
+    // We also want to supply the status data as &#x27;response&#x27; event to support
+    // the behavior of google-cloud-node expects.
+    // see:
+    // https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
+    // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/116436fa789d8b0f7fc5100b19b424e3ec63e6bf/packages/common/src/grpc-service.js#L355
+    stream.on(&#x27;metadata&#x27;, metadata &#x3D;&gt; {
+      // Create a response object with succeeds.
+      // TODO: unify this logic with the decoration of gRPC response when it&#x27;s
+      // added. see: https://github.com/googleapis/gax-nodejs/issues/65
+      stream.emit(&#x27;response&#x27;, {
+        code: 200,
+        details: &#x27;&#x27;,
+        message: &#x27;OK&#x27;,
+        metadata,
+      });
+    });
+  }
+
+  /**
+   * Specifies the target stream.
+   * @param {ApiCall} apiCall - the API function to be called.
+   * @param {Object} argument - the argument to be passed to the apiCall.
+   */
+  setStream(apiCall: SimpleCallbackFunction, argument: {}) {
+    if (this.type &#x3D;&#x3D;&#x3D; StreamType.SERVER_STREAMING) {
+      const retryStream &#x3D; retryRequest(null, {
+        objectMode: true,
+        request: () &#x3D;&gt; {
+          if (this._isCancelCalled) {
+            if (this.stream) {
+              this.stream.cancel();
+            }
+            return;
+          }
+          const stream &#x3D; apiCall(argument, this._callback) as CancellableStream;
+          this.stream &#x3D; stream;
+          this.forwardEvents(stream);
+          return stream;
+        },
+      });
+      this.setReadable(retryStream);
+      return;
+    }
+
+    const stream &#x3D; apiCall(argument, this._callback) as CancellableStream;
+    this.stream &#x3D; stream;
+    this.forwardEvents(stream);
+
+    if (this.type &#x3D;&#x3D;&#x3D; StreamType.CLIENT_STREAMING) {
+      this.setWritable(stream);
+    }
+
+    if (this.type &#x3D;&#x3D;&#x3D; StreamType.BIDI_STREAMING) {
+      this.setReadable(stream);
+      this.setWritable(stream);
+    }
+
+    if (this._isCancelCalled &amp;&amp; this.stream) {
+      this.stream.cancel();
+    }
+  }
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'DuplexifyOptions.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

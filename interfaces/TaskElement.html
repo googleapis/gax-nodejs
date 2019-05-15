@@ -1,0 +1,381 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Interfaces</li>
+  <li>TaskElement</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/bundlingCalls/task.ts</code>
+        </p>
+
+
+
+
+
+
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {status} from &#x27;@grpc/grpc-js&#x27;;
+
+import {APICallback, GRPCCallResult, SimpleCallbackFunction} from &#x27;../apitypes&#x27;;
+import {GoogleError} from &#x27;../googleError&#x27;;
+
+export interface SubResponseInfo {
+  field: string;
+  start?: number;
+  end?: number;
+}
+
+export interface TaskElement {}
+
+export interface TaskData {
+  elements: TaskElement[];
+  bytes: number;
+  callback: TaskCallback;
+  cancelled?: boolean;
+}
+
+export interface TaskCallback extends APICallback {
+  id?: string;
+}
+
+/**
+ * Creates a deep copy of the object with the consideration of subresponse
+ * fields for bundling.
+ *
+ * @param {Object} obj - The source object.
+ * @param {Object?} subresponseInfo - The information to copy the subset of
+ *   the field for the response. Do nothing if it&#x27;s null.
+ * @param {String} subresponseInfo.field - The field name.
+ * @param {number} subresponseInfo.start - The offset where the copying
+ *   element should starts with.
+ * @param {number} subresponseInfo.end - The ending index where the copying
+ *   region of the elements ends.
+ * @return {Object} The copied object.
+ * @private
+ */
+export function deepCopyForResponse(
+  // tslint:disable-next-line no-any
+  obj: any,
+  subresponseInfo: SubResponseInfo | null
+) {
+  // tslint:disable-next-line no-any
+  let result: any;
+  if (obj &#x3D;&#x3D;&#x3D; null) {
+    return null;
+  }
+  if (obj &#x3D;&#x3D;&#x3D; undefined) {
+    return undefined;
+  }
+  if (Array.isArray(obj)) {
+    result &#x3D; [];
+    obj.forEach(element &#x3D;&gt; {
+      result.push(deepCopyForResponse(element, null));
+    });
+    return result;
+  }
+  // Some objects (such as ByteBuffer) have copy method.
+  if (obj.copy !&#x3D;&#x3D; undefined) {
+    return obj.copy();
+  }
+  // ArrayBuffer should be copied through slice().
+  if (obj instanceof ArrayBuffer) {
+    return (obj as ArrayBuffer).slice(0);
+  }
+  if (typeof obj &#x3D;&#x3D;&#x3D; &#x27;object&#x27;) {
+    result &#x3D; {};
+    Object.keys(obj).forEach(key &#x3D;&gt; {
+      if (
+        subresponseInfo &amp;&amp;
+        key &#x3D;&#x3D;&#x3D; subresponseInfo.field &amp;&amp;
+        Array.isArray(obj[key])
+      ) {
+        // Note that subresponses are not deep-copied. This is safe because
+        // those subresponses are not shared among callbacks.
+        result[key] &#x3D; obj[key].slice(
+          subresponseInfo.start,
+          subresponseInfo.end
+        );
+      } else {
+        result[key] &#x3D; deepCopyForResponse(obj[key], null);
+      }
+    });
+    return result;
+  }
+  return obj;
+}
+
+export class Task {
+  _apiCall: SimpleCallbackFunction;
+  _request: {[index: string]: TaskElement[]};
+  _bundledField: string;
+  _subresponseField?: string | null;
+  _data: TaskData[];
+  callCanceller?: GRPCCallResult;
+  /**
+   * A task coordinates the execution of a single bundle.
+   *
+   * @param {function} apiCall - The function to conduct calling API.
+   * @param {Object} bundlingRequest - The base request object to be used
+   *   for the actual API call.
+   * @param {string} bundledField - The name of the field in bundlingRequest
+   *   to be bundled.
+   * @param {string&#x3D;} subresponseField - The name of the field in the response
+   *   to be passed to the callback.
+   * @constructor
+   * @private
+   */
+  constructor(
+    apiCall: SimpleCallbackFunction,
+    bundlingRequest: {},
+    bundledField: string,
+    subresponseField?: string | null
+  ) {
+    this._apiCall &#x3D; apiCall;
+    this._request &#x3D; bundlingRequest;
+    this._bundledField &#x3D; bundledField;
+    this._subresponseField &#x3D; subresponseField;
+    this._data &#x3D; [];
+  }
+  /**
+   * Returns the number of elements in a task.
+   * @return {number} The number of elements.
+   */
+  getElementCount() {
+    let count &#x3D; 0;
+    for (let i &#x3D; 0; i &lt; this._data.length; ++i) {
+      count +&#x3D; this._data[i].elements.length;
+    }
+    return count;
+  }
+  /**
+   * Returns the total byte size of the elements in a task.
+   * @return {number} The byte size.
+   */
+  getRequestByteSize() {
+    let size &#x3D; 0;
+    for (let i &#x3D; 0; i &lt; this._data.length; ++i) {
+      size +&#x3D; this._data[i].bytes;
+    }
+    return size;
+  }
+  /**
+   * Invokes the actual API call with current elements.
+   * @return {string[]} - the list of ids for invocations to be run.
+   */
+  run() {
+    if (this._data.length &#x3D;&#x3D;&#x3D; 0) {
+      return [];
+    }
+    const request &#x3D; this._request;
+    const elements: TaskElement[] &#x3D; [];
+    const ids: string[] &#x3D; [];
+    for (let i &#x3D; 0; i &lt; this._data.length; ++i) {
+      elements.push.apply(elements, this._data[i].elements);
+      ids.push(this._data[i].callback.id!);
+    }
+    request[this._bundledField] &#x3D; elements;
+    const self &#x3D; this;
+    this.callCanceller &#x3D; this._apiCall(
+      request,
+      (err: GoogleError | null, response?: {} | null) &#x3D;&gt; {
+        const responses: Array&lt;{} | undefined&gt; &#x3D; [];
+        if (err) {
+          self._data.forEach(() &#x3D;&gt; {
+            responses.push(undefined);
+          });
+        } else {
+          let subresponseInfo: SubResponseInfo | null &#x3D; null;
+          if (self._subresponseField) {
+            subresponseInfo &#x3D; {
+              field: self._subresponseField,
+              start: 0,
+            };
+          }
+          self._data.forEach(data &#x3D;&gt; {
+            if (subresponseInfo) {
+              subresponseInfo.end &#x3D;
+                subresponseInfo.start! + data.elements.length;
+            }
+            responses.push(deepCopyForResponse(response, subresponseInfo));
+            if (subresponseInfo) {
+              subresponseInfo.start &#x3D; subresponseInfo.end;
+            }
+          });
+        }
+        for (let i &#x3D; 0; i &lt; self._data.length; ++i) {
+          if (self._data[i].cancelled) {
+            const error &#x3D; new GoogleError(&#x27;cancelled&#x27;);
+            error.code &#x3D; status.CANCELLED;
+            self._data[i].callback(error);
+          } else {
+            self._data[i].callback(err, responses[i]);
+          }
+        }
+      }
+    );
+    return ids;
+  }
+  /**
+   * Appends the list of elements into the task.
+   * @param {Object[]} elements - the new list of elements.
+   * @param {number} bytes - the byte size required to encode elements in the API.
+   * @param {APICallback} callback - the callback of the method call.
+   */
+  extend(elements: TaskElement[], bytes: number, callback: TaskCallback) {
+    this._data.push({
+      elements,
+      bytes,
+      callback,
+    });
+  }
+  /**
+   * Cancels a part of elements.
+   * @param {string} id - The identifier of the part of elements.
+   * @return {boolean} Whether the entire task will be canceled or not.
+   */
+  cancel(id: string) {
+    if (this.callCanceller) {
+      let allCancelled &#x3D; true;
+      this._data.forEach(d &#x3D;&gt; {
+        if (d.callback.id &#x3D;&#x3D;&#x3D; id) {
+          d.cancelled &#x3D; true;
+        }
+        if (!d.cancelled) {
+          allCancelled &#x3D; false;
+        }
+      });
+      if (allCancelled) {
+        this.callCanceller.cancel();
+      }
+      return allCancelled;
+    }
+    for (let i &#x3D; 0; i &lt; this._data.length; ++i) {
+      if (this._data[i].callback.id &#x3D;&#x3D;&#x3D; id) {
+        const error &#x3D; new GoogleError(&#x27;cancelled&#x27;);
+        error.code &#x3D; status.CANCELLED;
+        this._data[i].callback(error);
+        this._data.splice(i, 1);
+        break;
+      }
+    }
+    return this._data.length &#x3D;&#x3D;&#x3D; 0;
+  }
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'TaskElement.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

@@ -1,0 +1,1502 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content miscellaneous-functions">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Miscellaneous</li>
+  <li>Functions</li>
+</ol>
+
+<section>
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <ul class="index-list">
+                        <li>
+                            <a href="#computeBundleId" title="src/bundlingCalls/bundlingUtils.ts"><b>computeBundleId</b>&nbsp;&nbsp;&nbsp;(src/.../bundlingUtils.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#constructSettings" title="src/gax.ts"><b>constructSettings</b>&nbsp;&nbsp;&nbsp;(src/.../gax.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#createApiCall" title="src/createApiCall.ts"><b>createApiCall</b>&nbsp;&nbsp;&nbsp;(src/.../createApiCall.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#createAPICaller" title="src/apiCaller.ts"><b>createAPICaller</b>&nbsp;&nbsp;&nbsp;(src/.../apiCaller.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#createBackoffSettings" title="src/gax.ts"><b>createBackoffSettings</b>&nbsp;&nbsp;&nbsp;(src/.../gax.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#createDefaultBackoffSettings" title="src/gax.ts"><b>createDefaultBackoffSettings</b>&nbsp;&nbsp;&nbsp;(src/.../gax.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#createMaxRetriesBackoffSettings" title="src/gax.ts"><b>createMaxRetriesBackoffSettings</b>&nbsp;&nbsp;&nbsp;(src/.../gax.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#createRetryOptions" title="src/gax.ts"><b>createRetryOptions</b>&nbsp;&nbsp;&nbsp;(src/.../gax.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#formatSegments" title="src/pathTemplate.ts"><b>formatSegments</b>&nbsp;&nbsp;&nbsp;(src/.../pathTemplate.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#fromParams" title="src/routingHeader.ts"><b>fromParams</b>&nbsp;&nbsp;&nbsp;(src/.../routingHeader.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#isBrowser" title="src/isbrowser.ts"><b>isBrowser</b>&nbsp;&nbsp;&nbsp;(src/.../isbrowser.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#lro" title="src/index.ts"><b>lro</b>&nbsp;&nbsp;&nbsp;(src/.../index.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#noop" title="src/bundlingCalls/bundleExecutor.ts"><b>noop</b>&nbsp;&nbsp;&nbsp;(src/.../bundleExecutor.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#operation" title="src/longRunningCalls/longrunning.ts"><b>operation</b>&nbsp;&nbsp;&nbsp;(src/.../longrunning.ts)</a>
+                        </li>
+                        <li>
+                            <a href="#warn" title="src/warnings.ts"><b>warn</b>&nbsp;&nbsp;&nbsp;(src/.../warnings.ts)</a>
+                        </li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+    <h3>src/bundlingCalls/bundlingUtils.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="computeBundleId"></a>
+                    <span class="name">
+                        <b>
+                            computeBundleId
+                        </b>
+                        <a href="#computeBundleId"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>computeBundleId(obj, discriminatorFields)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Compute the identifier of the <code>obj</code>. The objects of the same ID
+will be bundled together.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>obj</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>The request object.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>discriminatorFields</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>The array of field names.
+A field name may include &#39;.&#39; as a separator, which is used to
+indicate object traversal.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/gax.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="constructSettings"></a>
+                    <span class="name">
+                        <b>
+                            constructSettings
+                        </b>
+                        <a href="#constructSettings"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>constructSettings(serviceName, clientConfig, configOverrides, retryNames, otherArgs?, promise?)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Constructs a dictionary mapping method names to <a href="../classes/CallSettings.html">CallSettings</a>.</p>
+<p>The <code>clientConfig</code> parameter is parsed from a client configuration JSON
+file of the form:</p>
+<div><pre class="line-numbers"><code class="language-none"> {
+   &quot;interfaces&quot;: {
+     &quot;google.fake.v1.ServiceName&quot;: {
+       &quot;retry_codes&quot;: {
+         &quot;idempotent&quot;: [&quot;UNAVAILABLE&quot;, &quot;DEADLINE_EXCEEDED&quot;],
+         &quot;non_idempotent&quot;: []
+       },
+       &quot;retry_params&quot;: {
+         &quot;default&quot;: {
+           &quot;initial_retry_delay_millis&quot;: 100,
+           &quot;retry_delay_multiplier&quot;: 1.2,
+           &quot;max_retry_delay_millis&quot;: 1000,
+           &quot;initial_rpc_timeout_millis&quot;: 2000,
+           &quot;rpc_timeout_multiplier&quot;: 1.5,
+           &quot;max_rpc_timeout_millis&quot;: 30000,
+           &quot;total_timeout_millis&quot;: 45000
+         }
+       },
+       &quot;methods&quot;: {
+         &quot;CreateFoo&quot;: {
+           &quot;retry_codes_name&quot;: &quot;idempotent&quot;,
+           &quot;retry_params_name&quot;: &quot;default&quot;
+         },
+         &quot;Publish&quot;: {
+           &quot;retry_codes_name&quot;: &quot;non_idempotent&quot;,
+           &quot;retry_params_name&quot;: &quot;default&quot;,
+           &quot;bundling&quot;: {
+             &quot;element_count_threshold&quot;: 40,
+             &quot;element_count_limit&quot;: 200,
+             &quot;request_byte_threshold&quot;: 90000,
+             &quot;request_byte_limit&quot;: 100000,
+             &quot;delay_threshold_millis&quot;: 100
+           }
+         }
+       }
+     }
+   }
+ }</code></pre></div></div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>serviceName</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>The fully-qualified name of this
+service, used as a key into the client config file (in the
+example above, this value should be &#39;google.fake.v1.ServiceName&#39;).</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>clientConfig</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>A dictionary parsed from the
+standard API client config file.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>configOverrides</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>A dictionary in the same structure of
+client_config to override the settings.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>retryNames</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>A dictionary mapping the strings
+referring to response status codes to objects representing
+those codes.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>otherArgs</td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the non-request arguments to be passed to the API
+calls.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>promise</td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>A constructor for a promise that implements the
+ES6 specification of promise. If not provided, native promises will be used.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="createBackoffSettings"></a>
+                    <span class="name">
+                        <b>
+                            createBackoffSettings
+                        </b>
+                        <a href="#createBackoffSettings"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>createBackoffSettings(initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis, initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis, totalTimeoutMillis)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Parameters to the exponential backoff algorithm for retrying.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>initialRetryDelayMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the initial delay time,
+in milliseconds, between the completion of the first failed request and the
+initiation of the first retrying request.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>retryDelayMultiplier</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the multiplier by which to
+increase the delay time between the completion of failed requests, and the
+initiation of the subsequent retrying request.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>maxRetryDelayMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the maximum delay time, in
+milliseconds, between requests. When this value is reached,
+<code>retryDelayMultiplier</code> will no longer be used to increase delay time.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>initialRpcTimeoutMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the initial timeout parameter
+to the request.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>rpcTimeoutMultiplier</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the multiplier by which to
+increase the timeout parameter between failed requests.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>maxRpcTimeoutMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the maximum timeout parameter, in
+milliseconds, for a request. When this value is reached,
+<code>rpcTimeoutMultiplier</code> will no longer be used to increase the timeout.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>totalTimeoutMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the total time, in milliseconds,
+starting from when the initial request is sent, after which an error will
+be returned, regardless of the retrying attempts made meanwhile.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="../interfaces/BackoffSettings.html" target="_self" >BackoffSettings</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <p>a new settings.</p>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="createDefaultBackoffSettings"></a>
+                    <span class="name">
+                        <b>
+                            createDefaultBackoffSettings
+                        </b>
+                        <a href="#createDefaultBackoffSettings"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>createDefaultBackoffSettings()</code>
+                </td>
+            </tr>
+
+
+
+
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="createMaxRetriesBackoffSettings"></a>
+                    <span class="name">
+                        <b>
+                            createMaxRetriesBackoffSettings
+                        </b>
+                        <a href="#createMaxRetriesBackoffSettings"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>createMaxRetriesBackoffSettings(initialRetryDelayMillis, retryDelayMultiplier, maxRetryDelayMillis, initialRpcTimeoutMillis, rpcTimeoutMultiplier, maxRpcTimeoutMillis, maxRetries)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Parameters to the exponential backoff algorithm for retrying.
+This function is unsupported, and intended for internal use only.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>initialRetryDelayMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the initial delay time,
+in milliseconds, between the completion of the first failed request and the
+initiation of the first retrying request.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>retryDelayMultiplier</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the multiplier by which to
+increase the delay time between the completion of failed requests, and the
+initiation of the subsequent retrying request.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>maxRetryDelayMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the maximum delay time, in
+milliseconds, between requests. When this value is reached,
+<code>retryDelayMultiplier</code> will no longer be used to increase delay time.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>initialRpcTimeoutMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the initial timeout parameter
+to the request.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>rpcTimeoutMultiplier</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the multiplier by which to
+increase the timeout parameter between failed requests.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>maxRpcTimeoutMillis</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the maximum timeout parameter, in
+milliseconds, for a request. When this value is reached,
+<code>rpcTimeoutMultiplier</code> will no longer be used to increase the timeout.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>maxRetries</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>the maximum number of retrying attempts that
+will be made. If reached, an error will be returned.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="../interfaces/BackoffSettings.html" target="_self" >BackoffSettings</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <p>a new settings.</p>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="createRetryOptions"></a>
+                    <span class="name">
+                        <b>
+                            createRetryOptions
+                        </b>
+                        <a href="#createRetryOptions"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>createRetryOptions(retryCodes, backoffSettings)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Per-call configurable settings for retrying upon transient failure.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>retryCodes</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>a list of Google API canonical error codes
+upon which a retry should be attempted.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>backoffSettings</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>configures the retry
+exponential backoff algorithm.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="../classes/RetryOptions.html" target="_self" >RetryOptions</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <p>A new RetryOptions object.</p>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/createApiCall.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="createApiCall"></a>
+                    <span class="name">
+                        <b>
+                            createApiCall
+                        </b>
+                        <a href="#createApiCall"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>createApiCall(func, settings, descriptor?)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Converts an rpc call into an API call governed by the settings.</p>
+<p>In typical usage, <code>func</code> will be a promise to a callable used to make an rpc
+request. This will mostly likely be a bound method from a request stub used
+to make an rpc call. It is not a direct function but a Promise instance,
+because of its asynchronism (typically, obtaining the auth information).</p>
+<p>The result is a function which manages the API call with the given settings
+and the options on the invocation.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>func</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>is either a promise to be used to make
+a bare RPC call, or just a bare RPC call.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>settings</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>provides the settings for this call</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>descriptor</td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>optionally specify the descriptor for
+the method call.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="../interfaces/GaxCall.html" target="_self" >GaxCall</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <p>func - a bound method on a request stub used
+to make an rpc call.</p>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/apiCaller.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="createAPICaller"></a>
+                    <span class="name">
+                        <b>
+                            createAPICaller
+                        </b>
+                        <a href="#createAPICaller"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>createAPICaller(settings, descriptor)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>settings</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>descriptor</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="../interfaces/APICaller.html" target="_self" >APICaller</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/pathTemplate.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="formatSegments"></a>
+                    <span class="name">
+                        <b>
+                            formatSegments
+                        </b>
+                        <a href="#formatSegments"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>formatSegments(segments)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Creates the string representattion for the segments.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>segments</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>The array of segments.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <ul>
+<li>A string representing segments in the path template
+format.</li>
+</ul>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/routingHeader.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="fromParams"></a>
+                    <span class="name">
+                        <b>
+                            fromParams
+                        </b>
+                        <a href="#fromParams"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>fromParams(params)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Helpers for constructing routing headers.</p>
+<p>These headers are used by Google infrastructure to determine how to route
+requests, especially for services that are regional.</p>
+<p>Generally, these headers are specified as gRPC metadata.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>params</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/isbrowser.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="isBrowser"></a>
+                    <span class="name">
+                        <b>
+                            isBrowser
+                        </b>
+                        <a href="#isBrowser"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>isBrowser()</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/index.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="lro"></a>
+                    <span class="name">
+                        <b>
+                            lro
+                        </b>
+                        <a href="#lro"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>lro(options)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>options</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/bundlingCalls/bundleExecutor.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="noop"></a>
+                    <span class="name">
+                        <b>
+                            noop
+                        </b>
+                        <a href="#noop"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>noop()</code>
+                </td>
+            </tr>
+
+
+
+
+        </tbody>
+    </table>
+</section>    <h3>src/longRunningCalls/longrunning.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="operation"></a>
+                    <span class="name">
+                        <b>
+                            operation
+                        </b>
+                        <a href="#operation"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>operation(op, longrunningDescriptor, backoffSettings, callOptions?)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Method used to create Operation objects.</p>
+</div>
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                    <td>Description</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>op</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>The operation to be wrapped.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>longrunningDescriptor</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>This defines the
+operations service client and unpacking mechanisms for the operation.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>backoffSettings</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>The backoff settings used in
+in polling the operation.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>callOptions</td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                    <td>
+                                        <ul>
+<li>CallOptions used in making get operation
+requests.</li>
+</ul>
+
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>    <h3>src/warnings.ts</h3>
+    <section>
+    <h3></h3>    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="warn"></a>
+                    <span class="name">
+                        <b>
+                            warn
+                        </b>
+                        <a href="#warn"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>warn(code, message)</code>
+                </td>
+            </tr>
+
+
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>code</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>message</td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'miscellaneous-functions';
+            var COMPODOC_CURRENT_PAGE_URL = 'functions.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

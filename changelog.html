@@ -1,0 +1,382 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="./images/favicon.ico">
+	      <link rel="stylesheet" href="./styles/style.css">
+        <link rel="stylesheet" href="./styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="./" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content getting-started">
+                   <div class="content-data">
+
+<h1 id="changelog">Changelog</h1>
+<p><a href="https://www.npmjs.com/package/gax-nodejs?activeTab=versions">npm history</a></p>
+<h2 id="100-2019-05-09"><a href="https://www.github.com/googleapis/gax-nodejs/compare/v0.26.0...v1.0.0">1.0.0</a> (2019-05-09)</h2>
+<h3 id="bug-fixes">Bug Fixes</h3>
+<ul>
+<li><strong>deps:</strong> update dependency @grpc/grpc-js to ^0.4.0 (<a href="https://www.github.com/googleapis/gax-nodejs/issues/487">#487</a> (<a href="https://www.github.com/googleapis/gax-nodejs/commit/981b1ed">981b1ed</a>)</li>
+<li><strong>deps:</strong> update dependency google-auth-library to v4 (<a href="https://www.github.com/googleapis/gax-nodejs/issues/493">#493</a> (<a href="https://www.github.com/googleapis/gax-nodejs/commit/03236f4">03236f4</a>)</li>
+</ul>
+<h3 id="build-system">Build System</h3>
+<ul>
+<li>upgrade engines field to &gt;=8.10.0 (<a href="https://www.github.com/googleapis/gax-nodejs/issues/483">#483</a> (<a href="https://www.github.com/googleapis/gax-nodejs/commit/728678a">728678a</a>)</li>
+</ul>
+<h3 id="features">Features</h3>
+<ul>
+<li>use @grpc/grpc-js instead of grpc (<a href="https://www.github.com/googleapis/gax-nodejs/issues/484">#484</a> (<a href="https://www.github.com/googleapis/gax-nodejs/commit/b872f2b">b872f2b</a>)</li>
+</ul>
+<h3 id="breaking-changes">BREAKING CHANGES</h3>
+<ul>
+<li>use @grpc/grpc-js instead of grpc (#484)</li>
+<li>upgrade engines field to &gt;=8.10.0 (#483)</li>
+</ul>
+<h2 id="v0260">v0.26.0</h2>
+<p>04-30-2019 20:45 PDT</p>
+<h3 id="implementation-changes">Implementation Changes</h3>
+<ul>
+<li>refactor: a huge refactor of call handling (<a href="https://github.com/googleapis/gax-nodejs/pull/467">#467</a>)</li>
+<li>feat: do not use legacy grpc loadObject (<a href="https://github.com/googleapis/gax-nodejs/pull/477">#477</a>)</li>
+</ul>
+<h3 id="new-features">New Features</h3>
+<ul>
+<li>feat: turned google-proto-files into a dev dependency (<a href="https://github.com/googleapis/gax-nodejs/pull/470">#470</a>)</li>
+</ul>
+<h3 id="dependencies">Dependencies</h3>
+<ul>
+<li>chore(deps): unpin grpc (<a href="https://github.com/googleapis/gax-nodejs/pull/475">#475</a>)</li>
+<li>fix: pin grpc 1.20.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/474">#474</a>)</li>
+<li>chore(deps): update dependency nyc to v14 (<a href="https://github.com/googleapis/gax-nodejs/pull/468">#468</a>)</li>
+<li>fix(deps): update dependency @grpc/proto-loader to ^0.5.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/466">#466</a>)</li>
+<li>chore(deps): update dependency mocha to ~6.1.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/464">#464</a>)</li>
+<li>chore(deps): update dependency typescript to ~3.4.0</li>
+<li>chore(deps): update dependency @types/semver to v6</li>
+</ul>
+<h3 id="internal--testing-changes">Internal / Testing Changes</h3>
+<ul>
+<li>test: end-to-end system test (<a href="https://github.com/googleapis/gax-nodejs/pull/471">#471</a>)</li>
+<li>update to .nycrc with --all enabled (<a href="https://github.com/googleapis/gax-nodejs/pull/476">#476</a>)</li>
+<li>test: better return type for typescript 3.4.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/463">#463</a>)</li>
+</ul>
+<h2 id="v0256">v0.25.6</h2>
+<p>03-28-2019 21:27 PDT</p>
+<h3 id="fixes">Fixes</h3>
+<ul>
+<li>fix(deps): update dependency semver to v6</li>
+<li>fix: bundling is optional in MethodConfig (<a href="https://github.com/googleapis/gax-nodejs/pull/459">#459</a>)</li>
+<li>fix(ts): drop dependency on @types/duplexify (<a href="https://github.com/googleapis/gax-nodejs/pull/458">#458</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-1">Internal / Testing Changes</h3>
+<ul>
+<li>chore: publish to npm using wombat (<a href="https://github.com/googleapis/gax-nodejs/pull/453">#453</a>)</li>
+<li>build: use per-repo publish token (<a href="https://github.com/googleapis/gax-nodejs/pull/449">#449</a>)</li>
+</ul>
+<h2 id="v0255">v0.25.5</h2>
+<p>03-15-2019 14:01 PDT</p>
+<h3 id="implementation-changes-1">Implementation Changes</h3>
+<ul>
+<li>fix: includes @types/duplexify in package (<a href="https://github.com/googleapis/gax-nodejs/pull/441">#441</a>)</li>
+</ul>
+<h3 id="dependencies-1">Dependencies</h3>
+<ul>
+<li>fix(deps): update dependency google-proto-files to ^0.19.0</li>
+<li>chore(deps): update dependency @types/source-map-support to ^0.5.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/442">#442</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-2">Internal / Testing Changes</h3>
+<ul>
+<li>build: Add docuploader credentials to node publish jobs (<a href="https://github.com/googleapis/gax-nodejs/pull/444">#444</a>)</li>
+<li>build: use node10 to run samples-test, system-test etc (<a href="https://github.com/googleapis/gax-nodejs/pull/443">#443</a>)</li>
+<li>build: update kokoro config (<a href="https://github.com/googleapis/gax-nodejs/pull/440">#440</a>)</li>
+<li>test: longer timeout for Pub/Sub system tests (<a href="https://github.com/googleapis/gax-nodejs/pull/451">#451</a>)</li>
+</ul>
+<h2 id="v0254">v0.25.4</h2>
+<p>02-28-2019 17:51 PST</p>
+<h3 id="implementation-changes-2">Implementation Changes</h3>
+<ul>
+<li>fix: do not hang in LRO forever if API returned nothing (<a href="https://github.com/googleapis/gax-nodejs/pull/436">#436</a>)</li>
+</ul>
+<h2 id="v0253">v0.25.3</h2>
+<p>02-26-2019 12:08 PST</p>
+<h3 id="implementation-changes-3">Implementation Changes</h3>
+<ul>
+<li>fix: monitoring could be a common proto (<a href="https://github.com/googleapis/gax-nodejs/pull/434">#434</a>)</li>
+<li>refactor: cleanup unused files (<a href="https://github.com/googleapis/gax-nodejs/pull/422">#422</a>)</li>
+<li>chore(typescript): export common API call types (<a href="https://github.com/googleapis/gax-nodejs/pull/433">#433</a>)</li>
+</ul>
+<h3 id="dependencies-2">Dependencies</h3>
+<ul>
+<li>chore(deps): update dependency mocha to v6 (<a href="https://github.com/googleapis/gax-nodejs/pull/430">#430</a>)</li>
+</ul>
+<h3 id="documentation">Documentation</h3>
+<ul>
+<li>docs: update links in contrib guide (<a href="https://github.com/googleapis/gax-nodejs/pull/429">#429</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-3">Internal / Testing Changes</h3>
+<ul>
+<li>build: use linkinator for docs test (<a href="https://github.com/googleapis/gax-nodejs/pull/428">#428</a>)</li>
+</ul>
+<h2 id="v0252">v0.25.2</h2>
+<p>02-12-2019 01:16 PST</p>
+<ul>
+<li>fix: do not fail if bundledField is missing (<a href="https://github.com/googleapis/gax-nodejs/pull/424">#424</a>)</li>
+<li>fix: do not use console.warn or console.error (<a href="https://github.com/googleapis/gax-nodejs/pull/426">#426</a>)</li>
+</ul>
+<h3 id="implementation-changes-4">Implementation Changes</h3>
+<ul>
+<li>refactor: snake case savagery is for pythonistas 🙅‍♂️🐍 (<a href="https://github.com/googleapis/gax-nodejs/pull/421">#421</a>)</li>
+<li>refactor: clean up operations client (<a href="https://github.com/googleapis/gax-nodejs/pull/420">#420</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-4">Internal / Testing Changes</h3>
+<ul>
+<li>test: do not use grpc-js in regular system test (<a href="https://github.com/googleapis/gax-nodejs/pull/425">#425</a>)</li>
+<li>build: create docs test npm scripts (<a href="https://github.com/googleapis/gax-nodejs/pull/423">#423</a>)</li>
+</ul>
+<h2 id="v0251">v0.25.1</h2>
+<p>02-08-2019 18:01 PST</p>
+<p>This is a patch release that fixes the code working with <code>grpc-js</code> (<a href="https://github.com/googleapis/gax-nodejs/pull/400">#400</a>).
+It&#39;s not supposed to be used in production (yet), so it&#39;s hidden behind a secret environment variable.
+We&#39;ll let you know when it&#39;s ready to use!</p>
+<h3 id="dependencies-3">Dependencies</h3>
+<ul>
+<li>fix(deps): update dependency walkdir to v0.3.2 (<a href="https://github.com/googleapis/gax-nodejs/pull/413">#413</a>)</li>
+<li>fix(deps): update dependency walkdir to v0.2.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/410">#410</a>)</li>
+<li>fix(deps): update dependency walkdir to v0.1.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/407">#407</a>)</li>
+</ul>
+<h3 id="documentation-1">Documentation</h3>
+<ul>
+<li>docs: update contributing guide (<a href="https://github.com/googleapis/gax-nodejs/pull/414">#414</a>)</li>
+<li>docs: add lint/fix example to contributing guide (<a href="https://github.com/googleapis/gax-nodejs/pull/409">#409</a>)</li>
+<li>docs: fix type for retryCodes (<a href="https://github.com/googleapis/gax-nodejs/pull/404">#404</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-5">Internal / Testing Changes</h3>
+<ul>
+<li>build: test using @grpc/grpc-js in CI (<a href="https://github.com/googleapis/gax-nodejs/pull/418">#418</a>)</li>
+<li>chore: don&#39;t run system tests with grpc-js (<a href="https://github.com/googleapis/gax-nodejs/pull/417">#417</a>)</li>
+<li>test: enable testing of grpc-js (<a href="https://github.com/googleapis/gax-nodejs/pull/400">#400</a>)</li>
+</ul>
+<h2 id="v0250">v0.25.0</h2>
+<p>01-28-2019 23:31 PST</p>
+<h3 id="new-features-1">New Features</h3>
+<ul>
+<li>Add grpc-gcp support in gax (<a href="https://github.com/googleapis/gax-nodejs/pull/396">#396</a>)</li>
+</ul>
+<h3 id="dependencies-4">Dependencies</h3>
+<ul>
+<li>chore(deps): update dependency eslint-config-prettier to v4 (<a href="https://github.com/googleapis/gax-nodejs/pull/399">#399</a>)</li>
+</ul>
+<h2 id="v0240">v0.24.0</h2>
+<p>01-24-2019 08:49 PST</p>
+<h3 id="dependencies-5">Dependencies</h3>
+<ul>
+<li>fix(deps): update dependency @grpc/proto-loader to ^0.4.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/395">#395</a>)</li>
+<li>fix(deps): update dependency google-auth-library to v3 (<a href="https://github.com/googleapis/gax-nodejs/pull/394">#394</a>)</li>
+</ul>
+<h2 id="v0230">v0.23.0</h2>
+<p>01-11-2019 13:32 PST</p>
+<h3 id="implementation-changes-5">Implementation Changes</h3>
+<ul>
+<li>fix: include status code on errors (<a href="https://github.com/googleapis/gax-nodejs/pull/390">#390</a>)</li>
+<li>fix: Change to &quot;greater than&quot; for limit on number of elements (<a href="https://github.com/googleapis/gax-nodejs/pull/386">#386</a>)</li>
+<li>fix(ts): export CallSettings and RetryOptions (<a href="https://github.com/googleapis/gax-nodejs/pull/360">#360</a>)</li>
+</ul>
+<h3 id="dependencies-6">Dependencies</h3>
+<ul>
+<li>chore(deps): update dependency @types/sinon to v7 (<a href="https://github.com/googleapis/gax-nodejs/pull/385">#385</a>)</li>
+<li>chore(deps): update dependency typescript to ~3.2.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/364">#364</a>)</li>
+<li>chore(deps): update dependency gts to ^0.9.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/355">#355</a>)</li>
+</ul>
+<h3 id="documentation-2">Documentation</h3>
+<ul>
+<li>build: check broken links in generated docs (<a href="https://github.com/googleapis/gax-nodejs/pull/387">#387</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-6">Internal / Testing Changes</h3>
+<ul>
+<li>chore(build): inject yoshi automation key (<a href="https://github.com/googleapis/gax-nodejs/pull/384">#384</a>)</li>
+<li>chore: update nyc and eslint configs (<a href="https://github.com/googleapis/gax-nodejs/pull/383">#383</a>)</li>
+<li>chore: npm-install-retry is not a thing anymore (<a href="https://github.com/googleapis/gax-nodejs/pull/381">#381</a>)</li>
+<li>chore: fix publish.sh permission +x (<a href="https://github.com/googleapis/gax-nodejs/pull/380">#380</a>)</li>
+<li>fix(build): fix Kokoro release script (<a href="https://github.com/googleapis/gax-nodejs/pull/379">#379</a>)</li>
+<li>build: add Kokoro configs for autorelease (<a href="https://github.com/googleapis/gax-nodejs/pull/378">#378</a>)</li>
+<li>chore: always nyc report before calling codecov (<a href="https://github.com/googleapis/gax-nodejs/pull/375">#375</a>)</li>
+<li>chore: nyc ignore build/test by default (<a href="https://github.com/googleapis/gax-nodejs/pull/374">#374</a>)</li>
+<li>chore: update synth metadata (<a href="https://github.com/googleapis/gax-nodejs/pull/372">#372</a>)</li>
+<li>chore: fix openssl decrypt (<a href="https://github.com/googleapis/gax-nodejs/pull/367">#367</a>)</li>
+<li>test: enable pub/sub system tests (<a href="https://github.com/googleapis/gax-nodejs/pull/366">#366</a>)</li>
+<li>chore: don&#39;t say operations_client.ts is autogen&#39;d (<a href="https://github.com/googleapis/gax-nodejs/pull/361">#361</a>)</li>
+<li>test: don&#39;t run Pub/Sub system tests (<a href="https://github.com/googleapis/gax-nodejs/pull/362">#362</a>)</li>
+<li>chore: include format and lint tools for samples (<a href="https://github.com/googleapis/gax-nodejs/pull/359">#359</a>)</li>
+<li>chore: add a synth.metadata</li>
+</ul>
+<h2 id="v0221">v0.22.1</h2>
+<p>11-12-2018 16:56 PST</p>
+<h3 id="dependencies-7">Dependencies</h3>
+<ul>
+<li>Update grpc dependency (<a href="https://github.com/googleapis/gax-nodejs/pull/353">#353</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-7">Internal / Testing Changes</h3>
+<ul>
+<li>Update eslintignore config (<a href="https://github.com/googleapis/gax-nodejs/pull/352">#352</a>)</li>
+</ul>
+<h2 id="v0220">v0.22.0</h2>
+<p>11-12-2018 15:05 PST</p>
+<h3 id="new-features-2">New Features</h3>
+<ul>
+<li>feat: to support GRPC-GCP Extension, include additional options in grpcOptions (<a href="https://github.com/googleapis/gax-nodejs/pull/328">#328</a>)</li>
+</ul>
+<h2 id="v0210">v0.21.0</h2>
+<h3 id="11-10-2018-1127-pst">11-10-2018 11:27 PST</h3>
+<p>This is a minor service release that largely contains updates to other modules.  The upgrade to <code>google-proto-files</code> and <code>walkdir</code> in particular should improve load time of the module by at least ~100ms.</p>
+<h3 id="dependencies-8">Dependencies</h3>
+<ul>
+<li>fix(deps): update dependency google-proto-files to ^0.18.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/348">#348</a>)</li>
+<li>fix: use <code>walkdir</code> instead of <code>globby</code> (<a href="https://github.com/googleapis/gax-nodejs/pull/346">#346</a>)</li>
+<li>chore(deps): update dependency through2 to v3 (<a href="https://github.com/googleapis/gax-nodejs/pull/343">#343</a>)</li>
+<li>chore: update grpc to ^1.15.1 (<a href="https://github.com/googleapis/gax-nodejs/pull/316">#316</a>)</li>
+<li>fix(deps): update dependency @grpc/grpc-js to ^0.3.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/308">#308</a>)</li>
+</ul>
+<h3 id="internal--testing-changes-8">Internal / Testing Changes</h3>
+<ul>
+<li>fix: improve types, remove dead code (<a href="https://github.com/googleapis/gax-nodejs/pull/340">#340</a>)</li>
+<li>refactor: enable noImplicitThis in the tsconfig (<a href="https://github.com/googleapis/gax-nodejs/pull/347">#347</a>)</li>
+<li>refactor: drop extend and lodash.flatten (<a href="https://github.com/googleapis/gax-nodejs/pull/345">#345</a>)</li>
+<li>chore: remove temporary folder (<a href="https://github.com/googleapis/gax-nodejs/pull/339">#339</a>)</li>
+<li>chore: use latest npm on Windows (<a href="https://github.com/googleapis/gax-nodejs/pull/344">#344</a>)</li>
+<li>refactor: clean up lodash and use strict (<a href="https://github.com/googleapis/gax-nodejs/pull/342">#342</a>)</li>
+<li>chore: include build in eslintignore (<a href="https://github.com/googleapis/gax-nodejs/pull/337">#337</a>)</li>
+<li>chore: system tests for gax (<a href="https://github.com/googleapis/gax-nodejs/pull/334">#334</a>)</li>
+<li>chore: update issue templates (<a href="https://github.com/googleapis/gax-nodejs/pull/333">#333</a>)</li>
+<li>Update issue templates</li>
+<li>chore: remove old issue template (<a href="https://github.com/googleapis/gax-nodejs/pull/329">#329</a>)</li>
+<li>build: run tests on node11 (<a href="https://github.com/googleapis/gax-nodejs/pull/327">#327</a>)</li>
+<li>fix: better types for GAPIC clients (<a href="https://github.com/googleapis/gax-nodejs/pull/326">#326</a>)</li>
+<li>chores(build): do not collect sponge.xml from windows builds (<a href="https://github.com/googleapis/gax-nodejs/pull/325">#325</a>)</li>
+<li>chores(build): run codecov on continuous builds (<a href="https://github.com/googleapis/gax-nodejs/pull/324">#324</a>)</li>
+<li>chore: update new issue template (<a href="https://github.com/googleapis/gax-nodejs/pull/323">#323</a>)</li>
+<li>build: fix codecov uploading on Kokoro (<a href="https://github.com/googleapis/gax-nodejs/pull/320">#320</a>)</li>
+<li>fix(deps): update dependency google-proto-files to ^0.17.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/317">#317</a>)</li>
+<li>chore(deps): update dependency sinon to v7 (<a href="https://github.com/googleapis/gax-nodejs/pull/319">#319</a>)</li>
+<li>Update kokoro config (<a href="https://github.com/googleapis/gax-nodejs/pull/315">#315</a>)</li>
+<li>chore(deps): update dependency typescript to ~3.1.0 (<a href="https://github.com/googleapis/gax-nodejs/pull/313">#313</a>)</li>
+<li>Update CI config (<a href="https://github.com/googleapis/gax-nodejs/pull/312">#312</a>)</li>
+<li>build: prevent system/sample-test from leaking credentials</li>
+<li>Update the kokoro config (<a href="https://github.com/googleapis/gax-nodejs/pull/309">#309</a>)</li>
+<li>test: remove appveyor config (<a href="https://github.com/googleapis/gax-nodejs/pull/307">#307</a>)</li>
+<li>Update CI config (<a href="https://github.com/googleapis/gax-nodejs/pull/306">#306</a>)</li>
+<li>Enable prefer-const in the eslint config (<a href="https://github.com/googleapis/gax-nodejs/pull/304">#304</a>)</li>
+<li>Enable no-var in eslint (<a href="https://github.com/googleapis/gax-nodejs/pull/303">#303</a>)</li>
+</ul>
+<h2 id="v0180">v0.18.0</h2>
+<h3 id="implementation-changes-6">Implementation Changes</h3>
+<p>BREAKING CHANGE:
+- fix: drop support for node.js 4.x and 9.x (#262)</p>
+<h3 id="new-features-3">New Features</h3>
+<h3 id="dependencies-9">Dependencies</h3>
+<ul>
+<li>refactor: add dependency on @grpc/proto-loader (#229)</li>
+<li>chore(deps): update dependency typescript to v3 (#275)</li>
+<li>fix(deps): update dependency @grpc/proto-loader to ^0.3.0 (#269)</li>
+<li>chore(deps): update dependency gts to ^0.8.0 (#266)</li>
+<li>chore(package): Update gts to the latest version 🚀 (#255)</li>
+<li>chore(package): update @types/globby to version 8.0.0 (#257)</li>
+</ul>
+<h3 id="documentation-3">Documentation</h3>
+<ul>
+<li>Add Code of Conduct</li>
+</ul>
+<h3 id="internal--testing-changes-9">Internal / Testing Changes</h3>
+<ul>
+<li>chore: move mocha options to mocha.opts (#274)</li>
+<li>test: fixing timeouts (#264)</li>
+<li>Configure Renovate (#258)</li>
+<li>fix: fix typo in a test (#260)</li>
+<li>fix: update linking for samples (#259)</li>
+<li>refactor: remove prettier, eslint, jshint (#254)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 0;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'getting-started';
+            var COMPODOC_CURRENT_PAGE_URL = 'changelog.html';
+       </script>
+
+       <script src="./js/libs/custom-elements.min.js"></script>
+       <script src="./js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="./js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="./js/menu-wc.js" defer></script>
+
+       <script src="./js/libs/bootstrap-native.js"></script>
+
+       <script src="./js/libs/es6-shim.min.js"></script>
+       <script src="./js/libs/EventDispatcher.js"></script>
+       <script src="./js/libs/promise.min.js"></script>
+       <script src="./js/libs/zepto.min.js"></script>
+
+       <script src="./js/compodoc.js"></script>
+
+       <script src="./js/tabs.js"></script>
+       <script src="./js/menu.js"></script>
+       <script src="./js/libs/clipboard.min.js"></script>
+       <script src="./js/libs/prism.js"></script>
+       <script src="./js/sourceCode.js"></script>
+          <script src="./js/search/search.js"></script>
+          <script src="./js/search/lunr.min.js"></script>
+          <script src="./js/search/search-lunr.js"></script>
+          <script src="./js/search/search_index.js"></script>
+       <script src="./js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>
