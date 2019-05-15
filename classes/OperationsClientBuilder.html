@@ -1,0 +1,665 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content class">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Classes</li>
+  <li>OperationsClientBuilder</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/operationsClient.ts</code>
+        </p>
+
+
+
+
+
+            <section>
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#operationsClient">operationsClient</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+            <section>
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor(gaxGrpc: <a href="../classes/GrpcClient.html">GrpcClient</a>)</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="415" class="link-to-prism">src/operationsClient.ts:415</a></div>
+                            </td>
+                        </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                            <div class="io-description"><p>Builds a new Operations Client</p>
+</div>
+                            <div>
+                                    <b>Parameters :</b>
+                                    <table class="params">
+                                        <thead>
+                                            <tr>
+                                                <td>Name</td>
+                                                    <td>Type</td>
+                                                <td>Optional</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                        <td>gaxGrpc</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../classes/GrpcClient.html" target="_self" >GrpcClient</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+            <section>
+    
+        <h3 id="inputs">
+            Properties
+        </h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="operationsClient"></a>
+                        <span class="name">
+                            <b>
+                            operationsClient</b>
+                            <a href="#operationsClient"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/function" target="_blank" >function</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="415" class="link-to-prism">src/operationsClient.ts:415</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+</section>
+
+
+
+
+
+
+
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {GoogleAuth} from &#x27;google-auth-library&#x27;;
+import {ProjectIdCallback} from &#x27;google-auth-library/build/src/auth/googleauth&#x27;;
+import * as path from &#x27;path&#x27;;
+
+import {GaxCall} from &#x27;./apitypes&#x27;;
+import {createApiCall} from &#x27;./createApiCall&#x27;;
+import {PageDescriptor} from &#x27;./descriptor&#x27;;
+import * as gax from &#x27;./gax&#x27;;
+import {ClientStubOptions, GrpcClient} from &#x27;./grpc&#x27;;
+
+const configData &#x3D; require(&#x27;./operations_client_config&#x27;);
+
+export const SERVICE_ADDRESS &#x3D; &#x27;longrunning.googleapis.com&#x27;;
+const version &#x3D; require(&#x27;../../package.json&#x27;).version;
+
+const DEFAULT_SERVICE_PORT &#x3D; 443;
+const CODE_GEN_NAME_VERSION &#x3D; &#x27;gapic/0.7.1&#x27;;
+const PAGE_DESCRIPTORS &#x3D; {
+  listOperations: new PageDescriptor(
+    &#x27;pageToken&#x27;,
+    &#x27;nextPageToken&#x27;,
+    &#x27;operations&#x27;
+  ),
+};
+
+/**
+ * The scopes needed to make gRPC calls to all of the methods defined in
+ * this service.
+ */
+export const ALL_SCOPES: string[] &#x3D; [];
+
+export interface OperationsClientOptions {
+  libName?: string;
+  libVersion?: string;
+  clientConfig: gax.ClientConfig;
+}
+
+/**
+ * Manages long-running operations with an API service.
+ *
+ * When an API method normally takes long time to complete, it can be designed
+ * to return {@link Operation} to the client, and the client can use this
+ * interface to receive the real response asynchronously by polling the
+ * operation resource, or pass the operation resource to another API (such as
+ * Google Cloud Pub/Sub API) to receive the response.  Any API service that
+ * returns long-running operations should implement the &#x60;Operations&#x60; interface
+ * so developers can have a consistent client experience.
+ *
+ * This will be created through a builder function which can be obtained by the
+ * module. See the following example of how to initialize the module and how to
+ * access to the builder.
+ * @see {@link operationsClient}
+ *
+ * @class
+ */
+export class OperationsClient {
+  auth: GoogleAuth;
+  private _getOperation!: GaxCall;
+  private _listOperations!: GaxCall;
+  private _cancelOperation!: GaxCall;
+  private _deleteOperation!: GaxCall;
+
+  constructor(
+    gaxGrpc: GrpcClient,
+    // tslint:disable-next-line no-any
+    grpcClients: any,
+    options: OperationsClientOptions
+  ) {
+    const opts: OperationsClientOptions &amp; ClientStubOptions &#x3D; Object.assign(
+      {
+        servicePath: SERVICE_ADDRESS,
+        port: DEFAULT_SERVICE_PORT,
+        clientConfig: {},
+      },
+      options
+    );
+
+    const googleApiClient &#x3D; [&#x27;gl-node/&#x27; + process.versions.node];
+    if (opts.libName &amp;&amp; opts.libVersion) {
+      googleApiClient.push(opts.libName + &#x27;/&#x27; + opts.libVersion);
+    }
+    googleApiClient.push(
+      CODE_GEN_NAME_VERSION,
+      &#x27;gax/&#x27; + version,
+      &#x27;grpc/&#x27; + gaxGrpc.grpcVersion
+    );
+
+    const defaults &#x3D; gaxGrpc.constructSettings(
+      &#x27;google.longrunning.Operations&#x27;,
+      configData,
+      opts.clientConfig,
+      {&#x27;x-goog-api-client&#x27;: googleApiClient.join(&#x27; &#x27;)}
+    );
+
+    this.auth &#x3D; gaxGrpc.auth;
+    const operationsStub &#x3D; gaxGrpc.createStub(
+      grpcClients.google.longrunning.Operations,
+      opts
+    );
+    const operationsStubMethods &#x3D; [
+      &#x27;getOperation&#x27;,
+      &#x27;listOperations&#x27;,
+      &#x27;cancelOperation&#x27;,
+      &#x27;deleteOperation&#x27;,
+    ];
+    operationsStubMethods.forEach(methodName &#x3D;&gt; {
+      this[&#x27;_&#x27; + methodName] &#x3D; createApiCall(
+        operationsStub.then(operationsStub &#x3D;&gt; {
+          return (...args: Array&lt;{}&gt;) &#x3D;&gt; {
+            return operationsStub[methodName].apply(operationsStub, args);
+          };
+        }),
+        defaults[methodName],
+        PAGE_DESCRIPTORS[methodName]
+      );
+    });
+  }
+
+  /**
+   * Get the project ID used by this class.
+   * @aram {function(Error, string)} callback - the callback to be called with
+   *   the current project Id.
+   */
+  getProjectId(): Promise&lt;string&gt;;
+  getProjectId(callback: ProjectIdCallback): void;
+  getProjectId(callback?: ProjectIdCallback): void | Promise&lt;string&gt; {
+    return this.auth.getProjectId(callback!);
+  }
+
+  // Service calls
+
+  /**
+   * Gets the latest state of a long-running operation.  Clients can use this
+   * method to poll the operation result at intervals as recommended by the API
+   * service.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation resource.
+   * @param {Object&#x3D;} options
+   *   Optional parameters. You can override the default settings for this call,
+   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   details.
+   * @param {function(?Error, ?Object)&#x3D;} callback
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is an object representing
+   * [google.longrunning.Operation]{@link
+   * external:&quot;google.longrunning.Operation&quot;}.
+   * @return {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing
+   * [google.longrunning.Operation]{@link
+   * external:&quot;google.longrunning.Operation&quot;}. The promise has a method named
+   * &quot;cancel&quot; which cancels the ongoing API call.
+   *
+   * @example
+   *
+   * const client &#x3D; longrunning.operationsClient();
+   * const name &#x3D; &#x27;&#x27;;
+   * const [response] &#x3D; await client.getOperation({name});
+   * // doThingsWith(response)
+   */
+  getOperation(request: {}, options: {}, callback?) {
+    if (options instanceof Function &amp;&amp; callback &#x3D;&#x3D;&#x3D; undefined) {
+      callback &#x3D; options;
+      options &#x3D; {};
+    }
+    options &#x3D; options || {};
+    return this._getOperation(request, options, callback);
+  }
+
+  /**
+   * Lists operations that match the specified filter in the request. If the
+   * server doesn&#x27;t support this method, it returns &#x60;UNIMPLEMENTED&#x60;.
+   *
+   * NOTE: the &#x60;name&#x60; binding below allows API services to override the binding
+   * to use different resource name schemes.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation collection.
+   * @param {string} request.filter - The standard list filter.
+   * @param {number&#x3D;} request.pageSize
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object&#x3D;} options
+   *   Optional parameters. You can override the default settings for this call,
+   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * details.
+   * @param {function(?Error, ?Array, ?Object, ?Object)&#x3D;} callback
+   *   The function which will be called with the result of the API call.
+   *
+   *   The second parameter to the callback is Array of
+   * [google.longrunning.Operation]{@link
+   * external:&quot;google.longrunning.Operation&quot;}.
+   *
+   *   When autoPaginate: false is specified through options, it contains the
+   * result in a single response. If the response indicates the next page
+   * exists, the third parameter is set to be used for the next request object.
+   * The fourth parameter keeps the raw response object of an object
+   * representing [google.longrunning.ListOperationsResponse]{@link
+   * external:&quot;google.longrunning.ListOperationsResponse&quot;}.
+   * @return {Promise} - The promise which resolves to an array.
+   *   The first element of the array is Array of
+   * [google.longrunning.Operation]{@link
+   * external:&quot;google.longrunning.Operation&quot;}.
+   *
+   *   When autoPaginate: false is specified through options, the array has
+   * three elements. The first element is Array of
+   * [google.longrunning.Operation]{@link
+   * external:&quot;google.longrunning.Operation&quot;} in a single response. The second
+   * element is the next request object if the response indicates the next page
+   * exists, or null. The third element is an object representing
+   * [google.longrunning.ListOperationsResponse]{@link
+   * external:&quot;google.longrunning.ListOperationsResponse&quot;}.
+   *
+   *   The promise has a method named &quot;cancel&quot; which cancels the ongoing API
+   * call.
+   *
+   * @example
+   *
+   * const client &#x3D; longrunning.operationsClient();
+   * const request &#x3D; {
+   *     name: &#x27;&#x27;,
+   *     filter: &#x27;&#x27;
+   * };
+   * // Iterate over all elements.
+   * const [resources] &#x3D; await client.listOperations(request);
+   * for (const resource of resources) {
+   *   console.log(resources);
+   * }
+   *
+   * // Or obtain the paged response.
+   * const options &#x3D; {autoPaginate: false};
+   * let nextRequest &#x3D; request;
+   * while(nextRequest) {
+   *   const response &#x3D; await client.listOperations(nextRequest, options);
+   *   const resources &#x3D; response[0];
+   *   nextRequest &#x3D; response[1];
+   *   const rawResponse &#x3D; response[2];
+   *   for (const resource of resources) {
+   *     // doThingsWith(resource);
+   *   }
+   * };
+   */
+  listOperations(request, options, callback) {
+    if (options instanceof Function &amp;&amp; callback &#x3D;&#x3D;&#x3D; undefined) {
+      callback &#x3D; options;
+      options &#x3D; {};
+    }
+    options &#x3D; options || {};
+    return this[&#x27;_listOperations&#x27;](request, options, callback);
+  }
+
+  /**
+   * Equivalent to {@link listOperations}, but returns a NodeJS Stream object.
+   *
+   * This fetches the paged responses for {@link listOperations} continuously
+   * and invokes the callback registered for &#x27;data&#x27; event for each element in
+   * the responses.
+   *
+   * The returned object has &#x27;end&#x27; method when no more elements are required.
+   *
+   * autoPaginate option will be ignored.
+   *
+   * @see {@link https://nodejs.org/api/stream.html}
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation collection.
+   * @param {string} request.filter - The standard list filter.
+   * @param {number&#x3D;} request.pageSize -
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object&#x3D;} options
+   *   Optional parameters. You can override the default settings for this call,
+   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   details.
+   * @return {Stream} - An object stream which emits an object representing [google.longrunning.Operation]{@link external:&quot;google.longrunning.Operation&quot;} on &#x27;data&#x27; event.
+   *
+   * @example
+   *
+   * const client &#x3D; longrunning.operationsClient();
+   * const request &#x3D; {
+   *   name: &#x27;&#x27;,
+   *   filter: &#x27;&#x27;
+   * };
+   * client.listOperationsStream(request)
+   *   .on(&#x27;data&#x27;, element &#x3D;&gt; {
+   *     // doThingsWith(element)
+   *   })
+   *   .on(&#x27;error&#x27;, err &#x3D;&gt; {
+   *     console.error(err);
+   *   });
+   */
+  listOperationsStream(request: {}, options: gax.CallSettings) {
+    return PAGE_DESCRIPTORS.listOperations.createStream(
+      this._listOperations,
+      request,
+      options
+    );
+  }
+
+  /**
+   * Starts asynchronous cancellation on a long-running operation.  The server
+   * makes a best effort to cancel the operation, but success is not
+   * guaranteed.  If the server doesn&#x27;t support this method, it returns
+   * &#x60;google.rpc.Code.UNIMPLEMENTED&#x60;.  Clients can use
+   * {@link Operations.GetOperation} or
+   * other methods to check whether the cancellation succeeded or whether the
+   * operation completed despite cancellation. On successful cancellation,
+   * the operation is not deleted; instead, it becomes an operation with
+   * an {@link Operation.error} value with a {@link google.rpc.Status.code} of
+   * 1, corresponding to &#x60;Code.CANCELLED&#x60;.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation resource to be cancelled.
+   * @param {Object&#x3D;} options
+   *   Optional parameters. You can override the default settings for this call,
+   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * details.
+   * @param {function(?Error)&#x3D;} callback
+   *   The function which will be called with the result of the API call.
+   * @return {Promise} - The promise which resolves when API call finishes.
+   *   The promise has a method named &quot;cancel&quot; which cancels the ongoing API
+   * call.
+   *
+   * @example
+   *
+   * const client &#x3D; longrunning.operationsClient();
+   * await client.cancelOperation({name: &#x27;&#x27;});
+   */
+  cancelOperation(request, options?, callback?) {
+    if (options instanceof Function &amp;&amp; callback &#x3D;&#x3D;&#x3D; undefined) {
+      callback &#x3D; options;
+      options &#x3D; {};
+    }
+    options &#x3D; options || {};
+    return this._cancelOperation(request, options, callback);
+  }
+
+  /**
+   * Deletes a long-running operation. This method indicates that the client is
+   * no longer interested in the operation result. It does not cancel the
+   * operation. If the server doesn&#x27;t support this method, it returns
+   * &#x60;google.rpc.Code.UNIMPLEMENTED&#x60;.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation resource to be deleted.
+   * @param {Object&#x3D;} options
+   *   Optional parameters. You can override the default settings for this call,
+   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * details.
+   * @param {function(?Error)&#x3D;} callback
+   *   The function which will be called with the result of the API call.
+   * @return {Promise} - The promise which resolves when API call finishes.
+   *   The promise has a method named &quot;cancel&quot; which cancels the ongoing API
+   * call.
+   *
+   * @example
+   *
+   * const client &#x3D; longrunning.operationsClient();
+   * await client.deleteOperation({name: &#x27;&#x27;});
+   */
+  deleteOperation(request, options, callback) {
+    if (options instanceof Function &amp;&amp; callback &#x3D;&#x3D;&#x3D; undefined) {
+      callback &#x3D; options;
+      options &#x3D; {};
+    }
+    options &#x3D; options || {};
+    return this._deleteOperation(request, options, callback);
+  }
+}
+
+export class OperationsClientBuilder {
+  operationsClient: (opts: OperationsClientOptions) &#x3D;&gt; OperationsClient;
+
+  /**
+   * Builds a new Operations Client
+   * @param gaxGrpc {GrpcClient}
+   */
+  constructor(gaxGrpc: GrpcClient) {
+    const protoFilesRoot &#x3D; path.join(__dirname, &#x27;..&#x27;, &#x27;..&#x27;);
+    // tslint:disable-next-line no-any
+    const operationsClient: any &#x3D; gaxGrpc.loadProto(
+      protoFilesRoot,
+      &#x27;google/longrunning/operations.proto&#x27;
+    );
+    Object.assign(this, operationsClient.google.longrunning);
+
+    /**
+     * Build a new instance of {@link OperationsClient}.
+     *
+     * @param {Object&#x3D;} opts - The optional parameters.
+     * @param {String&#x3D;} opts.servicePath - Domain name of the API remote host.
+     * @param {number&#x3D;} opts.port - The port on which to connect to the remote host.
+     * @param {grpc.ClientCredentials&#x3D;} opts.sslCreds - A ClientCredentials for use with an SSL-enabled channel.
+     * @param {Object&#x3D;} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
+     */
+    this.operationsClient &#x3D; opts &#x3D;&gt; {
+      return new OperationsClient(gaxGrpc, operationsClient, opts);
+    };
+    Object.assign(this.operationsClient, OperationsClient);
+  }
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'class';
+            var COMPODOC_CURRENT_PAGE_URL = 'OperationsClientBuilder.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

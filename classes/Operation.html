@@ -1,0 +1,1547 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content class">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Classes</li>
+  <li>Operation</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/longRunningCalls/longrunning.ts</code>
+        </p>
+
+
+            <p class="comment">
+                <h3>Extends</h3>
+            </p>
+            <p class="comment">
+                        <code><a href="https://angular.io/api/core/EventEmitter" target="_blank" >EventEmitter</a></code>
+            </p>
+
+
+
+            <section>
+    <h3 id="index">Index</h3>
+    <table class="table table-sm table-bordered index-table">
+        <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Properties</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                    <span class="modifier">Optional</span>
+                                <a href="#_callOptions">_callOptions</a>
+                            </li>
+                            <li>
+                                <a href="#backoffSettings">backoffSettings</a>
+                            </li>
+                            <li>
+                                <a href="#completeListeners">completeListeners</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Optional</span>
+                                <a href="#currentCallPromise_">currentCallPromise_</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Optional</span>
+                                <a href="#done">done</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Optional</span>
+                                <a href="#error">error</a>
+                            </li>
+                            <li>
+                                <a href="#hasActiveListeners">hasActiveListeners</a>
+                            </li>
+                            <li>
+                                <a href="#latestResponse">latestResponse</a>
+                            </li>
+                            <li>
+                                <a href="#longrunningDescriptor">longrunningDescriptor</a>
+                            </li>
+                            <li>
+                                <a href="#metadata">metadata</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Optional</span>
+                                <a href="#name">name</a>
+                            </li>
+                            <li>
+                                    <span class="modifier">Optional</span>
+                                <a href="#response">response</a>
+                            </li>
+                            <li>
+                                <a href="#result">result</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                        <h6><b>Methods</b></h6>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-md-4">
+                        <ul class="index-list">
+                            <li>
+                                <a href="#_listenForEvents">_listenForEvents</a>
+                            </li>
+                            <li>
+                                <a href="#_unpackResponse">_unpackResponse</a>
+                            </li>
+                            <li>
+                                <a href="#cancel">cancel</a>
+                            </li>
+                            <li>
+                                <a href="#getOperation">getOperation</a>
+                            </li>
+                            <li>
+                                <a href="#getOperation">getOperation</a>
+                            </li>
+                            <li>
+                                <a href="#getOperation">getOperation</a>
+                            </li>
+                            <li>
+                                <a href="#promise">promise</a>
+                            </li>
+                            <li>
+                                <a href="#startPolling_">startPolling_</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+
+
+
+
+
+        </tbody>
+    </table>
+</section>
+
+            <section>
+    <h3 id="constructor">Constructor</h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+<code>constructor(grpcOp: <a href="../classes/Operation.html">Operation</a>, longrunningDescriptor: <a href="../interfaces/Descriptor.html">LongRunningDescriptor</a>, backoffSettings: <a href="../interfaces/BackoffSettings.html">BackoffSettings</a>, callOptions?: <a href="../interfaces/CallOptions.html">CallOptions</a>)</code>
+                    </td>
+                </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                <div class="io-line">Defined in <a href="" data-line="72" class="link-to-prism">src/longRunningCalls/longrunning.ts:72</a></div>
+                            </td>
+                        </tr>
+
+                <tr>
+                    <td class="col-md-4">
+                            <div class="io-description"><p>Wrapper for a google.longrunnung.Operation.</p>
+</div>
+                            <div>
+                                    <b>Parameters :</b>
+                                    <table class="params">
+                                        <thead>
+                                            <tr>
+                                                <td>Name</td>
+                                                    <td>Type</td>
+                                                <td>Optional</td>
+                                                    <td>Description</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                        <td>grpcOp</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../classes/Operation.html" target="_self" >Operation</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                        <td>
+                                                                <code><ul>
+<li>The operation to be wrapped.</li>
+</ul>
+</code>
+                                                        </td>
+                                                </tr>
+                                                <tr>
+                                                        <td>longrunningDescriptor</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../interfaces/Descriptor.html" target="_self" >LongRunningDescriptor</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                        <td>
+                                                                <code><ul>
+<li>This defines the
+operations service client and unpacking mechanisms for the operation.</li>
+</ul>
+</code>
+                                                        </td>
+                                                </tr>
+                                                <tr>
+                                                        <td>backoffSettings</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../interfaces/BackoffSettings.html" target="_self" >BackoffSettings</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            No
+                                                    </td>
+                                                    
+                                                        <td>
+                                                                <code><ul>
+<li>The backoff settings used in
+in polling the operation.</li>
+</ul>
+</code>
+                                                        </td>
+                                                </tr>
+                                                <tr>
+                                                        <td>callOptions</td>
+                                                  
+                                                        <td>
+                                                                        <code><a href="../interfaces/CallOptions.html" target="_self" >CallOptions</a></code>
+                                                        </td>
+                                                  
+                                                    <td>
+                                                            Yes
+                                                    </td>
+                                                    
+                                                        <td>
+                                                                <code><ul>
+<li>CallOptions used in making get operation
+requests.</li>
+</ul>
+</code>
+                                                        </td>
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</section>
+
+            <section>
+    
+        <h3 id="inputs">
+            Properties
+        </h3>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="_callOptions"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Optional</span>
+                            _callOptions</b>
+                            <a href="#_callOptions"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../interfaces/CallOptions.html" target="_self" >CallOptions</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="67" class="link-to-prism">src/longRunningCalls/longrunning.ts:67</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="backoffSettings"></a>
+                        <span class="name">
+                            <b>
+                            backoffSettings</b>
+                            <a href="#backoffSettings"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../interfaces/BackoffSettings.html" target="_self" >BackoffSettings</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="66" class="link-to-prism">src/longRunningCalls/longrunning.ts:66</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="completeListeners"></a>
+                        <span class="name">
+                            <b>
+                            completeListeners</b>
+                            <a href="#completeListeners"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/number" target="_blank" >number</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="60" class="link-to-prism">src/longRunningCalls/longrunning.ts:60</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="currentCallPromise_"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Optional</span>
+                            currentCallPromise_</b>
+                            <a href="#currentCallPromise_"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../interfaces/CancellablePromise.html" target="_self" >CancellablePromise&lt;ResultTuple&gt;</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="68" class="link-to-prism">src/longRunningCalls/longrunning.ts:68</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="done"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Optional</span>
+                            done</b>
+                            <a href="#done"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="70" class="link-to-prism">src/longRunningCalls/longrunning.ts:70</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="error"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Optional</span>
+                            error</b>
+                            <a href="#error"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../classes/GoogleError.html" target="_self" >GoogleError</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="71" class="link-to-prism">src/longRunningCalls/longrunning.ts:71</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="hasActiveListeners"></a>
+                        <span class="name">
+                            <b>
+                            hasActiveListeners</b>
+                            <a href="#hasActiveListeners"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/boolean" target="_blank" >boolean</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="61" class="link-to-prism">src/longRunningCalls/longrunning.ts:61</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="latestResponse"></a>
+                        <span class="name">
+                            <b>
+                            latestResponse</b>
+                            <a href="#latestResponse"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../classes/Operation.html" target="_self" >Operation</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="62" class="link-to-prism">src/longRunningCalls/longrunning.ts:62</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="longrunningDescriptor"></a>
+                        <span class="name">
+                            <b>
+                            longrunningDescriptor</b>
+                            <a href="#longrunningDescriptor"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../interfaces/Descriptor.html" target="_self" >LongRunningDescriptor</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="63" class="link-to-prism">src/longRunningCalls/longrunning.ts:63</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="metadata"></a>
+                        <span class="name">
+                            <b>
+                            metadata</b>
+                            <a href="#metadata"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="../interfaces/Metadata.html" target="_self" >Metadata | null</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="65" class="link-to-prism">src/longRunningCalls/longrunning.ts:65</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="name"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Optional</span>
+                            name</b>
+                            <a href="#name"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>        <code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/string" target="_blank" >string</a></code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="69" class="link-to-prism">src/longRunningCalls/longrunning.ts:69</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="response"></a>
+                        <span class="name">
+                            <b>
+                                <span class="modifier">Optional</span>
+                            response</b>
+                            <a href="#response"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>    <code>literal type</code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="72" class="link-to-prism">src/longRunningCalls/longrunning.ts:72</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+        <table class="table table-sm table-bordered">
+            <tbody>
+                <tr>
+                    <td class="col-md-4">
+                        <a name="result"></a>
+                        <span class="name">
+                            <b>
+                            result</b>
+                            <a href="#result"><span class="icon ion-ios-link"></span></a>
+                        </span>
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <i>Type : </i>    <code>literal type | null</code>
+
+                        </td>
+                    </tr>
+                        <tr>
+                            <td class="col-md-4">
+                                    <div class="io-line">Defined in <a href="" data-line="64" class="link-to-prism">src/longRunningCalls/longrunning.ts:64</a></div>
+                            </td>
+                        </tr>
+
+
+            </tbody>
+        </table>
+</section>
+
+            <section>
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="_listenForEvents"></a>
+                    <span class="name">
+                        <b>
+                            _listenForEvents
+                        </b>
+                        <a href="#_listenForEvents"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>_listenForEvents()</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="116"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:116</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Begin listening for events on the operation. This method keeps track of how
+many &quot;complete&quot; listeners are registered and removed, making sure polling
+is handled automatically.</p>
+<p>As long as there is one active &quot;complete&quot; listener, the connection is open.
+When there are no more listeners, the polling stops.</p>
+</div>
+
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="_unpackResponse"></a>
+                    <span class="name">
+                        <b>
+                            _unpackResponse
+                        </b>
+                        <a href="#_unpackResponse"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>_unpackResponse(op: <a href="../classes/Operation.html">Operation</a>, callback?: <a href="../interfaces/GetOperationCallback.html">GetOperationCallback</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="211"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:211</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>op</td>
+                                    <td>
+                                                <code><a href="../classes/Operation.html" target="_self" >Operation</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                                <tr>
+                                    <td>callback</td>
+                                    <td>
+                                                <code><a href="../interfaces/GetOperationCallback.html" target="_self" >GetOperationCallback</a></code>
+                                    </td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="cancel"></a>
+                    <span class="name">
+                        <b>
+                            cancel
+                        </b>
+                        <a href="#cancel"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>cancel()</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="141"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:141</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Cancels current polling api call and cancels the operation.</p>
+</div>
+
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <p>the promise of the OperationsClient#cancelOperation api
+request.</p>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getOperation"></a>
+                    <span class="name">
+                        <b>
+                            getOperation
+                        </b>
+                        <a href="#getOperation"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>getOperation()</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="167"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:167</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Get the updated status of the operation. If the Operation has previously
+completed, this will use the status of the cached completed operation.</p>
+<ul>
+<li>callback(err): Operation failed</li>
+<li>callback(null, result, metadata, rawResponse): Operation complete</li>
+<li>callback(null, null, metadata, rawResponse): Operation incomplete</li>
+</ul>
+</div>
+
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>    <code>Promise&lt;literal type&gt;</code>
+
+                    </div>
+                    <div class="io-description">
+                        <ul>
+<li>This returns a promise if a callback is not specified.
+The promise resolves to an array where the first element is the unpacked
+result, the second element is the metadata, and the third element is the
+raw response of the api call. The promise rejects if the operation returns
+an error.</li>
+</ul>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getOperation"></a>
+                    <span class="name">
+                        <b>
+                            getOperation
+                        </b>
+                        <a href="#getOperation"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>getOperation(callback: <a href="../interfaces/GetOperationCallback.html">GetOperationCallback</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="168"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:168</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>callback</td>
+                                    <td>
+                                                <code><a href="../interfaces/GetOperationCallback.html" target="_self" >GetOperationCallback</a></code>
+                                    </td>
+
+                                    <td>
+                                        No
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="getOperation"></a>
+                    <span class="name">
+                        <b>
+                            getOperation
+                        </b>
+                        <a href="#getOperation"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>getOperation(callback?: <a href="../interfaces/GetOperationCallback.html">GetOperationCallback</a>)</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="169"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:169</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Parameters :</b>
+                        <table class="params">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Type</td>
+                                    <td>Optional</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>callback</td>
+                                    <td>
+                                                <code><a href="../interfaces/GetOperationCallback.html" target="_self" >GetOperationCallback</a></code>
+                                    </td>
+
+                                    <td>
+                                        Yes
+                                    </td>
+
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>    <code>Promise | void</code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="promise"></a>
+                    <span class="name">
+                        <b>
+                            promise
+                        </b>
+                        <a href="#promise"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>promise()</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="332"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:332</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Wraps the <code>complete</code> and <code>error</code> events in a Promise.</p>
+</div>
+
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >any</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        <ul>
+<li>Promise that resolves on operation completion and rejects
+on operation error.</li>
+</ul>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="startPolling_"></a>
+                    <span class="name">
+                        <b>
+                            startPolling_
+                        </b>
+                        <a href="#startPolling_"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>startPolling_()</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="251"
+                            class="link-to-prism">src/longRunningCalls/longrunning.ts:251</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-description"><p>Poll <code>getOperation</code> to check the operation&#39;s status. This runs a loop to
+ping using the backoff strategy specified at initialization.</p>
+<p>Note: This method is automatically called once a &quot;complete&quot; event handler
+is registered on the operation.</p>
+</div>
+
+                    <div>
+                    </div>
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                    <div class="io-description">
+                        
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+
+
+
+
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {EventEmitter} from &#x27;events&#x27;;
+import {status} from &#x27;@grpc/grpc-js&#x27;;
+
+import {GaxCallPromise, ResultTuple} from &#x27;../apitypes&#x27;;
+import {CancellablePromise} from &#x27;../call&#x27;;
+import {BackoffSettings, CallOptions} from &#x27;../gax&#x27;;
+import {GoogleError} from &#x27;../googleError&#x27;;
+import {Metadata, MetadataValue} from &#x27;../grpc&#x27;;
+
+import {LongRunningDescriptor} from &#x27;./longRunningDescriptor&#x27;;
+
+/**
+ * @callback GetOperationCallback
+ * @param {?Error} error
+ * @param {?Object} result
+ * @param {?Object} metadata
+ * @param {?google.longrunning.Operation} rawResponse
+ */
+export interface GetOperationCallback {
+  (
+    err?: Error | null,
+    result?: {},
+    metadata?: {},
+    rawResponse?: Operation
+  ): void;
+}
+
+export class Operation extends EventEmitter {
+  completeListeners: number;
+  hasActiveListeners: boolean;
+  latestResponse: Operation;
+  longrunningDescriptor: LongRunningDescriptor;
+  result: {} | null;
+  metadata: Metadata | null;
+  backoffSettings: BackoffSettings;
+  _callOptions?: CallOptions;
+  currentCallPromise_?: CancellablePromise&lt;ResultTuple&gt;;
+  name?: string;
+  done?: boolean;
+  error?: GoogleError;
+  response?: {value: {}};
+
+  /**
+   * Wrapper for a google.longrunnung.Operation.
+   *
+   * @constructor
+   *
+   * @param {google.longrunning.Operation} grpcOp - The operation to be wrapped.
+   * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
+   * operations service client and unpacking mechanisms for the operation.
+   * @param {BackoffSettings} backoffSettings - The backoff settings used in
+   * in polling the operation.
+   * @param {CallOptions} callOptions - CallOptions used in making get operation
+   * requests.
+   */
+  constructor(
+    grpcOp: Operation,
+    longrunningDescriptor: LongRunningDescriptor,
+    backoffSettings: BackoffSettings,
+    callOptions?: CallOptions
+  ) {
+    super();
+    this.completeListeners &#x3D; 0;
+    this.hasActiveListeners &#x3D; false;
+    this.latestResponse &#x3D; grpcOp;
+    this.longrunningDescriptor &#x3D; longrunningDescriptor;
+    this.result &#x3D; null;
+    this.metadata &#x3D; null;
+    this.backoffSettings &#x3D; backoffSettings;
+    this._unpackResponse(grpcOp);
+    this._listenForEvents();
+    this._callOptions &#x3D; callOptions;
+  }
+
+  /**
+   * Begin listening for events on the operation. This method keeps track of how
+   * many &quot;complete&quot; listeners are registered and removed, making sure polling
+   * is handled automatically.
+   *
+   * As long as there is one active &quot;complete&quot; listener, the connection is open.
+   * When there are no more listeners, the polling stops.
+   *
+   * @private
+   */
+  _listenForEvents() {
+    this.on(&#x27;newListener&#x27;, event &#x3D;&gt; {
+      if (event &#x3D;&#x3D;&#x3D; &#x27;complete&#x27;) {
+        this.completeListeners++;
+
+        if (!this.hasActiveListeners) {
+          this.hasActiveListeners &#x3D; true;
+          this.startPolling_();
+        }
+      }
+    });
+
+    this.on(&#x27;removeListener&#x27;, event &#x3D;&gt; {
+      if (event &#x3D;&#x3D;&#x3D; &#x27;complete&#x27; &amp;&amp; --this.completeListeners &#x3D;&#x3D;&#x3D; 0) {
+        this.hasActiveListeners &#x3D; false;
+      }
+    });
+  }
+
+  /**
+   * Cancels current polling api call and cancels the operation.
+   *
+   * @return {Promise} the promise of the OperationsClient#cancelOperation api
+   * request.
+   */
+  cancel() {
+    if (this.currentCallPromise_) {
+      this.currentCallPromise_.cancel();
+    }
+    const operationsClient &#x3D; this.longrunningDescriptor.operationsClient;
+    return operationsClient.cancelOperation({
+      name: this.latestResponse.name,
+    }) as CancellablePromise&lt;ResultTuple&gt;;
+  }
+
+  /**
+   * Get the updated status of the operation. If the Operation has previously
+   * completed, this will use the status of the cached completed operation.
+   *
+   *   - callback(err): Operation failed
+   *   - callback(null, result, metadata, rawResponse): Operation complete
+   *   - callback(null, null, metadata, rawResponse): Operation incomplete
+   *
+   * @param {getOperationCallback} callback - Callback to handle the polled
+   * operation result and metadata.
+   * @return {Promise|undefined} - This returns a promise if a callback is not specified.
+   * The promise resolves to an array where the first element is the unpacked
+   * result, the second element is the metadata, and the third element is the
+   * raw response of the api call. The promise rejects if the operation returns
+   * an error.
+   */
+  getOperation(): Promise&lt;{}&gt;;
+  getOperation(callback: GetOperationCallback): void;
+  getOperation(callback?: GetOperationCallback): Promise&lt;{}&gt; | void {
+    const self &#x3D; this;
+    const operationsClient &#x3D; this.longrunningDescriptor.operationsClient;
+
+    function promisifyResponse() {
+      if (!callback) {
+        // tslint:disable-next-line variable-name
+        const PromiseCtor &#x3D; self._callOptions!.promise!;
+        return new PromiseCtor((resolve, reject) &#x3D;&gt; {
+          if (self.latestResponse.error) {
+            const error &#x3D; new GoogleError(self.latestResponse.error.message);
+            error.code &#x3D; self.latestResponse.error.code;
+            reject(error);
+          } else {
+            resolve([self.result, self.metadata, self.latestResponse]);
+          }
+        });
+      }
+      return;
+    }
+
+    if (this.latestResponse.done) {
+      this._unpackResponse(this.latestResponse, callback);
+      return promisifyResponse();
+    }
+
+    this.currentCallPromise_ &#x3D; (operationsClient.getOperation as GaxCallPromise)(
+      {name: this.latestResponse.name},
+      this._callOptions!
+    );
+
+    const noCallbackPromise &#x3D; this.currentCallPromise_!.then(responses &#x3D;&gt; {
+      self.latestResponse &#x3D; responses[0] as Operation;
+      self._unpackResponse(responses[0] as Operation, callback);
+      return promisifyResponse()!;
+    });
+
+    if (!callback) {
+      return noCallbackPromise;
+    }
+  }
+
+  _unpackResponse(op: Operation, callback?: GetOperationCallback) {
+    const responseDecoder &#x3D; this.longrunningDescriptor.responseDecoder;
+    const metadataDecoder &#x3D; this.longrunningDescriptor.metadataDecoder;
+    let response: {};
+    let metadata: Metadata;
+
+    if (op.done) {
+      if (op.result &#x3D;&#x3D;&#x3D; &#x27;error&#x27;) {
+        const error &#x3D; new GoogleError(op.error!.message);
+        error.code &#x3D; op.error!.code;
+        if (callback) {
+          callback(error);
+        }
+        return;
+      }
+
+      if (responseDecoder &amp;&amp; op.response) {
+        response &#x3D; responseDecoder(op.response.value);
+        this.result &#x3D; response;
+      }
+    }
+
+    if (metadataDecoder &amp;&amp; op.metadata) {
+      metadata &#x3D; metadataDecoder(op.metadata.value);
+      this.metadata &#x3D; metadata;
+    }
+    if (callback) {
+      callback(null, response!, metadata!, op);
+    }
+  }
+
+  /**
+   * Poll &#x60;getOperation&#x60; to check the operation&#x27;s status. This runs a loop to
+   * ping using the backoff strategy specified at initialization.
+   *
+   * Note: This method is automatically called once a &quot;complete&quot; event handler
+   * is registered on the operation.
+   *
+   * @private
+   */
+  startPolling_() {
+    const self &#x3D; this;
+
+    let now &#x3D; new Date();
+    const delayMult &#x3D; this.backoffSettings.retryDelayMultiplier;
+    const maxDelay &#x3D; this.backoffSettings.maxRetryDelayMillis;
+    let delay &#x3D; this.backoffSettings.initialRetryDelayMillis;
+    let deadline &#x3D; Infinity;
+    if (this.backoffSettings.totalTimeoutMillis) {
+      deadline &#x3D; now.getTime() + this.backoffSettings.totalTimeoutMillis;
+    }
+    let previousMetadataBytes: MetadataValue;
+    if (this.latestResponse.metadata) {
+      previousMetadataBytes &#x3D; this.latestResponse.metadata.value;
+    }
+
+    // tslint:disable-next-line no-any
+    function emit(event: string | symbol, ...args: any[]) {
+      self.emit(event, ...args);
+    }
+
+    function retry() {
+      if (!self.hasActiveListeners) {
+        return;
+      }
+
+      if (now.getTime() &gt;&#x3D; deadline) {
+        const error &#x3D; new GoogleError(
+          &#x27;Total timeout exceeded before any response was received&#x27;
+        );
+        error.code &#x3D; status.DEADLINE_EXCEEDED;
+        setImmediate(emit, &#x27;error&#x27;, error);
+        return;
+      }
+
+      self.getOperation((err, result, metadata, rawResponse) &#x3D;&gt; {
+        if (err) {
+          setImmediate(emit, &#x27;error&#x27;, err);
+          return;
+        }
+
+        if (!result) {
+          if (
+            rawResponse!.metadata &amp;&amp;
+            (!previousMetadataBytes ||
+              !rawResponse!.metadata!.value.equals(previousMetadataBytes))
+          ) {
+            setImmediate(emit, &#x27;progress&#x27;, metadata, rawResponse);
+            previousMetadataBytes &#x3D; rawResponse!.metadata!.value;
+          }
+          // special case: some APIs fail to set either result or error
+          // but set done &#x3D; true (e.g. speech with silent file).
+          // Don&#x27;t hang forever in this case.
+          if (rawResponse!.done) {
+            const error &#x3D; new GoogleError(
+              &#x27;Long running operation has finished but there was no result&#x27;
+            );
+            error.code &#x3D; status.UNKNOWN;
+            setImmediate(emit, &#x27;error&#x27;, error);
+            return;
+          }
+          setTimeout(() &#x3D;&gt; {
+            now &#x3D; new Date();
+            delay &#x3D; Math.min(delay * delayMult, maxDelay);
+            retry();
+          }, delay);
+          return;
+        }
+
+        setImmediate(emit, &#x27;complete&#x27;, result, metadata, rawResponse);
+      });
+    }
+    retry();
+  }
+
+  /**
+   * Wraps the &#x60;complete&#x60; and &#x60;error&#x60; events in a Promise.
+   *
+   * @return {promise} - Promise that resolves on operation completion and rejects
+   * on operation error.
+   */
+  promise() {
+    // tslint:disable-next-line variable-name
+    const PromiseCtor &#x3D; this._callOptions!.promise!;
+    return new PromiseCtor((resolve, reject) &#x3D;&gt; {
+      this.on(&#x27;error&#x27;, reject).on(
+        &#x27;complete&#x27;,
+        (result, metadata, rawResponse) &#x3D;&gt; {
+          resolve([result, metadata, rawResponse]);
+        }
+      );
+    });
+  }
+}
+
+/**
+ * Method used to create Operation objects.
+ *
+ * @constructor
+ *
+ * @param {google.longrunning.Operation} op - The operation to be wrapped.
+ * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
+ * operations service client and unpacking mechanisms for the operation.
+ * @param {BackoffSettings} backoffSettings - The backoff settings used in
+ * in polling the operation.
+ * @param {CallOptions&#x3D;} callOptions - CallOptions used in making get operation
+ * requests.
+ */
+export function operation(
+  op: Operation,
+  longrunningDescriptor: LongRunningDescriptor,
+  backoffSettings: BackoffSettings,
+  callOptions?: CallOptions
+) {
+  return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'class';
+            var COMPODOC_CURRENT_PAGE_URL = 'Operation.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

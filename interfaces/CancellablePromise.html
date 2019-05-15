@@ -1,0 +1,316 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Interfaces</li>
+  <li>CancellablePromise</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/call.ts</code>
+        </p>
+
+
+            <p class="comment">
+                <h3>Extends</h3>
+            </p>
+            <p class="comment">
+                    <code>Promise</code>
+            </p>
+
+        <section>
+            <h3 id="index">Index</h3>
+            <table class="table table-sm table-bordered index-table">
+                <tbody>
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Methods</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                    <a href="#cancel">cancel</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+            <section>
+    
+    <h3 id="methods">
+        Methods
+    </h3>
+    <table class="table table-sm table-bordered">
+        <tbody>
+            <tr>
+                <td class="col-md-4">
+                    <a name="cancel"></a>
+                    <span class="name">
+                        <b>
+                            cancel
+                        </b>
+                        <a href="#cancel"><span class="icon ion-ios-link"></span></a>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="col-md-4">
+<code>cancel()</code>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+                    <div class="io-line">Defined in <a href="" data-line="106"
+                            class="link-to-prism">src/call.ts:106</a></div>
+                </td>
+            </tr>
+
+
+            <tr>
+                <td class="col-md-4">
+
+                    <div class="io-description">
+                        <b>Returns : </b>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {status} from &#x27;@grpc/grpc-js&#x27;;
+
+import {
+  APICallback,
+  NextPageRequestType,
+  RawResponseType,
+  RequestType,
+  ResponseType,
+  ResultTuple,
+  SimpleCallbackFunction,
+} from &#x27;./apitypes&#x27;;
+import {GoogleError} from &#x27;./googleError&#x27;;
+
+export class OngoingCall {
+  callback?: APICallback;
+  cancelFunc?: () &#x3D;&gt; void;
+  completed: boolean;
+
+  /**
+   * OngoingCall manages callback, API calls, and cancellation
+   * of the API calls.
+   * @param {APICallback&#x3D;} callback
+   *   The callback to be called asynchronously when the API call
+   *   finishes.
+   * @constructor
+   * @property {APICallback} callback
+   *   The callback function to be called.
+   * @private
+   */
+  constructor(callback?: APICallback) {
+    this.callback &#x3D; callback;
+    this.completed &#x3D; false;
+  }
+
+  /**
+   * Cancels the ongoing promise.
+   */
+  cancel(): void {
+    if (this.completed) {
+      return;
+    }
+    this.completed &#x3D; true;
+    if (this.cancelFunc) {
+      this.cancelFunc();
+    } else {
+      const error &#x3D; new GoogleError(&#x27;cancelled&#x27;);
+      error.code &#x3D; status.CANCELLED;
+      this.callback!(error);
+    }
+  }
+
+  /**
+   * Call calls the specified function. Result will be used to fulfill
+   * the promise.
+   *
+   * @param {SimpleCallbackFunction} func
+   *   A function for an API call.
+   * @param {Object} argument
+   *   A request object.
+   */
+  call(func: SimpleCallbackFunction, argument: RequestType): void {
+    if (this.completed) {
+      return;
+    }
+    // tslint:disable-next-line no-any
+    const canceller &#x3D; func(argument, (...args: any[]) &#x3D;&gt; {
+      this.completed &#x3D; true;
+      setImmediate(this.callback!, ...args);
+    });
+    this.cancelFunc &#x3D; () &#x3D;&gt; canceller.cancel();
+  }
+}
+
+export interface CancellablePromise&lt;T&gt; extends Promise&lt;T&gt; {
+  cancel(): void;
+}
+
+export class OngoingCallPromise extends OngoingCall {
+  promise: CancellablePromise&lt;ResultTuple&gt;;
+  /**
+   * GaxPromise is GRPCCallbackWrapper, but it holds a promise when
+   * the API call finishes.
+   * @param {Function} PromiseCtor - A constructor for a promise that implements
+   * the ES6 specification of promise.
+   * @constructor
+   * @private
+   */
+  // tslint:disable-next-line variable-name
+  constructor(PromiseCtor: PromiseConstructor) {
+    super();
+    this.promise &#x3D; new PromiseCtor((resolve, reject) &#x3D;&gt; {
+      this.callback &#x3D; (
+        err: GoogleError | null,
+        response?: ResponseType,
+        next?: NextPageRequestType | null,
+        rawResponse?: RawResponseType
+      ) &#x3D;&gt; {
+        if (err) {
+          reject(err);
+        } else if (response !&#x3D;&#x3D; undefined) {
+          resolve([response, next, rawResponse]);
+        } else {
+          throw new GoogleError(&#x27;Neither error nor response are defined&#x27;);
+        }
+      };
+    }) as CancellablePromise&lt;ResultTuple&gt;;
+    this.promise.cancel &#x3D; () &#x3D;&gt; {
+      this.cancel();
+    };
+  }
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'CancellablePromise.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>

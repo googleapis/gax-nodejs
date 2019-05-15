@@ -1,0 +1,520 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>google-gax documentation</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/x-icon" href="../images/favicon.ico">
+	      <link rel="stylesheet" href="../styles/style.css">
+        <link rel="stylesheet" href="../styles/material.css">
+    </head>
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top visible-xs">
+            <a href="../" class="navbar-brand">google-gax documentation</a>
+            <button type="button" class="btn btn-default btn-menu ion-ios-menu" id="btn-menu"></button>
+        </div>
+
+        <div class="xs-menu menu" id="mobile-menu">
+                <div id="book-search-input" role="search"><input type="text" placeholder="Type to search"></div>            <compodoc-menu></compodoc-menu>
+        </div>
+
+        <div class="container-fluid main">
+           <div class="row main">
+               <div class="hidden-xs menu">
+                   <compodoc-menu mode="normal"></compodoc-menu>
+               </div>
+               <!-- START CONTENT -->
+               <div class="content interface">
+                   <div class="content-data">
+
+
+
+
+
+
+
+
+
+
+
+
+<ol class="breadcrumb">
+  <li>Interfaces</li>
+  <li>GetOperationCallback</li>
+</ol>
+
+<ul class="nav nav-tabs" role="tablist">
+        <li class="active">
+            <a href="#info" role="tab" id="info-tab" data-toggle="tab" data-link="info">Info</a>
+        </li>
+        <li >
+            <a href="#source" role="tab" id="source-tab" data-toggle="tab" data-link="source">Source</a>
+        </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade active in" id="c-info">
+        <p class="comment">
+            <h3>File</h3>
+        </p>
+        <p class="comment">
+            <code>src/longRunningCalls/longrunning.ts</code>
+        </p>
+
+
+
+        <section>
+            <h3 id="index">Index</h3>
+            <table class="table table-sm table-bordered index-table">
+                <tbody>
+                    <tr>
+                        <td class="col-md-4">
+                            <h6><b>Properties</b></h6>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-4">
+                            <ul class="index-list">
+                                <li>
+                                            <a href="#call-declaration-a22d6d649ab17c9731d42341a847ea43">Unamed property</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+
+            <section>
+                <h3 id="inputs">Properties</h3>
+                    <table class="table table-sm table-bordered">
+                        <tbody>
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Signature :</i>
+                                            <a name="call-declaration-a22d6d649ab17c9731d42341a847ea43"></a>
+                                            <code>
+                                                <!--ts.SyntaxKind.CallSignature-->
+                                                    [err: Error | null, result: literal type, metadata: literal type, rawResponse: Operation]
+                                            </code>
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td class="col-md-4">
+                                            <i>Returns : </i>        <code><a href="https://www.typescriptlang.org/docs/handbook/basic-types.html" target="_blank" >void</a></code>
+
+                                        </td>
+                                    </tr>
+
+
+
+
+                        </tbody>
+                    </table>
+            </section>
+    </div>
+
+
+    <div class="tab-pane fade  tab-source-code" id="c-source">
+        <pre class="line-numbers compodoc-sourcecode"><code class="language-typescript">import {EventEmitter} from &#x27;events&#x27;;
+import {status} from &#x27;@grpc/grpc-js&#x27;;
+
+import {GaxCallPromise, ResultTuple} from &#x27;../apitypes&#x27;;
+import {CancellablePromise} from &#x27;../call&#x27;;
+import {BackoffSettings, CallOptions} from &#x27;../gax&#x27;;
+import {GoogleError} from &#x27;../googleError&#x27;;
+import {Metadata, MetadataValue} from &#x27;../grpc&#x27;;
+
+import {LongRunningDescriptor} from &#x27;./longRunningDescriptor&#x27;;
+
+/**
+ * @callback GetOperationCallback
+ * @param {?Error} error
+ * @param {?Object} result
+ * @param {?Object} metadata
+ * @param {?google.longrunning.Operation} rawResponse
+ */
+export interface GetOperationCallback {
+  (
+    err?: Error | null,
+    result?: {},
+    metadata?: {},
+    rawResponse?: Operation
+  ): void;
+}
+
+export class Operation extends EventEmitter {
+  completeListeners: number;
+  hasActiveListeners: boolean;
+  latestResponse: Operation;
+  longrunningDescriptor: LongRunningDescriptor;
+  result: {} | null;
+  metadata: Metadata | null;
+  backoffSettings: BackoffSettings;
+  _callOptions?: CallOptions;
+  currentCallPromise_?: CancellablePromise&lt;ResultTuple&gt;;
+  name?: string;
+  done?: boolean;
+  error?: GoogleError;
+  response?: {value: {}};
+
+  /**
+   * Wrapper for a google.longrunnung.Operation.
+   *
+   * @constructor
+   *
+   * @param {google.longrunning.Operation} grpcOp - The operation to be wrapped.
+   * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
+   * operations service client and unpacking mechanisms for the operation.
+   * @param {BackoffSettings} backoffSettings - The backoff settings used in
+   * in polling the operation.
+   * @param {CallOptions} callOptions - CallOptions used in making get operation
+   * requests.
+   */
+  constructor(
+    grpcOp: Operation,
+    longrunningDescriptor: LongRunningDescriptor,
+    backoffSettings: BackoffSettings,
+    callOptions?: CallOptions
+  ) {
+    super();
+    this.completeListeners &#x3D; 0;
+    this.hasActiveListeners &#x3D; false;
+    this.latestResponse &#x3D; grpcOp;
+    this.longrunningDescriptor &#x3D; longrunningDescriptor;
+    this.result &#x3D; null;
+    this.metadata &#x3D; null;
+    this.backoffSettings &#x3D; backoffSettings;
+    this._unpackResponse(grpcOp);
+    this._listenForEvents();
+    this._callOptions &#x3D; callOptions;
+  }
+
+  /**
+   * Begin listening for events on the operation. This method keeps track of how
+   * many &quot;complete&quot; listeners are registered and removed, making sure polling
+   * is handled automatically.
+   *
+   * As long as there is one active &quot;complete&quot; listener, the connection is open.
+   * When there are no more listeners, the polling stops.
+   *
+   * @private
+   */
+  _listenForEvents() {
+    this.on(&#x27;newListener&#x27;, event &#x3D;&gt; {
+      if (event &#x3D;&#x3D;&#x3D; &#x27;complete&#x27;) {
+        this.completeListeners++;
+
+        if (!this.hasActiveListeners) {
+          this.hasActiveListeners &#x3D; true;
+          this.startPolling_();
+        }
+      }
+    });
+
+    this.on(&#x27;removeListener&#x27;, event &#x3D;&gt; {
+      if (event &#x3D;&#x3D;&#x3D; &#x27;complete&#x27; &amp;&amp; --this.completeListeners &#x3D;&#x3D;&#x3D; 0) {
+        this.hasActiveListeners &#x3D; false;
+      }
+    });
+  }
+
+  /**
+   * Cancels current polling api call and cancels the operation.
+   *
+   * @return {Promise} the promise of the OperationsClient#cancelOperation api
+   * request.
+   */
+  cancel() {
+    if (this.currentCallPromise_) {
+      this.currentCallPromise_.cancel();
+    }
+    const operationsClient &#x3D; this.longrunningDescriptor.operationsClient;
+    return operationsClient.cancelOperation({
+      name: this.latestResponse.name,
+    }) as CancellablePromise&lt;ResultTuple&gt;;
+  }
+
+  /**
+   * Get the updated status of the operation. If the Operation has previously
+   * completed, this will use the status of the cached completed operation.
+   *
+   *   - callback(err): Operation failed
+   *   - callback(null, result, metadata, rawResponse): Operation complete
+   *   - callback(null, null, metadata, rawResponse): Operation incomplete
+   *
+   * @param {getOperationCallback} callback - Callback to handle the polled
+   * operation result and metadata.
+   * @return {Promise|undefined} - This returns a promise if a callback is not specified.
+   * The promise resolves to an array where the first element is the unpacked
+   * result, the second element is the metadata, and the third element is the
+   * raw response of the api call. The promise rejects if the operation returns
+   * an error.
+   */
+  getOperation(): Promise&lt;{}&gt;;
+  getOperation(callback: GetOperationCallback): void;
+  getOperation(callback?: GetOperationCallback): Promise&lt;{}&gt; | void {
+    const self &#x3D; this;
+    const operationsClient &#x3D; this.longrunningDescriptor.operationsClient;
+
+    function promisifyResponse() {
+      if (!callback) {
+        // tslint:disable-next-line variable-name
+        const PromiseCtor &#x3D; self._callOptions!.promise!;
+        return new PromiseCtor((resolve, reject) &#x3D;&gt; {
+          if (self.latestResponse.error) {
+            const error &#x3D; new GoogleError(self.latestResponse.error.message);
+            error.code &#x3D; self.latestResponse.error.code;
+            reject(error);
+          } else {
+            resolve([self.result, self.metadata, self.latestResponse]);
+          }
+        });
+      }
+      return;
+    }
+
+    if (this.latestResponse.done) {
+      this._unpackResponse(this.latestResponse, callback);
+      return promisifyResponse();
+    }
+
+    this.currentCallPromise_ &#x3D; (operationsClient.getOperation as GaxCallPromise)(
+      {name: this.latestResponse.name},
+      this._callOptions!
+    );
+
+    const noCallbackPromise &#x3D; this.currentCallPromise_!.then(responses &#x3D;&gt; {
+      self.latestResponse &#x3D; responses[0] as Operation;
+      self._unpackResponse(responses[0] as Operation, callback);
+      return promisifyResponse()!;
+    });
+
+    if (!callback) {
+      return noCallbackPromise;
+    }
+  }
+
+  _unpackResponse(op: Operation, callback?: GetOperationCallback) {
+    const responseDecoder &#x3D; this.longrunningDescriptor.responseDecoder;
+    const metadataDecoder &#x3D; this.longrunningDescriptor.metadataDecoder;
+    let response: {};
+    let metadata: Metadata;
+
+    if (op.done) {
+      if (op.result &#x3D;&#x3D;&#x3D; &#x27;error&#x27;) {
+        const error &#x3D; new GoogleError(op.error!.message);
+        error.code &#x3D; op.error!.code;
+        if (callback) {
+          callback(error);
+        }
+        return;
+      }
+
+      if (responseDecoder &amp;&amp; op.response) {
+        response &#x3D; responseDecoder(op.response.value);
+        this.result &#x3D; response;
+      }
+    }
+
+    if (metadataDecoder &amp;&amp; op.metadata) {
+      metadata &#x3D; metadataDecoder(op.metadata.value);
+      this.metadata &#x3D; metadata;
+    }
+    if (callback) {
+      callback(null, response!, metadata!, op);
+    }
+  }
+
+  /**
+   * Poll &#x60;getOperation&#x60; to check the operation&#x27;s status. This runs a loop to
+   * ping using the backoff strategy specified at initialization.
+   *
+   * Note: This method is automatically called once a &quot;complete&quot; event handler
+   * is registered on the operation.
+   *
+   * @private
+   */
+  startPolling_() {
+    const self &#x3D; this;
+
+    let now &#x3D; new Date();
+    const delayMult &#x3D; this.backoffSettings.retryDelayMultiplier;
+    const maxDelay &#x3D; this.backoffSettings.maxRetryDelayMillis;
+    let delay &#x3D; this.backoffSettings.initialRetryDelayMillis;
+    let deadline &#x3D; Infinity;
+    if (this.backoffSettings.totalTimeoutMillis) {
+      deadline &#x3D; now.getTime() + this.backoffSettings.totalTimeoutMillis;
+    }
+    let previousMetadataBytes: MetadataValue;
+    if (this.latestResponse.metadata) {
+      previousMetadataBytes &#x3D; this.latestResponse.metadata.value;
+    }
+
+    // tslint:disable-next-line no-any
+    function emit(event: string | symbol, ...args: any[]) {
+      self.emit(event, ...args);
+    }
+
+    function retry() {
+      if (!self.hasActiveListeners) {
+        return;
+      }
+
+      if (now.getTime() &gt;&#x3D; deadline) {
+        const error &#x3D; new GoogleError(
+          &#x27;Total timeout exceeded before any response was received&#x27;
+        );
+        error.code &#x3D; status.DEADLINE_EXCEEDED;
+        setImmediate(emit, &#x27;error&#x27;, error);
+        return;
+      }
+
+      self.getOperation((err, result, metadata, rawResponse) &#x3D;&gt; {
+        if (err) {
+          setImmediate(emit, &#x27;error&#x27;, err);
+          return;
+        }
+
+        if (!result) {
+          if (
+            rawResponse!.metadata &amp;&amp;
+            (!previousMetadataBytes ||
+              !rawResponse!.metadata!.value.equals(previousMetadataBytes))
+          ) {
+            setImmediate(emit, &#x27;progress&#x27;, metadata, rawResponse);
+            previousMetadataBytes &#x3D; rawResponse!.metadata!.value;
+          }
+          // special case: some APIs fail to set either result or error
+          // but set done &#x3D; true (e.g. speech with silent file).
+          // Don&#x27;t hang forever in this case.
+          if (rawResponse!.done) {
+            const error &#x3D; new GoogleError(
+              &#x27;Long running operation has finished but there was no result&#x27;
+            );
+            error.code &#x3D; status.UNKNOWN;
+            setImmediate(emit, &#x27;error&#x27;, error);
+            return;
+          }
+          setTimeout(() &#x3D;&gt; {
+            now &#x3D; new Date();
+            delay &#x3D; Math.min(delay * delayMult, maxDelay);
+            retry();
+          }, delay);
+          return;
+        }
+
+        setImmediate(emit, &#x27;complete&#x27;, result, metadata, rawResponse);
+      });
+    }
+    retry();
+  }
+
+  /**
+   * Wraps the &#x60;complete&#x60; and &#x60;error&#x60; events in a Promise.
+   *
+   * @return {promise} - Promise that resolves on operation completion and rejects
+   * on operation error.
+   */
+  promise() {
+    // tslint:disable-next-line variable-name
+    const PromiseCtor &#x3D; this._callOptions!.promise!;
+    return new PromiseCtor((resolve, reject) &#x3D;&gt; {
+      this.on(&#x27;error&#x27;, reject).on(
+        &#x27;complete&#x27;,
+        (result, metadata, rawResponse) &#x3D;&gt; {
+          resolve([result, metadata, rawResponse]);
+        }
+      );
+    });
+  }
+}
+
+/**
+ * Method used to create Operation objects.
+ *
+ * @constructor
+ *
+ * @param {google.longrunning.Operation} op - The operation to be wrapped.
+ * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
+ * operations service client and unpacking mechanisms for the operation.
+ * @param {BackoffSettings} backoffSettings - The backoff settings used in
+ * in polling the operation.
+ * @param {CallOptions&#x3D;} callOptions - CallOptions used in making get operation
+ * requests.
+ */
+export function operation(
+  op: Operation,
+  longrunningDescriptor: LongRunningDescriptor,
+  backoffSettings: BackoffSettings,
+  callOptions?: CallOptions
+) {
+  return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
+}
+</code></pre>
+    </div>
+</div>
+
+
+
+
+
+
+                   </div><div class="search-results">
+    <div class="has-results">
+        <h1 class="search-results-title"><span class='search-results-count'></span> result-matching "<span class='search-query'></span>"</h1>
+        <ul class="search-results-list"></ul>
+    </div>
+    <div class="no-results">
+        <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+    </div>
+</div>
+</div>
+               <!-- END CONTENT -->
+           </div>
+       </div>
+
+       <script>
+            var COMPODOC_CURRENT_PAGE_DEPTH = 1;
+            var COMPODOC_CURRENT_PAGE_CONTEXT = 'interface';
+            var COMPODOC_CURRENT_PAGE_URL = 'GetOperationCallback.html';
+       </script>
+
+       <script src="../js/libs/custom-elements.min.js"></script>
+       <script src="../js/libs/lit-html.js"></script>
+       <!-- Required to polyfill modern browsers as code is ES5 for IE... -->
+       <script src="../js/libs/custom-elements-es5-adapter.js" charset="utf-8" defer></script>
+       <script src="../js/menu-wc.js" defer></script>
+
+       <script src="../js/libs/bootstrap-native.js"></script>
+
+       <script src="../js/libs/es6-shim.min.js"></script>
+       <script src="../js/libs/EventDispatcher.js"></script>
+       <script src="../js/libs/promise.min.js"></script>
+       <script src="../js/libs/zepto.min.js"></script>
+
+       <script src="../js/compodoc.js"></script>
+
+       <script src="../js/tabs.js"></script>
+       <script src="../js/menu.js"></script>
+       <script src="../js/libs/clipboard.min.js"></script>
+       <script src="../js/libs/prism.js"></script>
+       <script src="../js/sourceCode.js"></script>
+          <script src="../js/search/search.js"></script>
+          <script src="../js/search/lunr.min.js"></script>
+          <script src="../js/search/search-lunr.js"></script>
+          <script src="../js/search/search_index.js"></script>
+       <script src="../js/lazy-load-graphs.js"></script>
+
+
+    </body>
+</html>
