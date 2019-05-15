@@ -45,4 +45,4 @@ BSD - See [LICENSE][license] for more information.
 [googleapis]: https://github.com/googleapis/googleapis/
 [grpc]: http://grpc.io
 [releaselevel]: https://cloud.google.com/terms/launch-stages
-[releaselevelimg]: https://img.shields.io/badge/Release%20Level-Alpha-ff69b4.svg
+[releaselevelimg]: https://img.shields.io/badge/release%20level-general%20availability%20%28GA%29-brightgreen.svg?style=flat
