@@ -175,7 +175,7 @@ export class GrpcClient {
    *   object).
    */
   loadProto(protoPath: string, filename: string | string[]) {
-    if (typeof filename === 'object' && filename.length === 0) {
+    if (Array.isArray(filename) && filename.length === 0) {
       return {};
     }
     // This set of @grpc/proto-loader options
