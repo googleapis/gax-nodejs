@@ -153,13 +153,16 @@ export class GrpcClient {
   }
 
   /**
-   * Loads the gRPC service from the proto file at the given path and with the
+   * Loads the gRPC service from the proto file(s) at the given path and with the
    * given options.
-   * @param filename The path to the proto file.
+   * @param filename The path to the proto file(s).
    * @param options Options for loading the proto file.
    */
-  loadFromProto(filename: string, options: grpcProtoLoader.Options) {
-    const packageDef = grpcProtoLoader.loadSync(filename, options);
+  loadFromProto(filename: string | string[], options: grpcProtoLoader.Options) {
+    // TODO: @grpc/proto-loader actually supports loading multiple files
+    // but the .d.ts does not reflect this. Remove no-any when this is fixed.
+    // tslint:disable-next-line no-any
+    const packageDef = grpcProtoLoader.loadSync(filename as any, options);
     return this.grpc.loadPackageDefinition(packageDef);
   }
 
@@ -167,11 +170,14 @@ export class GrpcClient {
    * Load grpc proto service from a filename hooking in googleapis common protos
    * when necessary.
    * @param {String} protoPath - The directory to search for the protofile.
-   * @param {String} filename - The filename of the proto to be loaded.
+   * @param {String|String[]} filename - The filename(s) of the proto(s) to be loaded.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-  loadProto(protoPath: string, filename: string) {
+  loadProto(protoPath: string, filename: string | string[]) {
+    if (Array.isArray(filename) && filename.length === 0) {
+      return {};
+    }
     // This set of @grpc/proto-loader options
     // 'closely approximates the existing behavior of grpc.load'
     const includeDirs = INCLUDE_DIRS.slice();

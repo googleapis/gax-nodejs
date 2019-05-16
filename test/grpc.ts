@@ -245,6 +245,26 @@ describe('grpc', () => {
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
 
+    it('should be able to load no files', () => {
+      const protos = grpcClient.loadProto('.', []);
+      expect(protos).to.deep.equal({});
+    });
+
+    it('should load multiple files', () => {
+      const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
+      // no-any disabled because if the accessed fields are non-existent, this
+      // test will fail anyway.
+      const protos = grpcClient.loadProto(TEST_PATH, [
+        TEST_FILE,
+        iamService,
+        // tslint:disable-next-line:no-any
+      ]) as any;
+      expect(protos.google.example.library.v1.LibraryService).to.be.a(
+        'Function'
+      );
+      expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
+    });
+
     it('should emit an error for not found proto', () => {
       const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       const nonExistentFile = 'nonexistent.proto';
