@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.1.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.0.0...v1.1.0) (2019-05-16)
+
+
+### Bug Fixes
+
+* **deps:** update dependency walkdir to ^0.4.0 ([#499](https://www.github.com/googleapis/gax-nodejs/issues/499)) ([d2e01bd](https://www.github.com/googleapis/gax-nodejs/commit/d2e01bd))
+* DEADLINE_EXCEEDED retry code is idempotent ([#495](https://www.github.com/googleapis/gax-nodejs/issues/495)) ([8c59bda](https://www.github.com/googleapis/gax-nodejs/commit/8c59bda))
+
+
+### Features
+
+* allow loading multiple proto files at once ([#503](https://www.github.com/googleapis/gax-nodejs/issues/503)) ([3d192a9](https://www.github.com/googleapis/gax-nodejs/commit/3d192a9))
+
 ## [1.0.0](https://www.github.com/googleapis/gax-nodejs/compare/v0.26.0...v1.0.0) (2019-05-09)
 
 
