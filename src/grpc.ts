@@ -175,6 +175,9 @@ export class GrpcClient {
    *   object).
    */
   loadProto(protoPath: string, filename: string | string[]) {
+    if (typeof filename === 'object' && filename.length === 0) {
+      return {};
+    }
     // This set of @grpc/proto-loader options
     // 'closely approximates the existing behavior of grpc.load'
     const includeDirs = INCLUDE_DIRS.slice();

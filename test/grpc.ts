@@ -245,6 +245,11 @@ describe('grpc', () => {
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
 
+    it('should be able to load no files', () => {
+      const protos = grpcClient.loadProto('.', []);
+      expect(protos).to.deep.equal({});
+    });
+
     it('should load multiple files', () => {
       const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
       // no-any disabled because if the accessed fields are non-existent, this
