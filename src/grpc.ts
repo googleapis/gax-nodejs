@@ -159,10 +159,7 @@ export class GrpcClient {
    * @param options Options for loading the proto file.
    */
   loadFromProto(filename: string | string[], options: grpcProtoLoader.Options) {
-    // TODO: @grpc/proto-loader actually supports loading multiple files
-    // but the .d.ts does not reflect this. Remove no-any when this is fixed.
-    // tslint:disable-next-line no-any
-    const packageDef = grpcProtoLoader.loadSync(filename as any, options);
+    const packageDef = grpcProtoLoader.loadSync(filename, options);
     return this.grpc.loadPackageDefinition(packageDef);
   }
 
