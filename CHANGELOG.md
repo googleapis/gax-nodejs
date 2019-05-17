@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.1.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.0...v1.1.1) (2019-05-17)
+
+
+### Bug Fixes
+
+* use latest proto-loader with fixed types ([#508](https://www.github.com/googleapis/gax-nodejs/issues/508)) ([1afee35](https://www.github.com/googleapis/gax-nodejs/commit/1afee35))
+
 ## [1.1.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.0.0...v1.1.0) (2019-05-16)
 
 
