@@ -189,7 +189,7 @@ export class Operation extends EventEmitter {
 
     if (this.latestResponse.done) {
       this._unpackResponse(this.latestResponse, callback);
-      return promisifyResponse();
+      return promisifyResponse() as Promise<{}>;
     }
 
     this.currentCallPromise_ = (operationsClient.getOperation as GaxCallPromise)(
@@ -204,7 +204,7 @@ export class Operation extends EventEmitter {
     });
 
     if (!callback) {
-      return noCallbackPromise;
+      return noCallbackPromise as Promise<{}>;
     }
   }
 

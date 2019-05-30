@@ -393,9 +393,7 @@ describe('longrunning', () => {
             return operation.promise();
           })
           .then(responses => {
-            const result = responses[0];
-            const metadata = responses[1];
-            const rawResponse = responses[2];
+            const [result, metadata, rawResponse] = responses as Array<{}>;
             expect(result).to.deep.eq(RESPONSE_VAL);
             expect(metadata).to.deep.eq(METADATA_VAL);
             expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);

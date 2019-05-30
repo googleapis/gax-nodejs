@@ -33,7 +33,7 @@ import {GoogleAuth} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as path from 'path';
 
-import {GaxCall} from './apitypes';
+import {GaxCall, APICallback} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
