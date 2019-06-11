@@ -98,5 +98,6 @@
       "build/system-test/**",
       ".system-test-run/**"
     ]
-  }
+  },
+  "browser": "build/src/browser.js"
 }
