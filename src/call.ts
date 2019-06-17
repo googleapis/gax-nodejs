@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from '@grpc/grpc-js';
+import {Status} from './status';
 
 import {
   APICallback,
@@ -75,7 +75,7 @@ export class OngoingCall {
       this.cancelFunc();
     } else {
       const error = new GoogleError('cancelled');
-      error.code = status.CANCELLED;
+      error.code = Status.CANCELLED;
       this.callback!(error);
     }
   }

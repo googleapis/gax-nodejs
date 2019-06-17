@@ -30,7 +30,7 @@
  */
 
 import {EventEmitter} from 'events';
-import {status} from '@grpc/grpc-js';
+import {Status} from '../status';
 
 import {GaxCallPromise, ResultTuple} from '../apitypes';
 import {CancellablePromise} from '../call';
@@ -278,7 +278,7 @@ export class Operation extends EventEmitter {
         const error = new GoogleError(
           'Total timeout exceeded before any response was received'
         );
-        error.code = status.DEADLINE_EXCEEDED;
+        error.code = Status.DEADLINE_EXCEEDED;
         setImmediate(emit, 'error', error);
         return;
       }
@@ -305,7 +305,7 @@ export class Operation extends EventEmitter {
             const error = new GoogleError(
               'Long running operation has finished but there was no result'
             );
-            error.code = status.UNKNOWN;
+            error.code = Status.UNKNOWN;
             setImmediate(emit, 'error', error);
             return;
           }
