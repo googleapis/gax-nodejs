@@ -29,9 +29,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {Status} from './status';
+// The following is a copy of the Status enum defined in @grpc/grpc-js,
+// src/constants.ts. We need to use some of these statuses here and there,
+// but we don't want to include the whole @grpc/grpc-js into the browser
+// bundle just to have this small enum.
 
-export class GoogleError extends Error {
-  code?: Status;
-  note?: string;
+export enum Status {
+  OK = 0,
+  CANCELLED,
+  UNKNOWN,
+  INVALID_ARGUMENT,
+  DEADLINE_EXCEEDED,
+  NOT_FOUND,
+  ALREADY_EXISTS,
+  PERMISSION_DENIED,
+  RESOURCE_EXHAUSTED,
+  FAILED_PRECONDITION,
+  ABORTED,
+  OUT_OF_RANGE,
+  UNIMPLEMENTED,
+  INTERNAL,
+  UNAVAILABLE,
+  DATA_LOSS,
+  UNAUTHENTICATED,
 }

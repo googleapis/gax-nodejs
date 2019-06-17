@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from '@grpc/grpc-js';
+import {Status} from '../status';
 
 import {SimpleCallbackFunction} from '../apitypes';
 import {GoogleError} from '../googleError';
@@ -163,7 +163,7 @@ export class BundleExecutor {
           this._options.requestByteLimit;
       }
       const error = new GoogleError(message);
-      error.code = status.INVALID_ARGUMENT;
+      error.code = Status.INVALID_ARGUMENT;
       callback(error);
       return {
         cancel: noop,
