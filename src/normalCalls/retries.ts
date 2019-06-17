@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from '@grpc/grpc-js';
+import {Status} from '../status';
 
 import {
   APICallback,
@@ -98,7 +98,7 @@ export function retryable(
         const error = new GoogleError(
           'Retry total timeout exceeded before any response was received'
         );
-        error.code = status.DEADLINE_EXCEEDED;
+        error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
         return;
       }
@@ -108,7 +108,7 @@ export function retryable(
           'Exceeded maximum number of retries before any ' +
             'response was received'
         );
-        error.code = status.DEADLINE_EXCEEDED;
+        error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
         return;
       }
@@ -147,7 +147,7 @@ export function retryable(
         'Cannot set both totalTimeoutMillis and maxRetries ' +
           'in backoffSettings.'
       );
-      error.code = status.INVALID_ARGUMENT;
+      error.code = Status.INVALID_ARGUMENT;
       callback(error);
     } else {
       repeat();
@@ -162,7 +162,7 @@ export function retryable(
           canceller.cancel();
         } else {
           const error = new GoogleError('cancelled');
-          error.code = status.CANCELLED;
+          error.code = Status.CANCELLED;
           callback(error);
         }
       },

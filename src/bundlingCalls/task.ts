@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {status} from '@grpc/grpc-js';
+import {Status} from '../status';
 
 import {APICallback, GRPCCallResult, SimpleCallbackFunction} from '../apitypes';
 import {GoogleError} from '../googleError';
@@ -220,7 +220,7 @@ export class Task {
         for (let i = 0; i < self._data.length; ++i) {
           if (self._data[i].cancelled) {
             const error = new GoogleError('cancelled');
-            error.code = status.CANCELLED;
+            error.code = Status.CANCELLED;
             self._data[i].callback(error);
           } else {
             self._data[i].callback(err, responses[i]);
@@ -267,7 +267,7 @@ export class Task {
     for (let i = 0; i < this._data.length; ++i) {
       if (this._data[i].callback.id === id) {
         const error = new GoogleError('cancelled');
-        error.code = status.CANCELLED;
+        error.code = Status.CANCELLED;
         this._data[i].callback(error);
         this._data.splice(i, 1);
         break;
