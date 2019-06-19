@@ -1,7 +1,7 @@
-import { Gaxios } from "gaxios";
+
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
-import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import {GoogleAuth} from 'google-auth-library';
 
 export {
     CallSettings,
@@ -25,7 +25,10 @@ export class GrpcClient {
     constructor(opts) {
         this.auth = opts.auth;
     }
-    loadProto() {}
+    loadProto(jsonObject) {
+        const rootObject = protobuf.Root.fromJSON(jsonObject);
+        return rootObject;
+    }
     constructSettings(
         service: protobuf.Service,
     ) {
