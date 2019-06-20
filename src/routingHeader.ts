@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as querystring from 'querystring';
+
 /**
  * Helpers for constructing routing headers.
  *
@@ -44,8 +46,6 @@
  * @param {Object} params - the request header parameters.
  * @return {string} the routing header value.
  */
-
-import * as querystring from 'querystring';
 
 export function fromParams(params: {
   [index: string]: string | number | boolean;
