@@ -44,8 +44,11 @@
  * @param {Object} params - the request header parameters.
  * @return {string} the routing header value.
  */
-export function fromParams(params: {[index: string]: {}}): string {
-  return Object.keys(params)
-    .map(key => `${key}=${params[key]}`)
-    .join('&');
+
+import * as querystring from 'querystring';
+
+export function fromParams(params: {
+  [index: string]: string | number | boolean;
+}): string {
+  return querystring.stringify(params);
 }
