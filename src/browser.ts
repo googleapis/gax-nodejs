@@ -4,19 +4,12 @@ import * as gax from './gax';
 import {GoogleAuth} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClientBrowser'
 
-<<<<<<< HEAD
+
 export {
     CallSettings,
     constructSettings,
     RetryOptions,
   } from './gax';
-=======
-// import {
-//     CallSettings,
-//     // constructSettings,
-//     RetryOptions
-//   } from './gax';
->>>>>>> 7c9429c307cf66fa830bd6d2a28861a6e247b500
 
 export {createApiCall} from './createApiCall';
 
@@ -136,7 +129,6 @@ export class GrpcClient {
 
          return newLanguageServiceStub;
   }
-=======
     auth: GoogleAuth;
 
     constructor(opts) {
@@ -235,7 +227,6 @@ export class GrpcClient {
 
            return newLanguageServiceStub;
     }
->>>>>>> 7c9429c307cf66fa830bd6d2a28861a6e247b500
 };
 
 lro.ALL_SCOPES = ALL_SCOPES;
