@@ -74,7 +74,7 @@
     "test": "nyc mocha build/test",
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src",
+    "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src && pbjs -t json ./protos/google/longrunning/operations.proto -p ./protos > pbjs-genfiles/operations.json",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile && node ./build/tools/prepublish.js",
     "posttest": "npm run lint",

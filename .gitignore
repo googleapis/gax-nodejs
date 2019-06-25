@@ -16,3 +16,4 @@ package-lock.json
 .kitchen-sink/
 __pycache__
 doc/
+dist/
