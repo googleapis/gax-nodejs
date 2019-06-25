@@ -1,12 +1,13 @@
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
+
 import {GoogleAuth} from 'google-auth-library';
 
-export {
-    CallSettings,
-    constructSettings,
-    RetryOptions
-  } from './gax';
+// import {
+//     CallSettings,
+//     // constructSettings,
+//     RetryOptions
+//   } from './gax';
 
 export {createApiCall} from './createApiCall';
 

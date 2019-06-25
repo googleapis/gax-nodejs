@@ -4,6 +4,9 @@ module.exports = {
       library: "Gax",
       filename: "./main.js"
     },
+    resolve: {
+      extensions: ['.ts', '.js', '.json'],
+    },
     module: {
         rules: [
           {
