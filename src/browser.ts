@@ -32,7 +32,6 @@ export const ALL_SCOPES: string[] = [];
 
 
 export class GrpcClient {
-<<<<<<< HEAD
   auth: GoogleAuth;
 
   constructor(opts) {
