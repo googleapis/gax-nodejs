@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.1.3](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.2...v1.1.3) (2019-06-26)
+
+
+### Bug Fixes
+
+* **docs:** make anchors work in jsdoc ([#523](https://www.github.com/googleapis/gax-nodejs/issues/523)) ([81bca11](https://www.github.com/googleapis/gax-nodejs/commit/81bca11))
+
 ### [1.1.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.1...v1.1.2) (2019-06-20)
 
 
