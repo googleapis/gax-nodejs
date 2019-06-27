@@ -1,13 +1,8 @@
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
-
+import {Status} from './status';
+import {OutgoingHttpHeaders} from 'http';
 import {GoogleAuth} from 'google-auth-library';
-
-// import {
-//     CallSettings,
-//     // constructSettings,
-//     RetryOptions
-//   } from './gax';
 
 export {createApiCall} from './createApiCall';
 
@@ -17,13 +12,17 @@ export interface ClientStubOptions {
     // TODO: use sslCreds?: grpc.ChannelCredentials;
     // tslint:disable-next-line no-any
     sslCreds?: any;
-}
+};
+
 
 export class GrpcClient {
     auth: GoogleAuth;
+    promise?: PromiseConstructor;
 
-    constructor(opts) {
+    constructor(opts, settings?: any) {
+        settings = settings || {};
         this.auth = opts.auth;
+        this.promise = 'promise' in settings ? settings.promise! : Promise;
     }
 
     loadProto(jsonObject) {
@@ -46,30 +45,18 @@ export class GrpcClient {
     }
 
     constructSettings(
-        service: protobuf.Service,
+        serviceName: string,
+        clientConfig: gax.ClientConfig,
+        configOverrides: gax.ClientConfig,
+        headers: OutgoingHttpHeaders
     ) {
-        // Defining some default settings to be applied to all methods of service
-        const settings = new gax.CallSettings();
-        settings.timeout = 5000;
-        const retryCodes = [42];
-        const backoffSettings = {
-            initialRetryDelayMillis: 5000,
-            maxRetries: 4,
-            retryDelayMultiplier: 2,
-            maxRetryDelayMillis: 10000,
-        };
-        settings.retry = new gax.RetryOptions(retryCodes, backoffSettings);
-
-        var defaults = {};
-
-        const methods = this.getServiceMethods(service);
-
-        // Setting the default settings of all methods in the service
-        for (const methodName of methods) {
-            defaults[methodName] = settings;
-        }
-
-        return defaults;
+        return gax.constructSettings(
+        serviceName,
+        clientConfig,
+        configOverrides,
+        Status,
+        this.promise
+        );
     }
 
     async createStub(
@@ -96,8 +83,6 @@ export class GrpcClient {
                  });
            
                  if (!fetchResult.ok) {
-                  //    const body = await fetchResult.buffer();
-                  //    console.log(body.toString());
                    callback(new Error(fetchResult.statusText));
                    return;
                  }
@@ -109,7 +94,7 @@ export class GrpcClient {
 
            const methods = this.getServiceMethods(service);
 
-           const newLanguageServiceStub = {};
+           const newLanguageServiceStub = service.create(serviceClientImpl, false, false);
            for (const methodName of methods) {
              newLanguageServiceStub[methodName] = (req, options, metadata, callback) => {
                languageServiceStub[methodName].apply(languageServiceStub, [req, callback]);
