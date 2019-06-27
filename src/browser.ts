@@ -4,6 +4,12 @@ import * as gax from './gax';
 import {GoogleAuth} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClientBrowser'
 
+import {
+  GaxCall,
+  GRPCCall,
+} from './apitypes';
+import {Descriptor} from './descriptor';
+import {createApiCall as _createApiCall} from './createApiCall';
 
 export {
     CallSettings,
@@ -11,7 +17,6 @@ export {
     RetryOptions,
   } from './gax';
 
-export {createApiCall} from './createApiCall';
 
 export interface ClientStubOptions {
     servicePath: string;
@@ -29,7 +34,7 @@ export {
 } from './descriptor';
 
 export const ALL_SCOPES: string[] = [];
-
+lro.ALL_SCOPES = ALL_SCOPES;
 
 export class GrpcClient {
   auth: GoogleAuth;
@@ -130,10 +135,21 @@ export class GrpcClient {
   }
 };
 
-lro.ALL_SCOPES = ALL_SCOPES;
 
 export function lro(options) {
     options = Object.assign({scopes: lro.ALL_SCOPES}, options);
     const gaxGrpc = new GrpcClient(options);
     return new OperationsClientBuilder(gaxGrpc);
+}
+
+// Wrapper function to throw exceptions on unsupported streaming calls
+export function createApiCall(  
+  func: Promise<GRPCCall> | GRPCCall,
+  settings: gax.CallSettings,
+  descriptor?: Descriptor
+): GaxCall {
+  if (typeof descriptor !== "undefined" && descriptor.constructor.name === "StreamDescriptor"){
+    return () => { throw new Error("The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls."); };
+  }
+  return _createApiCall(func,settings,descriptor)
 }
