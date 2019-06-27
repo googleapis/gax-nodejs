@@ -40,27 +40,6 @@ describe('loadProto', () => {
 
 });
 
-describe('constructSettings', () => {
-
-    let protos, echoService;
-    
-    beforeEach(() => {
-      protos = gaxGrpc.loadProto(echoProtoJson);
-      echoService = protos.lookupService('Echo');
-    });
-
-    // it('should construct default settings for all methods in the service', () => {
-    //     const defaults : any = gaxGrpc.constructSettings(echoService);
-
-    //     // Should have settings for all 6 of Echo service's methods
-    //     assert.strictEqual(Object.keys(defaults).length, 6);
-    //     assert(defaults.pagedExpand instanceof gax.CallSettings);
-
-    //     assert.strictEqual(defaults.echo, defaults.chat);
-    // });
-
-});
-
 describe('createStub', () => {
 
     let protos, echoService, stubOptions, stubExtraOptions;
