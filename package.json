@@ -48,7 +48,7 @@
     "google-proto-files": "^1.0.0",
     "gts": "^1.0.0",
     "intelli-espower-loader": "^1.0.1",
-    "linkinator": "^1.4.2",
+    "linkinator": "^1.5.0",
     "mocha": "^6.1.0",
     "ncp": "^2.0.0",
     "nyc": "^14.0.0",
@@ -77,7 +77,7 @@
     "posttest": "npm run lint",
     "system-test": "nyc mocha build/system-test/test.*.js --timeout 120000",
     "samples-test": "echo no sample tests 😱",
-    "docs-test": "linkinator docs -r --skip www.googleapis.com",
+    "docs-test": "linkinator docs",
     "predocs-test": "npm run docs"
   },
   "repository": "googleapis/gax-nodejs",
