@@ -27,13 +27,13 @@ describe('loadProto', () => {
 
         assert(protos instanceof protobuf.Root);
         assert(protos.lookupService('Echo') instanceof protobuf.Service);
-        assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);');
+        assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
     });
 
     it('should be able to load no files', () => {
         const protos = gaxGrpc.loadProto({});
         assert(protos instanceof protobuf.Root);
-        // Should I have this in here or is it too specific?
+
         assert(protos.nested === undefined);
         assert.strictEqual(protos.nested, undefined)
     });
