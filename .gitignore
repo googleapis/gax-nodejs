@@ -16,3 +16,5 @@ package-lock.json
 .kitchen-sink/
 __pycache__
 doc/
+dist/
+pbjs-genfiles/operations.json

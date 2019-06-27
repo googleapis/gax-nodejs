@@ -3,6 +3,7 @@ import * as gax from './gax';
 import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
 import {GoogleAuth} from 'google-auth-library';
+import {OperationsClientBuilder} from './operationsClientBrowser'
 
 export {createApiCall} from './createApiCall';
 
@@ -13,6 +14,16 @@ export interface ClientStubOptions {
     // tslint:disable-next-line no-any
     sslCreds?: any;
 };
+
+
+export {
+  BundleDescriptor,
+  LongrunningDescriptor,
+  PageDescriptor,
+  StreamDescriptor,
+} from './descriptor';
+
+export const ALL_SCOPES: string[] = [];
 
 
 export class GrpcClient {
@@ -105,3 +116,10 @@ export class GrpcClient {
     }
 };
 
+lro.ALL_SCOPES = ALL_SCOPES;
+
+export function lro(options) {
+    options = Object.assign({scopes: lro.ALL_SCOPES}, options);
+    const gaxGrpc = new GrpcClient(options);
+    return new OperationsClientBuilder(gaxGrpc);
+}
