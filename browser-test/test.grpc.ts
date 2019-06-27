@@ -27,11 +27,9 @@ describe('loadProto', () => {
 
         assert(protos instanceof protobuf.Root);
         assert(protos.lookupService('Echo') instanceof protobuf.Service);
-        assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
-        // assert.strictEqual(protos.name, 'Echo');
+        assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);');
     });
 
-    // What should an empty root look like?
     it('should be able to load no files', () => {
         const protos = gaxGrpc.loadProto({});
         assert(protos instanceof protobuf.Root);
@@ -58,7 +56,6 @@ describe('constructSettings', () => {
     //     assert.strictEqual(Object.keys(defaults).length, 6);
     //     assert(defaults.pagedExpand instanceof gax.CallSettings);
 
-    //     // Probably shouldn't have this? Could settings be different?
     //     assert.strictEqual(defaults.echo, defaults.chat);
     // });
 
@@ -94,11 +91,10 @@ describe('createStub', () => {
         expect(echoStub.collect).to.be.a('Function');
         expect(echoStub.chat).to.be.a('Function');
 
-        // There should be 6 methods for the echo service (and 4 other things)
-        // idk if this is necessary (or a good test at all)
+        // There should be 6 methods for the echo service (and 4 other methods in the object)
         assert.strictEqual(Object.keys(echoStub).length, 10);
 
-        // Each of the service methods should take 4 arguments (so that it works with createApiCall?)
+        // Each of the service methods should take 4 arguments (so that it works with createApiCall)
         assert.strictEqual(echoStub.echo.length, 4);
     });
 
@@ -112,18 +108,12 @@ describe('createStub', () => {
         expect(echoStub.collect).to.be.a('Function');
         expect(echoStub.chat).to.be.a('Function');
 
-        // There should be 6 methods for the echo service (and 4 other things)
-        // idk if this is necessary (or a good test at all)
+        // There should be 6 methods for the echo service (and 4 other members in the object)
         assert.strictEqual(Object.keys(echoStub).length, 10);
 
-        // Each of the service methods should take 4 arguments (so that it works with createApiCall?)
+        // Each of the service methods should take 4 arguments (so that it works with createApiCall)
         assert.strictEqual(echoStub.echo.length, 4);
     });
-
-    it('should not use grpc in methods', async () => {
-        // ??
-    });
-
 });
 
 
