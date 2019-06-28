@@ -3,7 +3,6 @@ import {expect} from 'chai';
 
 import * as protobuf from 'protobufjs';
 import { GrpcClient } from '../src/browser';
-import * as gax from '../src/gax';
 
 import { echoProtoJson } from './fixtures/keys';
 
@@ -54,8 +53,6 @@ describe('createStub', () => {
        stubExtraOptions = {
         servicePath: 'foo.example.com',
         port: 443,
-        'grpc.max_send_message_length': 10 * 1024 * 1024,
-        'grpc.initial_reconnect_backoff_ms': 10000,
         other_dummy_options: 'test',
       };
     });

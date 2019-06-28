@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
     entry: './src/browser.ts',
     output: {
@@ -6,6 +8,10 @@ module.exports = {
     },
     resolve: {
       extensions: ['.ts', '.js', '.json'],
+      alias: {
+        '../../package.json': path.resolve(__dirname, 'package.json'),
+        '../../pbjs-genfiles/operations.json': path.resolve(__dirname, 'pbjs-genfiles/operations.json'),
+      },
     },
     module: {
         rules: [

@@ -6,6 +6,9 @@ import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import {GoogleAuth} from 'google-auth-library';
+
+const configData = require('./operations_client_config');
+
 import {GrpcClient} from './browser'
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
@@ -85,7 +88,12 @@ export class OperationsClient {
   
       let service = grpcClients.lookupService('google.longrunning.Operations')
 
-      const defaults = gaxGrpc.constructSettings(service);
+      const defaults = gaxGrpc.constructSettings(
+        'google.longrunning.operations',
+        configData,
+        opts.clientConfig,
+        {'x-goog-api-client': googleApiClient.join(' ')}
+      );
   
       this.auth = gaxGrpc.auth;
       const operationsStub = gaxGrpc.createStub(

@@ -4,17 +4,9 @@ import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
 import {GoogleAuth} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClientBrowser'
+import {ClientStubOptions} from './grpc';
 
 export {createApiCall} from './createApiCall';
-
-export interface ClientStubOptions {
-    servicePath: string;
-    port: number;
-    // TODO: use sslCreds?: grpc.ChannelCredentials;
-    // tslint:disable-next-line no-any
-    sslCreds?: any;
-};
-
 
 export {
   BundleDescriptor,
@@ -79,14 +71,15 @@ export class GrpcClient {
                  let headers = Object.assign({}, authHeader);
                  headers['Content-Type'] = 'application/x-protobuf';
                  headers['User-Agent'] = 'testapp/1.0';
- 
-                 // method.parent.options['(google.api.default_host)'] gives us the api.googleapis.com part of the url
-                 // method.parent.parent.options.java_package.substring(4) gives is google.cloud.api.v1 part of the url
-                 // method.parent.name gives us the service and method.name gives us the method being used
-                 const url =
-                 'https://' + method.parent.options['(google.api.default_host)'] + '/$rpc/' +
-                 method.parent.parent.options.java_package.substring(4) + '.' + method.parent.name + '/' + method.name;
-     
+
+                 const servicePath = opts.servicePath || method.parent.options['(google.api.default_host)'];
+                 const servicePort = opts.port || 443;
+                 const serviceName = method.parent.parent.options.java_package.substring(4);
+                 const rpcNamespace = method.parent.name;
+                 const rpcName = method.name;
+                 
+                 const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
+
                  const fetchResult = await fetch(url, {
                    headers,
                    method: 'post',
