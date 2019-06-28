@@ -11,6 +11,7 @@
     "src/*/*.ts",
     "test/*.ts",
     "tools/*.ts",
-    "system-test/*.ts"
+    "system-test/*.ts",
+    "browser-test/*.ts"
   ]
 }

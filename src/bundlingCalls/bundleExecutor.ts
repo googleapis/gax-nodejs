@@ -61,7 +61,7 @@ export class BundleExecutor {
   _descriptor: BundleDescriptor;
   _tasks: {[index: string]: Task};
   // _timers: {[index: string]: NodeJS.Timer };
-  _timers: {[index: string]: ReturnType<typeof setTimeout> };
+  _timers: {[index: string]: ReturnType<typeof setTimeout>};
   _invocations: {[index: string]: string};
   _invocationId: number;
   /**
