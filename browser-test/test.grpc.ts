@@ -1,9 +1,7 @@
 import * as assert from 'assert';
 import {expect} from 'chai';
-
 import * as protobuf from 'protobufjs';
 import {GrpcClient} from '../src/browser';
-
 import {echoProtoJson} from './fixtures/keys';
 
 const authStub = {
