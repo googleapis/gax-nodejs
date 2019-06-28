@@ -37,4 +37,11 @@ describe('fromParams', () => {
     const routingHeader = fromParams({name: 'foo', 'book.read': true});
     expect(routingHeader).to.equal('name=foo&book.read=true');
   });
+
+  it('encodes non-ASCII characters', () => {
+    const routingHeader = fromParams({screaming: '😱', cyrillic: 'тест'});
+    expect(routingHeader).to.equal(
+      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82'
+    );
+  });
 });

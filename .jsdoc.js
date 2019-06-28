@@ -41,5 +41,8 @@ module.exports = {
     sourceFiles: false,
     systemName: 'google-gax',
     theme: 'lumen'
+  },
+  markdown: {
+    idInHeadings: true
   }
 };
