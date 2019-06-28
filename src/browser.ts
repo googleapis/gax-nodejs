@@ -39,10 +39,9 @@ export class GrpcClient {
         const methods = Object.keys(service.methods);
 
         // Creating an array of all methods within the stub with correct case (i.e, first letter is lower-case)
-        const methodsCorrectCase : string[] = [];
-        for (const methodName of methods) {
-            methodsCorrectCase.push(methodName.substring(0,1).toLowerCase() + methodName.substring(1));
-        }
+        const methodsCorrectCase = methods.map(method => {
+            return method[0].toLowerCase() + method.substring(1);
+        });
 
         return methodsCorrectCase;
     }
