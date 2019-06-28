@@ -1,8 +1,12 @@
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
-
+import {Status} from './status';
+import {OutgoingHttpHeaders} from 'http';
 import {GoogleAuth} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClientBrowser'
+
+import {ClientStubOptions} from './grpc';
+
 
 import {
   GaxCall,
@@ -18,14 +22,6 @@ export {
   } from './gax';
 
 
-export interface ClientStubOptions {
-    servicePath: string;
-    port: number;
-    // TODO: use sslCreds?: grpc.ChannelCredentials;
-    // tslint:disable-next-line no-any
-    sslCreds?: any;
-}
-
 export {
   BundleDescriptor,
   LongrunningDescriptor,
@@ -37,102 +33,93 @@ export const ALL_SCOPES: string[] = [];
 lro.ALL_SCOPES = ALL_SCOPES;
 
 export class GrpcClient {
-  auth: GoogleAuth;
+    auth: GoogleAuth;
+    promise?: PromiseConstructor;
 
-  constructor(opts) {
-      this.auth = opts.auth;
-  }
+    constructor(opts, settings?: any) {
+        settings = settings || {};
+        this.auth = opts.auth;
+        this.promise = 'promise' in settings ? settings.promise! : Promise;
+    }
 
-  loadProto(jsonObject) {
-      const rootObject = protobuf.Root.fromJSON(jsonObject);
-      return rootObject;
-  }
+    loadProto(jsonObject) {
+        const rootObject = protobuf.Root.fromJSON(jsonObject);
+        return rootObject;
+    }
 
-  private getServiceMethods(
-      service: protobuf.Service
-  ) {
-      const methods = Object.keys(service.methods);
+    private getServiceMethods(
+        service: protobuf.Service
+    ) {
+        const methods = Object.keys(service.methods);
 
-      // Creating an array of all methods within the stub with correct case (i.e, first letter is lower-case)
-      const methodsCorrectCase : string[] = [];
-      for (const methodName of methods) {
-          methodsCorrectCase.push(methodName.substring(0,1).toLowerCase() + methodName.substring(1));
-      }
+        // Creating an array of all methods within the stub with correct case (i.e, first letter is lower-case)
+        const methodsCorrectCase = methods.map(method => {
+            return method[0].toLowerCase() + method.substring(1);
+        });
 
-      return methodsCorrectCase;
-  }
+        return methodsCorrectCase;
+    }
 
-  constructSettings(
-      service: protobuf.Service,
-  ) {
-      // Defining some default settings to be applied to all methods of service
-      const settings = new gax.CallSettings();
-      settings.timeout = 5000;
-      const retryCodes = [42];
-      const backoffSettings = {
-          initialRetryDelayMillis: 5000,
-          maxRetries: 4,
-          retryDelayMultiplier: 2,
-          maxRetryDelayMillis: 10000,
-      };
-      settings.retry = new gax.RetryOptions(retryCodes, backoffSettings);
+    constructSettings(
+        serviceName: string,
+        clientConfig: gax.ClientConfig,
+        configOverrides: gax.ClientConfig,
+        headers: OutgoingHttpHeaders
+    ) {
+        return gax.constructSettings(
+        serviceName,
+        clientConfig,
+        configOverrides,
+        Status,
+        this.promise
+        );
+    }
 
-      var defaults = {};
+    async createStub(
+        service: protobuf.Service,
+        opts: ClientStubOptions) {
+            const authHeader = await this.auth.getRequestHeaders();
+            async function serviceClientImpl(method, requestData, callback) {
 
-      const methods = this.getServiceMethods(service);
+                 let headers = Object.assign({}, authHeader);
+                 headers['Content-Type'] = 'application/x-protobuf';
+                 headers['User-Agent'] = 'testapp/1.0';
 
-      // Setting the default settings of all methods in the service
-      for (const methodName of methods) {
-          defaults[methodName] = settings;
-      }
+                 const servicePath = opts.servicePath || method.parent.options['(google.api.default_host)'];
+                 const servicePort = opts.port || 443;
+                 const serviceName = method.parent.parent.options.java_package.substring(4);
+                 const rpcNamespace = method.parent.name;
+                 const rpcName = method.name;
+                 
+                 const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
 
-      return defaults;
-  }
+                 const fetchResult = await fetch(url, {
+                   headers,
+                   method: 'post',
+                   body: requestData,
+                 });
+           
+                 if (!fetchResult.ok) {
+                   callback(new Error(fetchResult.statusText));
+                   return;
+                 }
+                 const responseArrayBuffer = await fetchResult.arrayBuffer();           
+                 callback(null, new Uint8Array(responseArrayBuffer));
+           }
 
-  async createStub(
-      service: protobuf.Service,
-      opts: ClientStubOptions) {
-          const authHeader = await this.auth.getRequestHeaders();
-          async function serviceClientImpl(method, requestData, callback) {
+           const languageServiceStub = service.create(serviceClientImpl, false, false);
 
-               let headers = Object.assign({}, authHeader);
-               headers['Content-Type'] = 'application/x-protobuf';
-               headers['User-Agent'] = 'testapp/1.0';
+           const methods = this.getServiceMethods(service);
 
-               // method.parent.options['(google.api.default_host)'] gives us the api.googleapis.com part of the url
-               // method.parent.parent.options.java_package.substring(4) gives is google.cloud.api.v1 part of the url
-               // method.parent.name gives us the service and method.name gives us the method being used
-               const url =
-               'https://' + opts['servicePath'] + '/$rpc/' +
-               method.parent.parent.options.java_package.substring(4) + '.' + method.parent.name + '/' + method.name;
-   
-               const fetchResult = await fetch(url, {
-                 headers,
-                 method: 'post',
-                 body: requestData,
-               });
-         
-               if (!fetchResult.ok) {
-                 callback(new Error(fetchResult.statusText));
-                 return;
-               }
-               const responseArrayBuffer = await fetchResult.arrayBuffer();           
-               callback(null, new Uint8Array(responseArrayBuffer));
-         }
+           const newLanguageServiceStub = service.create(serviceClientImpl, false, false);
+           for (const methodName of methods) {
+             newLanguageServiceStub[methodName] = (req, options, metadata, callback) => {
+               languageServiceStub[methodName].apply(languageServiceStub, [req, callback]);
+             };
+           }
 
-         const languageServiceStub = service.create(serviceClientImpl, false, false);
-
-         const methods = this.getServiceMethods(service);
-
-         const newLanguageServiceStub = {};
-         for (const methodName of methods) {
-           newLanguageServiceStub[methodName] = (req, options, metadata, callback) => {
-             languageServiceStub[methodName].apply(languageServiceStub, [req, callback]);
-           };
-         }
-
-         return newLanguageServiceStub;
-  }
+           return newLanguageServiceStub;
+    }
 };
 
 
