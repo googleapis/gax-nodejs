@@ -270,12 +270,12 @@ export class Operation extends EventEmitter {
     }
 
     //Helper function to replace nodejs.equals()
-    function arrayEquals(a,b) {
-      if (a.byteLength != b.byteLength) {
-        return false
+    function arrayEquals(a, b) {
+      if (a.byteLength !== b.byteLength) {
+        return false;
       }
       for (let i = a.length; -1 < i; i -= 1) {
-        if ((a[i] !== b[i])) return false;
+        if (a[i] !== b[i]) return false;
       }
       return true;
     }
@@ -304,7 +304,11 @@ export class Operation extends EventEmitter {
           if (
             rawResponse!.metadata &&
             (!previousMetadataBytes ||
-              (rawResponse && !arrayEquals(rawResponse.metadata.value, previousMetadataBytes)))
+              (rawResponse &&
+                !arrayEquals(
+                  rawResponse.metadata.value,
+                  previousMetadataBytes
+                )))
           ) {
             setImmediate(emit, 'progress', metadata, rawResponse);
             previousMetadataBytes = rawResponse!.metadata!.value;
