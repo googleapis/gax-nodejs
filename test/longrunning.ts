@@ -168,6 +168,9 @@ describe('longrunning', () => {
             defaultTotalTimeoutMillis
           );
           expect(operation).to.have.property('longrunningDescriptor');
+          expect(operation.name).to.deep.eq(OPERATION_NAME);
+          // tslint:disable-next-line no-unused-expression
+          expect(operation.done).to.be.false;
           expect(operation.latestResponse).to.deep.eq(PENDING_OP);
           // tslint:disable-next-line no-unused-expression
           expect(operation.result).to.be.null;
@@ -221,6 +224,10 @@ describe('longrunning', () => {
         totalTimeoutMillis
       );
       expect(operation).to.have.property('longrunningDescriptor');
+      expect(operation.name).to.deep.eq(OPERATION_NAME);
+      // tslint:disable-next-line no-unused-expression
+      expect(operation.done).to.be.true;
+      expect(operation.response).to.deep.eq(RESPONSE);
       expect(operation.result).to.deep.eq(RESPONSE_VAL);
       expect(operation.metadata).to.deep.eq(METADATA_VAL);
       expect(operation.latestResponse).to.deep.eq(SUCCESSFUL_OP);
