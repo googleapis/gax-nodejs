@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.1.4](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.3...v1.1.4) (2019-07-02)
+
+
+### Bug Fixes
+
+* copy values from LRO to Operation wrapper ([#529](https://www.github.com/googleapis/gax-nodejs/issues/529)) ([7dfe2cd](https://www.github.com/googleapis/gax-nodejs/commit/7dfe2cd))
+
 ### [1.1.3](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.2...v1.1.3) (2019-06-26)
 
 
