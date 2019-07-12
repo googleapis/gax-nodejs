@@ -9,7 +9,7 @@
     "protos"
   ],
   "dependencies": {
-    "@grpc/grpc-js": "^0.4.0",
+    "@grpc/grpc-js": "^0.5.2",
     "@grpc/proto-loader": "^0.5.1",
     "duplexify": "^3.6.0",
     "google-auth-library": "^4.0.0",
