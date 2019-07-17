@@ -21,6 +21,11 @@ export {
 export const ALL_SCOPES: string[] = [];
 lro.ALL_SCOPES = ALL_SCOPES;
 
+interface CancelHandler {
+  canceller: AbortController;
+  cancelRequested: boolean;
+}
+
 export class GrpcClient {
   auth: GoogleAuth;
   promise?: PromiseConstructor;
@@ -69,7 +74,16 @@ export class GrpcClient {
 
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     const authHeader = await this.auth.getRequestHeaders();
-    async function serviceClientImpl(method, requestData, callback) {
+
+    function serviceClientImpl(method, requestData, callback) {
+      const cancelController = new AbortController();
+      const cancelSignal = cancelController.signal;
+
+      const cancelHandler: CancelHandler = {
+        canceller: cancelController,
+        cancelRequested: false,
+      };
+
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
@@ -85,18 +99,28 @@ export class GrpcClient {
 
       const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
 
-      const fetchResult = await fetch(url, {
+      fetch(url, {
         headers,
         method: 'post',
         body: requestData,
-      });
+        signal: cancelSignal,
+      })
+        .then(response => {
+          return response.arrayBuffer();
+        })
+        .then(buffer => {
+          callback(null, new Uint8Array(buffer));
+        })
+        .catch(err => {
+          if (
+            cancelHandler.cancelRequested === false &&
+            err.name !== 'AbortError'
+          ) {
+            throw err;
+          }
+        });
 
-      if (!fetchResult.ok) {
-        callback(new Error(fetchResult.statusText));
-        return;
-      }
-      const responseArrayBuffer = await fetchResult.arrayBuffer();
-      callback(null, new Uint8Array(responseArrayBuffer));
+      return cancelHandler;
     }
 
     const languageServiceStub = service.create(serviceClientImpl, false, false);
@@ -115,10 +139,16 @@ export class GrpcClient {
         metadata,
         callback
       ) => {
-        languageServiceStub[methodName].apply(languageServiceStub, [
-          req,
-          callback,
-        ]);
+        const cancelHandler = languageServiceStub[methodName].apply(
+          languageServiceStub,
+          [req, callback]
+        ) as CancelHandler;
+        return {
+          cancel: () => {
+            cancelHandler.canceller.abort();
+            cancelHandler.cancelRequested = true;
+          },
+        };
       };
     }
 
@@ -139,6 +169,7 @@ export function createApiCall(
   descriptor?: Descriptor
 ): GaxCall {
   if (
+    descriptor !== null &&
     typeof descriptor !== 'undefined' &&
     descriptor.constructor.name === 'StreamDescriptor'
   ) {
