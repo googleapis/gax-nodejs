@@ -33,7 +33,15 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha'],
+    frameworks: ['mocha', 'child-process'],
+
+    client: {
+      childProcess: {
+        path: './browser-test/fixtures/mock-server.js',
+        args: [],
+        options: {}
+      }
+    },
 
     // list of files / patterns to load in the browser
     files: ['./browser-test/*.ts'],
@@ -74,7 +82,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeCustom'],
+    browsers: ['Chrome'],
     customLaunchers: {
       ChromeCustom: {
         base: 'ChromeHeadless',
@@ -86,7 +94,7 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: true,
+    singleRun: false,
 
     // Concurrency level
     // how many browser should be started simultaneous

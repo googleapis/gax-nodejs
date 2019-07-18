@@ -18,6 +18,8 @@ export {
   StreamDescriptor,
 } from './descriptor';
 
+export {StreamType} from './streamingCalls/streaming';
+
 export const ALL_SCOPES: string[] = [];
 lro.ALL_SCOPES = ALL_SCOPES;
 
@@ -74,17 +76,21 @@ export class GrpcClient {
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
 
+      //const grpc_fallback_protocol = opts.protocol | 'https'
       const servicePath =
         opts.servicePath || method.parent.options['(google.api.default_host)'];
       const servicePort = opts.port || 443;
-      const serviceName = method.parent.parent.options.java_package.substring(
-        4
+      const serviceName = method.parent.parent.options.java_package.replace(
+        /^com./, ''
       );
       const rpcNamespace = method.parent.name;
       const rpcName = method.name;
 
-      const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
+      // const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
 
+      const url = `http://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
+
+      // console.log(url);
       const fetchResult = await fetch(url, {
         headers,
         method: 'post',
@@ -102,7 +108,7 @@ export class GrpcClient {
     const languageServiceStub = service.create(serviceClientImpl, false, false);
 
     const methods = this.getServiceMethods(service);
-
+    
     const newLanguageServiceStub = service.create(
       serviceClientImpl,
       false,
