@@ -76,7 +76,7 @@ export class GrpcClient {
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
 
-      //const grpc_fallback_protocol = opts.protocol | 'https'
+      const grpc_fallback_protocol = opts.protocol || 'https'
       const servicePath =
         opts.servicePath || method.parent.options['(google.api.default_host)'];
       const servicePort = opts.port || 443;
@@ -86,11 +86,8 @@ export class GrpcClient {
       const rpcNamespace = method.parent.name;
       const rpcName = method.name;
 
-      // const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
+      const url = `${grpc_fallback_protocol}://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
 
-      const url = `http://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
-
-      // console.log(url);
       const fetchResult = await fetch(url, {
         headers,
         method: 'post',

@@ -66,6 +66,7 @@ class EchoClient {
     // Ensure that options include the service address and port.
     opts = Object.assign(
       {
+        protocol: 'http',
         clientConfig: {},
         port: 1337,
         servicePath: this.constructor.servicePath,

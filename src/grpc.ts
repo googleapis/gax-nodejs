@@ -76,6 +76,7 @@ export interface Metadata {
 export type GrpcModule = typeof grpc;
 
 export interface ClientStubOptions {
+  protocol?: string;
   servicePath: string;
   port: number;
   // TODO: use sslCreds?: grpc.ChannelCredentials;

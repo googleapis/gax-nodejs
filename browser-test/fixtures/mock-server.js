@@ -21,7 +21,7 @@ async function startServer() {
     const testDir = path.join(process.cwd(), '.kitchen-sink');
     const fallbackServerUrl = 'https://github.com/googleapis/gapic-showcase/releases/download/v0.2.4/gapic-showcase-0.2.4-linux-amd64.tar.gz'; 
     const linuxTarFile = 'gapic-showcase-0.2.4-linux-amd64.tar.gz';
-    const binaryName = 'gapic-showcase';
+    const binaryName = './gapic-showcase';
 
     await rmrf(testDir);
     await mkdir(testDir);
@@ -33,12 +33,11 @@ async function startServer() {
     await download(fallbackServerUrl, testDir);
     await tar.extract(
         {
-            // gzip: true,
             file: linuxTarFile,
         },
     );
 
-    grpcServer = execa('./' + binaryName, ['run'], {
+    grpcServer = execa(binaryName, ['run'], {
         cwd: testDir,
         stdio: 'inherit',
     });
