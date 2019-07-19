@@ -76,17 +76,27 @@ export class GrpcClient {
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
 
-      const grpc_fallback_protocol = opts.protocol || 'https'
-      const servicePath =
-        opts.servicePath || method.parent.options['(google.api.default_host)'];
+      const grpcFallbackProtocol = opts.protocol || 'https';
+      let servicePath = opts.servicePath;
+      if (!servicePath) {
+        if (service.options && service.options['(google.api.default_host)']) {
+          servicePath = service.options['(google.api.default_host)'];
+        } else {
+          callback(new Error('Service path is undefined'));
+          return;
+        }
+      }
       const servicePort = opts.port || 443;
-      const serviceName = method.parent.parent.options.java_package.replace(
-        /^com./, ''
-      );
-      const rpcNamespace = method.parent.name;
+      const serviceNameArray: string[] = [];
+      let currServicePart = method.parent;
+      while (currServicePart.name !== '') {
+        serviceNameArray.unshift(currServicePart.name);
+        currServicePart = currServicePart.parent;
+      }
+      const serviceName = serviceNameArray.join('.');
       const rpcName = method.name;
 
-      const url = `${grpc_fallback_protocol}://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
+      const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${serviceName}/${rpcName}`;
 
       const fetchResult = await fetch(url, {
         headers,
@@ -105,7 +115,7 @@ export class GrpcClient {
     const languageServiceStub = service.create(serviceClientImpl, false, false);
 
     const methods = this.getServiceMethods(service);
-    
+
     const newLanguageServiceStub = service.create(
       serviceClientImpl,
       false,
