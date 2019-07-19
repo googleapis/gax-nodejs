@@ -60,8 +60,8 @@ describe('createStub', () => {
 
     // The stub should consist of service methods
     expect(echoStub.echo).to.be.a('Function');
-    expect(echoStub.collect).to.be.a('Function');
-    expect(echoStub.chat).to.be.a('Function');
+    expect(echoStub.pagedExpand).to.be.a('Function');
+    expect(echoStub.wait).to.be.a('Function');
 
     // There should be 6 methods for the echo service (and 4 other methods in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);

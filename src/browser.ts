@@ -18,6 +18,8 @@ export {
   StreamDescriptor,
 } from './descriptor';
 
+export {StreamType} from './streamingCalls/streaming';
+
 export const ALL_SCOPES: string[] = [];
 lro.ALL_SCOPES = ALL_SCOPES;
 
@@ -74,16 +76,27 @@ export class GrpcClient {
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
 
-      const servicePath =
-        opts.servicePath || method.parent.options['(google.api.default_host)'];
+      const grpcFallbackProtocol = opts.protocol || 'https';
+      let servicePath = opts.servicePath;
+      if (!servicePath) {
+        if (service.options && service.options['(google.api.default_host)']) {
+          servicePath = service.options['(google.api.default_host)'];
+        } else {
+          callback(new Error('Service path is undefined'));
+          return;
+        }
+      }
       const servicePort = opts.port || 443;
-      const serviceName = method.parent.parent.options.java_package.substring(
-        4
-      );
-      const rpcNamespace = method.parent.name;
+      const serviceNameArray: string[] = [];
+      let currServicePart = method.parent;
+      while (currServicePart.name !== '') {
+        serviceNameArray.unshift(currServicePart.name);
+        currServicePart = currServicePart.parent;
+      }
+      const serviceName = serviceNameArray.join('.');
       const rpcName = method.name;
 
-      const url = `https://${servicePath}:${servicePort}/$rpc/${serviceName}.${rpcNamespace}/${rpcName}`;
+      const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${serviceName}/${rpcName}`;
 
       const fetchResult = await fetch(url, {
         headers,
