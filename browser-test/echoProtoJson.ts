@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2019 Google LLC
  * All rights reserved.
  *
@@ -8,7 +8,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
+ * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -29,31 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {APICaller} from '../apiCaller';
-import {Descriptor} from '../descriptor';
-import {CallSettings} from '../gax';
+// Manually created JSON object using the command:
+// mkdir pbjs-genfiles && npx pbjs -p protos
+// -p node_modules/google-gax/protos -t json -o pbjs-genfiles/echo-protos.json
+// protos/google/cloud/language/v1/echo.proto //(HAS TO BE CHANGED TO RIGHT FOLDER)
 
-import {StreamType} from './streaming';
-import {StreamingApiCaller} from './streamingApiCaller';
-
-/**
- * A descriptor for streaming calls.
- */
-export class StreamDescriptor implements Descriptor {
-  type: StreamType;
-  streaming: boolean; // needed for grpc-fallback
-
-  constructor(streamType: StreamType) {
-    this.type = streamType;
-    this.streaming = true;
-  }
-
-  getApiCaller(settings: CallSettings): APICaller {
-    // Right now retrying does not work with gRPC-streaming, because retryable
-    // assumes an API call returns an event emitter while gRPC-streaming methods
-    // return Stream.
-    // TODO: support retrying.
-    settings.retry = null;
-    return new StreamingApiCaller(this);
-  }
-}
+export const echoProtoJson = require('./fixtures/echo.json');
