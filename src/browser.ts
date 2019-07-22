@@ -9,8 +9,6 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 
-export {PathTemplate} from './pathTemplate';
-
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -25,6 +23,11 @@ export {StreamType} from './streamingCalls/streaming';
 export const ALL_SCOPES: string[] = [];
 lro.ALL_SCOPES = ALL_SCOPES;
 
+interface CancelHandler {
+  canceller: AbortController;
+  cancelRequested: boolean;
+}
+
 export class GrpcClient {
   auth: GoogleAuth;
   promise?: PromiseConstructor;
@@ -35,7 +38,6 @@ export class GrpcClient {
         'You need to pass auth instance to gRPC-fallback client. Use OAuth2Client from google-auth-library.'
       );
     }
-
     this.auth = options.auth;
     this.promise = 'promise' in options ? options.promise! : Promise;
   }
@@ -73,7 +75,16 @@ export class GrpcClient {
 
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     const authHeader = await this.auth.getRequestHeaders();
-    async function serviceClientImpl(method, requestData, callback) {
+    function serviceClientImpl(method, requestData, callback) {
+      let cancelController, cancelSignal;
+      if (typeof AbortController !== 'undefined') {
+        cancelController = new AbortController();
+        cancelSignal = cancelController.signal;
+      }
+      const cancelHandler: CancelHandler = {
+        canceller: cancelController,
+        cancelRequested: false,
+      };
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
@@ -100,22 +111,27 @@ export class GrpcClient {
 
       const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${serviceName}/${rpcName}`;
 
-      const fetchResult = await fetch(url, {
+      fetch(url, {
         headers,
         method: 'post',
         body: requestData,
-      });
-
-      if (!fetchResult.ok) {
-        callback(new Error(fetchResult.statusText));
-        return;
-      }
-      const responseArrayBuffer = await fetchResult.arrayBuffer();
-      callback(null, new Uint8Array(responseArrayBuffer));
+        signal: cancelSignal,
+      })
+        .then(response => {
+          return response.arrayBuffer();
+        })
+        .then(buffer => {
+          callback(null, new Uint8Array(buffer));
+        })
+        .catch(err => {
+          if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
+            throw err;
+          }
+        });
+      return cancelHandler;
     }
 
     const languageServiceStub = service.create(serviceClientImpl, false, false);
-
     const methods = this.getServiceMethods(service);
 
     const newLanguageServiceStub = service.create(
@@ -130,13 +146,24 @@ export class GrpcClient {
         metadata,
         callback
       ) => {
-        languageServiceStub[methodName].apply(languageServiceStub, [
-          req,
-          callback,
-        ]);
+        const cancelHandler = languageServiceStub[methodName].apply(
+          languageServiceStub,
+          [req, callback]
+        ) as CancelHandler;
+        return {
+          cancel: () => {
+            if (!cancelHandler.canceller) {
+              console.warn(
+                'AbortController not found: Cancellation is not supported in this environment'
+              );
+              return;
+            }
+            cancelHandler.cancelRequested = true;
+            cancelHandler.canceller.abort();
+          },
+        };
       };
     }
-
     return newLanguageServiceStub;
   }
 }
@@ -153,11 +180,15 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor
 ): GaxCall {
+<<<<<<< HEAD
   if (
     descriptor !== null &&
     typeof descriptor !== 'undefined' &&
     descriptor.constructor.name === 'StreamDescriptor'
   ) {
+=======
+  if (descriptor && descriptor.constructor.name === 'StreamDescriptor') {
+>>>>>>> 6e8f7aa002791d8c71432734f72b22125f398c75
     return () => {
       throw new Error(
         'The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls.'
