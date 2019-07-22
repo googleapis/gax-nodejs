@@ -40,14 +40,6 @@ const util = require('util');
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 
-
-function sleep(timeout) {
-    return new Promise(resolve => {
-        setTimeout(resolve, timeout);
-    });
-}
-
-
 async function startServer() {
     const testDir = path.join(process.cwd(), '.kitchen-sink');
     const platform = process.platform;
