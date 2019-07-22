@@ -17,4 +17,4 @@ package-lock.json
 __pycache__
 doc/
 dist/
-pbjs-genfiles/operations.json
+pbjs-genfiles/
