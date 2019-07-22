@@ -9,6 +9,7 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 
+export {PathTemplate} from './pathTemplate';
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -124,7 +125,9 @@ export class GrpcClient {
           callback(null, new Uint8Array(buffer));
         })
         .catch(err => {
+          console.log(err);
           if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
+            console.log('error2',err);
             throw err;
           }
         });
@@ -180,15 +183,11 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor
 ): GaxCall {
-<<<<<<< HEAD
   if (
     descriptor !== null &&
     typeof descriptor !== 'undefined' &&
     descriptor.constructor.name === 'StreamDescriptor'
   ) {
-=======
-  if (descriptor && descriptor.constructor.name === 'StreamDescriptor') {
->>>>>>> 6e8f7aa002791d8c71432734f72b22125f398c75
     return () => {
       throw new Error(
         'The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls.'

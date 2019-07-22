@@ -37,6 +37,7 @@ async function startServer() {
         },
     );
 
+    await sleep(10000);
     grpcServer = execa(binaryName, ['run'], {
         cwd: testDir,
         stdio: 'inherit',

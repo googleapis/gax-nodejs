@@ -26,7 +26,7 @@ describe('Run tests against gRPC server', () => {
 
     //TODO: Make sure server is up and running before starting tests, but
     //      without using sleep for some arbitrary amount of time
-    await sleep(10000);
+    // await sleep(10000);
     const request = {
       content: 'test',
     };
@@ -36,20 +36,21 @@ describe('Run tests against gRPC server', () => {
     // Code to make sure server is up before starting tests. Commented
     // out since it doesn't work quite yet
 
-    // for (let retryCount = 0; retryCount < MAX_RETRIES; ++retryCount) {
-    //     console.log('attempt #', retryCount);
-    //     try {
-    //         await client.echo(request);
-    //     }
-    //     catch (err) {
-    //         console.log('Still waiting for server...');
-    //         console.log(err);
-    //         await sleep(TIMEOUT);
-    //         continue;
-    //     }
-    //     console.log('Server is up and running');
-    //     break;
-    // }
+    for (let retryCount = 0; retryCount < MAX_RETRIES; ++retryCount) {
+        console.log('attempt #', retryCount);
+        try {
+            console.log('trying to send request');
+            await client.echo(request);
+        }
+        catch (err) {
+            console.log('Still waiting for server...');
+            console.log(err);
+            await sleep(TIMEOUT);
+            continue;
+        }
+        console.log('Server is up and running');
+        break;
+    }
   });
 
   it('should be able to call simple RPC methods', async () => {
