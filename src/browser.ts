@@ -9,6 +9,8 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 
+export {PathTemplate} from './pathTemplate';
+
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -152,6 +154,7 @@ export function createApiCall(
   descriptor?: Descriptor
 ): GaxCall {
   if (
+    descriptor !== null &&
     typeof descriptor !== 'undefined' &&
     descriptor.constructor.name === 'StreamDescriptor'
   ) {

@@ -6,10 +6,11 @@ import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import {GoogleAuth} from 'google-auth-library';
-
+import {ClientStubOptions} from './grpc';
 const configData = require('./operations_client_config');
 
 import {GrpcClient} from './browser';
+import {operation} from './longRunningCalls/longrunning';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -41,13 +42,13 @@ export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {createApiCall} from './createApiCall';
 
-export interface ClientStubOptions {
-  servicePath: string;
-  port: number;
-  // TODO: use sslCreds?: grpc.ChannelCredentials;
-  // tslint:disable-next-line no-any
-  sslCreds?: any;
-}
+// export interface ClientStubOptions {
+//   servicePath: string;
+//   port: number;
+//   // TODO: use sslCreds?: grpc.ChannelCredentials;
+//   // tslint:disable-next-line no-any
+//   sslCreds?: any;
+// }
 
 export class OperationsClient {
   auth: GoogleAuth;
@@ -84,7 +85,7 @@ export class OperationsClient {
     const service = grpcClients.lookupService('google.longrunning.Operations');
 
     const defaults = gaxGrpc.constructSettings(
-      'google.longrunning.operations',
+      'google.longrunning.Operations',
       configData,
       opts.clientConfig,
       {'x-goog-api-client': googleApiClient.join(' ')}
@@ -92,12 +93,14 @@ export class OperationsClient {
 
     this.auth = gaxGrpc.auth;
     const operationsStub = gaxGrpc.createStub(service, opts);
+
     const operationsStubMethods = [
       'getOperation',
       'listOperations',
       'cancelOperation',
       'deleteOperation',
     ];
+
     operationsStubMethods.forEach(methodName => {
       this['_' + methodName] = createApiCall(
         operationsStub.then(operationsStub => {
