@@ -166,10 +166,7 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor
 ): GaxCall {
-  if (
-    descriptor &&
-    descriptor.constructor.name === 'StreamDescriptor'
-  ) {
+  if (descriptor && descriptor.constructor.name === 'StreamDescriptor') {
     return () => {
       throw new Error(
         'The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls.'
