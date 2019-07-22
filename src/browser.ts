@@ -74,10 +74,7 @@ export class GrpcClient {
     const authHeader = await this.auth.getRequestHeaders();
     function serviceClientImpl(method, requestData, callback) {
       let cancelController, cancelSignal;
-      if (typeof AbortController === 'undefined') {
-        cancelController = undefined;
-        cancelSignal = undefined;
-      } else {
+      if (typeof AbortController !== 'undefined') {
         cancelController = new AbortController();
         cancelSignal = cancelController.signal;
       }
@@ -141,14 +138,14 @@ export class GrpcClient {
         ) as CancelHandler;
         return {
           cancel: () => {
-            if (cancelHandler.canceller === undefined) {
+            if (!cancelHandler.canceller) {
               console.warn(
                 'AbortController not found: Cancellation is not supported in this environment'
               );
-            } else {
-              cancelHandler.cancelRequested = true;
-              cancelHandler.canceller.abort();
+              return;
             }
+            cancelHandler.cancelRequested = true;
+            cancelHandler.canceller.abort();
           },
         };
       };
@@ -170,8 +167,7 @@ export function createApiCall(
   descriptor?: Descriptor
 ): GaxCall {
   if (
-    descriptor !== null &&
-    typeof descriptor !== 'undefined' &&
+    descriptor &&
     descriptor.constructor.name === 'StreamDescriptor'
   ) {
     return () => {
