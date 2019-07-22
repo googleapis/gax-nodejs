@@ -20,7 +20,11 @@ module.exports = {
             use: 'ts-loader',
             exclude: /node_modules/,
           },
+          {
+            test: /node_modules[\\\/]retry-request[\\\/]/,
+            use: 'null-loader',
+          }
         ],
       },
-    mode: 'development'
+    mode: 'production'
 }

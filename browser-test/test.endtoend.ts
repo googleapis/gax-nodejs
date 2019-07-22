@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {expect} from 'chai';
-import * as EchoClient from './fixtures/echo_client';
+import * as EchoClient from './echo_client';
 
 function sleep(timeout) {
   return new Promise(resolve => {

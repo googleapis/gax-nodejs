@@ -21,7 +21,6 @@
 // Use `npm run browser-test` to run browser tests with Karma.
 
 const isDocker = require('is-docker')();
-//const webpackConfig = require('./webpack-tests.config.js');
 
 const webpackConfig = require('./webpack.config.js');
 process.env.CHROME_BIN = require('puppeteer').executablePath();
@@ -37,14 +36,14 @@ module.exports = function(config) {
 
     client: {
       childProcess: {
-        path: './browser-test/fixtures/mock-server.js',
+        path: './browser-test/mock-server.js',
         args: [],
         options: {}
       }
     },
 
     // list of files / patterns to load in the browser
-    files: ['./browser-test/*.ts'],
+    files: ['./browser-test/test.*.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -52,9 +51,9 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      // './src/*.ts': ['coverage'],
-      // './src/**/*.ts': ['coverage'],
-      './browser-test/*.ts': ['webpack'], //, 'sourcemap'],
+      './src/*.ts': ['coverage'],
+      './src/**/*.ts': ['coverage'],
+      './browser-test/*.ts': ['webpack', 'sourcemap'],
     },
 
     webpack: webpackConfig,
