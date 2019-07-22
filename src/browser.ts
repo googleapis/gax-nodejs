@@ -164,22 +164,13 @@ export class GrpcClient {
     const serviceStub = service.create(serviceClientImpl, false, false);
     const methods = this.getServiceMethods(service);
 
-    const newServiceStub = service.create(
-      serviceClientImpl,
-      false,
-      false
-    );
+    const newServiceStub = service.create(serviceClientImpl, false, false);
     for (const methodName of methods) {
-      newServiceStub[methodName] = (
-        req,
-        options,
-        metadata,
-        callback
-      ) => {
-        const cancelHandler = serviceStub[methodName].apply(
-          serviceStub,
-          [req, callback]
-        ) as CancelHandler;
+      newServiceStub[methodName] = (req, options, metadata, callback) => {
+        const cancelHandler = serviceStub[methodName].apply(serviceStub, [
+          req,
+          callback,
+        ]) as CancelHandler;
         return {
           cancel: () => {
             if (!cancelHandler.canceller) {
