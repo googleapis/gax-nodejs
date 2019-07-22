@@ -4,7 +4,7 @@ module.exports = {
     entry: './src/browser.ts',
     output: {
       library: "Gax",
-      filename: "./main.js"
+      filename: "./gax.js"
     },
     resolve: {
       extensions: ['.ts', '.js', '.json'],
