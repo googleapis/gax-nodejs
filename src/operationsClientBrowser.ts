@@ -84,7 +84,7 @@ export class OperationsClient {
     const service = grpcClients.lookupService('google.longrunning.Operations');
 
     const defaults = gaxGrpc.constructSettings(
-      'google.longrunning.operations',
+      'google.longrunning.Operations',
       configData,
       opts.clientConfig,
       {'x-goog-api-client': googleApiClient.join(' ')}
