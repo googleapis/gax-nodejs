@@ -15,13 +15,12 @@
 'use strict';
 
 const gapicConfig = require('./echo_client_config.json');
-const gax = require('../../');
-const merge = require('lodash.merge');
+const gax = require('../');
 const path = require('path');
 const protobuf = require('protobufjs');
 
-const VERSION = require('../../package.json').version;
-const json = require('./echo.json');
+const VERSION = require('../package.json').version;
+const json = require('./fixtures/echo.json');
 
 /**
  * This service is used showcase the four main types of rpcs - unary, server
