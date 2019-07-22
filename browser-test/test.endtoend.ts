@@ -53,34 +53,28 @@ describe('Run tests against gRPC server', () => {
   const client = new EchoClient(opts);
 
   before(async function() {
-    this.timeout(30000);
+    this.timeout(40000);
 
-    //TODO: Make sure server is up and running before starting tests, but
-    //      without using sleep for some arbitrary amount of time
-    // await sleep(10000);
     const request = {
       content: 'test',
     };
     const MAX_RETRIES = 20;
     const TIMEOUT = 1000;
 
-    // Code to make sure server is up before starting tests. Commented
-    // out since it doesn't work quite yet
-
+    // Making sure server is up before starting tests.
     for (let retryCount = 0; retryCount < MAX_RETRIES; ++retryCount) {
-        console.log('attempt #', retryCount);
-        try {
-            console.log('trying to send request');
-            await client.echo(request);
-        }
-        catch (err) {
-            console.log('Still waiting for server...');
-            console.log(err);
-            await sleep(TIMEOUT);
-            continue;
-        }
-        console.log('Server is up and running');
-        break;
+      console.log('attempt #', retryCount);
+      try {
+        console.log('trying to send request');
+        await client.echo(request);
+      } catch (err) {
+        console.log('Still waiting for server...');
+        console.log(err);
+        await sleep(TIMEOUT);
+        continue;
+      }
+      console.log('Server is up and running');
+      break;
     }
   });
 

@@ -156,10 +156,8 @@ export class GrpcClient {
           callback(null, new Uint8Array(buffer));
         })
         .catch(err => {
-          console.log(err);
           if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
-            console.log('error2',err);
-            throw err;
+            callback(err);
           }
         });
       return cancelHandler;
