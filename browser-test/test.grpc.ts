@@ -1,8 +1,9 @@
 import * as assert from 'assert';
-import {expect} from 'chai';
 import * as protobuf from 'protobufjs';
-import {GrpcClient} from '../src/browser';
+import * as sinon from 'sinon';
 import {echoProtoJson} from './fixtures/echoProtoJson';
+import {expect} from 'chai';
+import {GrpcClient} from '../src/browser';
 
 const authStub = {
   getRequestHeaders() {
@@ -16,6 +17,22 @@ const opts = {
 
 // @ts-ignore incomplete options
 const gaxGrpc = new GrpcClient(opts);
+
+const createdAbortControllers = [];
+
+//tslint:disable-next-line variable-name
+const AbortController = function() {
+  // @ts-ignore
+  this.abort = function() {
+    // @ts-ignore
+    this.abortCalled = true;
+  };
+  // @ts-ignore
+  createdAbortControllers.push(this);
+};
+
+// @ts-ignore
+window.AbortController = AbortController;
 
 describe('loadProto', () => {
   it('should create a root object', () => {
@@ -89,5 +106,19 @@ describe('createStub', () => {
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
+  });
+
+  it('should be able to cancel an API call using AbortController', async () => {
+    const fakeFetch = sinon.fake.resolves(new Response());
+    sinon.replace(window, 'fetch', fakeFetch);
+
+    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
+    const request = {content: 'content' + new Date().toString()};
+    const a = echoStub.echo(request, {}, {}, (err, result) => {});
+
+    a.cancel();
+
+    // @ts-ignore
+    assert.strictEqual(createdAbortControllers[0].abortCalled, true);
   });
 });

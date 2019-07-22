@@ -8,7 +8,6 @@ import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
-
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -36,7 +35,6 @@ export class GrpcClient {
         'You need to pass auth instance to gRPC-fallback client. Use OAuth2Client from google-auth-library.'
       );
     }
-
     this.auth = options.auth;
     this.promise = 'promise' in options ? options.promise! : Promise;
   }
@@ -74,16 +72,19 @@ export class GrpcClient {
 
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     const authHeader = await this.auth.getRequestHeaders();
-
     function serviceClientImpl(method, requestData, callback) {
-      const cancelController = new AbortController();
-      const cancelSignal = cancelController.signal;
-
+      let cancelController, cancelSignal;
+      if (typeof AbortController === 'undefined') {
+        cancelController = undefined;
+        cancelSignal = undefined;
+      } else {
+        cancelController = new AbortController();
+        cancelSignal = cancelController.signal;
+      }
       const cancelHandler: CancelHandler = {
         canceller: cancelController,
         cancelRequested: false,
       };
-
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
       headers['User-Agent'] = 'testapp/1.0';
@@ -112,19 +113,14 @@ export class GrpcClient {
           callback(null, new Uint8Array(buffer));
         })
         .catch(err => {
-          if (
-            cancelHandler.cancelRequested === false &&
-            err.name !== 'AbortError'
-          ) {
+          if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
             throw err;
           }
         });
-
       return cancelHandler;
     }
 
     const languageServiceStub = service.create(serviceClientImpl, false, false);
-
     const methods = this.getServiceMethods(service);
 
     const newLanguageServiceStub = service.create(
@@ -145,13 +141,18 @@ export class GrpcClient {
         ) as CancelHandler;
         return {
           cancel: () => {
-            cancelHandler.canceller.abort();
-            cancelHandler.cancelRequested = true;
+            if (cancelHandler.canceller === undefined) {
+              console.warn(
+                'AbortController not found: Cancellation is not supported in this environment'
+              );
+            } else {
+              cancelHandler.cancelRequested = true;
+              cancelHandler.canceller.abort();
+            }
           },
         };
       };
     }
-
     return newLanguageServiceStub;
   }
 }
