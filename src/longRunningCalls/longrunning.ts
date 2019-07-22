@@ -94,6 +94,9 @@ export class Operation extends EventEmitter {
     this.completeListeners = 0;
     this.hasActiveListeners = false;
     this.latestResponse = grpcOp;
+    this.name = this.latestResponse.name;
+    this.done = this.latestResponse.done;
+    this.error = this.latestResponse.error;
     this.longrunningDescriptor = longrunningDescriptor;
     this.result = null;
     this.metadata = null;
@@ -218,6 +221,7 @@ export class Operation extends EventEmitter {
       if (op.result === 'error') {
         const error = new GoogleError(op.error!.message);
         error.code = op.error!.code;
+        this.error = error;
         if (callback) {
           callback(error);
         }
@@ -225,8 +229,10 @@ export class Operation extends EventEmitter {
       }
 
       if (responseDecoder && op.response) {
+        this.response = op.response;
         response = responseDecoder(op.response.value);
         this.result = response;
+        this.done = true;
       }
     }
 
