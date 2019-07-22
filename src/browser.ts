@@ -161,23 +161,23 @@ export class GrpcClient {
       return cancelHandler;
     }
 
-    const languageServiceStub = service.create(serviceClientImpl, false, false);
+    const serviceStub = service.create(serviceClientImpl, false, false);
     const methods = this.getServiceMethods(service);
 
-    const newLanguageServiceStub = service.create(
+    const newServiceStub = service.create(
       serviceClientImpl,
       false,
       false
     );
     for (const methodName of methods) {
-      newLanguageServiceStub[methodName] = (
+      newServiceStub[methodName] = (
         req,
         options,
         metadata,
         callback
       ) => {
-        const cancelHandler = languageServiceStub[methodName].apply(
-          languageServiceStub,
+        const cancelHandler = serviceStub[methodName].apply(
+          serviceStub,
           [req, callback]
         ) as CancelHandler;
         return {
@@ -194,7 +194,7 @@ export class GrpcClient {
         };
       };
     }
-    return newLanguageServiceStub;
+    return newServiceStub;
   }
 }
 
