@@ -62,7 +62,7 @@ describe('Run tests against gRPC server', () => {
     const TIMEOUT = 1000;
     let retryCount = 0;
     // Making sure server is up before starting tests.
-    for (retryCount; retryCount < MAX_RETRIES; ++retryCount) {
+    for (; retryCount < MAX_RETRIES; ++retryCount) {
       try {
         await client.echo(request);
       } catch (err) {
@@ -74,7 +74,9 @@ describe('Run tests against gRPC server', () => {
       break;
     }
     if (retryCount === MAX_RETRIES) {
-      throw new Error(`Aborting server tests since server hasn't come up yet`);
+      throw new Error(
+        `gapic-showcase server did not respond after ${MAX_RETRIES} attempts, aborting end-to-end browser tests`
+      );
     }
   });
 
