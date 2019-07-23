@@ -52,9 +52,6 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
-export const ALL_SCOPES: string[] = [];
-lro.ALL_SCOPES = ALL_SCOPES;
-
 interface CancelHandler {
   canceller: AbortController;
   cancelRequested: boolean;
@@ -82,12 +79,11 @@ export class GrpcClient {
   private getServiceMethods(service: protobuf.Service) {
     const methods = Object.keys(service.methods);
 
-    // Creating an array of all methods within the stub with correct case (i.e, first letter is lower-case)
-    const methodsCorrectCase = methods.map(method => {
+    const methodsLowerCamelCase = methods.map(method => {
       return method[0].toLowerCase() + method.substring(1);
     });
 
-    return methodsCorrectCase;
+    return methodsLowerCamelCase;
   }
 
   constructSettings(
@@ -119,7 +115,6 @@ export class GrpcClient {
       };
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
-      headers['User-Agent'] = 'testapp/1.0';
 
       const grpcFallbackProtocol = opts.protocol || 'https';
       let servicePath = opts.servicePath;
@@ -192,7 +187,7 @@ export class GrpcClient {
 }
 
 export function lro(options) {
-  options = Object.assign({scopes: lro.ALL_SCOPES}, options);
+  options = Object.assign({scopes: []}, options);
   const gaxGrpc = new GrpcClient(options);
   return new OperationsClientBuilder(gaxGrpc);
 }

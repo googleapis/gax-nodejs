@@ -81,7 +81,6 @@ export function retryable(
    */
   return (argument: RequestType, callback: APICallback) => {
     let canceller: GRPCCallResult | null;
-    // let timeoutId: NodeJS.Timer | null;
     let timeoutId: ReturnType<typeof setTimeout> | null;
     let now = new Date();
     let deadline: number;
