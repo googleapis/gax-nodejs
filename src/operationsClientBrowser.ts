@@ -101,7 +101,7 @@ export class OperationsClient {
     googleApiClient.push(
       CODE_GEN_NAME_VERSION,
       'gax/' + version,
-      'grpc/' + '0.4.3' // TODO: Add correct grpc client version dynamically into grpcClient
+      'grpc-fallback/' + '1.0.0' // TODO: Add correct grpc client version dynamically into grpcClient
     );
 
     const service = grpcClients.lookupService('google.longrunning.Operations');
