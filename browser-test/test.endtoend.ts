@@ -73,8 +73,8 @@ describe('Run tests against gRPC server', () => {
       console.log('Server is up and running');
       break;
     }
-    if (retryCount == MAX_RETRIES) {
-      throw `Aborting server tests since server hasn't come up yet`;
+    if (retryCount === MAX_RETRIES) {
+      throw new Error(`Aborting server tests since server hasn't come up yet`);
     }
   });
 
