@@ -60,8 +60,7 @@ export class BundleExecutor {
   _options: BundleOptions;
   _descriptor: BundleDescriptor;
   _tasks: {[index: string]: Task};
-  // _timers: {[index: string]: NodeJS.Timer };
-  _timers: {[index: string]: ReturnType<typeof setTimeout>};
+  _timers: {[index: string]: NodeJS.Timer};
   _invocations: {[index: string]: string};
   _invocationId: number;
   /**
@@ -204,7 +203,6 @@ export class BundleExecutor {
     }
 
     if (!(bundleId in this._timers) && this._options.delayThreshold > 0) {
-      // @ts-ignore
       this._timers[bundleId] = setTimeout(() => {
         delete this._timers[bundleId];
         this._runNow(bundleId);
