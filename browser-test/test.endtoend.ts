@@ -53,34 +53,31 @@ describe('Run tests against gRPC server', () => {
   const client = new EchoClient(opts);
 
   before(async function() {
-    this.timeout(30000);
+    this.timeout(40000);
 
-    //TODO: Make sure server is up and running before starting tests, but
-    //      without using sleep for some arbitrary amount of time
-    await sleep(10000);
     const request = {
       content: 'test',
     };
     const MAX_RETRIES = 20;
     const TIMEOUT = 1000;
-
-    // Code to make sure server is up before starting tests. Commented
-    // out since it doesn't work quite yet
-
-    // for (let retryCount = 0; retryCount < MAX_RETRIES; ++retryCount) {
-    //     console.log('attempt #', retryCount);
-    //     try {
-    //         await client.echo(request);
-    //     }
-    //     catch (err) {
-    //         console.log('Still waiting for server...');
-    //         console.log(err);
-    //         await sleep(TIMEOUT);
-    //         continue;
-    //     }
-    //     console.log('Server is up and running');
-    //     break;
-    // }
+    let retryCount = 0;
+    // Making sure server is up before starting tests.
+    for (; retryCount < MAX_RETRIES; ++retryCount) {
+      try {
+        await client.echo(request);
+      } catch (err) {
+        console.log('Still waiting for server...');
+        await sleep(TIMEOUT);
+        continue;
+      }
+      console.log('Server is up and running');
+      break;
+    }
+    if (retryCount === MAX_RETRIES) {
+      throw new Error(
+        `gapic-showcase server did not respond after ${MAX_RETRIES} attempts, aborting end-to-end browser tests`
+      );
+    }
   });
 
   it('should be able to call simple RPC methods', async () => {

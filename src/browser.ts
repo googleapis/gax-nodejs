@@ -39,6 +39,8 @@ import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
+
+export {PathTemplate} from './pathTemplate';
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -155,7 +157,7 @@ export class GrpcClient {
         })
         .catch(err => {
           if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
-            throw err;
+            callback(err);
           }
         });
       return cancelHandler;
