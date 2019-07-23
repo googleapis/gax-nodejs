@@ -23,6 +23,7 @@
 const isDocker = require('is-docker')();
 
 const webpackConfig = require('./webpack.config.js');
+webpackConfig.performance = { hints: false };
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function(config) {
