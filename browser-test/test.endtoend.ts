@@ -60,9 +60,9 @@ describe('Run tests against gRPC server', () => {
     };
     const MAX_RETRIES = 20;
     const TIMEOUT = 1000;
-
+    let retryCount = 0;
     // Making sure server is up before starting tests.
-    for (let retryCount = 0; retryCount < MAX_RETRIES; ++retryCount) {
+    for (retryCount; retryCount < MAX_RETRIES; ++retryCount) {
       try {
         await client.echo(request);
       } catch (err) {
@@ -72,6 +72,9 @@ describe('Run tests against gRPC server', () => {
       }
       console.log('Server is up and running');
       break;
+    }
+    if (retryCount == MAX_RETRIES) {
+      throw `Aborting server tests since server hasn't come up yet`;
     }
   });
 
