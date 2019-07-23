@@ -63,13 +63,10 @@ describe('Run tests against gRPC server', () => {
 
     // Making sure server is up before starting tests.
     for (let retryCount = 0; retryCount < MAX_RETRIES; ++retryCount) {
-      console.log('attempt #', retryCount);
       try {
-        console.log('trying to send request');
         await client.echo(request);
       } catch (err) {
         console.log('Still waiting for server...');
-        console.log(err);
         await sleep(TIMEOUT);
         continue;
       }

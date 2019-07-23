@@ -41,7 +41,6 @@ import {ClientStubOptions} from './grpc';
 const configData = require('./operations_client_config');
 
 import {GrpcClient} from './browser';
-import {operation} from './longRunningCalls/longrunning';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -72,14 +71,6 @@ export {
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {createApiCall} from './createApiCall';
-
-// export interface ClientStubOptions {
-//   servicePath: string;
-//   port: number;
-//   // TODO: use sslCreds?: grpc.ChannelCredentials;
-//   // tslint:disable-next-line no-any
-//   sslCreds?: any;
-// }
 
 export class OperationsClient {
   auth: GoogleAuth;
