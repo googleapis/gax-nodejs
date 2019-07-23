@@ -35,8 +35,8 @@ For detailed documentation of the modules in gax-nodejs, please check out the [d
 ## License
 BSD - See [LICENSE][license] for more information.
 
-[codecovimg]: https://codecov.io/github/googleapis/gax-nodejs/coverage.svg?branch=master
-[codecov]: https://codecov.io/github/googleapis/gax-nodejs?branch=master
+[codecovimg]: https://codecov.io/gh/googleapis/gax-nodejs/coverage.svg?branch=master
+[codecov]: https://codecov.io/gh/googleapis/gax-nodejs?branch=master
 [contributing]: https://github.com/googleapis/gax-nodejs/blob/master/CONTRIBUTING.md
 [docs]: http://googleapis.github.io/gax-nodejs/
 [license]: https://github.com/googleapis/gax-nodejs/blob/master/LICENSE
