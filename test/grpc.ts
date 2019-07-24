@@ -235,6 +235,17 @@ describe('grpc', () => {
       );
     });
 
+    it('should load the test file using single parameter syntax', () => {
+      const fullPath = path.join(TEST_PATH, TEST_FILE);
+      // no-any disabled because if the accessed fields are non-existent, this
+      // test will fail anyway.
+      // tslint:disable-next-line:no-any
+      const protos = grpcClient.loadProto(fullPath) as any;
+      expect(protos.google.example.library.v1.LibraryService).to.be.a(
+        'Function'
+      );
+    });
+
     it('should load a common proto', () => {
       const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
