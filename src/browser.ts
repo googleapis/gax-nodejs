@@ -126,16 +126,19 @@ export class GrpcClient {
           return;
         }
       }
-      let servicePort = opts.port;
-      if (!servicePort) {
-        if (service.options && service.options['(google.api.default_host)']) {
-          servicePort = service.options['google.api.default_host'].replace(
-            /^.*:/,
-            ''
-          );
-        } else {
-          servicePort = 443;
+      let servicePort;
+      if (service.options && service.options['(google.api.default_host)']) {
+        const match = service.options['(google.api.default_host)'].match(
+          /^(.*):(\d+)$/
+        );
+        if (match) {
+          servicePath = match[1];
+          servicePort = match[2];
         }
+      }
+      servicePort = opts.port;
+      if (!servicePort) {
+        servicePort = 443;
       }
       const protoNamespaces: string[] = [];
       let currNamespace = method.parent;
