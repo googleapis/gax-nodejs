@@ -127,17 +127,14 @@ export class GrpcClient {
         }
       }
       let servicePort;
-      if (service.options && service.options['(google.api.default_host)']) {
-        const match = service.options['(google.api.default_host)'].match(
-          /^(.*):(\d+)$/
-        );
-        if (match) {
-          servicePath = match[1];
-          servicePort = match[2];
-        }
+      const match = servicePath.match(/^(.*):(\d+)$/);
+      if (match) {
+        servicePath = match[1];
+        servicePort = match[2];
       }
-      servicePort = opts.port;
-      if (!servicePort) {
+      if (opts.port) {
+        servicePort = opts.port;
+      } else if (!servicePort) {
         servicePort = 443;
       }
       const protoNamespaces: string[] = [];
