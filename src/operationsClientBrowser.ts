@@ -138,7 +138,7 @@ export class OperationsClient {
 
   /**
    * Get the project ID used by this class.
-   * @aram {function(Error, string)} callback - the callback to be called with
+   * @param {function(Error, string)} callback - the callback to be called with
    *   the current project Id.
    */
   getProjectId(): Promise<string>;

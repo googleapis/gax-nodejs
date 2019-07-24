@@ -126,17 +126,27 @@ export class GrpcClient {
           return;
         }
       }
-      const servicePort = opts.port || 443;
-      const serviceNameArray: string[] = [];
-      let currServicePart = method.parent;
-      while (currServicePart.name !== '') {
-        serviceNameArray.unshift(currServicePart.name);
-        currServicePart = currServicePart.parent;
+      let servicePort = opts.port;
+      if (!servicePort) {
+        if (service.options && service.options['(google.api.default_host)']) {
+          servicePort = service.options['google.api.default_host'].replace(
+            /^.*:/,
+            ''
+          );
+        } else {
+          servicePort = 443;
+        }
       }
-      const serviceName = serviceNameArray.join('.');
+      const protoNamespaces: string[] = [];
+      let currNamespace = method.parent;
+      while (currNamespace.name !== '') {
+        protoNamespaces.unshift(currNamespace.name);
+        currNamespace = currNamespace.parent;
+      }
+      const protoServiceName = protoNamespaces.join('.');
       const rpcName = method.name;
 
-      const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${serviceName}/${rpcName}`;
+      const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
       fetch(url, {
         headers,
