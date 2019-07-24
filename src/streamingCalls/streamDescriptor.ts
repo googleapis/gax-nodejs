@@ -41,7 +41,7 @@ import {StreamingApiCaller} from './streamingApiCaller';
  */
 export class StreamDescriptor implements Descriptor {
   type: StreamType;
-  streaming: boolean; // needed for grpc-fallback
+  streaming: boolean; // needed for browser support
 
   constructor(streamType: StreamType) {
     this.type = streamType;

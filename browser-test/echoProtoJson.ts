@@ -34,5 +34,6 @@
 // -t json -o pbjs-genfiles/echo-protos.json
 // ../echo.proto
 // (NOTE: echo.proto was taken from gapic-showcase/schema/v1beta1
+//  commit hash: 74e71466e0d5badb3167900a553a6afea62b6e3d)
 
 export const echoProtoJson = require('./fixtures/echo.json');
