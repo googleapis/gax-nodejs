@@ -14,5 +14,6 @@ build
 package-lock.json
 .system-test-run/
 .kitchen-sink/
+.compileProtos-test/
 __pycache__
 doc/

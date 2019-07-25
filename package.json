@@ -8,6 +8,9 @@
     "build/src",
     "protos"
   ],
+  "bin": {
+    "compileProtos": "./build/tools/compileProtos.js"
+  },
   "dependencies": {
     "@grpc/grpc-js": "^0.5.2",
     "@grpc/proto-loader": "^0.5.1",
