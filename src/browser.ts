@@ -217,3 +217,6 @@ export function createApiCall(
   }
   return _createApiCall(func, settings, descriptor);
 }
+
+import * as protobuf from 'protobufjs';
+export {protobuf};
