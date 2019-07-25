@@ -30,11 +30,11 @@
 
 import {expect} from 'chai';
 import * as path from 'path';
-import * as protobuf from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as semver from 'semver';
 import * as sinon from 'sinon';
 
+import {protobuf} from '../src/index';
 import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
 
 function gaxGrpc(options?) {

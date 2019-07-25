@@ -77,3 +77,6 @@ lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 export {lro};
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
+
+import * as protobuf from 'protobufjs';
+export {protobuf};
