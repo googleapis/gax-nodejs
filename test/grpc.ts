@@ -30,11 +30,11 @@
 
 import {expect} from 'chai';
 import * as path from 'path';
-import * as protobuf from 'protobufjs';
 import * as proxyquire from 'proxyquire';
 import * as semver from 'semver';
 import * as sinon from 'sinon';
 
+import {protobuf} from '../src/index';
 import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
 
 function gaxGrpc(options?) {
@@ -230,6 +230,17 @@ describe('grpc', () => {
       // test will fail anyway.
       // tslint:disable-next-line:no-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
+      expect(protos.google.example.library.v1.LibraryService).to.be.a(
+        'Function'
+      );
+    });
+
+    it('should load the test file using single parameter syntax', () => {
+      const fullPath = path.join(TEST_PATH, TEST_FILE);
+      // no-any disabled because if the accessed fields are non-existent, this
+      // test will fail anyway.
+      // tslint:disable-next-line:no-any
+      const protos = grpcClient.loadProto(fullPath) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
       );

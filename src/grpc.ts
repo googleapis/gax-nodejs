@@ -168,10 +168,16 @@ export class GrpcClient {
    * when necessary.
    * @param {String} protoPath - The directory to search for the protofile.
    * @param {String|String[]} filename - The filename(s) of the proto(s) to be loaded.
+   *   If omitted, protoPath will be treated as a file path to load.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-  loadProto(protoPath: string, filename: string | string[]) {
+  loadProto(protoPath: string, filename?: string | string[]) {
+    if (!filename) {
+      filename = path.basename(protoPath);
+      protoPath = path.dirname(protoPath);
+    }
+
     if (Array.isArray(filename) && filename.length === 0) {
       return {};
     }
