@@ -61,6 +61,19 @@ export class GrpcClient {
   auth: GoogleAuth;
   promise?: PromiseConstructor;
 
+  /**
+   * Browser version of GrpcClient
+   * A class which keeps the context of gRPC and auth for the gRPC.
+   *
+   * @param {Object=} options.auth - An instance of google-auth-library.
+   * When specified, this auth instance will be used instead of creating
+   * a new one.
+   * @param {Function=} options.promise - A constructor for a promise that
+   * implements the ES6 specification of promise. If not provided, native
+   * promises will be used.
+   * @constructor
+   */
+
   constructor(options: GrpcClientOptions = {}) {
     if (!options.auth) {
       throw new Error(
@@ -71,6 +84,12 @@ export class GrpcClient {
     this.promise = 'promise' in options ? options.promise! : Promise;
   }
 
+  /**
+   * Browser version of loadProto
+   * Loads the gRPC service from a JSON object created from a proto file
+   * @param {Object} jsonObject - A JSON version of a protofile created usin protobufjs
+   * @returns {Object} Root namespace of proto JSON
+   */
   loadProto(jsonObject) {
     const rootObject = protobuf.Root.fromJSON(jsonObject);
     return rootObject;
@@ -86,6 +105,18 @@ export class GrpcClient {
     return methodsLowerCamelCase;
   }
 
+  /**
+   * Browser version of constructSettings
+   * A wrapper of {@link constructSettings} function under the gRPC context.
+   *
+   * Most of parameters are common among constructSettings, please take a look.
+   * @param {string} serviceName - The fullly-qualified name of the service.
+   * @param {Object} clientConfig - A dictionary of the client config.
+   * @param {Object} configOverrides - A dictionary of overriding configs.
+   * @param {Object} headers - A dictionary of additional HTTP header name to
+   *   its value.
+   * @return {Object} A mapping of method names to CallSettings.
+   */
   constructSettings(
     serviceName: string,
     clientConfig: gax.ClientConfig,
@@ -101,6 +132,21 @@ export class GrpcClient {
     );
   }
 
+
+  /**
+   * Browser version of createStub
+   * Creates a gRPC-fallback stub and auth
+   * @param {function} CreateStub - The constructor function of the stub.
+   * @param {Object} service - [TODO]
+   * @param {Object} options - The optional arguments to customize
+   *   gRPC connection. This options will be passed to the constructor of
+   *   gRPC client too.
+   * @param {string} options.servicePath - The name of the server of the service.
+   * @param {number} options.port - The port of the service.
+   * @param {grpcTypes.ClientCredentials=} options.sslCreds - The credentials to be used
+   *   to set up gRPC connection.
+   * @return {Promise} A promse which resolves to a gRPC stub instance.
+   */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     const authHeader = await this.auth.getRequestHeaders();
     function serviceClientImpl(method, requestData, callback) {
@@ -196,13 +242,45 @@ export class GrpcClient {
   }
 }
 
-export function lro(options) {
+/**
+ * Browser version of lro
+ * 
+ * @param {Object=} options.auth - An instance of google-auth-library.
+ * When specified, this auth instance will be used instead of creating
+ * a new one.
+ * @param {Function=} options.promise - A constructor for a promise that
+ * implements the ES6 specification of promise. If not provided, native
+ * promises will be used.
+ * @return {Object} A OperationsClientBuilder that will return a OperationsClient
+ */
+export function lro(options: GrpcClientOptions) {
   options = Object.assign({scopes: []}, options);
   const gaxGrpc = new GrpcClient(options);
   return new OperationsClientBuilder(gaxGrpc);
 }
 
-// Wrapper function to throw exceptions on unsupported streaming calls
+/**
+ * Browser version of createApiCall
+ * A wrapper of createApiCall to throw exceptions on unsupported streaming calls
+ * 
+ * Converts an rpc call into an API call governed by the settings.
+ *
+ * In typical usage, `func` will be a promise to a callable used to make an rpc
+ * request. This will mostly likely be a bound method from a request stub used
+ * to make an rpc call. It is not a direct function but a Promise instance,
+ * because of its asynchronism (typically, obtaining the auth information).
+ *
+ * The result is a function which manages the API call with the given settings
+ * and the options on the invocation.
+ *
+ * @param {Promise<GRPCCall>|GRPCCall} func - is either a promise to be used to make
+ *   a bare RPC call, or just a bare RPC call.
+ * @param {CallSettings} settings - provides the settings for this call
+ * @param {Descriptor} descriptor - optionally specify the descriptor for
+ *   the method call.
+ * @return {GaxCall} func - a bound method on a request stub used
+ *   to make an rpc call.
+ */
 export function createApiCall(
   func: Promise<GRPCCall> | GRPCCall,
   settings: gax.CallSettings,

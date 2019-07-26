@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2019 Google LLC
  * All rights reserved.
  *
@@ -8,7 +8,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -29,7 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as path from 'path';
 import * as gax from './gax';
 
 import {GaxCall} from './apitypes';
@@ -72,6 +71,25 @@ export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {createApiCall} from './createApiCall';
 
+/**
+ * Browser version of OperationsClient
+ * Manages long-running operations with an API service.
+ *
+ * When an API method normally takes long time to complete, it can be designed
+ * to return {@link Operation} to the client, and the client can use this
+ * interface to receive the real response asynchronously by polling the
+ * operation resource, or pass the operation resource to another API (such as
+ * Google Cloud Pub/Sub API) to receive the response.  Any API service that
+ * returns long-running operations should implement the `Operations` interface
+ * so developers can have a consistent client experience.
+ *
+ * This will be created through a builder function which can be obtained by the
+ * module. See the following example of how to initialize the module and how to
+ * access to the builder.
+ * @see {@link operationsClient}
+ *
+ * @class
+ */
 export class OperationsClient {
   auth: GoogleAuth;
   private _getOperation!: GaxCall;
@@ -408,7 +426,6 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient) {
-    const protoFilesRoot = path.join(__dirname, '..', '..');
     const jsonInput = require('../../pbjs-genfiles/operations.json');
     // tslint:disable-next-line no-any
     const operationsClient: any = gaxGrpc.loadProto(jsonInput);
