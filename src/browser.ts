@@ -63,14 +63,11 @@ export class GrpcClient {
 
   /**
    * Browser version of GrpcClient
-   * A class which keeps the context of gRPC and auth for the gRPC.
+   * Implements GrpcClient API for a browser using grpc-fallback protocol (sends serialized protobuf to HTTP/1 $rpc endpoint).
    *
    * @param {Object=} options.auth - An instance of google-auth-library.
-   * When specified, this auth instance will be used instead of creating
-   * a new one.
    * @param {Function=} options.promise - A constructor for a promise that
-   * implements the ES6 specification of promise. If not provided, native
-   * promises will be used.
+   * implements the ES6 specification of promise.
    * @constructor
    */
 
@@ -86,8 +83,8 @@ export class GrpcClient {
 
   /**
    * Browser version of loadProto
-   * Loads the gRPC service from a JSON object created from a proto file
-   * @param {Object} jsonObject - A JSON version of a protofile created usin protobufjs
+   * Loads the protobuf root object from a JSON object created from a proto file
+   * @param {Object} jsonObject - A JSON version of a protofile created usin protobuf.js
    * @returns {Object} Root namespace of proto JSON
    */
   loadProto(jsonObject) {
@@ -134,17 +131,14 @@ export class GrpcClient {
 
   /**
    * Browser version of createStub
-   * Creates a gRPC-fallback stub and auth
+   * Creates a gRPC-fallback stub with auth
+   *
    * @param {function} CreateStub - The constructor function of the stub.
-   * @param {Object} service - [TODO]
-   * @param {Object} options - The optional arguments to customize
-   *   gRPC connection. This options will be passed to the constructor of
-   *   gRPC client too.
-   * @param {string} options.servicePath - The name of the server of the service.
-   * @param {number} options.port - The port of the service.
-   * @param {grpcTypes.ClientCredentials=} options.sslCreds - The credentials to be used
-   *   to set up gRPC connection.
-   * @return {Promise} A promse which resolves to a gRPC stub instance.
+   * @param {Object} service - A protobufjs Service object (as returned by lookupService)
+   * @param {Object} opts - Connection options, as described below.
+   * @param {string} opts.servicePath - The hostname of the API endpoint service.
+   * @param {number} opts.port - The port of the service.
+   * @return {Promise} A promise which resolves to a gRPC-fallback service stub, which is a protobuf.js service stub instance modified to match the gRPC stub API
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     const authHeader = await this.auth.getRequestHeaders();
@@ -245,11 +239,8 @@ export class GrpcClient {
  * Browser version of lro
  *
  * @param {Object=} options.auth - An instance of google-auth-library.
- * When specified, this auth instance will be used instead of creating
- * a new one.
  * @param {Function=} options.promise - A constructor for a promise that
- * implements the ES6 specification of promise. If not provided, native
- * promises will be used.
+ * implements the ES6 specification of promise.
  * @return {Object} A OperationsClientBuilder that will return a OperationsClient
  */
 export function lro(options: GrpcClientOptions) {
@@ -260,7 +251,6 @@ export function lro(options: GrpcClientOptions) {
 
 /**
  * Browser version of createApiCall
- * A wrapper of createApiCall to throw exceptions on unsupported streaming calls
  *
  * Converts an rpc call into an API call governed by the settings.
  *
@@ -271,6 +261,8 @@ export function lro(options: GrpcClientOptions) {
  *
  * The result is a function which manages the API call with the given settings
  * and the options on the invocation.
+ *
+ * Throws exception on unsupported streaming calls
  *
  * @param {Promise<GRPCCall>|GRPCCall} func - is either a promise to be used to make
  *   a bare RPC call, or just a bare RPC call.
