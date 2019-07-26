@@ -132,7 +132,6 @@ export class GrpcClient {
     );
   }
 
-
   /**
    * Browser version of createStub
    * Creates a gRPC-fallback stub and auth
@@ -244,7 +243,7 @@ export class GrpcClient {
 
 /**
  * Browser version of lro
- * 
+ *
  * @param {Object=} options.auth - An instance of google-auth-library.
  * When specified, this auth instance will be used instead of creating
  * a new one.
@@ -262,7 +261,7 @@ export function lro(options: GrpcClientOptions) {
 /**
  * Browser version of createApiCall
  * A wrapper of createApiCall to throw exceptions on unsupported streaming calls
- * 
+ *
  * Converts an rpc call into an API call governed by the settings.
  *
  * In typical usage, `func` will be a promise to a callable used to make an rpc
