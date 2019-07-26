@@ -131,7 +131,7 @@ export class GrpcClient {
 
   /**
    * Browser version of createStub
-   * Creates a gRPC-fallback stub with auth
+   * Creates a gRPC-fallback stub with authentication headers built from supplied OAuth2Client instance
    *
    * @param {function} CreateStub - The constructor function of the stub.
    * @param {Object} service - A protobufjs Service object (as returned by lookupService)
