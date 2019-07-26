@@ -12,7 +12,7 @@
     "@grpc/grpc-js": "^0.5.2",
     "@grpc/proto-loader": "^0.5.1",
     "duplexify": "^3.6.0",
-    "google-auth-library": "^4.0.0",
+    "google-auth-library": "^5.0.0",
     "is-stream-ended": "^0.1.4",
     "lodash.at": "^4.6.0",
     "lodash.has": "^4.5.2",
