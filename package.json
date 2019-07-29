@@ -6,8 +6,12 @@
   "types": "build/src/index.d.ts",
   "files": [
     "build/src",
+    "build/tools/compileProtos.js",
     "protos"
   ],
+  "bin": {
+    "compileProtos": "./build/tools/compileProtos.js"
+  },
   "dependencies": {
     "@grpc/grpc-js": "^0.5.2",
     "@grpc/proto-loader": "^0.5.1",
@@ -44,7 +48,7 @@
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-node": "^9.0.0",
     "eslint-plugin-prettier": "^3.0.0",
-    "execa": "^1.0.0",
+    "execa": "^2.0.0",
     "file-loader": "^4.0.0",
     "fs-extra": "^8.0.0",
     "google-proto-files": "^1.0.0",
@@ -68,7 +72,7 @@
     "pegjs": "~0.10.0",
     "prettier": "^1.15.2",
     "proxyquire": "^2.0.1",
-    "pumpify": "^1.5.1",
+    "pumpify": "^2.0.0",
     "puppeteer": "^1.18.0",
     "rimraf": "^2.6.2",
     "sinon": "^7.0.0",
