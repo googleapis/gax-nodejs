@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.2.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.5...v1.2.0) (2019-07-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ^0.5.0 ([#548](https://www.github.com/googleapis/gax-nodejs/issues/548)) ([a431c63](https://www.github.com/googleapis/gax-nodejs/commit/a431c63))
+* **deps:** update dependency google-auth-library to v5 ([#552](https://www.github.com/googleapis/gax-nodejs/issues/552)) ([9c98083](https://www.github.com/googleapis/gax-nodejs/commit/9c98083))
+
+
+### Features
+
+* allow to pass just one file path to loadProto ([#543](https://www.github.com/googleapis/gax-nodejs/issues/543)) ([5429ad9](https://www.github.com/googleapis/gax-nodejs/commit/5429ad9))
+* compileProtos bin script ([#547](https://www.github.com/googleapis/gax-nodejs/issues/547)) ([1334c6d](https://www.github.com/googleapis/gax-nodejs/commit/1334c6d))
+* reexport protobufjs from gax ([#544](https://www.github.com/googleapis/gax-nodejs/issues/544)) ([b86a2c6](https://www.github.com/googleapis/gax-nodejs/commit/b86a2c6))
+
 ### [1.1.5](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.4...v1.1.5) (2019-07-13)
 
 ### Dependency upgrade
