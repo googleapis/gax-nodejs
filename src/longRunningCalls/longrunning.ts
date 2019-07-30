@@ -275,7 +275,7 @@ export class Operation extends EventEmitter {
       self.emit(event, ...args);
     }
 
-    //Helper function to replace nodejs.equals()
+    //Helper function to replace nodejs buffer's equals()
     function arrayEquals(a, b) {
       if (a.byteLength !== b.byteLength) {
         return false;
