@@ -114,7 +114,7 @@ async function compileProtos(protos: string[]): Promise<void> {
     '--target',
     'json',
     '-p',
-    path.join('node_modules', 'google-gax', 'protos'),
+    path.join(__dirname, '..', '..', 'protos'),
     '-p',
     'protos',
     '-o',
