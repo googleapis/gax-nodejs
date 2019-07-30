@@ -42,7 +42,7 @@ const writeFile = util.promisify(fs.writeFile);
 const stat = util.promisify(fs.stat);
 const pbjsMain = util.promisify(pbjs.main);
 
-const PROTO_LIST_REGEX = /_proto_list.json$/;
+const PROTO_LIST_REGEX = /_proto_list\.json$/;
 
 /**
  * Recursively scans directories starting from `directory` and finds all files
