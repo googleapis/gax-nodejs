@@ -31,6 +31,7 @@
 
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
+import * as routingHeader from './routingHeader';
 import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
 import {GoogleAuth} from 'google-auth-library';
@@ -41,6 +42,7 @@ import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 
 export {PathTemplate} from './pathTemplate';
+export {routingHeader};
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -59,6 +61,7 @@ interface CancelHandler {
 
 export class GrpcClient {
   auth: GoogleAuth;
+  otherArgs: Object[];
   promise?: PromiseConstructor;
 
   /**
@@ -78,6 +81,7 @@ export class GrpcClient {
       );
     }
     this.auth = options.auth;
+    this.otherArgs = [];
     this.promise = 'promise' in options ? options.promise! : Promise;
   }
 
@@ -118,13 +122,33 @@ export class GrpcClient {
     serviceName: string,
     clientConfig: gax.ClientConfig,
     configOverrides: gax.ClientConfig,
-    headers: OutgoingHttpHeaders
+    headers: OutgoingHttpHeaders,
+    otherArgs?: {}
   ) {
+    function buildMetadata(abTests, moreHeaders) {
+      let metadata = {};
+      if (moreHeaders) {
+        for (const key in moreHeaders) {
+          if (key.toLowerCase() !== 'x-goog-api-client' &&
+              moreHeaders.hasOwnProperty(key)) {
+                const value = moreHeaders[key];
+                if(Array.isArray(value)) {
+                  value.forEach(v => { metadata[key] = v; });
+                } else {
+                  metadata[key] = value;
+                }
+          }
+        }
+      }
+      return metadata;
+    }
+
     return gax.constructSettings(
       serviceName,
       clientConfig,
       configOverrides,
       Status,
+      {metadataBuilder: buildMetadata},
       this.promise
     );
   }
@@ -142,6 +166,7 @@ export class GrpcClient {
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     const authHeader = await this.auth.getRequestHeaders();
+    const otherArgs = this.otherArgs;
     function serviceClientImpl(method, requestData, callback) {
       let cancelController, cancelSignal;
       if (typeof AbortController !== 'undefined') {
@@ -154,6 +179,12 @@ export class GrpcClient {
       };
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
+      const methodName = method.name[0].toLowerCase() + method.name.substring(1);
+      if(otherArgs[methodName]) {
+        for (const key in otherArgs[methodName]) {
+          headers[key] = otherArgs[methodName][key];
+        }
+      }
 
       const grpcFallbackProtocol = opts.protocol || 'https';
       let servicePath = opts.servicePath;
@@ -213,6 +244,7 @@ export class GrpcClient {
     const newServiceStub = service.create(serviceClientImpl, false, false);
     for (const methodName of methods) {
       newServiceStub[methodName] = (req, options, metadata, callback) => {
+        this.otherArgs[methodName] = options;
         const cancelHandler = serviceStub[methodName].apply(serviceStub, [
           req,
           callback,
