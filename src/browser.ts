@@ -61,7 +61,7 @@ interface CancelHandler {
 
 export class GrpcClient {
   auth: GoogleAuth;
-  otherArgs: Object[];
+  otherArgs: [];
   promise?: PromiseConstructor;
 
   /**
@@ -122,21 +122,24 @@ export class GrpcClient {
     serviceName: string,
     clientConfig: gax.ClientConfig,
     configOverrides: gax.ClientConfig,
-    headers: OutgoingHttpHeaders,
-    otherArgs?: {}
+    headers: OutgoingHttpHeaders
   ) {
     function buildMetadata(abTests, moreHeaders) {
-      let metadata = {};
+      const metadata = {};
       if (moreHeaders) {
         for (const key in moreHeaders) {
-          if (key.toLowerCase() !== 'x-goog-api-client' &&
-              moreHeaders.hasOwnProperty(key)) {
-                const value = moreHeaders[key];
-                if(Array.isArray(value)) {
-                  value.forEach(v => { metadata[key] = v; });
-                } else {
-                  metadata[key] = value;
-                }
+          if (
+            key.toLowerCase() !== 'x-goog-api-client' &&
+            moreHeaders.hasOwnProperty(key)
+          ) {
+            const value = moreHeaders[key];
+            if (Array.isArray(value)) {
+              value.forEach(v => {
+                metadata[key] = v;
+              });
+            } else {
+              metadata[key] = value;
+            }
           }
         }
       }
@@ -179,9 +182,10 @@ export class GrpcClient {
       };
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
-      const methodName = method.name[0].toLowerCase() + method.name.substring(1);
-      if(otherArgs[methodName]) {
-        for (const key in otherArgs[methodName]) {
+      const methodName =
+        method.name[0].toLowerCase() + method.name.substring(1);
+      if (otherArgs[methodName]) {
+        for (const key of Object.keys(otherArgs[methodName])) {
           headers[key] = otherArgs[methodName][key];
         }
       }
