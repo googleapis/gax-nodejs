@@ -10,7 +10,7 @@ module.exports = {
       extensions: ['.ts', '.js', '.json'],
       alias: {
         '../../package.json': path.resolve(__dirname, 'package.json'),
-        '../../pbjs-genfiles/operations.json': path.resolve(__dirname, 'pbjs-genfiles/operations.json'),
+        '../../protos/operations.json': path.resolve(__dirname, 'protos/operations.json'),
       },
     },
     module: {

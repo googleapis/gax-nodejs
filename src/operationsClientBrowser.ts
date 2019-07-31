@@ -426,7 +426,7 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient) {
-    const jsonInput = require('../../pbjs-genfiles/operations.json');
+    const jsonInput = require('../../protos/operations.json');
     // tslint:disable-next-line no-any
     const operationsClient: any = gaxGrpc.loadProto(jsonInput);
     Object.assign(this, operationsClient.nested.google.nested.longrunnings);
