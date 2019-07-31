@@ -16,6 +16,9 @@
 // for browser usage. It will eventually be replaced with a gapic-generator
 // client with no manual modifications.
 
+// TODO: Merge Echo client for browser usage and for Node usage into one after
+//       relevant gapic-generator changes have been made 
+
 'use strict';
 
 const gapicConfig = require('./echo_client_config.json');
