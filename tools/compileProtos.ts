@@ -38,10 +38,11 @@ import * as pbjs from 'protobufjs/cli/pbjs';
 
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
+const writeFile = util.promisify(fs.writeFile);
 const stat = util.promisify(fs.stat);
 const pbjsMain = util.promisify(pbjs.main);
 
-const PROTO_LIST_REGEX = /_proto_list.json$/;
+const PROTO_LIST_REGEX = /_proto_list\.json$/;
 
 /**
  * Recursively scans directories starting from `directory` and finds all files
@@ -97,20 +98,27 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
 
 /**
  * Runs `pbjs` to compile the given proto files, placing the result into
- * `./protos/protos.json`.
+ * `./protos/protos.json`. No support for changing output filename for now
+ * (but it's a TODO!)
  *
  * @param {string[]} protos List of proto files to compile.
  */
 async function compileProtos(protos: string[]): Promise<void> {
+  const output = path.join('protos', 'protos.json');
+  if (protos.length === 0) {
+    // no input file, just emit an empty object
+    await writeFile(output, '{}');
+    return;
+  }
   const pbjsArgs = [
     '--target',
     'json',
     '-p',
-    path.join('node_modules', 'google-gax', 'protos'),
+    path.join(__dirname, '..', '..', 'protos'),
     '-p',
     'protos',
     '-o',
-    path.join('protos', 'protos.json'),
+    output,
   ];
   pbjsArgs.push(...protos);
   await pbjsMain(pbjsArgs);

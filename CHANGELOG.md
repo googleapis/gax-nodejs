@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.2.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.2.0...v1.2.1) (2019-07-31)
+
+
+### Bug Fixes
+
+* compileProtos should not fail if no protos are given ([#555](https://www.github.com/googleapis/gax-nodejs/issues/555)) ([4cf8efd](https://www.github.com/googleapis/gax-nodejs/commit/4cf8efd))
+
 ## [1.2.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.1.5...v1.2.0) (2019-07-29)
 
 
