@@ -11,7 +11,7 @@
     "test": "mocha system-test"
   },
   "dependencies": {
-    "google-gax": "^1.2.0"
+    "google-gax": "^1.2.1"
   },
   "devDependencies": {
     "mocha": "^6.0.0"
