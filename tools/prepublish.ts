@@ -46,7 +46,7 @@ const subdirs = [
 ];
 
 async function main() {
-  await fs.remove('protos');
+  await fs.remove(path.join('protos', 'google'));
   await fs.ensureDir(path.join('protos', 'google'));
 
   subdirs.forEach(async subdir => {
