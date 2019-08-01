@@ -275,6 +275,17 @@ export class Operation extends EventEmitter {
       self.emit(event, ...args);
     }
 
+    //Helper function to replace nodejs buffer's equals()
+    function arrayEquals(a, b) {
+      if (a.byteLength !== b.byteLength) {
+        return false;
+      }
+      for (let i = a.length; -1 < i; i -= 1) {
+        if (a[i] !== b[i]) return false;
+      }
+      return true;
+    }
+
     function retry() {
       if (!self.hasActiveListeners) {
         return;
@@ -299,7 +310,11 @@ export class Operation extends EventEmitter {
           if (
             rawResponse!.metadata &&
             (!previousMetadataBytes ||
-              !rawResponse!.metadata!.value.equals(previousMetadataBytes))
+              (rawResponse &&
+                !arrayEquals(
+                  rawResponse.metadata.value,
+                  previousMetadataBytes
+                )))
           ) {
             setImmediate(emit, 'progress', metadata, rawResponse);
             previousMetadataBytes = rawResponse!.metadata!.value;

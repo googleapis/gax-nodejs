@@ -29,17 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {GoogleAuth} from 'google-auth-library';
-import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import * as path from 'path';
+import * as gax from './gax';
 
-import {GaxCall, APICallback} from './apitypes';
+import {GaxCall} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
-import * as gax from './gax';
-import {ClientStubOptions, GrpcClient} from './grpc';
-
+import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
+import {GoogleAuth} from 'google-auth-library';
+import {ClientStubOptions} from './grpc';
 const configData = require('./operations_client_config');
+
+import {GrpcClient} from './browser';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -54,19 +54,25 @@ const PAGE_DESCRIPTORS = {
   ),
 };
 
-/**
- * The scopes needed to make gRPC calls to all of the methods defined in
- * this service.
- */
-export const ALL_SCOPES: string[] = [];
-
 export interface OperationsClientOptions {
   libName?: string;
   libVersion?: string;
   clientConfig: gax.ClientConfig;
 }
 
+export {
+  BundleDescriptor,
+  LongrunningDescriptor,
+  PageDescriptor,
+  StreamDescriptor,
+} from './descriptor';
+
+export {CallSettings, constructSettings, RetryOptions} from './gax';
+
+export {createApiCall} from './createApiCall';
+
 /**
+ * Browser version of OperationsClient
  * Manages long-running operations with an API service.
  *
  * When an API method normally takes long time to complete, it can be designed
@@ -113,8 +119,10 @@ export class OperationsClient {
     googleApiClient.push(
       CODE_GEN_NAME_VERSION,
       'gax/' + version,
-      'grpc/' + gaxGrpc.grpcVersion
+      'grpc-fallback/' + '1.0.0'
     );
+
+    const service = grpcClients.lookupService('google.longrunning.Operations');
 
     const defaults = gaxGrpc.constructSettings(
       'google.longrunning.Operations',
@@ -124,16 +132,15 @@ export class OperationsClient {
     );
 
     this.auth = gaxGrpc.auth;
-    const operationsStub = gaxGrpc.createStub(
-      grpcClients.google.longrunning.Operations,
-      opts
-    );
+    const operationsStub = gaxGrpc.createStub(service, opts);
+
     const operationsStubMethods = [
       'getOperation',
       'listOperations',
       'cancelOperation',
       'deleteOperation',
     ];
+
     operationsStubMethods.forEach(methodName => {
       this['_' + methodName] = createApiCall(
         operationsStub.then(operationsStub => {
@@ -419,13 +426,10 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient) {
-    const protoFilesRoot = path.join(__dirname, '..', '..');
+    const jsonInput = require('../../protos/operations.json');
     // tslint:disable-next-line no-any
-    const operationsClient: any = gaxGrpc.loadProto(
-      protoFilesRoot,
-      'google/longrunning/operations.proto'
-    );
-    Object.assign(this, operationsClient.google.longrunning);
+    const operationsClient: any = gaxGrpc.loadProto(jsonInput);
+    Object.assign(this, operationsClient.nested.google.nested.longrunnings);
 
     /**
      * Build a new instance of {@link OperationsClient}.

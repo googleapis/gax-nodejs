@@ -76,6 +76,7 @@ export interface Metadata {
 export type GrpcModule = typeof grpc;
 
 export interface ClientStubOptions {
+  protocol?: string;
   servicePath: string;
   port: number;
   // TODO: use sslCreds?: grpc.ChannelCredentials;
@@ -284,7 +285,7 @@ export class GrpcClient {
    * @param {number} options.port - The port of the service.
    * @param {grpcTypes.ClientCredentials=} options.sslCreds - The credentials to be used
    *   to set up gRPC connection.
-   * @return {Promise} A promse which resolves to a gRPC stub instance.
+   * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {

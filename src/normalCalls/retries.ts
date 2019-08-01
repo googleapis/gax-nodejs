@@ -81,7 +81,7 @@ export function retryable(
    */
   return (argument: RequestType, callback: APICallback) => {
     let canceller: GRPCCallResult | null;
-    let timeoutId: NodeJS.Timer | null;
+    let timeoutId: ReturnType<typeof setTimeout> | null;
     let now = new Date();
     let deadline: number;
     if (retry.backoffSettings.totalTimeoutMillis) {
@@ -128,6 +128,7 @@ export function retryable(
           callback(err);
         } else {
           const toSleep = Math.random() * delay;
+          // @ts-ignore
           timeoutId = setTimeout(() => {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
