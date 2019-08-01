@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.3.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.2.1...v1.3.0) (2019-08-01)
+
+
+### Features
+
+* making `google-gax` work in browser with `webpack` ([#554](https://www.github.com/googleapis/gax-nodejs/issues/554)) ([3690ab1](https://www.github.com/googleapis/gax-nodejs/commit/3690ab1))
+
 ### [1.2.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.2.0...v1.2.1) (2019-07-31)
 
 
