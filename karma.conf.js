@@ -35,7 +35,7 @@
 const isDocker = require('is-docker')();
 
 const webpackConfig = require('./webpack.config.js');
-webpackConfig.performance = { hints: false };
+webpackConfig.performance = {hints: false};
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function(config) {
@@ -49,10 +49,10 @@ module.exports = function(config) {
 
     client: {
       childProcess: {
-        path: './browser-test/mock-server.js',
+        path: './build/system-test/showcase-server.js',
         args: [],
-        options: {}
-      }
+        options: {},
+      },
     },
 
     // list of files / patterns to load in the browser

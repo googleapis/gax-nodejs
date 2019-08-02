@@ -29,19 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-const execa = require('execa');
-const download = require('download');
-const fs = require('fs');
-const path = require('path');
-const rimraf = require('rimraf');
-const tar = require('tar');
-const util = require('util');
+import * as execa from 'execa';
+import * as download from 'download';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as rimraf from 'rimraf';
+import * as tar from 'tar';
+import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 
-async function startServer() {
-    const testDir = path.join(process.cwd(), '.kitchen-sink');
+export class ShowcaseServer {
+  server: execa.ExecaChildProcess | undefined;
+
+  async start() {
+    const testDir = path.join(process.cwd(), '.showcase-server-dir');
     const platform = process.platform;
     const arch = process.arch === 'x64' ? 'amd64' : process.arch;
     const showcaseVersion = process.env['SHOWCASE_VERSION'] || '0.2.4';
@@ -54,30 +57,41 @@ async function startServer() {
     process.chdir(testDir);
     console.log(`Server will be run from ${testDir}.`);
 
-    // Downloading the fallback tar file and extracting the binary,
-    // assuming that we're running tests on Linux
     await download(fallbackServerUrl, testDir);
-    await tar.extract(
-        {
-            file: tarballFilename,
-        },
-    );
-
-    grpcServer = execa(binaryName, ['run'], {
-        cwd: testDir,
-        stdio: 'inherit',
+    await tar.extract({
+      file: tarballFilename,
     });
 
-    console.log('gRPC server is started.');
+    const childProcess = execa(binaryName, ['run'], {
+      cwd: testDir,
+      stdio: 'inherit',
+    });
 
-    grpcServer.then(
-        () => {
-            throw new Error('gRPC server is not supposed to exit normally!');
-        },
-        () => {
-            console.log('gRPC server is terminated.');
-        }
+    console.log('gRPC/gRPC-fallback server is started.');
+
+    childProcess.then(
+      () => {
+        throw new Error(
+          'gRPC server is not supposed to exit normally - just kill it from the test!'
+        );
+      },
+      () => {
+        console.log('gRPC server is terminated.');
+      }
     );
+
+    this.server = childProcess;
+  }
+
+  stop() {
+    if (!this.server) {
+      throw new Error(`Cannot kill the server, it's not started.`);
+    }
+    this.server.kill();
+  }
 }
 
-startServer();
+if (require.main === module) {
+  const server = new ShowcaseServer();
+  server.start();
+}

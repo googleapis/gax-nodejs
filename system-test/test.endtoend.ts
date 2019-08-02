@@ -36,13 +36,12 @@ import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
 
+import {ShowcaseServer} from './showcase-server';
+
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 const ncpp = util.promisify(ncp);
 
-// gapic-showcase contains sample gRPC server written in TypeScript that we will
-// use in this test
-const showcaseRepoUrl = 'https://github.com/googleapis/gapic-showcase';
 const testDir = path.join(process.cwd(), '.kitchen-sink');
 const gaxDir = path.resolve(__dirname, '..', '..');
 const fixturesDir = path.join(gaxDir, 'system-test', 'fixtures');
@@ -59,39 +58,16 @@ const testAppSource = path.join(fixturesDir, testAppName);
 const testAppDestination = path.join(testDir, testAppName);
 
 describe('Run end-to-end test', () => {
-  let grpcServer: execa.ExecaChildProcess;
+  const grpcServer = new ShowcaseServer();
   before(async () => {
-    console.log('Packing google-gax...');
     await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
-
     if (!fs.existsSync(gaxTarball)) {
       throw new Error(`npm pack tarball ${gaxTarball} does not exist`);
     }
     await rmrf(testDir);
     await mkdir(testDir);
     process.chdir(testDir);
-    console.log(`Running tests in ${testDir}.`);
-
-    const showcasePath = path.join(testDir, 'gapic-showcase');
-    const grpcServerPath = path.join(showcasePath, 'nodejs-server');
-    await execa('git', ['clone', showcaseRepoUrl, 'gapic-showcase'], {
-      cwd: testDir,
-      stdio: 'inherit',
-    });
-    await execa('npm', ['install'], {cwd: grpcServerPath, stdio: 'inherit'});
-    grpcServer = execa('node', ['build/src/index.js'], {
-      cwd: grpcServerPath,
-      stdio: 'inherit',
-    });
-    console.log('gRPC server is started.');
-    grpcServer.then(
-      () => {
-        throw new Error('gRPC server is not supposed to exit normally!');
-      },
-      () => {
-        console.log('gRPC server is terminated.');
-      }
-    );
+    await grpcServer.start();
   });
 
   it('should be able to prepare test app', async () => {
@@ -112,6 +88,6 @@ describe('Run end-to-end test', () => {
   });
 
   after(async () => {
-    grpcServer.kill();
+    grpcServer.stop();
   });
 });

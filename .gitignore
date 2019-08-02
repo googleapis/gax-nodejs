@@ -14,7 +14,9 @@ build
 package-lock.json
 .system-test-run/
 .kitchen-sink/
+.showcase-server-dir/
 .compileProtos-test/
 __pycache__
 doc/
 dist/
+google-gax-*.tgz
