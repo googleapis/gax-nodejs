@@ -39,6 +39,7 @@ import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
+import {isBrowser} from './isbrowser';
 
 export {PathTemplate} from './pathTemplate';
 export {CallSettings, constructSettings, RetryOptions} from './gax';
@@ -155,7 +156,7 @@ export class GrpcClient {
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
 
-      const grpcFallbackProtocol = opts.protocol || 'https';
+      const grpcFallbackProtocol = opts.protocol || 'http';
       let servicePath = opts.servicePath;
       if (!servicePath) {
         if (service.options && service.options['(google.api.default_host)']) {
@@ -187,6 +188,8 @@ export class GrpcClient {
 
       const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
+      const nodeFetch = require('node-fetch');
+      const fetch = isBrowser() ? window.fetch : nodeFetch;
       fetch(url, {
         headers,
         method: 'post',
