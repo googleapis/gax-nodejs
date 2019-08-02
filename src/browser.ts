@@ -156,7 +156,7 @@ export class GrpcClient {
       const headers = Object.assign({}, authHeader);
       headers['Content-Type'] = 'application/x-protobuf';
 
-      const grpcFallbackProtocol = opts.protocol || 'http';
+      const grpcFallbackProtocol = opts.protocol || 'https';
       let servicePath = opts.servicePath;
       if (!servicePath) {
         if (service.options && service.options['(google.api.default_host)']) {
