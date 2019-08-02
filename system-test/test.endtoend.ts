@@ -42,8 +42,6 @@ const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 const ncpp = util.promisify(ncp);
 
-// gapic-showcase contains sample gRPC server written in TypeScript that we will
-// use in this test
 const testDir = path.join(process.cwd(), '.kitchen-sink');
 const gaxDir = path.resolve(__dirname, '..', '..');
 const fixturesDir = path.join(gaxDir, 'system-test', 'fixtures');
