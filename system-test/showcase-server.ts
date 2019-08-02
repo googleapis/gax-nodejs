@@ -41,54 +41,57 @@ const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 
 export class ShowcaseServer {
-    server: execa.ExecaChildProcess | undefined;
+  server: execa.ExecaChildProcess | undefined;
 
-    async start() {
-        const testDir = path.join(process.cwd(), '.showcase-server-dir');
-        const platform = process.platform;
-        const arch = process.arch === 'x64' ? 'amd64' : process.arch;
-        const showcaseVersion = process.env['SHOWCASE_VERSION'] || '0.2.4';
-        const tarballFilename = `gapic-showcase-${showcaseVersion}-${platform}-${arch}.tar.gz`;
-        const fallbackServerUrl = `https://github.com/googleapis/gapic-showcase/releases/download/v${showcaseVersion}/${tarballFilename}`;
-        const binaryName = './gapic-showcase';
-    
-        await rmrf(testDir);
-        await mkdir(testDir);
-        process.chdir(testDir);
-        console.log(`Server will be run from ${testDir}.`);
-    
-        await download(fallbackServerUrl, testDir);
-        await tar.extract(
-            {
-                file: tarballFilename,
-            },
+  async start() {
+    const testDir = path.join(process.cwd(), '.showcase-server-dir');
+    const platform = process.platform;
+    const arch = process.arch === 'x64' ? 'amd64' : process.arch;
+    const showcaseVersion = process.env['SHOWCASE_VERSION'] || '0.2.4';
+    const tarballFilename = `gapic-showcase-${showcaseVersion}-${platform}-${arch}.tar.gz`;
+    const fallbackServerUrl = `https://github.com/googleapis/gapic-showcase/releases/download/v${showcaseVersion}/${tarballFilename}`;
+    const binaryName = './gapic-showcase';
+
+    await rmrf(testDir);
+    await mkdir(testDir);
+    process.chdir(testDir);
+    console.log(`Server will be run from ${testDir}.`);
+
+    await download(fallbackServerUrl, testDir);
+    await tar.extract({
+      file: tarballFilename,
+    });
+
+    const childProcess = execa(binaryName, ['run'], {
+      cwd: testDir,
+      stdio: 'inherit',
+    });
+
+    console.log('gRPC/gRPC-fallback server is started.');
+
+    childProcess.then(
+      () => {
+        throw new Error(
+          'gRPC server is not supposed to exit normally - just kill it from the test!'
         );
-    
-        const childProcess = execa(binaryName, ['run'], {
-            cwd: testDir,
-            stdio: 'inherit',
-        });
-    
-        console.log('gRPC/gRPC-fallback server is started.');
-    
-        childProcess.then(() => {
-            throw new Error('gRPC server is not supposed to exit normally - just kill it from the test!');
-        }, () => {
-            console.log('gRPC server is terminated.');
-        });
+      },
+      () => {
+        console.log('gRPC server is terminated.');
+      }
+    );
 
-        this.server = childProcess;
-    }
+    this.server = childProcess;
+  }
 
-    stop() {
-        if (!this.server) {
-            throw new Error(`Cannot kill the server, it's not started.`);
-        }
-        this.server.kill();   
+  stop() {
+    if (!this.server) {
+      throw new Error(`Cannot kill the server, it's not started.`);
     }
+    this.server.kill();
+  }
 }
 
 if (require.main === module) {
-    const server = new ShowcaseServer();
-    server.start();
+  const server = new ShowcaseServer();
+  server.start();
 }
