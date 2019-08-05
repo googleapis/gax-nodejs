@@ -40,18 +40,38 @@ if (require.main === module) {
 }
 
 async function testShowcase() {
-  const client = new gapic.v1beta1.EchoClient({
+  const authStub = {
+    getRequestHeaders() {
+      return {Authorization: 'Bearer SOME_TOKEN'};
+    },
+  };
+
+  const grpcClientOpts = {
     grpc,
     sslCreds: grpc.credentials.createInsecure(),
-  });
+  };
+
+  const fallbackClientOpts = {
+    auth: authStub,
+    fallback: true,
+    port: 1337,
+  };
+
+  const grpcClient = new gapic.v1beta1.EchoClient(grpcClientOpts);
+
+  const fallbackClient = new gapic.v1beta1.EchoClient(fallbackClientOpts);
 
   // assuming gRPC server is started locally
-  await testEcho(client);
-  await testExpand(client);
-  await testPagedExpand(client);
-  await testCollect(client);
-  await testChat(client);
-  await testWait(client);
+  await testEcho(grpcClient);
+  await testExpand(grpcClient);
+  await testPagedExpand(grpcClient);
+  await testCollect(grpcClient);
+  await testChat(grpcClient);
+  await testWait(grpcClient);
+
+  await testEcho(fallbackClient);
+  await testPagedExpand(fallbackClient);
+  await testWait(fallbackClient);
 }
 
 async function testEcho(client) {
