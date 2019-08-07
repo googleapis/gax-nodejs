@@ -72,6 +72,20 @@ async function testShowcase() {
   await testEcho(fallbackClient);
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
+
+  // Fallback clients do not currently support streaming
+  try {
+    await testExpand(fallbackClient)
+    throw new Error("Expand did not throw an error: Streaming calls should fail with fallback clients")
+  } catch (err) {}
+  try {
+    await testCollect(fallbackClient)
+    throw new Error("Collect did not throw an error: Streaming calls should fail with fallback clients")
+  } catch (err) {}
+  try {
+    await testChat(fallbackClient)
+    throw new Error("Chat did not throw an error: Streaming calls should fail with fallback clients")
+  } catch (err) {}
 }
 
 async function testEcho(client) {

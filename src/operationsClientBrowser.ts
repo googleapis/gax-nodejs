@@ -131,7 +131,11 @@ export class OperationsClient {
       {'x-goog-api-client': googleApiClient.join(' ')}
     );
 
-    this.auth = gaxGrpc.auth;
+    if (!gaxGrpc.googleAuth) {
+      throw new Error('No authentication was provided');
+    }
+
+    this.auth = gaxGrpc.googleAuth;
     const operationsStub = gaxGrpc.createStub(service, opts);
 
     const operationsStubMethods = [

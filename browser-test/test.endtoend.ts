@@ -48,7 +48,7 @@ describe('Run tests against gRPC server', () => {
 
   const opts = {
     auth: authStub,
-    port: 1337
+    port: 1337,
   };
 
   // @ts-ignore

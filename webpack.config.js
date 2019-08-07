@@ -23,6 +23,10 @@ module.exports = {
           {
             test: /node_modules[\\\/]retry-request[\\\/]/,
             use: 'null-loader',
+          },
+          {
+            test: /node_modules[\/]google-auth-library/,
+            use: 'null-loader',
           }
         ],
       },

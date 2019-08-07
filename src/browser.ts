@@ -31,9 +31,17 @@
 
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
+import * as nodeFetch from 'node-fetch';
 import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
-import {GoogleAuth} from 'google-auth-library';
+import {
+  GoogleAuth,
+  OAuth2Client,
+  Compute,
+  JWT,
+  UserRefreshClient,
+  GoogleAuthOptions,
+} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClientBrowser';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -59,7 +67,8 @@ interface CancelHandler {
 }
 
 export class GrpcClient {
-  auth: GoogleAuth;
+  authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
+  googleAuth?: GoogleAuth;
   promise?: PromiseConstructor;
 
   /**
@@ -72,13 +81,19 @@ export class GrpcClient {
    * @constructor
    */
 
-  constructor(options: GrpcClientOptions = {}) {
-    if (!options.auth) {
-      throw new Error(
-        'You need to pass auth instance to gRPC-fallback client. Use OAuth2Client from google-auth-library.'
-      );
+  constructor(options: GrpcClientOptions | {auth: OAuth2Client} = {}) {
+    if (isBrowser()) {
+      if (!options.auth) {
+        throw new Error(
+          'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.' // note: text has changed a little bit
+        );
+      }
+      this.authClient = options.auth as OAuth2Client;
+    } else {
+      this.googleAuth =
+        (options.auth as GoogleAuth) ||
+        new GoogleAuth(options as GoogleAuthOptions);
     }
-    this.auth = options.auth;
     this.promise = 'promise' in options ? options.promise! : Promise;
   }
 
@@ -142,7 +157,13 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC-fallback service stub, which is a protobuf.js service stub instance modified to match the gRPC stub API
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
-    const authHeader = await this.auth.getRequestHeaders();
+    if (!this.authClient && this.googleAuth) {
+      this.authClient = await this.googleAuth.getClient();
+    }
+    if (!this.authClient) {
+      throw new Error('No authentication was provided');
+    }
+    const authHeader = await this.authClient.getRequestHeaders();
     function serviceClientImpl(method, requestData, callback) {
       let cancelController, cancelSignal;
       if (typeof AbortController !== 'undefined') {
@@ -188,7 +209,6 @@ export class GrpcClient {
 
       const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
-      const nodeFetch = require('node-fetch');
       const fetch = isBrowser() ? window.fetch : nodeFetch;
       fetch(url, {
         headers,
