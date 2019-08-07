@@ -40,20 +40,14 @@ if (require.main === module) {
 }
 
 async function testShowcase() {
-  const authStub = {
-    getRequestHeaders() {
-      return {Authorization: 'Bearer SOME_TOKEN'};
-    },
-  };
-
   const grpcClientOpts = {
     grpc,
     sslCreds: grpc.credentials.createInsecure(),
   };
 
   const fallbackClientOpts = {
-    auth: authStub,
     fallback: true,
+    protocol: 'http',
     port: 1337,
   };
 
