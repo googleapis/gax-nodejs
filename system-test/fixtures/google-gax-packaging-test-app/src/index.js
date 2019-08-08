@@ -45,10 +45,23 @@ async function testShowcase() {
     sslCreds: grpc.credentials.createInsecure(),
   };
 
+  const fakeGoogleAuth = {
+    getClient: async () => {
+      return {
+        getRequestHeaders: () => {
+          return {
+            'Authorization': 'Bearer zzzz'
+          };
+        }
+      };
+    }
+  };
+
   const fallbackClientOpts = {
     fallback: true,
     protocol: 'http',
     port: 1337,
+    auth: fakeGoogleAuth,
   };
 
   const grpcClient = new gapic.v1beta1.EchoClient(grpcClientOpts);

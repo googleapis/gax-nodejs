@@ -48,6 +48,7 @@ describe('Run tests against gRPC server', () => {
 
   const opts = {
     auth: authStub,
+    protocol: 'http',
     port: 1337,
   };
 

@@ -67,15 +67,16 @@ interface CancelHandler {
 }
 
 export class GrpcClient {
+  auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
-  googleAuth?: GoogleAuth;
   promise?: PromiseConstructor;
 
   /**
    * Browser version of GrpcClient
    * Implements GrpcClient API for a browser using grpc-fallback protocol (sends serialized protobuf to HTTP/1 $rpc endpoint).
    *
-   * @param {Object=} options.auth - An instance of google-auth-library.
+   * @param {Object=} options.auth - An instance of OAuth2Client to use in browser, or an instance of GoogleAuth from google-auth-library
+   *  to use in Node.js. Required for browser, optional for Node.js.
    * @param {Function=} options.promise - A constructor for a promise that
    * implements the ES6 specification of promise.
    * @constructor
@@ -85,12 +86,13 @@ export class GrpcClient {
     if (isBrowser()) {
       if (!options.auth) {
         throw new Error(
-          'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.' // note: text has changed a little bit
+          JSON.stringify(options) +
+            'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.'
         );
       }
-      this.authClient = options.auth as OAuth2Client;
+      this.auth = options.auth as OAuth2Client;
     } else {
-      this.googleAuth =
+      this.auth =
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
@@ -157,8 +159,12 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC-fallback service stub, which is a protobuf.js service stub instance modified to match the gRPC stub API
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
-    if (!this.authClient && this.googleAuth) {
-      this.authClient = await this.googleAuth.getClient();
+    if (!this.authClient) {
+      if (this.auth && 'getClient' in this.auth) {
+        this.authClient = await this.auth.getClient();
+      } else if (this.auth && 'getRequestHeaders' in this.auth) {
+        this.authClient = this.auth;
+      }
     }
     if (!this.authClient) {
       throw new Error('No authentication was provided');
