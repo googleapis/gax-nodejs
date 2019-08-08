@@ -15,6 +15,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^0.5.2",
     "@grpc/proto-loader": "^0.5.1",
+    "abort-controller": "^3.0.0",
     "duplexify": "^3.6.0",
     "google-auth-library": "^5.0.0",
     "is-stream-ended": "^0.1.4",
@@ -93,7 +94,7 @@
     "test": "nyc mocha build/test",
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src",
+    "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src && cp -r system-test/fixtures build/system-test/",
     "compile-protos": "pbjs -t json ./protos/google/longrunning/operations.proto -p ./protos > protos/operations.json",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile && node ./build/tools/prepublish.js",

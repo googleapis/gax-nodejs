@@ -32,6 +32,7 @@
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as nodeFetch from 'node-fetch';
+import {AbortController as NodeAbortController} from 'abort-controller';
 import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
 import {
@@ -172,8 +173,12 @@ export class GrpcClient {
     const authHeader = await this.authClient.getRequestHeaders();
     function serviceClientImpl(method, requestData, callback) {
       let cancelController, cancelSignal;
-      if (typeof AbortController !== 'undefined') {
+      if (isBrowser && typeof AbortController !== 'undefined') {
         cancelController = new AbortController();
+      } else {
+        cancelController = new NodeAbortController();
+      }
+      if (cancelController) {
         cancelSignal = cancelController.signal;
       }
       const cancelHandler: CancelHandler = {
