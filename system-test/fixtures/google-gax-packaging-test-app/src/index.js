@@ -40,18 +40,59 @@ if (require.main === module) {
 }
 
 async function testShowcase() {
-  const client = new gapic.v1beta1.EchoClient({
+  const grpcClientOpts = {
     grpc,
     sslCreds: grpc.credentials.createInsecure(),
-  });
+  };
+
+  const fakeGoogleAuth = {
+    getClient: async () => {
+      return {
+        getRequestHeaders: () => {
+          return {
+            'Authorization': 'Bearer zzzz'
+          };
+        }
+      };
+    }
+  };
+
+  const fallbackClientOpts = {
+    fallback: true,
+    protocol: 'http',
+    port: 1337,
+    auth: fakeGoogleAuth,
+  };
+
+  const grpcClient = new gapic.v1beta1.EchoClient(grpcClientOpts);
+
+  const fallbackClient = new gapic.v1beta1.EchoClient(fallbackClientOpts);
 
   // assuming gRPC server is started locally
-  await testEcho(client);
-  await testExpand(client);
-  await testPagedExpand(client);
-  await testCollect(client);
-  await testChat(client);
-  await testWait(client);
+  await testEcho(grpcClient);
+  await testExpand(grpcClient);
+  await testPagedExpand(grpcClient);
+  await testCollect(grpcClient);
+  await testChat(grpcClient);
+  await testWait(grpcClient);
+
+  await testEcho(fallbackClient);
+  await testPagedExpand(fallbackClient);
+  await testWait(fallbackClient);
+
+  // Fallback clients do not currently support streaming
+  try {
+    await testExpand(fallbackClient)
+    throw new Error("Expand did not throw an error: Streaming calls should fail with fallback clients")
+  } catch (err) {}
+  try {
+    await testCollect(fallbackClient)
+    throw new Error("Collect did not throw an error: Streaming calls should fail with fallback clients")
+  } catch (err) {}
+  try {
+    await testChat(fallbackClient)
+    throw new Error("Chat did not throw an error: Streaming calls should fail with fallback clients")
+  } catch (err) {}
 }
 
 async function testEcho(client) {

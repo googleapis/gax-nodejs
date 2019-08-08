@@ -34,8 +34,6 @@ import * as gax from './gax';
 import {GaxCall} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
-import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import {GoogleAuth} from 'google-auth-library';
 import {ClientStubOptions} from './grpc';
 const configData = require('./operations_client_config');
 
@@ -91,7 +89,6 @@ export {createApiCall} from './createApiCall';
  * @class
  */
 export class OperationsClient {
-  auth: GoogleAuth;
   private _getOperation!: GaxCall;
   private _listOperations!: GaxCall;
   private _cancelOperation!: GaxCall;
@@ -131,7 +128,6 @@ export class OperationsClient {
       {'x-goog-api-client': googleApiClient.join(' ')}
     );
 
-    this.auth = gaxGrpc.auth;
     const operationsStub = gaxGrpc.createStub(service, opts);
 
     const operationsStubMethods = [
@@ -152,17 +148,6 @@ export class OperationsClient {
         PAGE_DESCRIPTORS[methodName]
       );
     });
-  }
-
-  /**
-   * Get the project ID used by this class.
-   * @param {function(Error, string)} callback - the callback to be called with
-   *   the current project Id.
-   */
-  getProjectId(): Promise<string>;
-  getProjectId(callback: ProjectIdCallback): void;
-  getProjectId(callback?: ProjectIdCallback): void | Promise<string> {
-    return this.auth.getProjectId(callback!);
   }
 
   // Service calls
