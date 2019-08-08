@@ -188,7 +188,12 @@ describe('grpc-fallback', () => {
     sinon.replace(window, 'fetch', fakeFetch);
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
-    const result = await echoStub.echo(requestObject);
+    const result = await echoStub.echo(
+      requestObject,
+      {},
+      {},
+      (err, result) => {}
+    );
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
