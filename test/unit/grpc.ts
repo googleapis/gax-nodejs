@@ -34,8 +34,8 @@ import * as proxyquire from 'proxyquire';
 import * as semver from 'semver';
 import * as sinon from 'sinon';
 
-import {protobuf} from '../src/index';
-import {GoogleProtoFilesRoot, GrpcClient} from '../src/grpc';
+import {protobuf} from '../../src/index';
+import {GoogleProtoFilesRoot, GrpcClient} from '../../src/grpc';
 
 function gaxGrpc(options?) {
   return new GrpcClient(options);
@@ -401,7 +401,7 @@ describe('grpc', () => {
       const includePath = path.join('example', 'import.proto');
 
       it('should throw an error if a file is not found', () => {
-        const findIncludePath = proxyquire('../src/grpc', {
+        const findIncludePath = proxyquire('../../src/grpc', {
           fs: {
             existsSync: () => {
               return false;
@@ -414,7 +414,7 @@ describe('grpc', () => {
 
       it('should return the correct resolved import path', () => {
         const correctPath = path.join('test', 'example', 'import.proto');
-        const findIncludePath = proxyquire('../src/grpc', {
+        const findIncludePath = proxyquire('../../src/grpc', {
           fs: {
             existsSync(path) {
               return path === correctPath;

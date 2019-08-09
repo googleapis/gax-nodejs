@@ -32,11 +32,11 @@ import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
-import {BundleDescriptor} from '../src/bundlingCalls/bundleDescriptor';
-import {BundleExecutor} from '../src/bundlingCalls/bundleExecutor';
-import {computeBundleId} from '../src/bundlingCalls/bundlingUtils';
-import {deepCopyForResponse, Task} from '../src/bundlingCalls/task';
-import {GoogleError} from '../src/googleError';
+import {BundleDescriptor} from '../../src/bundlingCalls/bundleDescriptor';
+import {BundleExecutor} from '../../src/bundlingCalls/bundleExecutor';
+import {computeBundleId} from '../../src/bundlingCalls/bundlingUtils';
+import {deepCopyForResponse, Task} from '../../src/bundlingCalls/task';
+import {GoogleError} from '../../src/googleError';
 
 import {createApiCall} from './utils';
 

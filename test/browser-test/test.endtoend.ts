@@ -31,7 +31,7 @@
 
 import * as assert from 'assert';
 import {expect} from 'chai';
-import * as EchoClient from '../system-test/fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 function sleep(timeout) {
   return new Promise(resolve => {

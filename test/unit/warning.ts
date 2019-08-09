@@ -32,7 +32,7 @@
 import {assert} from 'chai';
 import * as sinon from 'sinon';
 
-import {warn} from '../src/warnings';
+import {warn} from '../../src/warnings';
 
 describe('warnings', () => {
   it('should warn the given code once with the first message', done => {

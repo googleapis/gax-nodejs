@@ -34,9 +34,9 @@ import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
-import {echoProtoJson} from '../browser-test/echoProtoJson';
+import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {expect} from 'chai';
-import {GrpcClient} from '../src/browser';
+import {GrpcClient} from '../../src/browser';
 
 const authClient = {
   getRequestHeaders() {

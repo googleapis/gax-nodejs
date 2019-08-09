@@ -43,12 +43,12 @@ const rmrf = util.promisify(rimraf);
 const ncpp = util.promisify(ncp);
 
 const testDir = path.join(process.cwd(), '.kitchen-sink');
-const gaxDir = path.resolve(__dirname, '..', '..');
-const fixturesDir = path.join(gaxDir, 'system-test', 'fixtures');
+const gaxDir = path.resolve(__dirname, '..', '..', '..');
+const fixturesDir = path.join(gaxDir, 'test', 'fixtures');
 
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball
-const pkg = require('../../package.json');
+const pkg = require('../../../package.json');
 const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 
 // We have a test gRPC client in `system-test/fixtures` that we'll copy to a

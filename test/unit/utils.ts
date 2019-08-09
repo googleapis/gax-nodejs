@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {GaxCallPromise} from '../src/apitypes';
-import {createApiCall as realCreateApiCall} from '../src/createApiCall';
-import * as gax from '../src/gax';
-import {GoogleError} from '../src/googleError';
+import {GaxCallPromise} from '../../src/apitypes';
+import {createApiCall as realCreateApiCall} from '../../src/createApiCall';
+import * as gax from '../../src/gax';
+import {GoogleError} from '../../src/googleError';
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 

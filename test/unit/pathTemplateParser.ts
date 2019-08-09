@@ -1,5 +1,6 @@
 /*
- * Copyright 2019 Google LLC
+ *
+ * Copyright 2016, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,21 +28,46 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 import {expect} from 'chai';
-import {fromParams} from '../src/routingHeader';
 
-describe('fromParams', () => {
-  it('constructs the routing header', () => {
-    const routingHeader = fromParams({name: 'foo', 'book.read': true});
-    expect(routingHeader).to.equal('name=foo&book.read=true');
+describe('The PathTemplate parser', () => {
+  it('should load the pegjs generated module ok', () => {
+    const parser = require('../../src/pathTemplateParser');
+    expect(parser).to.not.eql(null);
   });
 
-  it('encodes non-ASCII characters', () => {
-    const routingHeader = fromParams({screaming: '😱', cyrillic: 'тест'});
-    expect(routingHeader).to.equal(
-      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82'
-    );
+  describe('function `parse`', () => {
+    const parser = require('../../src/pathTemplateParser');
+
+    it('should succeed with valid inputs', () => {
+      const shouldPass = () => {
+        parser.parse('a/b/**/*/{a=hello/world}');
+      };
+      expect(shouldPass).to.not.throw();
+    });
+
+    it('should fail on invalid tokens', () => {
+      const shouldFail = () => {
+        parser.parse('hello/wor* ld}');
+      };
+      expect(shouldFail).to.throw();
+    });
+
+    it('should fail on unexpected eof', () => {
+      const shouldFail = () => {
+        parser.parse('a/{hello=world');
+      };
+      expect(shouldFail).to.throw();
+    });
+
+    it('should fail on inner binding', () => {
+      const shouldFail = () => {
+        parser.parse('buckets/{hello={world}}');
+      };
+      expect(shouldFail).to.throw();
+    });
   });
 });

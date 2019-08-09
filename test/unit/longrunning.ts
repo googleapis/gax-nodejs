@@ -32,12 +32,12 @@ import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
-import {LongrunningDescriptor} from '../src';
-import {GaxCallPromise} from '../src/apitypes';
-import * as gax from '../src/gax';
-import {GoogleError} from '../src/googleError';
-import * as longrunning from '../src/longRunningCalls/longrunning';
-import {OperationsClient} from '../src/operationsClient';
+import {LongrunningDescriptor} from '../../src';
+import {GaxCallPromise} from '../../src/apitypes';
+import * as gax from '../../src/gax';
+import {GoogleError} from '../../src/googleError';
+import * as longrunning from '../../src/longRunningCalls/longrunning';
+import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
 

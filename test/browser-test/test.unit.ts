@@ -34,7 +34,7 @@
 
 import * as assert from 'assert';
 import * as through2 from 'through2';
-import * as EchoClient from '../system-test/fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 describe('Run unit tests of echo client', () => {
   interface GoogleError extends Error {
