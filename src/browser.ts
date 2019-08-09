@@ -33,6 +33,7 @@ import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as nodeFetch from 'node-fetch';
 import * as routingHeader from './routingHeader';
+import {AbortController as NodeAbortController} from 'abort-controller';
 import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
 import {
@@ -181,6 +182,11 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC-fallback service stub, which is a protobuf.js service stub instance modified to match the gRPC stub API
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
+    // an RPC function to be passed to protobufjs RPC API
+    function serviceClientImpl(method, requestData, callback) {
+      return [method, requestData, callback];
+    }
+
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
         this.authClient = await this.auth.getClient();
@@ -192,9 +198,6 @@ export class GrpcClient {
       throw new Error('No authentication was provided');
     }
     const authHeader = await this.authClient.getRequestHeaders();
-    function serviceClientImpl(method, requestData, callback) {
-      return [method, requestData, callback];
-    }
     const serviceStub = service.create(serviceClientImpl, false, false);
     const methods = this.getServiceMethods(service);
 
@@ -206,16 +209,22 @@ export class GrpcClient {
         ].apply(serviceStub, [req, callback]);
 
         let cancelController, cancelSignal;
-        if (typeof AbortController !== 'undefined') {
+        if (isBrowser && typeof AbortController !== 'undefined') {
           cancelController = new AbortController();
+        } else {
+          cancelController = new NodeAbortController();
+        }
+        if (cancelController) {
           cancelSignal = cancelController.signal;
         }
         let cancelRequested = false;
+
         const headers = Object.assign({}, authHeader);
         headers['Content-Type'] = 'application/x-protobuf';
         for (const key of Object.keys(options)) {
           headers[key] = options[key][0];
         }
+
         const grpcFallbackProtocol = opts.protocol || 'https';
         let servicePath = opts.servicePath;
         if (!servicePath) {
@@ -226,6 +235,7 @@ export class GrpcClient {
             return;
           }
         }
+
         let servicePort;
         const match = servicePath.match(/^(.*):(\d+)$/);
         if (match) {
@@ -237,6 +247,7 @@ export class GrpcClient {
         } else if (!servicePort) {
           servicePort = 443;
         }
+
         const protoNamespaces: string[] = [];
         let currNamespace = method.parent;
         while (currNamespace.name !== '') {
