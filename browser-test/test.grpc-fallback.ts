@@ -31,10 +31,12 @@
 
 import * as assert from 'assert';
 import * as protobuf from 'protobufjs';
+import * as gax from '../src/browser';
 import * as sinon from 'sinon';
 import {echoProtoJson} from './echoProtoJson';
 import {expect} from 'chai';
 import {GrpcClient} from '../src/browser';
+import * as EchoClient from '../system-test/fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 const authStub = {
   getRequestHeaders() {
@@ -133,6 +135,18 @@ describe('grpc-fallback', () => {
   // @ts-ignore
   const savedAbortController = window.AbortController;
 
+  const authStub = {
+    getRequestHeaders() {
+      return {Authorization: 'Bearer SOME_TOKEN'};
+    },
+  };
+
+  const opts = {
+    auth: authStub,
+    protocol: 'http',
+    port: 1337,
+  };
+
   before(() => {
     stubOptions = {
       servicePath: 'foo.example.com',
@@ -177,18 +191,18 @@ describe('grpc-fallback', () => {
   });
 
   it('should make a request', async () => {
+    const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
     const fakeFetch = sinon.fake.resolves({
       arrayBuffer: () => {
-        Promise.resolve(responseType.encode(response).finish());
+        return Promise.resolve(responseType.encode(response).finish());
       },
     });
     sinon.replace(window, 'fetch', fakeFetch);
-
-    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
-    const result = await echoStub.echo(requestObject);
+    const [result] = await client.echo(requestObject);
+    assert.strictEqual(requestObject.content, result.content);
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
@@ -203,5 +217,35 @@ describe('grpc-fallback', () => {
 
     // @ts-ignore
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);
+  });
+
+  it('should be able to add extra headers to the request', async () => {
+    const client = new EchoClient(opts);
+    const requestObject = {content: 'test-content'};
+    // tslint:disable-next-line no-any
+    const options: any = {};
+    options.otherArgs = {};
+    options.otherArgs.headers = {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      abc: 'def',
+    });
+    const responseType = protos.lookupType('EchoResponse');
+    const response = responseType.create(requestObject);
+    const savedFetch = window.fetch;
+    // @ts-ignore
+    window.fetch = (url, options) => {
+      // @ts-ignore
+      assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
+      return Promise.resolve({
+        arrayBuffer: () => {
+          return Promise.resolve(responseType.encode(response).finish());
+        },
+      });
+    };
+    const [result] = await client.echo(requestObject, options);
+    assert.strictEqual(requestObject.content, result.content);
+    window.fetch = savedFetch;
   });
 });

@@ -184,7 +184,7 @@ describe('grpc-fallback', () => {
     abortController.AbortController = savedAbortController;
   });
 
-  it('should make a request', async () => {
+  it('should make a request', done => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
@@ -192,13 +192,17 @@ describe('grpc-fallback', () => {
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         arrayBuffer: () => {
-          Promise.resolve(responseType.encode(response).finish());
+          return Promise.resolve(responseType.encode(response).finish());
         },
       })
     );
 
-    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
-    const result = await echoStub.echo(requestObject);
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err, result) => {
+        assert.strictEqual(requestObject.content, result.content);
+        done();
+      });
+    });
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
@@ -206,7 +210,7 @@ describe('grpc-fallback', () => {
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
     const request = {content: 'content' + new Date().toString()};
-    const call = echoStub.echo(request, {}, {}, (err, result) => {});
+    const call = echoStub.echo(request, {}, {}, () => {});
 
     call.cancel();
 
