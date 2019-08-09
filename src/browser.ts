@@ -32,6 +32,7 @@
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as nodeFetch from 'node-fetch';
+import * as routingHeader from './routingHeader';
 import {Status} from './status';
 import {OutgoingHttpHeaders} from 'http';
 import {
@@ -50,6 +51,7 @@ import {createApiCall as _createApiCall} from './createApiCall';
 import {isBrowser} from './isbrowser';
 
 export {PathTemplate} from './pathTemplate';
+export {routingHeader};
 export {CallSettings, constructSettings, RetryOptions} from './gax';
 
 export {
@@ -60,11 +62,6 @@ export {
 } from './descriptor';
 
 export {StreamType} from './streamingCalls/streaming';
-
-interface CancelHandler {
-  canceller: AbortController;
-  cancelRequested: boolean;
-}
 
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
@@ -138,11 +135,36 @@ export class GrpcClient {
     configOverrides: gax.ClientConfig,
     headers: OutgoingHttpHeaders
   ) {
+    function buildMetadata(abTests, moreHeaders) {
+      const metadata = {};
+      if (!moreHeaders) {
+        return {};
+      }
+      for (const key in moreHeaders) {
+        if (
+          key.toLowerCase() !== 'x-goog-api-client' &&
+          moreHeaders.hasOwnProperty(key)
+        ) {
+          const value = moreHeaders[key];
+          if (Array.isArray(value)) {
+            if (metadata[key] === undefined) {
+              metadata[key] = value;
+            } else {
+              metadata[key].push(...value);
+            }
+          } else {
+            metadata[key] = [value];
+          }
+        }
+      }
+      return metadata;
+    }
     return gax.constructSettings(
       serviceName,
       clientConfig,
       configOverrides,
       Status,
+      {metadataBuilder: buildMetadata},
       this.promise
     );
   }
@@ -171,91 +193,90 @@ export class GrpcClient {
     }
     const authHeader = await this.authClient.getRequestHeaders();
     function serviceClientImpl(method, requestData, callback) {
-      let cancelController, cancelSignal;
-      if (typeof AbortController !== 'undefined') {
-        cancelController = new AbortController();
-        cancelSignal = cancelController.signal;
-      }
-      const cancelHandler: CancelHandler = {
-        canceller: cancelController,
-        cancelRequested: false,
-      };
-      const headers = Object.assign({}, authHeader);
-      headers['Content-Type'] = 'application/x-protobuf';
-
-      const grpcFallbackProtocol = opts.protocol || 'https';
-      let servicePath = opts.servicePath;
-      if (!servicePath) {
-        if (service.options && service.options['(google.api.default_host)']) {
-          servicePath = service.options['(google.api.default_host)'];
-        } else {
-          callback(new Error('Service path is undefined'));
-          return;
-        }
-      }
-      let servicePort;
-      const match = servicePath.match(/^(.*):(\d+)$/);
-      if (match) {
-        servicePath = match[1];
-        servicePort = match[2];
-      }
-      if (opts.port) {
-        servicePort = opts.port;
-      } else if (!servicePort) {
-        servicePort = 443;
-      }
-      const protoNamespaces: string[] = [];
-      let currNamespace = method.parent;
-      while (currNamespace.name !== '') {
-        protoNamespaces.unshift(currNamespace.name);
-        currNamespace = currNamespace.parent;
-      }
-      const protoServiceName = protoNamespaces.join('.');
-      const rpcName = method.name;
-
-      const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
-
-      const fetch = isBrowser() ? window.fetch : nodeFetch;
-      fetch(url, {
-        headers,
-        method: 'post',
-        body: requestData,
-        signal: cancelSignal,
-      })
-        .then(response => {
-          return response.arrayBuffer();
-        })
-        .then(buffer => {
-          callback(null, new Uint8Array(buffer));
-        })
-        .catch(err => {
-          if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
-            callback(err);
-          }
-        });
-      return cancelHandler;
+      return [method, requestData, callback];
     }
-
     const serviceStub = service.create(serviceClientImpl, false, false);
     const methods = this.getServiceMethods(service);
 
     const newServiceStub = service.create(serviceClientImpl, false, false);
     for (const methodName of methods) {
       newServiceStub[methodName] = (req, options, metadata, callback) => {
-        const cancelHandler = serviceStub[methodName].apply(serviceStub, [
-          req,
-          callback,
-        ]) as CancelHandler;
+        const [method, requestData, serviceCallback] = serviceStub[
+          methodName
+        ].apply(serviceStub, [req, callback]);
+
+        let cancelController, cancelSignal;
+        if (typeof AbortController !== 'undefined') {
+          cancelController = new AbortController();
+          cancelSignal = cancelController.signal;
+        }
+        let cancelRequested = false;
+        const headers = Object.assign({}, authHeader);
+        headers['Content-Type'] = 'application/x-protobuf';
+        for (const key of Object.keys(options)) {
+          headers[key] = options[key][0];
+        }
+        const grpcFallbackProtocol = opts.protocol || 'https';
+        let servicePath = opts.servicePath;
+        if (!servicePath) {
+          if (service.options && service.options['(google.api.default_host)']) {
+            servicePath = service.options['(google.api.default_host)'];
+          } else {
+            serviceCallback(new Error('Service path is undefined'));
+            return;
+          }
+        }
+        let servicePort;
+        const match = servicePath.match(/^(.*):(\d+)$/);
+        if (match) {
+          servicePath = match[1];
+          servicePort = match[2];
+        }
+        if (opts.port) {
+          servicePort = opts.port;
+        } else if (!servicePort) {
+          servicePort = 443;
+        }
+        const protoNamespaces: string[] = [];
+        let currNamespace = method.parent;
+        while (currNamespace.name !== '') {
+          protoNamespaces.unshift(currNamespace.name);
+          currNamespace = currNamespace.parent;
+        }
+        const protoServiceName = protoNamespaces.join('.');
+        const rpcName = method.name;
+
+        const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
+
+        const fetch = isBrowser() ? window.fetch : nodeFetch;
+        fetch(url, {
+          headers,
+          method: 'post',
+          body: requestData,
+          signal: cancelSignal,
+        })
+          .then(response => {
+            return response.arrayBuffer();
+          })
+          .then(buffer => {
+            serviceCallback(null, new Uint8Array(buffer));
+          })
+          .catch(err => {
+            if (!cancelRequested || err.name !== 'AbortError') {
+              serviceCallback(err);
+            }
+          });
+
         return {
           cancel: () => {
-            if (!cancelHandler.canceller) {
+            if (!cancelController) {
               console.warn(
                 'AbortController not found: Cancellation is not supported in this environment'
               );
               return;
             }
-            cancelHandler.cancelRequested = true;
-            cancelHandler.canceller.abort();
+            cancelRequested = true;
+            cancelController.abort();
           },
         };
       };
