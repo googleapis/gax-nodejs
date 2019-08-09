@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2019 Google LLC
  * All rights reserved.
  *
@@ -8,7 +8,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
+ *     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -29,8 +29,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Manually created JSON object using the command:
-// npx pbjs -p protos -t json -o protos.json ../echo.proto
-// (NOTE: echo.proto was taken from gapic-showcase/schema/v1beta1
-//  commit hash: 74e71466e0d5badb3167900a553a6afea62b6e3d)
-export const echoProtoJson = require('../system-test/fixtures/google-gax-packaging-test-app/protos/protos.json');
+import {expect} from 'chai';
+import {fromParams} from '../../src/routingHeader';
+
+describe('fromParams', () => {
+  it('constructs the routing header', () => {
+    const routingHeader = fromParams({name: 'foo', 'book.read': true});
+    expect(routingHeader).to.equal('name=foo&book.read=true');
+  });
+
+  it('encodes non-ASCII characters', () => {
+    const routingHeader = fromParams({screaming: '😱', cyrillic: 'тест'});
+    expect(routingHeader).to.equal(
+      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82'
+    );
+  });
+});

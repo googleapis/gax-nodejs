@@ -31,12 +31,12 @@
 
 import * as assert from 'assert';
 import * as protobuf from 'protobufjs';
-import * as gax from '../src/browser';
+import * as gax from '../../src/browser';
 import * as sinon from 'sinon';
-import {echoProtoJson} from './echoProtoJson';
+import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {expect} from 'chai';
-import {GrpcClient} from '../src/browser';
-import * as EchoClient from '../system-test/fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import {GrpcClient} from '../../src/browser';
+import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 const authStub = {
   getRequestHeaders() {

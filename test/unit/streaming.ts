@@ -33,11 +33,11 @@ import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
 
-import {GaxCallStream} from '../src/apitypes';
-import {createApiCall} from '../src/createApiCall';
-import * as gax from '../src/gax';
-import {StreamDescriptor} from '../src/streamingCalls/streamDescriptor';
-import * as streaming from '../src/streamingCalls/streaming';
+import {GaxCallStream} from '../../src/apitypes';
+import {createApiCall} from '../../src/createApiCall';
+import * as gax from '../../src/gax';
+import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
+import * as streaming from '../../src/streamingCalls/streaming';
 
 function createApiCallStreaming(func, type) {
   const settings = new gax.CallSettings();

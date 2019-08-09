@@ -10,8 +10,7 @@
     "src/*.ts",
     "src/*/*.ts",
     "test/*.ts",
-    "tools/*.ts",
-    "system-test/*.ts",
-    "browser-test/*.ts"
+    "test/*/*.ts",
+    "tools/*.ts"
   ]
 }

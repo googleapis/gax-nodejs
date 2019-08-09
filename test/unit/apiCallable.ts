@@ -32,8 +32,8 @@ import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
-import * as gax from '../src/gax';
-import {GoogleError} from '../src/googleError';
+import * as gax from '../../src/gax';
+import {GoogleError} from '../../src/googleError';
 
 import * as utils from './utils';
 

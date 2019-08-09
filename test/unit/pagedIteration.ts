@@ -33,7 +33,7 @@ import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
-import {PageDescriptor} from '../src/paginationCalls/pageDescriptor';
+import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
 
 import * as util from './utils';
 

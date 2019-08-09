@@ -50,14 +50,14 @@ module.exports = function(config) {
 
     client: {
       childProcess: {
-        path: './build/system-test/showcase-server.js',
+        path: './build/test/system-test/showcase-server.js',
         args: [],
         options: {},
       },
     },
 
     // list of files / patterns to load in the browser
-    files: ['./browser-test/test.*.ts'],
+    files: ['./test/browser-test/test.*.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -67,7 +67,7 @@ module.exports = function(config) {
     preprocessors: {
       './src/*.ts': ['coverage'],
       './src/**/*.ts': ['coverage'],
-      './browser-test/*.ts': ['webpack', 'sourcemap'],
+      './test/browser-test/*.ts': ['webpack', 'sourcemap'],
     },
 
     webpack: webpackConfig,

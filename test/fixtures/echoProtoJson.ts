@@ -1,6 +1,5 @@
-/*
- *
- * Copyright 2016, Google Inc.
+/**
+ * Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -9,7 +8,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
+ * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -28,46 +27,10 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-import {expect} from 'chai';
-
-describe('The PathTemplate parser', () => {
-  it('should load the pegjs generated module ok', () => {
-    const parser = require('../src/pathTemplateParser');
-    expect(parser).to.not.eql(null);
-  });
-
-  describe('function `parse`', () => {
-    const parser = require('../src/pathTemplateParser');
-
-    it('should succeed with valid inputs', () => {
-      const shouldPass = () => {
-        parser.parse('a/b/**/*/{a=hello/world}');
-      };
-      expect(shouldPass).to.not.throw();
-    });
-
-    it('should fail on invalid tokens', () => {
-      const shouldFail = () => {
-        parser.parse('hello/wor* ld}');
-      };
-      expect(shouldFail).to.throw();
-    });
-
-    it('should fail on unexpected eof', () => {
-      const shouldFail = () => {
-        parser.parse('a/{hello=world');
-      };
-      expect(shouldFail).to.throw();
-    });
-
-    it('should fail on inner binding', () => {
-      const shouldFail = () => {
-        parser.parse('buckets/{hello={world}}');
-      };
-      expect(shouldFail).to.throw();
-    });
-  });
-});
+// Manually created JSON object using the command:
+// npx pbjs -p protos -t json -o protos.json ../echo.proto
+// (NOTE: echo.proto was taken from gapic-showcase/schema/v1beta1
+//  commit hash: 74e71466e0d5badb3167900a553a6afea62b6e3d)
+export const echoProtoJson = require('./google-gax-packaging-test-app/protos/protos.json');

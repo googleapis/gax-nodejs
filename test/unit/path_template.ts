@@ -30,7 +30,7 @@
  */
 
 import {expect} from 'chai';
-import {PathTemplate} from '../src/pathTemplate';
+import {PathTemplate} from '../../src/pathTemplate';
 
 describe('PathTemplate', () => {
   describe('constructor', () => {
