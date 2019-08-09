@@ -135,6 +135,18 @@ describe('grpc-fallback', () => {
   // @ts-ignore
   const savedAbortController = window.AbortController;
 
+  const authStub = {
+    getRequestHeaders() {
+      return {Authorization: 'Bearer SOME_TOKEN'};
+    },
+  };
+
+  const opts = {
+    auth: authStub,
+    protocol: 'http',
+    port: 1337,
+  };
+
   before(() => {
     stubOptions = {
       servicePath: 'foo.example.com',
@@ -179,24 +191,18 @@ describe('grpc-fallback', () => {
   });
 
   it('should make a request', async () => {
+    const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
     const fakeFetch = sinon.fake.resolves({
       arrayBuffer: () => {
-        Promise.resolve(responseType.encode(response).finish());
+        return Promise.resolve(responseType.encode(response).finish());
       },
     });
     sinon.replace(window, 'fetch', fakeFetch);
-
-    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
-    const result = await echoStub.echo(
-      requestObject,
-      {},
-      {},
-      (err, result) => {}
-    );
-    console.log('real result,', result);
+    const [result] = await client.echo(requestObject);
+    assert.strictEqual(requestObject.content, result.content);
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
@@ -214,18 +220,6 @@ describe('grpc-fallback', () => {
   });
 
   it('should be able to add extra headers to the request', async () => {
-    const authStub = {
-      getRequestHeaders() {
-        return {Authorization: 'Bearer SOME_TOKEN'};
-      },
-    };
-
-    const opts = {
-      auth: authStub,
-      protocol: 'http',
-      port: 1337,
-    };
-
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     // tslint:disable-next-line no-any
@@ -239,22 +233,19 @@ describe('grpc-fallback', () => {
     });
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject);
-    console.log('response:', responseType.encode(response).finish());
     const savedFetch = window.fetch;
     // @ts-ignore
     window.fetch = (url, options) => {
       // @ts-ignore
       assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
-
       return Promise.resolve({
         arrayBuffer: () => {
-          Promise.resolve(responseType.encode(response).finish());
+          return Promise.resolve(responseType.encode(response).finish());
         },
       });
     };
     const [result] = await client.echo(requestObject, options);
-    //TODO: assert that result is what we want
-
+    assert.strictEqual(requestObject.content, result.content);
     window.fetch = savedFetch;
   });
 });
