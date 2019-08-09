@@ -63,11 +63,6 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
-interface CancelHandler {
-  canceller: AbortController;
-  cancelRequested: boolean;
-}
-
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
@@ -142,24 +137,23 @@ export class GrpcClient {
   ) {
     function buildMetadata(abTests, moreHeaders) {
       const metadata = {};
-      if (moreHeaders) {
-        for (const key in moreHeaders) {
-          if (
-            key.toLowerCase() !== 'x-goog-api-client' &&
-            moreHeaders.hasOwnProperty(key)
-          ) {
-            const value = moreHeaders[key];
-            if (Array.isArray(value)) {
-              if (metadata[key] === undefined) {
-                metadata[key] = value;
-              } else {
-                value.forEach(v => {
-                  metadata[key].push(v);
-                });
-              }
-            } else {
+      if (!moreHeaders) {
+        return {};
+      }
+      for (const key in moreHeaders) {
+        if (
+          key.toLowerCase() !== 'x-goog-api-client' &&
+          moreHeaders.hasOwnProperty(key)
+        ) {
+          const value = moreHeaders[key];
+          if (Array.isArray(value)) {
+            if (metadata[key] === undefined) {
               metadata[key] = value;
+            } else {
+              metadata[key].push(...value);
             }
+          } else {
+            metadata[key] = [value];
           }
         }
       }
@@ -216,14 +210,11 @@ export class GrpcClient {
           cancelController = new AbortController();
           cancelSignal = cancelController.signal;
         }
-        const cancelHandler: CancelHandler = {
-          canceller: cancelController,
-          cancelRequested: false,
-        };
+        let cancelRequested = false;
         const headers = Object.assign({}, authHeader);
         headers['Content-Type'] = 'application/x-protobuf';
         for (const key of Object.keys(options)) {
-          headers[key] = options[key];
+          headers[key] = options[key][0];
         }
         const grpcFallbackProtocol = opts.protocol || 'https';
         let servicePath = opts.servicePath;
@@ -271,21 +262,21 @@ export class GrpcClient {
             serviceCallback(null, new Uint8Array(buffer));
           })
           .catch(err => {
-            if (!cancelHandler.cancelRequested || err.name !== 'AbortError') {
+            if (!cancelRequested || err.name !== 'AbortError') {
               serviceCallback(err);
             }
           });
 
         return {
           cancel: () => {
-            if (!cancelHandler.canceller) {
+            if (!cancelController) {
               console.warn(
                 'AbortController not found: Cancellation is not supported in this environment'
               );
               return;
             }
-            cancelHandler.cancelRequested = true;
-            cancelHandler.canceller.abort();
+            cancelRequested = true;
+            cancelController.abort();
           },
         };
       };
