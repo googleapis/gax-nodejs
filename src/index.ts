@@ -81,5 +81,5 @@ export const version = require('../../package.json').version;
 import * as protobuf from 'protobufjs';
 export {protobuf};
 
-import * as fallback from './browser';
+import * as fallback from './fallback';
 export {fallback};

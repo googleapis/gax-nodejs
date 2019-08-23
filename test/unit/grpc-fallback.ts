@@ -36,7 +36,7 @@ import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {expect} from 'chai';
-import {GrpcClient} from '../../src/browser';
+import {GrpcClient} from '../../src/fallback';
 
 const authClient = {
   getRequestHeaders() {

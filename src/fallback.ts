@@ -44,7 +44,7 @@ import {
   UserRefreshClient,
   GoogleAuthOptions,
 } from 'google-auth-library';
-import {OperationsClientBuilder} from './operationsClientBrowser';
+import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
@@ -64,10 +64,14 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
+const version = require('../../package.json').version;
+
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
   promise?: PromiseConstructor;
+  fallback: boolean;
+  grpcVersion: string;
 
   /**
    * Browser version of GrpcClient
@@ -95,6 +99,8 @@ export class GrpcClient {
         new GoogleAuth(options as GoogleAuthOptions);
     }
     this.promise = 'promise' in options ? options.promise! : Promise;
+    this.fallback = true;
+    this.grpcVersion = 'fallback';
   }
 
   /**

@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './src/browser.ts',
+    entry: './src/fallback.ts',
     output: {
       library: "Gax",
       filename: "./gax.js"
