@@ -100,7 +100,7 @@ export class GrpcClient {
     }
     this.promise = 'promise' in options ? options.promise! : Promise;
     this.fallback = true;
-    this.grpcVersion = 'fallback';
+    this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
   }
 
   /**
