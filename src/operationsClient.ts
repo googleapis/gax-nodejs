@@ -131,8 +131,7 @@ export class OperationsClient {
     this._innerApiCalls = {};
 
     // Put together the "service stub" for
-    // google.showcase.v1beta1.Echo.
-
+    // google.longrunning.Operations.
     const operationsStub = gaxGrpc.createStub(
       opts.fallback
         ? operationsProtos.lookupService('google.longrunning.Operations')
