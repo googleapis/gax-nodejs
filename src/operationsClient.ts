@@ -137,7 +137,7 @@ export class OperationsClient {
         ? operationsProtos.lookupService('google.longrunning.Operations')
         : operationsProtos.google.longrunning.Operations,
       opts
-    );
+    ) as Promise<{[method: string]: Function}>;
     const operationsStubMethods = [
       'getOperation',
       'listOperations',
@@ -146,9 +146,8 @@ export class OperationsClient {
     ];
 
     for (const methodName of operationsStubMethods) {
-      // @ts-ignore
       const innerCallPromise = operationsStub.then(
-        stub => (...args) => {
+        stub => (...args: Array<{}>) => {
           return stub[methodName].apply(stub, args);
         },
         err => () => {
