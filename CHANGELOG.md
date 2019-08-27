@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.4.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.3.0...v1.4.0) (2019-08-27)
+
+
+### Features
+
+* add AbortController for node-fetch ([#569](https://www.github.com/googleapis/gax-nodejs/issues/569)) ([92b7590](https://www.github.com/googleapis/gax-nodejs/commit/92b7590))
+* support sending `x-goog-request-params` (and other extra) headers for fallback requests  ([#568](https://www.github.com/googleapis/gax-nodejs/issues/568)) ([a1e6570](https://www.github.com/googleapis/gax-nodejs/commit/a1e6570))
+* use JSON proto for LRO client ([#574](https://www.github.com/googleapis/gax-nodejs/issues/574)) ([92a11c1](https://www.github.com/googleapis/gax-nodejs/commit/92a11c1))
+
 ## [1.3.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.2.1...v1.3.0) (2019-08-01)
 
 
