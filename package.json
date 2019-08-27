@@ -124,5 +124,5 @@
       ".system-test-run/**"
     ]
   },
-  "browser": "build/src/browser.js"
+  "browser": "build/src/fallback.js"
 }

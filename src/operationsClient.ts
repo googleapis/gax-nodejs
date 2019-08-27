@@ -29,15 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {GoogleAuth} from 'google-auth-library';
+import {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as path from 'path';
 
-import {GaxCall, APICallback} from './apitypes';
+import {GaxCall} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
+import {GrpcClient as FallbackGrpcClient} from './fallback';
 
 const configData = require('./operations_client_config');
 
@@ -64,6 +65,7 @@ export interface OperationsClientOptions {
   libName?: string;
   libVersion?: string;
   clientConfig: gax.ClientConfig;
+  fallback?: boolean;
 }
 
 /**
@@ -85,16 +87,13 @@ export interface OperationsClientOptions {
  * @class
  */
 export class OperationsClient {
-  auth: GoogleAuth;
-  private _getOperation!: GaxCall;
-  private _listOperations!: GaxCall;
-  private _cancelOperation!: GaxCall;
-  private _deleteOperation!: GaxCall;
+  auth?: GoogleAuth | OAuth2Client;
+  private _innerApiCalls: {[name: string]: GaxCall};
 
   constructor(
-    gaxGrpc: GrpcClient,
+    gaxGrpc: GrpcClient | FallbackGrpcClient,
     // tslint:disable-next-line no-any
-    grpcClients: any,
+    operationsProtos: any,
     options: OperationsClientOptions
   ) {
     const opts: OperationsClientOptions & ClientStubOptions = Object.assign(
@@ -110,11 +109,12 @@ export class OperationsClient {
     if (opts.libName && opts.libVersion) {
       googleApiClient.push(opts.libName + '/' + opts.libVersion);
     }
-    googleApiClient.push(
-      CODE_GEN_NAME_VERSION,
-      'gax/' + version,
-      'grpc/' + gaxGrpc.grpcVersion
-    );
+    googleApiClient.push(CODE_GEN_NAME_VERSION, 'gax/' + version);
+    if (opts.fallback) {
+      googleApiClient.push('gl-web/' + version);
+    } else {
+      googleApiClient.push('grpc/' + gaxGrpc.grpcVersion);
+    }
 
     const defaults = gaxGrpc.constructSettings(
       'google.longrunning.Operations',
@@ -124,27 +124,42 @@ export class OperationsClient {
     );
 
     this.auth = gaxGrpc.auth;
+
+    // Set up a dictionary of "inner API calls"; the core implementation
+    // of calling the API is handled in `google-gax`, with this code
+    // merely providing the destination and request information.
+    this._innerApiCalls = {};
+
+    // Put together the "service stub" for
+    // google.longrunning.Operations.
     const operationsStub = gaxGrpc.createStub(
-      grpcClients.google.longrunning.Operations,
+      opts.fallback
+        ? operationsProtos.lookupService('google.longrunning.Operations')
+        : operationsProtos.google.longrunning.Operations,
       opts
-    );
+    ) as Promise<{[method: string]: Function}>;
     const operationsStubMethods = [
       'getOperation',
       'listOperations',
       'cancelOperation',
       'deleteOperation',
     ];
-    operationsStubMethods.forEach(methodName => {
-      this['_' + methodName] = createApiCall(
-        operationsStub.then(operationsStub => {
-          return (...args: Array<{}>) => {
-            return operationsStub[methodName].apply(operationsStub, args);
-          };
-        }),
+
+    for (const methodName of operationsStubMethods) {
+      const innerCallPromise = operationsStub.then(
+        stub => (...args: Array<{}>) => {
+          return stub[methodName].apply(stub, args);
+        },
+        err => () => {
+          throw err;
+        }
+      );
+      this._innerApiCalls[methodName] = createApiCall(
+        innerCallPromise,
         defaults[methodName],
         PAGE_DESCRIPTORS[methodName]
       );
-    });
+    }
   }
 
   /**
@@ -155,7 +170,14 @@ export class OperationsClient {
   getProjectId(): Promise<string>;
   getProjectId(callback: ProjectIdCallback): void;
   getProjectId(callback?: ProjectIdCallback): void | Promise<string> {
-    return this.auth.getProjectId(callback!);
+    if (this.auth && 'getProjectId' in this.auth) {
+      return this.auth.getProjectId(callback!);
+    }
+    if (callback) {
+      callback(new Error('Cannot determine project ID.'));
+    } else {
+      return Promise.reject('Cannot determine project ID.');
+    }
   }
 
   // Service calls
@@ -197,7 +219,7 @@ export class OperationsClient {
       options = {};
     }
     options = options || {};
-    return this._getOperation(request, options, callback);
+    return this._innerApiCalls.getOperation(request, options, callback);
   }
 
   /**
@@ -283,7 +305,7 @@ export class OperationsClient {
       options = {};
     }
     options = options || {};
-    return this['_listOperations'](request, options, callback);
+    return this._innerApiCalls.listOperations(request, options, callback);
   }
 
   /**
@@ -332,7 +354,7 @@ export class OperationsClient {
    */
   listOperationsStream(request: {}, options: gax.CallSettings) {
     return PAGE_DESCRIPTORS.listOperations.createStream(
-      this._listOperations,
+      this._innerApiCalls.listOperations,
       request,
       options
     );
@@ -374,7 +396,7 @@ export class OperationsClient {
       options = {};
     }
     options = options || {};
-    return this._cancelOperation(request, options, callback);
+    return this._innerApiCalls.cancelOperation(request, options, callback);
   }
 
   /**
@@ -407,7 +429,7 @@ export class OperationsClient {
       options = {};
     }
     options = options || {};
-    return this._deleteOperation(request, options, callback);
+    return this._innerApiCalls.deleteOperation(request, options, callback);
   }
 }
 
@@ -418,14 +440,18 @@ export class OperationsClientBuilder {
    * Builds a new Operations Client
    * @param gaxGrpc {GrpcClient}
    */
-  constructor(gaxGrpc: GrpcClient) {
-    const protoFilesRoot = path.join(__dirname, '..', '..');
+  constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
     // tslint:disable-next-line no-any
-    const operationsClient: any = gaxGrpc.loadProto(
-      protoFilesRoot,
-      'google/longrunning/operations.proto'
-    );
-    Object.assign(this, operationsClient.google.longrunning);
+    let operationsProtos: any; // loaded protos have any type
+    if (gaxGrpc.fallback) {
+      const protoJson = require('../../protos/operations.json');
+      operationsProtos = gaxGrpc.loadProto(protoJson);
+    } else {
+      operationsProtos = gaxGrpc.loadProto(
+        path.join(__dirname, '..', '..', 'protos', 'operations.json')
+      );
+      Object.assign(this, operationsProtos.google.longrunning);
+    }
 
     /**
      * Build a new instance of {@link OperationsClient}.
@@ -437,7 +463,10 @@ export class OperationsClientBuilder {
      * @param {Object=} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
      */
     this.operationsClient = opts => {
-      return new OperationsClient(gaxGrpc, operationsClient, opts);
+      if (gaxGrpc.fallback) {
+        opts.fallback = true;
+      }
+      return new OperationsClient(gaxGrpc, operationsProtos, opts);
     };
     Object.assign(this.operationsClient, OperationsClient);
   }

@@ -93,6 +93,7 @@ export class GrpcClient {
   promise: PromiseConstructor;
   grpc: GrpcModule;
   grpcVersion: string;
+  fallback: boolean;
 
   /**
    * A class which keeps the context of gRPC and auth for the gRPC.
@@ -114,6 +115,7 @@ export class GrpcClient {
   constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
     this.promise = options.promise || Promise;
+    this.fallback = false;
 
     if ('grpc' in options) {
       this.grpc = options.grpc!;

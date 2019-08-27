@@ -44,7 +44,7 @@ import {
   UserRefreshClient,
   GoogleAuthOptions,
 } from 'google-auth-library';
-import {OperationsClientBuilder} from './operationsClientBrowser';
+import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
@@ -68,9 +68,11 @@ export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
   promise?: PromiseConstructor;
+  fallback: boolean;
+  grpcVersion: string;
 
   /**
-   * Browser version of GrpcClient
+   * gRPC-fallback version of GrpcClient
    * Implements GrpcClient API for a browser using grpc-fallback protocol (sends serialized protobuf to HTTP/1 $rpc endpoint).
    *
    * @param {Object=} options.auth - An instance of OAuth2Client to use in browser, or an instance of GoogleAuth from google-auth-library
@@ -95,10 +97,12 @@ export class GrpcClient {
         new GoogleAuth(options as GoogleAuthOptions);
     }
     this.promise = 'promise' in options ? options.promise! : Promise;
+    this.fallback = true;
+    this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
   }
 
   /**
-   * Browser version of loadProto
+   * gRPC-fallback version of loadProto
    * Loads the protobuf root object from a JSON object created from a proto file
    * @param {Object} jsonObject - A JSON version of a protofile created usin protobuf.js
    * @returns {Object} Root namespace of proto JSON
@@ -119,7 +123,7 @@ export class GrpcClient {
   }
 
   /**
-   * Browser version of constructSettings
+   * gRPC-fallback version of constructSettings
    * A wrapper of {@link constructSettings} function under the gRPC context.
    *
    * Most of parameters are common among constructSettings, please take a look.
@@ -171,7 +175,7 @@ export class GrpcClient {
   }
 
   /**
-   * Browser version of createStub
+   * gRPC-fallback version of createStub
    * Creates a gRPC-fallback stub with authentication headers built from supplied OAuth2Client instance
    *
    * @param {function} CreateStub - The constructor function of the stub.
@@ -297,7 +301,7 @@ export class GrpcClient {
 }
 
 /**
- * Browser version of lro
+ * gRPC-fallback version of lro
  *
  * @param {Object=} options.auth - An instance of google-auth-library.
  * @param {Function=} options.promise - A constructor for a promise that
@@ -311,7 +315,7 @@ export function lro(options: GrpcClientOptions) {
 }
 
 /**
- * Browser version of createApiCall
+ * gRPC-fallback version of createApiCall
  *
  * Converts an rpc call into an API call governed by the settings.
  *

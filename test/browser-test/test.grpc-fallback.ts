@@ -31,11 +31,10 @@
 
 import * as assert from 'assert';
 import * as protobuf from 'protobufjs';
-import * as gax from '../../src/browser';
+import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {expect} from 'chai';
-import {GrpcClient} from '../../src/browser';
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 const authStub = {
@@ -51,7 +50,7 @@ const opts = {
 describe('loadProto', () => {
   it('should create a root object', () => {
     // @ts-ignore incomplete options
-    const gaxGrpc = new GrpcClient(opts);
+    const gaxGrpc = new fallback.GrpcClient(opts);
     const protos = gaxGrpc.loadProto(echoProtoJson);
 
     assert(protos instanceof protobuf.Root);
@@ -61,7 +60,7 @@ describe('loadProto', () => {
 
   it('should be able to load no files', () => {
     // @ts-ignore incomplete options
-    const gaxGrpc = new GrpcClient(opts);
+    const gaxGrpc = new fallback.GrpcClient(opts);
     const protos = gaxGrpc.loadProto({});
     assert(protos instanceof protobuf.Root);
 
@@ -75,7 +74,7 @@ describe('createStub', () => {
 
   beforeEach(() => {
     // @ts-ignore incomplete options
-    gaxGrpc = new GrpcClient(opts);
+    gaxGrpc = new fallback.GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
     stubOptions = {
@@ -154,7 +153,7 @@ describe('grpc-fallback', () => {
     };
 
     // @ts-ignore incomplete options
-    gaxGrpc = new GrpcClient(opts);
+    gaxGrpc = new fallback.GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
     stubOptions = {
@@ -228,7 +227,7 @@ describe('grpc-fallback', () => {
     options.otherArgs.headers = {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
+    ] = fallback.routingHeader.fromParams({
       abc: 'def',
     });
     const responseType = protos.lookupType('EchoResponse');
