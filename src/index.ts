@@ -83,3 +83,12 @@ export {protobuf};
 
 import * as fallback from './fallback';
 export {fallback};
+
+export {
+  GRPCCallResult,
+  ServerStreamingCall,
+  ClientStreamingCall,
+  BiDiStreamingCall,
+  UnaryCall,
+  GRPCCall,
+} from './apitypes';
