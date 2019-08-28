@@ -59,6 +59,9 @@ describe('exports', () => {
     it('exports LongrunningDescriptor', () => {
       assert(typeof index.LongrunningDescriptor === 'function');
     });
+    it('exports lro', () => {
+      assert(typeof index.lro === 'function');
+    });
     it('exports version', () => {
       assert(typeof index.version === 'string');
       assert.strictEqual(index.version, version);
@@ -89,6 +92,9 @@ describe('exports', () => {
     });
     it('exports LongrunningDescriptor', () => {
       assert(typeof fallback.LongrunningDescriptor === 'function');
+    });
+    it('exports lro', () => {
+      assert(typeof fallback.lro === 'function');
     });
     it('exports version', () => {
       assert(typeof fallback.version === 'string');
