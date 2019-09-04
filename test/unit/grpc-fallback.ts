@@ -202,8 +202,6 @@ describe('grpc-fallback', () => {
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err, result) => {
-        console.log(err);
-        console.log(result);
         assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
         done();
