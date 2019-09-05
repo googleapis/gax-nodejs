@@ -279,5 +279,4 @@ describe('grpc-fallback', () => {
       });
     });
   });
-
 });
