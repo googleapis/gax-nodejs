@@ -95,7 +95,7 @@
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src && cp -r test/fixtures build/test/",
-    "compile-protos": "pbjs -t json ./protos/google/longrunning/operations.proto -p ./protos > protos/operations.json",
+    "compile-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t json google/rpc/status.proto google/rpc/error_details.proto google/protobuf/any.proto -p ./protos > protos/status.json",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile && node ./build/tools/prepublish.js",
     "posttest": "npm run lint",

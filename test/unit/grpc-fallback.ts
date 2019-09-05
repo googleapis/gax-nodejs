@@ -30,6 +30,8 @@
  */
 
 import * as assert from 'assert';
+import * as path from 'path';
+import * as fs from 'fs';
 import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
@@ -191,6 +193,7 @@ describe('grpc-fallback', () => {
 
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
+        ok: true,
         arrayBuffer: () => {
           return Promise.resolve(responseType.encode(response).finish());
         },
@@ -199,7 +202,45 @@ describe('grpc-fallback', () => {
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err, result) => {
+        assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
+        done();
+      });
+    });
+  });
+
+  it('should handle an error', done => {
+    const requestObject = {content: 'test-content'};
+    // example of an actual google.rpc.Status error message returned by Language API
+    const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
+    const errorBin = fs.readFileSync(fixtureName);
+    const expectedError = {
+      code: 3,
+      message: 'One of content, or gcs_content_uri must be set.',
+      details: [
+        {
+          fieldViolations: [
+            {
+              field: 'document.content',
+              description: 'Must have some text content to annotate.',
+            },
+          ],
+        },
+      ],
+    };
+
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(errorBin);
+        },
+      })
+    );
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err, result) => {
+        assert.strictEqual(err.message, JSON.stringify(expectedError));
         done();
       });
     });

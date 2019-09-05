@@ -37,6 +37,8 @@ import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {expect} from 'chai';
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
+const statusJsonProto = require('../../protos/status.json');
+
 const authStub = {
   getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
@@ -195,6 +197,7 @@ describe('grpc-fallback', () => {
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
     const fakeFetch = sinon.fake.resolves({
+      ok: true,
       arrayBuffer: () => {
         return Promise.resolve(responseType.encode(response).finish());
       },
@@ -238,6 +241,7 @@ describe('grpc-fallback', () => {
       // @ts-ignore
       assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
       return Promise.resolve({
+        ok: true,
         arrayBuffer: () => {
           return Promise.resolve(responseType.encode(response).finish());
         },
@@ -246,5 +250,33 @@ describe('grpc-fallback', () => {
     const [result] = await client.echo(requestObject, options);
     assert.strictEqual(requestObject.content, result.content);
     window.fetch = savedFetch;
+  });
+
+  it('should handle an error', done => {
+    const requestObject = {content: 'test-content'};
+    // example of an actual google.rpc.Status error message returned by Language API
+    const expectedError = {
+      code: 3,
+      message: 'Error message',
+      details: [],
+    };
+
+    const fakeFetch = sinon.fake.resolves({
+      ok: false,
+      arrayBuffer: () => {
+        const root = protobuf.Root.fromJSON(statusJsonProto);
+        const statusType = root.lookupType('google.rpc.Status');
+        const statusMessage = statusType.fromObject(expectedError);
+        return Promise.resolve(statusType.encode(statusMessage).finish());
+      },
+    });
+    sinon.replace(window, 'fetch', fakeFetch);
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err, result) => {
+        assert.strictEqual(err.message, JSON.stringify(expectedError));
+        done();
+      });
+    });
   });
 });

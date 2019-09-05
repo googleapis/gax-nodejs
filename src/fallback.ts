@@ -50,6 +50,7 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 import {isBrowser} from './isbrowser';
+import {FallbackErrorDecoder} from './fallbackError';
 
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
@@ -192,6 +193,9 @@ export class GrpcClient {
       return [method, requestData, callback];
     }
 
+    // decoder for google.rpc.Status messages
+    const statusDecoder = new FallbackErrorDecoder();
+
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
         this.authClient = await this.auth.getClient();
@@ -272,9 +276,16 @@ export class GrpcClient {
           signal: cancelSignal,
         })
           .then(response => {
-            return response.arrayBuffer();
+            return Promise.all([
+              Promise.resolve(response.ok),
+              response.arrayBuffer(),
+            ]);
           })
-          .then(buffer => {
+          .then(([ok, buffer]) => {
+            if (!ok) {
+              const status = statusDecoder.decodeRpcStatus(buffer);
+              throw new Error(JSON.stringify(status));
+            }
             serviceCallback(null, new Uint8Array(buffer));
           })
           .catch(err => {
