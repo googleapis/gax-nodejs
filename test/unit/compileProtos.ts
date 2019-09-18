@@ -61,18 +61,26 @@ describe('compileProtos tool', () => {
     process.chdir(cwd);
   });
 
-  it('compiles protos to JSON', async () => {
+  it('compiles protos to JSON, JS, TS', async () => {
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);
-    const expectedResultFile = path.join(resultDir, 'protos.json');
-    assert(fs.existsSync(expectedResultFile));
+    const expectedJsonResultFile = path.join(resultDir, 'protos.json');
+    const expectedJSResultFile = path.join(resultDir, 'protos.js');
+    const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
+    assert(fs.existsSync(expectedJsonResultFile));
+    assert(fs.existsSync(expectedJSResultFile));
+    assert(fs.existsSync(expectedTSResultFile));
 
-    const json = await readFile(expectedResultFile);
+    const json = await readFile(expectedJsonResultFile);
     const root = protobuf.Root.fromJSON(JSON.parse(json.toString()));
-
     assert(root.lookup('TestMessage'));
     assert(root.lookup('LibraryService'));
+
+    const js = await readFile(expectedJSResultFile);
+    const ts = await readFile(expectedTSResultFile);
+    assert(js.toString());
+    assert(ts.toString());
   });
 
   it('writes an empty object if no protos are given', async () => {

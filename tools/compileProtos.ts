@@ -107,10 +107,10 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
  */
 async function compileProtos(protos: string[]): Promise<void> {
   // generate protos.json file from proto list
-  const JSONoutput = path.join('protos', 'protos.json');
+  const jsonOutput = path.join('protos', 'protos.json');
   if (protos.length === 0) {
     // no input file, just emit an empty object
-    await writeFile(JSONoutput, '{}');
+    await writeFile(jsonOutput, '{}');
     return;
   }
   const pbjsArgs4JSON = [
@@ -121,13 +121,13 @@ async function compileProtos(protos: string[]): Promise<void> {
     '-p',
     'protos',
     '-o',
-    JSONoutput,
+    jsonOutput,
   ];
   pbjsArgs4JSON.push(...protos);
   await pbjsMain(pbjsArgs4JSON);
-    
+
   // generate protos/protos.js from protos.json
-  const JSoutput = path.join('protos', 'protos.js');
+  const jsOutput = path.join('protos', 'protos.js');
   const pbjsArgs4js = [
     '--target',
     'static-module',
@@ -136,18 +136,14 @@ async function compileProtos(protos: string[]): Promise<void> {
     '-p',
     'protos',
     '-o',
-    JSoutput,
+    jsOutput,
   ];
   pbjsArgs4js.push(...protos);
   await pbjsMain(pbjsArgs4js);
 
   // generate protos/protos.d.ts
-  const TSouput = path.join('protos', 'protos.d.ts');
-  const pbjsArgs4ts = [
-      JSoutput,
-      '-o',
-      TSouput,
-  ];
+  const tsOuput = path.join('protos', 'protos.d.ts');
+  const pbjsArgs4ts = [jsOutput, '-o', tsOuput];
   await pbtsMain(pbjsArgs4ts);
 }
 
