@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-/*
- * Copyright 2019 Google LLC
+/* Copyright 2019 Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,12 +34,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
 import * as pbjs from 'protobufjs/cli/pbjs';
+import * as pbts from 'protobufjs/cli/pbts';
 
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 const stat = util.promisify(fs.stat);
 const pbjsMain = util.promisify(pbjs.main);
+const pbtsMain = util.promisify(pbts.main);
 
 const PROTO_LIST_REGEX = /_proto_list\.json$/;
 
@@ -104,13 +105,14 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
  * @param {string[]} protos List of proto files to compile.
  */
 async function compileProtos(protos: string[]): Promise<void> {
-  const output = path.join('protos', 'protos.json');
+  // generate protos.json file from proto list
+  const jsonOutput = path.join('protos', 'protos.json');
   if (protos.length === 0) {
     // no input file, just emit an empty object
-    await writeFile(output, '{}');
+    await writeFile(jsonOutput, '{}');
     return;
   }
-  const pbjsArgs = [
+  const pbjsArgs4JSON = [
     '--target',
     'json',
     '-p',
@@ -118,10 +120,30 @@ async function compileProtos(protos: string[]): Promise<void> {
     '-p',
     'protos',
     '-o',
-    output,
+    jsonOutput,
   ];
-  pbjsArgs.push(...protos);
-  await pbjsMain(pbjsArgs);
+  pbjsArgs4JSON.push(...protos);
+  await pbjsMain(pbjsArgs4JSON);
+
+  // generate protos/protos.js from protos.json
+  const jsOutput = path.join('protos', 'protos.js');
+  const pbjsArgs4js = [
+    '--target',
+    'static-module',
+    '-p',
+    path.join(__dirname, '..', '..', 'protos'),
+    '-p',
+    'protos',
+    '-o',
+    jsOutput,
+  ];
+  pbjsArgs4js.push(...protos);
+  await pbjsMain(pbjsArgs4js);
+
+  // generate protos/protos.d.ts
+  const tsOutput = path.join('protos', 'protos.d.ts');
+  const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
+  await pbtsMain(pbjsArgs4ts);
 }
 
 /**
