@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.6.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.5.2...v1.6.0) (2019-09-19)
+
+
+### Features
+
+* make compileProtos generate TypeScript types ([#588](https://www.github.com/googleapis/gax-nodejs/issues/588)) ([1dd8b47](https://www.github.com/googleapis/gax-nodejs/commit/1dd8b47))
+
 ### [1.5.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.5.1...v1.5.2) (2019-09-05)
 
 
