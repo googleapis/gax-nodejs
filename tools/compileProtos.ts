@@ -141,8 +141,8 @@ async function compileProtos(protos: string[]): Promise<void> {
   await pbjsMain(pbjsArgs4js);
 
   // generate protos/protos.d.ts
-  const tsOuput = path.join('protos', 'protos.d.ts');
-  const pbjsArgs4ts = [jsOutput, '-o', tsOuput];
+  const tsOutput = path.join('protos', 'protos.d.ts');
+  const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 }
 

@@ -77,9 +77,12 @@ describe('compileProtos tool', () => {
     assert(root.lookup('LibraryService'));
 
     const js = await readFile(expectedJSResultFile);
+    assert(js.toString().includes('TestMessage'));
+    assert(js.toString().includes('LibraryService'));
+
     const ts = await readFile(expectedTSResultFile);
-    assert(js.toString());
-    assert(ts.toString());
+    assert(ts.toString().includes('TestMessage'));
+    assert(ts.toString().includes('LibraryService'));
   });
 
   it('writes an empty object if no protos are given', async () => {
