@@ -55,7 +55,7 @@ import {FallbackErrorDecoder} from './fallbackError';
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
 export {CallSettings, constructSettings, RetryOptions} from './gax';
-export const version = require('../../package.json').version;
+export const version = require('../../package.json').version + '-fallback';
 
 export {
   BundleDescriptor,

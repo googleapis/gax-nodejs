@@ -98,7 +98,7 @@ describe('exports', () => {
     });
     it('exports version', () => {
       assert(typeof fallback.version === 'string');
-      assert.strictEqual(fallback.version, version);
+      assert.strictEqual(fallback.version, version + '-fallback');
     });
   });
 });
