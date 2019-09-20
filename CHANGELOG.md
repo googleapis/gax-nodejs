@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.6.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.0...v1.6.1) (2019-09-20)
+
+
+### Bug Fixes
+
+* make fallback version unique ([#590](https://www.github.com/googleapis/gax-nodejs/issues/590)) ([2586baa](https://www.github.com/googleapis/gax-nodejs/commit/2586baa))
+
 ## [1.6.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.5.2...v1.6.0) (2019-09-19)
 
 
