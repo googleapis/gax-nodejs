@@ -144,8 +144,27 @@ export class GrpcClient {
   ) {
     function buildMetadata(abTests, moreHeaders) {
       const metadata = {};
+      if (!headers) {
+        headers = {};
+      }
+      for (const key in headers) {
+        if (headers.hasOwnProperty(key)) {
+          metadata[key] = Array.isArray(headers[key])
+            ? headers[key]
+            : [headers[key]];
+        }
+      }
+
+      // gRPC-fallback request must have 'grpc-web/' in 'x-goog-api-client'
+      const clientVersionString = metadata['x-goog-api-client'][0] || undefined;
+      const clientVersions = clientVersionString
+        ? clientVersionString.split(' ')
+        : [];
+      clientVersions.push(`grpc-web/${version}`);
+      metadata['x-goog-api-client'] = [clientVersions.join(' ')];
+
       if (!moreHeaders) {
-        return {};
+        return metadata;
       }
       for (const key in moreHeaders) {
         if (
