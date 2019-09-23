@@ -66,6 +66,8 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
+const CLIENT_VERSION_HEADER = 'x-goog-api-client';
+
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
@@ -156,19 +158,22 @@ export class GrpcClient {
       }
 
       // gRPC-fallback request must have 'grpc-web/' in 'x-goog-api-client'
-      const clientVersionString = metadata['x-goog-api-client'][0] || undefined;
-      const clientVersions = clientVersionString
-        ? clientVersionString.split(' ')
-        : [];
+      const clientVersions: string[] = [];
+      if (
+        metadata[CLIENT_VERSION_HEADER] &&
+        metadata[CLIENT_VERSION_HEADER][0]
+      ) {
+        clientVersions.push(...metadata[CLIENT_VERSION_HEADER][0].split(' '));
+      }
       clientVersions.push(`grpc-web/${version}`);
-      metadata['x-goog-api-client'] = [clientVersions.join(' ')];
+      metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(' ')];
 
       if (!moreHeaders) {
         return metadata;
       }
       for (const key in moreHeaders) {
         if (
-          key.toLowerCase() !== 'x-goog-api-client' &&
+          key.toLowerCase() !== CLIENT_VERSION_HEADER &&
           moreHeaders.hasOwnProperty(key)
         ) {
           const value = moreHeaders[key];
