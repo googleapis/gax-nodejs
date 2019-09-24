@@ -34,7 +34,6 @@ import * as download from 'download';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
-import * as tar from 'tar';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
@@ -65,13 +64,7 @@ export class ShowcaseServer {
       console.log(stdout);
     }
     console.log(`About to extract ${tarballFilename}`);
-    await tar
-      .extract({
-        file: tarballFilename,
-      })
-      .catch(err => {
-        console.log('Error extracting!', err);
-      });
+    await execa('tar', ['xzf', tarballFilename]);
     console.log('Extracted');
 
     {
