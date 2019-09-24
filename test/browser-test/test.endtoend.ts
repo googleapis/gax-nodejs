@@ -57,12 +57,12 @@ describe('Run tests against gRPC server', () => {
   const client = new EchoClient(opts);
 
   before(async function() {
-    this.timeout(40000);
+    this.timeout(100000);
 
     const request = {
       content: 'test',
     };
-    const MAX_RETRIES = 20;
+    const MAX_RETRIES = 50;
     const TIMEOUT = 1000;
     let retryCount = 0;
     // Making sure server is up before starting tests.
