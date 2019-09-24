@@ -57,11 +57,24 @@ export class ShowcaseServer {
     process.chdir(testDir);
     console.log(`Server will be run from ${testDir}.`);
 
+    console.log(`About to download ${fallbackServerUrl} into ${testDir}`);
     await download(fallbackServerUrl, testDir);
+    console.log(`Downloaded:`);
+    {
+      const {stdout} = await execa('ls', ['-l', testDir]);
+      console.log(stdout);
+    }
+    console.log(`About to extract ${tarballFilename}`);
     await tar.extract({
       file: tarballFilename,
     });
+    console.log('Extracted');
 
+    {
+      const {stdout} = await execa('ls', ['-l', testDir]);
+      console.log(stdout);
+    }
+    console.log(`About to run ${binaryName}`);
     const childProcess = execa(binaryName, ['run'], {
       cwd: testDir,
       stdio: 'inherit',
