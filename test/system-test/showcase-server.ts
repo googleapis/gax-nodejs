@@ -65,9 +65,13 @@ export class ShowcaseServer {
       console.log(stdout);
     }
     console.log(`About to extract ${tarballFilename}`);
-    await tar.extract({
-      file: tarballFilename,
-    });
+    await tar
+      .extract({
+        file: tarballFilename,
+      })
+      .catch(err => {
+        console.log('Error extracting!', err);
+      });
     console.log('Extracted');
 
     {
