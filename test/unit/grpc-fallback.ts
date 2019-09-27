@@ -186,6 +186,47 @@ describe('grpc-fallback', () => {
     abortController.AbortController = savedAbortController;
   });
 
+  it('should send grpc-web version in the header', () => {
+    const gapicConfig = {
+      interfaces: {
+        'google.showcase.v1beta1.Echo': {
+          retry_codes: {
+            idempotent: ['DEADLINE_EXCEEDED', 'UNAVAILABLE'],
+            non_idempotent: [],
+          },
+          retry_params: {
+            default: {
+              initial_retry_delay_millis: 100,
+              retry_delay_multiplier: 1.3,
+              max_retry_delay_millis: 60000,
+              initial_rpc_timeout_millis: 20000,
+              rpc_timeout_multiplier: 1.0,
+              max_rpc_timeout_millis: 20000,
+              total_timeout_millis: 600000,
+            },
+          },
+          methods: {
+            Echo: {
+              timeout_millis: 60000,
+              retry_codes_name: 'idempotent',
+              retry_params_name: 'default',
+            },
+          },
+        },
+      },
+    };
+
+    const settings = gaxGrpc.constructSettings(
+      'google.showcase.v1beta1.Echo',
+      gapicConfig,
+      {},
+      {}
+    );
+    const metadataBuilder = settings.echo.otherArgs.metadataBuilder;
+    const headers = metadataBuilder();
+    assert(headers['x-goog-api-client'][0].match('grpc-web/'));
+  });
+
   it('should make a request', done => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
