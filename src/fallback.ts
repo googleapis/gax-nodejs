@@ -149,6 +149,8 @@ export class GrpcClient {
       if (!headers) {
         headers = {};
       }
+      // Since gRPC expects each header to be an array,
+      // we are doing the same for fallback here.
       for (const key in headers) {
         if (headers.hasOwnProperty(key)) {
           metadata[key] = Array.isArray(headers[key])
