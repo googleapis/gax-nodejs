@@ -1,5 +1,6 @@
 {
   "name": "google-gax",
+  "do": "not merge me",
   "version": "1.6.2",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
