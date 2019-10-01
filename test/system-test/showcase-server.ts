@@ -34,7 +34,6 @@ import * as download from 'download';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
-import * as tar from 'tar';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
@@ -58,10 +57,7 @@ export class ShowcaseServer {
     console.log(`Server will be run from ${testDir}.`);
 
     await download(fallbackServerUrl, testDir);
-    await tar.extract({
-      file: tarballFilename,
-    });
-
+    await execa('tar', ['xzf', tarballFilename]);
     const childProcess = execa(binaryName, ['run'], {
       cwd: testDir,
       stdio: 'inherit',

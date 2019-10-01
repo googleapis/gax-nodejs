@@ -4,6 +4,48 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.6.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.1...v1.6.2) (2019-09-27)
+
+
+### Bug Fixes
+
+* x-goog-api-client header for fallback ([#592](https://www.github.com/googleapis/gax-nodejs/issues/592)) ([4425a54](https://www.github.com/googleapis/gax-nodejs/commit/4425a54))
+
+### [1.6.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.0...v1.6.1) (2019-09-20)
+
+
+### Bug Fixes
+
+* make fallback version unique ([#590](https://www.github.com/googleapis/gax-nodejs/issues/590)) ([2586baa](https://www.github.com/googleapis/gax-nodejs/commit/2586baa))
+
+## [1.6.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.5.2...v1.6.0) (2019-09-19)
+
+
+### Features
+
+* make compileProtos generate TypeScript types ([#588](https://www.github.com/googleapis/gax-nodejs/issues/588)) ([1dd8b47](https://www.github.com/googleapis/gax-nodejs/commit/1dd8b47))
+
+### [1.5.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.5.1...v1.5.2) (2019-09-05)
+
+
+### Bug Fixes
+
+* properly handle gRPC-fallback errors ([#582](https://www.github.com/googleapis/gax-nodejs/issues/582)) ([76f1c5b](https://www.github.com/googleapis/gax-nodejs/commit/76f1c5b))
+
+### [1.5.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.5.0...v1.5.1) (2019-08-28)
+
+
+### Bug Fixes
+
+* export version from fallback ([#579](https://www.github.com/googleapis/gax-nodejs/issues/579)) ([ecc2516](https://www.github.com/googleapis/gax-nodejs/commit/ecc2516))
+
+## [1.5.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.4.0...v1.5.0) (2019-08-28)
+
+
+### Features
+
+* export call types ([#576](https://www.github.com/googleapis/gax-nodejs/issues/576)) ([74aa605](https://www.github.com/googleapis/gax-nodejs/commit/74aa605))
+
 ## [1.4.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.3.0...v1.4.0) (2019-08-27)
 
 

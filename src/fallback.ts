@@ -50,10 +50,12 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 import {isBrowser} from './isbrowser';
+import {FallbackErrorDecoder} from './fallbackError';
 
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
 export {CallSettings, constructSettings, RetryOptions} from './gax';
+export const version = require('../../package.json').version + '-fallback';
 
 export {
   BundleDescriptor,
@@ -63,6 +65,8 @@ export {
 } from './descriptor';
 
 export {StreamType} from './streamingCalls/streaming';
+
+const CLIENT_VERSION_HEADER = 'x-goog-api-client';
 
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
@@ -142,12 +146,36 @@ export class GrpcClient {
   ) {
     function buildMetadata(abTests, moreHeaders) {
       const metadata = {};
+      if (!headers) {
+        headers = {};
+      }
+      // Since gRPC expects each header to be an array,
+      // we are doing the same for fallback here.
+      for (const key in headers) {
+        if (headers.hasOwnProperty(key)) {
+          metadata[key] = Array.isArray(headers[key])
+            ? headers[key]
+            : [headers[key]];
+        }
+      }
+
+      // gRPC-fallback request must have 'grpc-web/' in 'x-goog-api-client'
+      const clientVersions: string[] = [];
+      if (
+        metadata[CLIENT_VERSION_HEADER] &&
+        metadata[CLIENT_VERSION_HEADER][0]
+      ) {
+        clientVersions.push(...metadata[CLIENT_VERSION_HEADER][0].split(' '));
+      }
+      clientVersions.push(`grpc-web/${version}`);
+      metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(' ')];
+
       if (!moreHeaders) {
-        return {};
+        return metadata;
       }
       for (const key in moreHeaders) {
         if (
-          key.toLowerCase() !== 'x-goog-api-client' &&
+          key.toLowerCase() !== CLIENT_VERSION_HEADER &&
           moreHeaders.hasOwnProperty(key)
         ) {
           const value = moreHeaders[key];
@@ -190,6 +218,9 @@ export class GrpcClient {
     function serviceClientImpl(method, requestData, callback) {
       return [method, requestData, callback];
     }
+
+    // decoder for google.rpc.Status messages
+    const statusDecoder = new FallbackErrorDecoder();
 
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
@@ -271,9 +302,16 @@ export class GrpcClient {
           signal: cancelSignal,
         })
           .then(response => {
-            return response.arrayBuffer();
+            return Promise.all([
+              Promise.resolve(response.ok),
+              response.arrayBuffer(),
+            ]);
           })
-          .then(buffer => {
+          .then(([ok, buffer]) => {
+            if (!ok) {
+              const status = statusDecoder.decodeRpcStatus(buffer);
+              throw new Error(JSON.stringify(status));
+            }
             serviceCallback(null, new Uint8Array(buffer));
           })
           .catch(err => {

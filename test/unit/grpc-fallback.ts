@@ -30,6 +30,8 @@
  */
 
 import * as assert from 'assert';
+import * as path from 'path';
+import * as fs from 'fs';
 import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
@@ -184,6 +186,47 @@ describe('grpc-fallback', () => {
     abortController.AbortController = savedAbortController;
   });
 
+  it('should send grpc-web version in the header', () => {
+    const gapicConfig = {
+      interfaces: {
+        'google.showcase.v1beta1.Echo': {
+          retry_codes: {
+            idempotent: ['DEADLINE_EXCEEDED', 'UNAVAILABLE'],
+            non_idempotent: [],
+          },
+          retry_params: {
+            default: {
+              initial_retry_delay_millis: 100,
+              retry_delay_multiplier: 1.3,
+              max_retry_delay_millis: 60000,
+              initial_rpc_timeout_millis: 20000,
+              rpc_timeout_multiplier: 1.0,
+              max_rpc_timeout_millis: 20000,
+              total_timeout_millis: 600000,
+            },
+          },
+          methods: {
+            Echo: {
+              timeout_millis: 60000,
+              retry_codes_name: 'idempotent',
+              retry_params_name: 'default',
+            },
+          },
+        },
+      },
+    };
+
+    const settings = gaxGrpc.constructSettings(
+      'google.showcase.v1beta1.Echo',
+      gapicConfig,
+      {},
+      {}
+    );
+    const metadataBuilder = settings.echo.otherArgs.metadataBuilder;
+    const headers = metadataBuilder();
+    assert(headers['x-goog-api-client'][0].match('grpc-web/'));
+  });
+
   it('should make a request', done => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
@@ -191,6 +234,7 @@ describe('grpc-fallback', () => {
 
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
+        ok: true,
         arrayBuffer: () => {
           return Promise.resolve(responseType.encode(response).finish());
         },
@@ -199,7 +243,45 @@ describe('grpc-fallback', () => {
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err, result) => {
+        assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
+        done();
+      });
+    });
+  });
+
+  it('should handle an error', done => {
+    const requestObject = {content: 'test-content'};
+    // example of an actual google.rpc.Status error message returned by Language API
+    const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
+    const errorBin = fs.readFileSync(fixtureName);
+    const expectedError = {
+      code: 3,
+      message: 'One of content, or gcs_content_uri must be set.',
+      details: [
+        {
+          fieldViolations: [
+            {
+              field: 'document.content',
+              description: 'Must have some text content to annotate.',
+            },
+          ],
+        },
+      ],
+    };
+
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(errorBin);
+        },
+      })
+    );
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err, result) => {
+        assert.strictEqual(err.message, JSON.stringify(expectedError));
         done();
       });
     });
