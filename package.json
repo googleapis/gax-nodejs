@@ -25,7 +25,8 @@
     "protobufjs": "^6.8.8",
     "retry-request": "^4.0.0",
     "semver": "^6.0.0",
-    "walkdir": "^0.4.0"
+    "walkdir": "^0.4.0",
+    "snyk": "^1.230.5"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.7",
@@ -96,13 +97,14 @@
     "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src && cp -r test/fixtures build/test/",
     "compile-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t json google/rpc/status.proto google/rpc/error_details.proto google/protobuf/any.proto -p ./protos > protos/status.json",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
-    "prepare": "npm run compile && node ./build/tools/prepublish.js",
+    "prepare": "npm run snyk-protect && npm run compile && node ./build/tools/prepublish.js",
     "posttest": "npm run lint",
     "system-test": "nyc mocha build/test/system-test --timeout 120000",
     "samples-test": "echo no sample tests 😱",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
-    "browser-test": "karma start"
+    "browser-test": "karma start",
+    "snyk-protect": "snyk protect"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
@@ -123,5 +125,6 @@
       ".system-test-run/**"
     ]
   },
-  "browser": "build/src/fallback.js"
+  "browser": "build/src/fallback.js",
+  "snyk": true
 }
