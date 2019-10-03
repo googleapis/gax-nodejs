@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.6.4](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.3...v1.6.4) (2019-10-03)
+
+
+### Bug Fixes
+
+* **deps:** use @grpc/grpc-js v0.6.4 ([#605](https://www.github.com/googleapis/gax-nodejs/issues/605)) ([628db9e](https://www.github.com/googleapis/gax-nodejs/commit/628db9e))
+
 ### [1.6.3](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.2...v1.6.3) (2019-10-02)
 
 
