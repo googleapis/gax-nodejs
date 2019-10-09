@@ -64,7 +64,7 @@ export const ALL_SCOPES: string[] = [];
 export interface OperationsClientOptions {
   libName?: string;
   libVersion?: string;
-  clientConfig: gax.ClientConfig;
+  clientConfig?: gax.ClientConfig;
   fallback?: boolean;
 }
 
@@ -119,7 +119,7 @@ export class OperationsClient {
     const defaults = gaxGrpc.constructSettings(
       'google.longrunning.Operations',
       configData,
-      opts.clientConfig,
+      opts.clientConfig || {},
       {'x-goog-api-client': googleApiClient.join(' ')}
     );
 
