@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.7.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.1...v1.7.2) (2019-10-09)
+
+
+### Bug Fixes
+
+* clientConfig can be omitted ([#617](https://www.github.com/googleapis/gax-nodejs/issues/617)) ([b4d7e8c](https://www.github.com/googleapis/gax-nodejs/commit/b4d7e8c))
+
 ### [1.7.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.0...v1.7.1) (2019-10-09)
 
 
