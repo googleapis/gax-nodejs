@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.7.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.4...v1.7.0) (2019-10-09)
+
+
+### Features
+
+* export CancellableStream ([#610](https://www.github.com/googleapis/gax-nodejs/issues/610)) ([847270b](https://www.github.com/googleapis/gax-nodejs/commit/847270b))
+
 ### [1.6.4](https://www.github.com/googleapis/gax-nodejs/compare/v1.6.3...v1.6.4) (2019-10-03)
 
 
