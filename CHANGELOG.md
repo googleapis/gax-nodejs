@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.7.3](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.2...v1.7.3) (2019-10-10)
+
+
+### Bug Fixes
+
+* fix a type of AnyDecoder ([#619](https://www.github.com/googleapis/gax-nodejs/issues/619)) ([ed46692](https://www.github.com/googleapis/gax-nodejs/commit/ed46692))
+
 ### [1.7.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.1...v1.7.2) (2019-10-09)
 
 
