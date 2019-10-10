@@ -41,7 +41,7 @@ import {
 } from '../gax';
 import {GoogleError} from '../googleError';
 
-import {Operation} from './longrunning';
+import {Operation, LROOperation} from './longrunning';
 import {LongRunningDescriptor} from './longRunningDescriptor';
 
 export class LongrunningApiCaller implements APICaller {
@@ -105,7 +105,7 @@ export class LongrunningApiCaller implements APICaller {
         }
 
         const operation = new Operation(
-          rawResponse as Operation,
+          rawResponse as LROOperation,
           longrunningDescriptor,
           backoffSettings!,
           settings

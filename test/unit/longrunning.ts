@@ -205,7 +205,7 @@ describe('longrunning', () => {
         totalTimeoutMillis
       );
       const operation = longrunning.operation(
-        (SUCCESSFUL_OP as {}) as longrunning.Operation,
+        (SUCCESSFUL_OP as {}) as longrunning.LROOperation,
         desc,
         backoff
       );
@@ -488,7 +488,7 @@ describe('longrunning', () => {
           return promise;
         }
         const operation = longrunning.operation(
-          (SUCCESSFUL_OP as {}) as longrunning.Operation,
+          (SUCCESSFUL_OP as {}) as longrunning.LROOperation,
           desc,
           backoff,
           {
