@@ -285,12 +285,12 @@ export class Operation extends EventEmitter {
       self.emit(event, ...args);
     }
 
-    //Helper function to replace nodejs buffer's equals()
-    function arrayEquals(a, b) {
+    // Helper function to replace nodejs buffer's equals()
+    function arrayEquals(a: Uint8Array, b: Uint8Array): boolean {
       if (a.byteLength !== b.byteLength) {
         return false;
       }
-      for (let i = a.length; -1 < i; i -= 1) {
+      for (let i = 0; i < a.byteLength; ++i) {
         if (a[i] !== b[i]) return false;
       }
       return true;
