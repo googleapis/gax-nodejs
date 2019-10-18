@@ -418,10 +418,14 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient({expectedCalls: 0});
         const apiCall = createApiCall(func, client);
-        const [operation] = (await apiCall({})) as unknown as [longrunning.Operation];
+        const [operation] = ((await apiCall({})) as unknown) as [
+          longrunning.Operation
+        ];
         // tslint:disable-next-line no-unused-expression
         expect(operation).to.be.not.null;
-        const [finalResult] = (await operation!.promise()) as unknown as [string];
+        const [finalResult] = ((await operation!.promise()) as unknown) as [
+          string
+        ];
         expect(finalResult).to.deep.eq(RESPONSE_VAL);
       });
 
