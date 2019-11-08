@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.8.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.5...v1.8.0) (2019-11-08)
+
+
+### Features
+
+* export GaxCall in apiTypes ([c451c32](https://www.github.com/googleapis/gax-nodejs/commit/c451c3234c53b1e4d362c5988c4b781e1013dc52))
+
+
+### Bug Fixes
+
+* correct array comparison ([#628](https://www.github.com/googleapis/gax-nodejs/issues/628)) ([c73e2fd](https://www.github.com/googleapis/gax-nodejs/commit/c73e2fd22427a7ce2fe16063251a1f1d84ec61f9))
+* **deps:** bump google-gax to 1.7.5 ([#630](https://www.github.com/googleapis/gax-nodejs/issues/630)) ([7428a26](https://www.github.com/googleapis/gax-nodejs/commit/7428a26aad0512fff68213f7cdd20eca798266e7))
+
 ### [1.7.5](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.4...v1.7.5) (2019-10-14)
 
 
