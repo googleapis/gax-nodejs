@@ -91,5 +91,6 @@ export {
   BiDiStreamingCall,
   UnaryCall,
   GRPCCall,
+  GaxCall,
   CancellableStream,
 } from './apitypes';
