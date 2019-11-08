@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.8.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.8.0...v1.8.1) (2019-11-08)
+
+
+### Bug Fixes
+
+* add long to protos.d.ts ([#643](https://www.github.com/googleapis/gax-nodejs/issues/643)) ([e1012fa](https://www.github.com/googleapis/gax-nodejs/commit/e1012fa6ffaae35a9556b7e431cd504c1f96f8f5))
+* depend on @types/long ([#645](https://www.github.com/googleapis/gax-nodejs/issues/645)) ([235744e](https://www.github.com/googleapis/gax-nodejs/commit/235744e126c3fa65f5e5b8e36d874d9142fcbfaa))
+
 ## [1.8.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.7.5...v1.8.0) (2019-11-08)
 
 
