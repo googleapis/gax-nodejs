@@ -144,6 +144,15 @@ async function compileProtos(protos: string[]): Promise<void> {
   const tsOutput = path.join('protos', 'protos.d.ts');
   const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
+
+  // fix for pbts output: the corresponding protobufjs PR
+  // https://github.com/protobufjs/protobuf.js/pull/1166
+  // is merged but not yet released.
+  const tsResult = (await readFile(tsOutput)).toString();
+  if (!tsResult.match(/import \* as Long/)) {
+    const fixedTsResult = 'import * as Long from "long";\n' + tsResult;
+    await writeFile(tsOutput, fixedTsResult);
+  }
 }
 
 /**
