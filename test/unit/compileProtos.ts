@@ -83,6 +83,7 @@ describe('compileProtos tool', () => {
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
     assert(ts.toString().includes('LibraryService'));
+    assert(ts.toString().includes('import * as Long'));
   });
 
   it('writes an empty object if no protos are given', async () => {
