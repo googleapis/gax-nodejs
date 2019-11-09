@@ -29,9 +29,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {GrpcClient, GrpcClientOptions} from './grpc';
+import {GrpcClient, GrpcClientOptions, ClientStubOptions} from './grpc';
+import {GoogleAuthOptions} from 'google-auth-library';
+import {
+  LongrunningDescriptor,
+  PageDescriptor,
+  StreamDescriptor,
+} from './descriptor';
+import * as longrunning from './longRunningCalls/longrunning';
+import * as operationProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
+import * as gax from './gax';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {CancellablePromise, OngoingCall} from './call';
@@ -94,3 +103,40 @@ export {
   GaxCall,
   CancellableStream,
 } from './apitypes';
+
+export interface ClientOptions
+  extends GrpcClientOptions,
+    GoogleAuthOptions,
+    ClientStubOptions {
+  libName?: string;
+  libVersion?: string;
+  clientConfig?: gax.ClientConfig;
+  fallback?: boolean;
+  apiEndpoint?: string;
+}
+
+export interface Descriptors {
+  page: {[name: string]: PageDescriptor};
+  stream: {[name: string]: StreamDescriptor};
+  longrunning: {[name: string]: LongrunningDescriptor};
+}
+
+export interface Callback<
+  ResponseObject,
+  NextRequestObject,
+  RawResponseObject
+> {
+  (
+    err: Error | null | undefined,
+    value?: ResponseObject | null,
+    nextRequest?: NextRequestObject,
+    rawResponse?: RawResponseObject
+  ): void;
+}
+
+export interface LROperation<ResultType, MetadataType>
+  extends longrunning.Operation {
+  promise(): Promise<
+    [ResultType, MetadataType, operationProtos.google.longrunning.Operation]
+  >;
+}

@@ -42,9 +42,7 @@ export interface Descriptor {
   getApiCaller(settings: CallSettings): APICaller;
 }
 
-export {
-  LongRunningDescriptor as LongrunningDescriptor,
-} from './longRunningCalls/longRunningDescriptor';
+export {LongRunningDescriptor as LongrunningDescriptor} from './longRunningCalls/longRunningDescriptor';
 export {PageDescriptor} from './paginationCalls/pageDescriptor';
 export {StreamDescriptor} from './streamingCalls/streamDescriptor';
 export {BundleDescriptor} from './bundlingCalls/bundleDescriptor';
