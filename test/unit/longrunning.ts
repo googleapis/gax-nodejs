@@ -33,6 +33,7 @@ import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
 import {LongrunningDescriptor} from '../../src';
+import * as operationProtos from '../../protos/operations';
 import {GaxCallPromise} from '../../src/apitypes';
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
@@ -205,7 +206,7 @@ describe('longrunning', () => {
         totalTimeoutMillis
       );
       const operation = longrunning.operation(
-        (SUCCESSFUL_OP as {}) as longrunning.LROOperation,
+        (SUCCESSFUL_OP as {}) as operationProtos.google.longrunning.Operation,
         desc,
         backoff
       );
@@ -505,7 +506,7 @@ describe('longrunning', () => {
           return promise;
         }
         const operation = longrunning.operation(
-          (SUCCESSFUL_OP as {}) as longrunning.LROOperation,
+          (SUCCESSFUL_OP as {}) as operationProtos.google.longrunning.Operation,
           desc,
           backoff,
           {

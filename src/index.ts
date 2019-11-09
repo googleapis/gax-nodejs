@@ -31,7 +31,13 @@
 
 import {GrpcClient, GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GoogleAuthOptions} from 'google-auth-library';
-import {LongrunningDescriptor, PageDescriptor, StreamDescriptor} from './descriptor';
+import {
+  LongrunningDescriptor,
+  PageDescriptor,
+  StreamDescriptor,
+} from './descriptor';
+import * as longrunning from './longRunningCalls/longrunning';
+import * as operationProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
 import * as gax from './gax';
@@ -98,9 +104,10 @@ export {
   CancellableStream,
 } from './apitypes';
 
-export interface ClientOptions extends GrpcClientOptions,
-                                       GoogleAuthOptions,
-                                       ClientStubOptions {
+export interface ClientOptions
+  extends GrpcClientOptions,
+    GoogleAuthOptions,
+    ClientStubOptions {
   libName?: string;
   libVersion?: string;
   clientConfig?: gax.ClientConfig;
@@ -115,7 +122,21 @@ export interface Descriptors {
 }
 
 export interface Callback<
-    ResponseObject, NextRequestObject, RawResponseObject> {
-  (err: Error|null|undefined, value?: ResponseObject|null,
-   nextRequest?: NextRequestObject, rawResponse?: RawResponseObject): void;
+  ResponseObject,
+  NextRequestObject,
+  RawResponseObject
+> {
+  (
+    err: Error | null | undefined,
+    value?: ResponseObject | null,
+    nextRequest?: NextRequestObject,
+    rawResponse?: RawResponseObject
+  ): void;
+}
+
+export interface LROperation<ResultType, MetadataType>
+  extends longrunning.Operation {
+  promise(): Promise<
+    [ResultType, MetadataType, operationProtos.google.longrunning.Operation]
+  >;
 }
