@@ -284,7 +284,10 @@ describe('Task', () => {
         expected: [data],
       },
       {
-        data: [[data, data], [data, data, data]],
+        data: [
+          [data, data],
+          [data, data, data],
+        ],
         message: 'a single message added',
         expected: [data, data, data, data, data],
       },
