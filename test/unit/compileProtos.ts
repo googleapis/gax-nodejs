@@ -84,6 +84,9 @@ describe('compileProtos tool', () => {
     assert(ts.toString().includes('TestMessage'));
     assert(ts.toString().includes('LibraryService'));
     assert(ts.toString().includes('import * as Long'));
+    assert(
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
   });
 
   it('writes an empty object if no protos are given', async () => {

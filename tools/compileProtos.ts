@@ -45,6 +45,22 @@ const pbtsMain = util.promisify(pbts.main);
 
 const PROTO_LIST_REGEX = /_proto_list\.json$/;
 
+const apacheLicense = `// Copyright ${new Date().getFullYear()} Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+`;
+
 /**
  * Recursively scans directories starting from `directory` and finds all files
  * matching `PROTO_LIST_REGEX`.
@@ -145,14 +161,19 @@ async function compileProtos(protos: string[]): Promise<void> {
   const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 
+  let tsResult = (await readFile(tsOutput)).toString();
+
   // fix for pbts output: the corresponding protobufjs PR
   // https://github.com/protobufjs/protobuf.js/pull/1166
   // is merged but not yet released.
-  const tsResult = (await readFile(tsOutput)).toString();
   if (!tsResult.match(/import \* as Long/)) {
-    const fixedTsResult = 'import * as Long from "long";\n' + tsResult;
-    await writeFile(tsOutput, fixedTsResult);
+    tsResult = 'import * as Long from "long";\n' + tsResult;
   }
+
+  // add Apache license to the generated .d.ts file
+  tsResult = apacheLicense + tsResult;
+
+  await writeFile(tsOutput, tsResult);
 }
 
 /**
