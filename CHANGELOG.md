@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.9.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.9.0...v1.9.1) (2019-11-11)
+
+
+### Bug Fixes
+
+* add Apache license to the generated protos.d.ts file ([#649](https://www.github.com/googleapis/gax-nodejs/issues/649)) ([3ce2856](https://www.github.com/googleapis/gax-nodejs/commit/3ce2856346789ed333f667caaf0f4c73b36e8082))
+
 ## [1.9.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.8.0...v1.9.0) (2019-11-09)
 
 
