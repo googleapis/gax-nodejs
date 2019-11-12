@@ -156,23 +156,25 @@ async function compileProtos(protos: string[]): Promise<void> {
   pbjsArgs4js.push(...protos);
   await pbjsMain(pbjsArgs4js);
 
+  let jsResult = (await readFile(jsOutput)).toString();
+  // add Apache license to the generated .js file
+  jsResult = apacheLicense + jsResult;
+  await writeFile(jsOutput, jsResult);
+
   // generate protos/protos.d.ts
   const tsOutput = path.join('protos', 'protos.d.ts');
   const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 
   let tsResult = (await readFile(tsOutput)).toString();
-
   // fix for pbts output: the corresponding protobufjs PR
   // https://github.com/protobufjs/protobuf.js/pull/1166
   // is merged but not yet released.
   if (!tsResult.match(/import \* as Long/)) {
     tsResult = 'import * as Long from "long";\n' + tsResult;
   }
-
   // add Apache license to the generated .d.ts file
   tsResult = apacheLicense + tsResult;
-
   await writeFile(tsOutput, tsResult);
 }
 
