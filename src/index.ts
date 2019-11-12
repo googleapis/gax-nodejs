@@ -94,6 +94,7 @@ import * as fallback from './fallback';
 export {fallback};
 
 export {
+  APICallback,
   GRPCCallResult,
   ServerStreamingCall,
   ClientStreamingCall,
