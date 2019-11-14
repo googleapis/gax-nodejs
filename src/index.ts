@@ -141,3 +141,26 @@ export interface LROperation<ResultType, MetadataType>
     [ResultType, MetadataType, operationProtos.google.longrunning.Operation]
   >;
 }
+
+export interface PaginationCallback<
+  RequestObject,
+  ResponseObject,
+  ResponseType
+> {
+  (
+    err: Error | null,
+    values?: ResponseType[],
+    nextPageRequest?: RequestObject,
+    rawResponse?: ResponseObject
+  ): void;
+}
+
+export interface PaginationResponse<
+  RequestObject,
+  ResponseObject,
+  ResponseType
+> {
+  values?: ResponseType[];
+  nextPageRequest?: RequestObject;
+  rawResponse?: ResponseObject;
+}
