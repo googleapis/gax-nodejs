@@ -133,7 +133,7 @@ describe('Run system tests for some libraries', () => {
         'nodejs-pubsub/system-test/pubsub.ts',
       ]);
     });
-    it('should pass system tests', async function() {
+    it.skip('should pass system tests', async function() {
       // Pub/Sub tests can be slow since they check packaging
       this.timeout(300000);
       await runSystemTest('nodejs-pubsub');

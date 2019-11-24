@@ -262,17 +262,20 @@ export class GrpcClient {
 
         const grpcFallbackProtocol = opts.protocol || 'https';
         let servicePath = opts.servicePath;
+        if (
+          !servicePath &&
+          service.options &&
+          service.options['(google.api.default_host)']
+        ) {
+          servicePath = service.options['(google.api.default_host)'];
+        }
         if (!servicePath) {
-          if (service.options && service.options['(google.api.default_host)']) {
-            servicePath = service.options['(google.api.default_host)'];
-          } else {
-            serviceCallback(new Error('Service path is undefined'));
-            return;
-          }
+          serviceCallback(new Error('Service path is undefined'));
+          return;
         }
 
         let servicePort;
-        const match = servicePath.match(/^(.*):(\d+)$/);
+        const match = servicePath!.match(/^(.*):(\d+)$/);
         if (match) {
           servicePath = match[1];
           servicePort = match[2];
