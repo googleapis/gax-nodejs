@@ -44,6 +44,7 @@
     "@types/sinon": "^7.0.0",
     "@types/source-map-support": "^0.5.0",
     "@types/through2": "^2.0.33",
+    "c8": "^6.0.0",
     "chai": "*",
     "codecov": "^3.1.0",
     "download": "^7.1.0",
@@ -72,7 +73,6 @@
     "mocha": "^6.1.4",
     "ncp": "^2.0.0",
     "null-loader": "^3.0.0",
-    "nyc": "^14.0.0",
     "pegjs": "~0.10.0",
     "prettier": "^1.15.2",
     "proxyquire": "^2.0.1",
@@ -89,11 +89,10 @@
     "webpack-cli": "^3.3.4"
   },
   "scripts": {
-    "codecov": "nyc mocha build/test/unit --reporter spec --slow 500 && codecov",
     "docs": "compodoc src/",
     "gen-parser": "pegjs src/pathTemplateParser.pegjs",
     "pretest": "npm run prepare",
-    "test": "nyc mocha build/test/unit",
+    "test": "c8 mocha build/test/unit",
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src && cp -r test/fixtures build/test",
@@ -101,7 +100,7 @@
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile && node ./build/tools/prepublish.js && mkdirp build/protos && cp protos/operations.d.ts build/protos/",
     "posttest": "npm run lint",
-    "system-test": "nyc mocha build/test/system-test --timeout 120000",
+    "system-test": "c8 mocha build/test/system-test --timeout 120000",
     "samples-test": "echo no sample tests 😱",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
@@ -119,12 +118,6 @@
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
     "node": ">=8.10.0"
-  },
-  "nyc": {
-    "exclude": [
-      "build/system-test/**",
-      ".system-test-run/**"
-    ]
   },
   "browser": "build/src/fallback.js"
 }
