@@ -84,6 +84,7 @@ lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 export {lro};
+export {OperationsClient} from './operationsClient';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
 
