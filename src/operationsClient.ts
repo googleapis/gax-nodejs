@@ -39,6 +39,7 @@ import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
+import {APICallback} from './apitypes';
 
 const configData = require('./operations_client_config');
 
@@ -157,7 +158,7 @@ export class OperationsClient {
       this._innerApiCalls[methodName] = createApiCall(
         innerCallPromise,
         defaults[methodName],
-        PAGE_DESCRIPTORS[methodName]
+        PAGE_DESCRIPTORS.listOperations
       );
     }
   }
@@ -213,10 +214,9 @@ export class OperationsClient {
    * const [response] = await client.getOperation({name});
    * // doThingsWith(response)
    */
-  getOperation(request: {}, options: {}, callback?) {
+  getOperation(request: {}, options: {}, callback?: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.getOperation(request, {}, options as APICallback);
     }
     options = options || {};
     return this._innerApiCalls.getOperation(request, options, callback);
@@ -299,10 +299,9 @@ export class OperationsClient {
    *   }
    * };
    */
-  listOperations(request, options, callback) {
+  listOperations(request: {}, options: {}, callback: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.listOperations(request, {}, options as APICallback);
     }
     options = options || {};
     return this._innerApiCalls.listOperations(request, options, callback);
@@ -390,10 +389,9 @@ export class OperationsClient {
    * const client = longrunning.operationsClient();
    * await client.cancelOperation({name: ''});
    */
-  cancelOperation(request, options?, callback?) {
+  cancelOperation(request: {}, options?: {}, callback?: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.cancelOperation(request, {}, options as APICallback);
     }
     options = options || {};
     return this._innerApiCalls.cancelOperation(request, options, callback);
@@ -423,10 +421,9 @@ export class OperationsClient {
    * const client = longrunning.operationsClient();
    * await client.deleteOperation({name: ''});
    */
-  deleteOperation(request, options, callback) {
+  deleteOperation(request: {}, options: {}, callback: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.deleteOperation(request, {}, options as APICallback);
     }
     options = options || {};
     return this._innerApiCalls.deleteOperation(request, options, callback);

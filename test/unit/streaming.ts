@@ -33,13 +33,14 @@ import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
 
-import {GaxCallStream} from '../../src/apitypes';
+import {GaxCallStream, GRPCCall} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
 import * as gax from '../../src/gax';
 import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
+import {APICallback, ClientStreamingCall} from '../../src/apitypes';
 
-function createApiCallStreaming(func, type) {
+function createApiCallStreaming(func: Promise<GRPCCall>, type: streaming.StreamType) {
   const settings = new gax.CallSettings();
   return createApiCall(
     Promise.resolve(func),
@@ -86,7 +87,7 @@ describe('streaming', () => {
   });
 
   it('handles client streaming', done => {
-    function func(metadata, options, callback) {
+    function func(metadata: {}, options: {}, callback: APICallback) {
       expect(arguments.length).to.eq(3);
       const s = through2.obj();
       const written: Array<{}> = [];

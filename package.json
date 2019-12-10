@@ -16,7 +16,9 @@
   "dependencies": {
     "@grpc/grpc-js": "^0.6.12",
     "@grpc/proto-loader": "^0.5.1",
+    "@types/fs-extra": "^8.0.1",
     "@types/long": "^4.0.0",
+    "@types/node-fetch": "^2.5.4",
     "abort-controller": "^3.0.0",
     "duplexify": "^3.6.0",
     "google-auth-library": "^5.0.0",
