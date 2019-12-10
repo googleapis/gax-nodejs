@@ -38,12 +38,15 @@ import {expect} from 'chai';
 import * as gax from '../../src/gax';
 
 const SERVICE_NAME = 'test.interface.v1.api';
+export interface Config {
+  interfaces: {[index: string]: gax.ServiceConfig};
+}
 
-const A_CONFIG = {
+const A_CONFIG: Config = {
   interfaces: {},
 };
 
-A_CONFIG.interfaces[SERVICE_NAME] = {
+A_CONFIG.interfaces![SERVICE_NAME] = {
   retry_codes: {
     foo_retry: ['code_a', 'code_b'],
     bar_retry: ['code_c'],
@@ -126,7 +129,7 @@ describe('gax construct settings', () => {
   });
 
   it('overrides settings', () => {
-    const overrides = {interfaces: {}};
+    const overrides: Config = {interfaces: {}};
     overrides.interfaces[SERVICE_NAME] = {
       methods: {
         PageStreamingMethod: null,
@@ -151,7 +154,7 @@ describe('gax construct settings', () => {
   });
 
   it('overrides settings more precisely', () => {
-    const overrides = {interfaces: {}};
+    const overrides: Config = {interfaces: {}};
     overrides.interfaces[SERVICE_NAME] = {
       retry_codes: {
         bar_retry: [],

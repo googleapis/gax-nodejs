@@ -566,9 +566,9 @@ function mergeRetryOptions(
 }
 
 export interface ServiceConfig {
-  retry_codes: {[index: string]: string[]};
-  retry_params: {[index: string]: RetryParamsConfig};
-  methods: {[index: string]: MethodConfig};
+  retry_codes?: {[index: string]: string[]};
+  retry_params?: {[index: string]: RetryParamsConfig};
+  methods: {[index: string]: MethodConfig | null};
 }
 
 export interface RetryParamsConfig {
@@ -582,19 +582,18 @@ export interface RetryParamsConfig {
 }
 
 export interface MethodConfig {
-  retry_codes_name: string;
-  retry_params_name: string;
-  bundling?: BundlingConfig;
+  retry_codes_name?: string;
+  retry_params_name?: string;
+  bundling?: BundlingConfig | null;
   timeout_millis?: number;
 }
 
 export interface BundlingConfig {
-  [index: string]: number;
   element_count_threshold: number;
   element_count_limit: number;
-  request_byte_threshold: number;
-  request_byte_limit: number;
-  delay_threshold_millis: number;
+  request_byte_threshold?: number;
+  request_byte_limit?: number;
+  delay_threshold_millis?: number;
 }
 
 export interface ClientConfig {

@@ -82,6 +82,7 @@ export interface ClientStubOptions {
   // TODO: use sslCreds?: grpc.ChannelCredentials;
   // tslint:disable-next-line no-any
   sslCreds?: any;
+  [name: string]: string|number|undefined;
 }
 
 export class ClientStub extends grpc.Client {
@@ -293,7 +294,7 @@ export class GrpcClient {
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
-    const grpcOptions: {[index: string]: string} = {};
+    const grpcOptions: {[index: string]: string|number|undefined} = {};
     Object.keys(options).forEach(key => {
       if (key.startsWith('grpc.')) {
         grpcOptions[key.replace(/^grpc\./, '')] = options[key];
