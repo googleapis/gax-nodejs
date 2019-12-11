@@ -35,6 +35,7 @@ import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {expect} from 'chai';
+//@ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 const statusJsonProto = require('../../protos/status.json');
@@ -72,7 +73,7 @@ describe('loadProto', () => {
 });
 
 describe('createStub', () => {
-  let gaxGrpc, protos, echoService, stubOptions, stubExtraOptions;
+  let gaxGrpc: fallback.GrpcClient, protos, echoService: protobuf.Service, stubOptions: {}, stubExtraOptions: {};
 
   beforeEach(() => {
     // @ts-ignore incomplete options
@@ -131,8 +132,8 @@ describe('createStub', () => {
 });
 
 describe('grpc-fallback', () => {
-  let gaxGrpc, protos, echoService, stubOptions;
-  const createdAbortControllers = [];
+  let gaxGrpc: fallback.GrpcClient, protos: protobuf.NamespaceBase, echoService: protobuf.Service, stubOptions: {};
+  const createdAbortControllers: string[]= [];
   // @ts-ignore
   const savedAbortController = window.AbortController;
 
@@ -213,7 +214,7 @@ describe('grpc-fallback', () => {
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
     const request = {content: 'content' + new Date().toString()};
-    const call = echoStub.echo(request, {}, {}, (err, result) => {});
+    const call = echoStub.echo(request, {}, {}, (err:{}, result: {}) => {});
 
     call.cancel();
 
@@ -273,7 +274,7 @@ describe('grpc-fallback', () => {
     sinon.replace(window, 'fetch', fakeFetch);
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err, result) => {
+      echoStub.echo(requestObject, {}, {}, (err: Error, result: {}) => {
         assert.strictEqual(err.message, JSON.stringify(expectedError));
         done();
       });
