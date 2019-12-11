@@ -33,21 +33,29 @@ import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
 import {BundleDescriptor} from '../../src/bundlingCalls/bundleDescriptor';
-import {BundleExecutor} from '../../src/bundlingCalls/bundleExecutor';
+import {
+  BundleExecutor,
+  BundleOptions,
+} from '../../src/bundlingCalls/bundleExecutor';
 import {computeBundleId} from '../../src/bundlingCalls/bundlingUtils';
-import {deepCopyForResponse, Task} from '../../src/bundlingCalls/task';
+import {
+  deepCopyForResponse,
+  Task,
+  TaskCallback,
+} from '../../src/bundlingCalls/task';
 import {GoogleError} from '../../src/googleError';
 
 import {createApiCall} from './utils';
+import {SimpleCallbackFunction} from '../../src/apitypes';
 
-function createOuter(value, otherValue?) {
+function createOuter(value: {}, otherValue?: {}) {
   if (otherValue === undefined) {
     otherValue = value;
   }
   return {inner: {field1: value, field2: otherValue}, field1: value};
 }
 
-function byteLength(obj) {
+function byteLength(obj: {}) {
   return JSON.stringify(obj).length;
 }
 
@@ -173,7 +181,7 @@ describe('deepCopyForResponse', () => {
 
   it('deep copies special values', () => {
     class Copyable {
-      constructor(public id) {}
+      constructor(public id: {}) {}
       copy() {
         return new Copyable(this.id);
       }
@@ -208,18 +216,26 @@ describe('deepCopyForResponse', () => {
 });
 
 describe('Task', () => {
-  function testTask(apiCall?) {
-    return new Task(apiCall, {}, 'field1', null);
+  function testTask(apiCall?: SimpleCallbackFunction) {
+    if (apiCall) {
+      return new Task(apiCall, {}, 'field1', null);
+    }
+    return undefined;
   }
 
   let id = 0;
-  function extendElements(task, elements, callback?) {
+  function extendElements(
+    task: Task,
+    elements: string[] | number[],
+    callback?: TaskCallback
+  ) {
     if (!callback) {
       callback = () => {};
     }
+    //@ts-ignore
     callback.id = id++;
     let bytes = 0;
-    elements.forEach(element => {
+    elements.forEach((element: string | number) => {
       bytes += byteLength(element);
     });
     task.extend(elements, bytes, callback);
@@ -248,9 +264,12 @@ describe('Task', () => {
       testCases.forEach(t => {
         it(t.message, () => {
           const task = testTask();
-          const baseCount = task.getElementCount();
-          extendElements(task, t.data);
-          expect(task.getElementCount()).to.eq(baseCount + t.want, t.message);
+          const baseCount = task && task.getElementCount();
+          extendElements(task!, t.data);
+          expect(task && task.getElementCount()).to.eq(
+            baseCount! + t.want,
+            t.message
+          );
         });
       });
     });
@@ -260,10 +279,10 @@ describe('Task', () => {
       testCases.forEach(t => {
         it(t.message, () => {
           const task = testTask();
-          const baseSize = task.getRequestByteSize();
-          extendElements(task, t.data);
-          expect(task.getRequestByteSize()).to.eq(
-            baseSize + t.want * sizePerData
+          const baseSize = task && task.getRequestByteSize();
+          extendElements(task!, t.data);
+          expect(task!.getRequestByteSize()).to.eq(
+            baseSize! + t.want * sizePerData
           );
         });
       });
@@ -297,8 +316,8 @@ describe('Task', () => {
         expected: [data, data, data, data, data],
       },
     ];
-    function createApiCall(expected) {
-      return function apiCall(req, callback) {
+    function createApiCall(expected: {}) {
+      return function apiCall(req: {field1: {}}, callback: Function) {
         expect(req.field1).to.deep.equal(expected);
         return callback(null, req);
       };
@@ -307,8 +326,8 @@ describe('Task', () => {
     describe('sends bundled elements', () => {
       testCases.forEach(t => {
         it(t.message, done => {
-          const apiCall = sinon.spy(createApiCall(t.expected));
-          const task = testTask(apiCall);
+          const apiCall = sinon.spy(createApiCall(t.expected!));
+          const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
           const callback = sinon.spy((err, data) => {
             // tslint:disable-next-line no-unused-expression
             expect(err).to.be.null;
@@ -319,10 +338,10 @@ describe('Task', () => {
             }
           });
           // tslint:disable-next-line no-any
-          (t as any).data.forEach(d => {
-            extendElements(task, d, callback);
+          (t as any).data.forEach((d: string[]) => {
+            extendElements(task!, d, callback);
           });
-          task.run();
+          task!.run();
           if (t.expected === null) {
             expect(callback.callCount).to.eq(0);
             expect(apiCall.callCount).to.eq(0);
@@ -335,15 +354,16 @@ describe('Task', () => {
     describe('calls back with the subresponse fields', () => {
       testCases.forEach(t => {
         it(t.message, done => {
-          const apiCall = sinon.spy(createApiCall(t.expected));
-          const task = testTask(apiCall);
-          task._subresponseField = 'field1';
+          const apiCall = sinon.spy(createApiCall(t.expected!));
+          const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
+          task!._subresponseField = 'field1';
           let callbackCount = 0;
           // tslint:disable-next-line no-any
-          (t as any).data.forEach(d => {
-            extendElements(task, d, (err, data) => {
+          (t as any).data.forEach((d: string[]) => {
+            extendElements(task!, d, (err, data) => {
               // tslint:disable-next-line no-unused-expression
               expect(err).to.be.null;
+              // @ts-ignore
               expect(data.field1.length).to.be.eq(d.length);
               callbackCount++;
               if (callbackCount === t.data.length) {
@@ -352,7 +372,7 @@ describe('Task', () => {
               }
             });
           });
-          task.run();
+          task!.run();
           if (t.expected === null) {
             expect(callbackCount).to.eq(0);
             expect(apiCall.callCount).to.eq(0);
@@ -369,8 +389,8 @@ describe('Task', () => {
           const apiCall = sinon.spy((resp, callback) => {
             callback(err);
           });
-          const task = testTask(apiCall);
-          task._subresponseField = 'field1';
+          const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
+          task!._subresponseField = 'field1';
           const callback = sinon.spy((e, data) => {
             expect(e).to.equal(err);
             // tslint:disable-next-line no-unused-expression
@@ -381,10 +401,10 @@ describe('Task', () => {
             }
           });
           // tslint:disable-next-line no-any
-          (t as any).data.forEach(d => {
-            extendElements(task, d, callback);
+          (t as any).data.forEach((d: string[]) => {
+            extendElements(task!, d, callback);
           });
-          task.run();
+          task!.run();
         });
       });
     });
@@ -394,30 +414,32 @@ describe('Task', () => {
     const apiCall = sinon.spy((resp, callback) => {
       callback(null, resp);
     });
-    const task = testTask(apiCall);
-    task._subresponseField = 'field1';
+    const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
+    task!._subresponseField = 'field1';
     const callback = sinon.spy(() => {
       if (callback.callCount === 2) {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], (err, resp) => {
+    extendElements(task!, [1, 2, 3], (err, resp) => {
+      // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([1, 2, 3]);
       callback();
     });
-    extendElements(task, [4, 5, 6], err => {
+    extendElements(task!, [4, 5, 6], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
     });
-    const cancelId = task._data[task._data.length - 1].callback.id;
+    const cancelId = task!._data[task!._data.length - 1].callback.id;
 
-    extendElements(task, [7, 8, 9], (err, resp) => {
+    extendElements(task!, [7, 8, 9], (err, resp) => {
+      // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([7, 8, 9]);
       callback();
     });
 
-    task.cancel(cancelId!);
-    task.run();
+    task!.cancel(cancelId!);
+    task!.run();
   });
 
   it('cancels ongoing API call', done => {
@@ -439,19 +461,19 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task!, [1, 2, 3], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task!, [1, 2, 3], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    task.run();
-    task._data.forEach(data => {
-      task.cancel(data.callback.id!);
+    task!.run();
+    task!._data.forEach(data => {
+      task!.cancel(data.callback.id!);
     });
   });
 
@@ -469,38 +491,39 @@ describe('Task', () => {
     });
 
     const task = testTask(apiCall);
-    task._subresponseField = 'field1';
+    task!._subresponseField = 'field1';
     const callback = sinon.spy(() => {
       if (callback.callCount === 2) {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task!, [1, 2, 3], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    const cancelId = task._data[task._data.length - 1].callback.id;
-    extendElements(task, [4, 5, 6], (err, resp) => {
+    const cancelId = task!._data[task!._data.length - 1].callback.id;
+    extendElements(task!, [4, 5, 6], (err, resp) => {
+      // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([4, 5, 6]);
       callback();
     });
-    task.run();
-    task.cancel(cancelId!);
+    task!.run();
+    task!.cancel(cancelId!);
   });
 });
 
 describe('Executor', () => {
-  function apiCall(request, callback) {
+  function apiCall(request: {}, callback: Function) {
     callback(null, request);
     return {cancel: () => {}};
   }
-  function failing(request, callback) {
+  function failing(request: {}, callback: Function) {
     callback(new Error('failure'));
     return {cancel: () => {}};
   }
 
-  function newExecutor(options) {
+  function newExecutor(options: BundleOptions) {
     const descriptor = new BundleDescriptor(
       'field1',
       ['field2'],
@@ -594,7 +617,7 @@ describe('Executor', () => {
     const executor = newExecutor({delayThreshold: 10});
     let spyApi = sinon.spy(apiCall);
 
-    function timedAPI(request, callback) {
+    function timedAPI(request: {}, callback: Function) {
       let canceled = false;
       // This invokes callback asynchronously by using setTimeout with 0msec, so
       // the callback invocation can be canceled in the same event loop of this
@@ -851,7 +874,7 @@ describe('Executor', () => {
 });
 
 describe('bundleable', () => {
-  function func(argument, metadata, options, callback) {
+  function func(argument: {}, metadata: {}, options: {}, callback: Function) {
     callback(null, argument);
   }
   const bundleOptions = {elementCountThreshold: 12, delayThreshold: 10};
@@ -915,7 +938,7 @@ describe('bundleable', () => {
   it('suppresses bundling behavior by call options', done => {
     const spy = sinon.spy(func);
     let callbackCount = 0;
-    function bundledCallback(obj) {
+    function bundledCallback(obj: Array<{field1: number[]}>) {
       expect(obj).to.be.an('array');
       callbackCount++;
       expect(obj[0].field1).to.deep.equal([1, 2, 3]);
@@ -924,7 +947,7 @@ describe('bundleable', () => {
         done();
       }
     }
-    function unbundledCallback(obj) {
+    function unbundledCallback(obj: Array<{field1: number[]}>) {
       expect(obj).to.be.an('array');
       callbackCount++;
       expect(callbackCount).to.eq(1);
@@ -932,12 +955,15 @@ describe('bundleable', () => {
     }
     const apiCall = createApiCall(spy, settings);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
+      //@ts-ignore
       .then(bundledCallback)
       .catch(done);
     apiCall({field1: [1, 2, 3], field2: 'id'}, {isBundling: false})
+      //@ts-ignore
       .then(unbundledCallback)
       .catch(done);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
+      //@ts-ignore
       .then(bundledCallback)
       .catch(done);
   });

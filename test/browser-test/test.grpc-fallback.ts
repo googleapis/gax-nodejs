@@ -73,7 +73,11 @@ describe('loadProto', () => {
 });
 
 describe('createStub', () => {
-  let gaxGrpc: fallback.GrpcClient, protos, echoService: protobuf.Service, stubOptions: {}, stubExtraOptions: {};
+  let gaxGrpc: fallback.GrpcClient,
+    protos,
+    echoService: protobuf.Service,
+    stubOptions: {},
+    stubExtraOptions: {};
 
   beforeEach(() => {
     // @ts-ignore incomplete options
@@ -132,8 +136,11 @@ describe('createStub', () => {
 });
 
 describe('grpc-fallback', () => {
-  let gaxGrpc: fallback.GrpcClient, protos: protobuf.NamespaceBase, echoService: protobuf.Service, stubOptions: {};
-  const createdAbortControllers: string[]= [];
+  let gaxGrpc: fallback.GrpcClient,
+    protos: protobuf.NamespaceBase,
+    echoService: protobuf.Service,
+    stubOptions: {};
+  const createdAbortControllers: string[] = [];
   // @ts-ignore
   const savedAbortController = window.AbortController;
 
@@ -214,7 +221,7 @@ describe('grpc-fallback', () => {
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
     const request = {content: 'content' + new Date().toString()};
-    const call = echoStub.echo(request, {}, {}, (err:{}, result: {}) => {});
+    const call = echoStub.echo(request, {}, {}, (err: {}, result: {}) => {});
 
     call.cancel();
 

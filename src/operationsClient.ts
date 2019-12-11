@@ -138,7 +138,7 @@ export class OperationsClient {
       opts.fallback
         ? operationsProtos.lookupService('google.longrunning.Operations')
         : operationsProtos.google.longrunning.Operations,
-      opts as unknown as Map
+      (opts as unknown) as Map
     ) as Promise<{[method: string]: Function}>;
     const operationsStubMethods = [
       'getOperation',
@@ -217,7 +217,11 @@ export class OperationsClient {
    */
   getOperation(request: {}, options: {}, callback?: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.getOperation(request, {}, options as APICallback);
+      return this._innerApiCalls.getOperation(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.getOperation(request, options, callback);
@@ -302,7 +306,11 @@ export class OperationsClient {
    */
   listOperations(request: {}, options: {}, callback: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.listOperations(request, {}, options as APICallback);
+      return this._innerApiCalls.listOperations(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.listOperations(request, options, callback);
@@ -392,7 +400,11 @@ export class OperationsClient {
    */
   cancelOperation(request: {}, options?: {}, callback?: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.cancelOperation(request, {}, options as APICallback);
+      return this._innerApiCalls.cancelOperation(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.cancelOperation(request, options, callback);
@@ -424,7 +436,11 @@ export class OperationsClient {
    */
   deleteOperation(request: {}, options: {}, callback: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.deleteOperation(request, {}, options as APICallback);
+      return this._innerApiCalls.deleteOperation(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.deleteOperation(request, options, callback);

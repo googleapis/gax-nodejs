@@ -109,7 +109,7 @@ describe('Run tests against gRPC server', () => {
       pageSize: 2,
     };
     const [response] = await client.pagedExpand(request);
-    const result = response.map((r: {content: string} )=> r.content);
+    const result = response.map((r: {content: string}) => r.content);
     assert.deepStrictEqual(words, result);
   });
 

@@ -33,25 +33,31 @@ import {GaxCallPromise} from '../../src/apitypes';
 import {createApiCall as realCreateApiCall} from '../../src/createApiCall';
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
-import { Descriptor } from '../../src/descriptor';
+import {Descriptor} from '../../src/descriptor';
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
-export function fail(argument: Object, metadata: Object, options: Options, callback: Function) {
+export function fail(
+  argument: {},
+  metadata: {},
+  options: Options,
+  callback: Function
+) {
   const error = new GoogleError();
   error.code = FAKE_STATUS_CODE_1;
   callback(error);
 }
 
-export interface Options{
-  settings: gax.CallOptions;
-  descriptor: Descriptor;
-  returnCancelFunc: boolean;
-  cancel: Function
+export interface Options {
+  settings?: gax.CallOptions;
+  descriptor?: Descriptor;
+  returnCancelFunc?: boolean;
+  cancel?: Function;
+  deadline?: string;
 }
 
 export function createApiCall(func: Function, opts?: Options) {
-  const settings = new gax.CallSettings(opts && opts.settings || {});
+  const settings = new gax.CallSettings((opts && opts.settings) || {});
   const descriptor = opts && opts.descriptor;
   return realCreateApiCall(
     Promise.resolve((argument, metadata, options, callback) => {
@@ -67,7 +73,7 @@ export function createApiCall(func: Function, opts?: Options) {
       func(argument, metadata, options, callback);
       return {
         cancel:
-          opts && opts.cancel ||
+          (opts && opts.cancel) ||
           (() => {
             callback(new Error('canceled'));
           }),

@@ -67,10 +67,7 @@ export {
 export {StreamType} from './streamingCalls/streaming';
 
 interface NodeFetchType {
-  (
-    url: RequestInfo,
-    init?: RequestInit
-): Promise<Response>;
+  (url: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 
 const CLIENT_VERSION_HEADER = 'x-goog-api-client';
@@ -165,8 +162,8 @@ export class GrpcClient {
       for (const key in headers) {
         if (headers.hasOwnProperty(key)) {
           metadata[key] = Array.isArray(headers[key])
-            ? headers[key] as string[]
-            : [headers[key]] as string[];
+            ? (headers[key] as string[])
+            : ([headers[key]] as string[]);
         }
       }
 
@@ -174,9 +171,13 @@ export class GrpcClient {
       const clientVersions: string[] = [];
       if (
         metadata[CLIENT_VERSION_HEADER] &&
-        (metadata[CLIENT_VERSION_HEADER] as Array<string | number | string[]>)[0]
+        (metadata[CLIENT_VERSION_HEADER] as Array<
+          string | number | string[]
+        >)[0]
       ) {
-        clientVersions.push(...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' '));
+        clientVersions.push(
+          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
+        );
       }
       clientVersions.push(`grpc-web/${version}`);
       metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(' ')];
@@ -194,8 +195,10 @@ export class GrpcClient {
             if (metadata[key] === undefined) {
               metadata[key] = value;
             } else {
-              if(Array.isArray(metadata[key])){
-                (metadata[key]! as Array<string | number | string[] | undefined>).push(...value);
+              if (Array.isArray(metadata[key])) {
+                (metadata[key]! as Array<
+                  string | number | string[] | undefined
+                >).push(...value);
               }
             }
           } else {
@@ -228,7 +231,16 @@ export class GrpcClient {
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     // an RPC function to be passed to protobufjs RPC API
-    function serviceClientImpl(method: (protobuf.Method|protobuf.rpc.ServiceMethod<protobuf.Message<{}>, protobuf.Message<{}>>), requestData: Uint8Array, callback: protobuf.RPCImplCallback) {
+    function serviceClientImpl(
+      method:
+        | protobuf.Method
+        | protobuf.rpc.ServiceMethod<
+            protobuf.Message<{}>,
+            protobuf.Message<{}>
+          >,
+      requestData: Uint8Array,
+      callback: protobuf.RPCImplCallback
+    ) {
       return [method, requestData, callback];
     }
 
@@ -246,12 +258,25 @@ export class GrpcClient {
       throw new Error('No authentication was provided');
     }
     const authHeader = await this.authClient.getRequestHeaders();
-    const serviceStub = service.create(serviceClientImpl, false, false) as unknown as FallbackServiceStub;
+    const serviceStub = (service.create(
+      serviceClientImpl,
+      false,
+      false
+    ) as unknown) as FallbackServiceStub;
     const methods = this.getServiceMethods(service);
 
-    const newServiceStub = service.create(serviceClientImpl, false, false) as unknown as FallbackServiceStub;
+    const newServiceStub = (service.create(
+      serviceClientImpl,
+      false,
+      false
+    ) as unknown) as FallbackServiceStub;
     for (const methodName of methods) {
-      newServiceStub[methodName] = (req: {}, options: {[name: string]: string}, metadata: {}, callback: Function) => {
+      newServiceStub[methodName] = (
+        req: {},
+        options: {[name: string]: string},
+        metadata: {},
+        callback: Function
+      ) => {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
         ].apply(serviceStub, [req, callback]);
@@ -310,20 +335,22 @@ export class GrpcClient {
 
         const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
-        const fetch = isBrowser() ? window.fetch : nodeFetch as unknown as NodeFetchType;
+        const fetch = isBrowser()
+          ? window.fetch
+          : ((nodeFetch as unknown) as NodeFetchType);
         fetch(url, {
           headers,
           method: 'post',
           body: requestData,
           signal: cancelSignal,
         })
-          .then((response: Response|nodeFetch.Response) => {
+          .then((response: Response | nodeFetch.Response) => {
             return Promise.all([
               Promise.resolve(response.ok),
               response.arrayBuffer(),
             ]);
           })
-          .then(([ok, buffer]: [boolean, Buffer|ArrayBuffer]) => {
+          .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
             if (!ok) {
               const status = statusDecoder.decodeRpcStatus(buffer);
               throw new Error(JSON.stringify(status));

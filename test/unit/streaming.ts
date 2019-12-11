@@ -38,11 +38,16 @@ import {createApiCall} from '../../src/createApiCall';
 import * as gax from '../../src/gax';
 import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
-import {APICallback, ClientStreamingCall} from '../../src/apitypes';
+import {APICallback} from '../../src/apitypes';
+import internal = require('stream');
 
-function createApiCallStreaming(func: Promise<GRPCCall>, type: streaming.StreamType) {
+function createApiCallStreaming(
+  func: Promise<GRPCCall> | sinon.SinonSpy<Array<{}>, internal.Transform>,
+  type: streaming.StreamType
+) {
   const settings = new gax.CallSettings();
   return createApiCall(
+    //@ts-ignore
     Promise.resolve(func),
     settings,
     new StreamDescriptor(type)
@@ -102,6 +107,7 @@ describe('streaming', () => {
     }
 
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.CLIENT_STREAMING
     );
@@ -131,6 +137,7 @@ describe('streaming', () => {
     }
 
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.BIDI_STREAMING
     );
@@ -173,6 +180,7 @@ describe('streaming', () => {
       return s;
     }
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.BIDI_STREAMING
     );
@@ -205,7 +213,8 @@ describe('streaming', () => {
   });
 
   it('cancels in the middle', done => {
-    function schedulePush(s, c) {
+    //@ts-ignore
+    function schedulePush(s, c: number) {
       const intervalId = setInterval(() => {
         s.push(c);
         c++;
@@ -229,6 +238,7 @@ describe('streaming', () => {
       return s;
     }
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.SERVER_STREAMING
     );

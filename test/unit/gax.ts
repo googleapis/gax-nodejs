@@ -85,14 +85,14 @@ const RETRY_DICT = {
   code_c: 3,
 };
 
-function expectRetryOptions(obj) {
+function expectRetryOptions(obj: {[name: string]: {}}) {
   expect(obj).to.be.an.instanceOf(Object);
   expect(obj).to.have.all.keys('retryCodes', 'backoffSettings');
   expect(obj.retryCodes).to.be.an.instanceOf(Array);
   expectBackoffSettings(obj.backoffSettings);
 }
 
-function expectBackoffSettings(obj) {
+function expectBackoffSettings(obj: {[name: string]: {}}) {
   expect(obj).to.be.an.instanceOf(Object);
   expect(obj).to.have.all.keys(
     'initialRetryDelayMillis',

@@ -42,11 +42,11 @@ import {Task, TaskCallback} from './task';
 function noop() {}
 
 export interface BundleOptions {
-  elementCountLimit: number;
-  requestByteLimit: number;
-  elementCountThreshold: number;
-  requestByteThreshold: number;
-  delayThreshold: number;
+  elementCountLimit?: number;
+  requestByteLimit?: number;
+  elementCountThreshold?: number;
+  requestByteThreshold?: number;
+  delayThreshold?: number;
 }
 
 /**
@@ -202,7 +202,8 @@ export class BundleExecutor {
       return ret;
     }
 
-    if (!(bundleId in this._timers) && this._options.delayThreshold > 0) {
+    if (!(bundleId in this._timers) && this._options.delayThreshold! > 0) {
+      //@ts-ignore
       this._timers[bundleId] = setTimeout(() => {
         delete this._timers[bundleId];
         this._runNow(bundleId);

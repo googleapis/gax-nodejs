@@ -294,7 +294,7 @@ export class GrpcClient {
   async createStub(CreateStub: typeof ClientStub, options: Map) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
-    const grpcOptions: {[index: string]: string|number|undefined} = {};
+    const grpcOptions: {[index: string]: string | number | undefined} = {};
     Object.keys(options).forEach(key => {
       if (key.startsWith('grpc.')) {
         grpcOptions[key.replace(/^grpc\./, '')] = options[key];

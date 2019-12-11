@@ -507,7 +507,7 @@ function constructRetry(
   let codes: number[] | null = null;
   if (retryCodes && 'retry_codes_name' in methodConfig) {
     const retryCodesName = methodConfig['retry_codes_name'];
-    codes = (retryCodesName? retryCodes[retryCodesName] : []).map(name => {
+    codes = (retryCodesName ? retryCodes[retryCodesName] : []).map(name => {
       return Number(retryNames[name]);
     });
   }
@@ -691,7 +691,7 @@ export function constructSettings(
     let retry = constructRetry(
       methodConfig,
       serviceConfig.retry_codes ? serviceConfig.retry_codes : {},
-      serviceConfig.retry_params ? serviceConfig.retry_params: {},
+      serviceConfig.retry_params ? serviceConfig.retry_params : {},
       retryNames
     );
     let bundlingConfig = methodConfig.bundling;
@@ -721,7 +721,7 @@ export function constructSettings(
       timeout,
       retry,
       bundleOptions: bundlingConfig
-        ? createBundleOptions(bundlingConfig as unknown as Map)
+        ? createBundleOptions((bundlingConfig as unknown) as Map)
         : null,
       otherArgs,
       promise: promise || Promise,

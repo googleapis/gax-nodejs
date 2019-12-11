@@ -72,7 +72,7 @@ export class PageDescriptor implements Descriptor {
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
-    function callback(err: Error | null, resources : [], next: {}) {
+    function callback(err: Error | null, resources: [], next: {}) {
       if (err) {
         stream.emit('error', err);
         return;
@@ -112,7 +112,7 @@ export class PageDescriptor implements Descriptor {
     stream.on('resume', () => {
       if (!started) {
         started = true;
-        apiCall(request, options, callback as unknown as APICallback);
+        apiCall(request, options, (callback as unknown) as APICallback);
       }
     });
     return stream;

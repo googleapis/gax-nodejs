@@ -41,7 +41,12 @@ import * as longrunning from '../../src/longRunningCalls/longrunning';
 import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
-
+import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
+interface Options {
+  expectedCalls?: number;
+  dontResolve?: boolean;
+  finalOperation?: {};
+}
 // tslint:disable-next-line no-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
@@ -89,15 +94,15 @@ const BAD_OP = {
   metadata: METADATA,
   done: true,
 };
-const mockDecoder = val => {
+const mockDecoder = (val: {}) => {
   return val.toString();
 };
 
-function createApiCall(func, client?) {
+function createApiCall(func: Function, client?: OperationsClient) {
   const descriptor = new LongrunningDescriptor(
-    client,
-    mockDecoder,
-    mockDecoder
+    client!,
+    (mockDecoder as unknown) as AnyDecoder,
+    (mockDecoder as unknown) as AnyDecoder
   );
   return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }
@@ -109,9 +114,8 @@ interface SpyableOperationsClient extends OperationsClient {
 }
 
 describe('longrunning', () => {
-  function mockOperationsClient(opts?): SpyableOperationsClient {
-    opts = opts || {};
-    let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
+  function mockOperationsClient(opts?: Options): SpyableOperationsClient {
+    let remainingCalls = opts && opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
     const getOperationSpy = sinon.spy(() => {
       let resolver;
@@ -122,10 +126,13 @@ describe('longrunning', () => {
       (promise as any).cancel = cancelGetOperationSpy;
 
       if (remainingCalls && remainingCalls > 1) {
+        // @ts-ignore
         resolver([PENDING_OP]);
+        // @ts-ignore
         --remainingCalls;
-      } else if (!opts.dontResolve) {
-        resolver([opts.finalOperation || SUCCESSFUL_OP]);
+      } else if (!opts!.dontResolve) {
+        // @ts-ignore
+        resolver([opts!.finalOperation || SUCCESSFUL_OP]);
       }
       return promise;
     });
@@ -142,7 +149,12 @@ describe('longrunning', () => {
 
   describe('createApiCall', () => {
     it('longrunning call resolves to the correct datatypes', done => {
-      const func = (argument, metadata, options, callback) => {
+      const func = (
+        argument: {},
+        metadata: {},
+        options: {},
+        callback: Function
+      ) => {
         callback(null, PENDING_OP);
       };
       const defaultInitialRetryDelayMillis = 100;
@@ -188,8 +200,8 @@ describe('longrunning', () => {
       const client = mockOperationsClient();
       const desc = new LongrunningDescriptor(
         client as OperationsClient,
-        mockDecoder,
-        mockDecoder
+        (mockDecoder as unknown) as AnyDecoder,
+        (mockDecoder as unknown) as AnyDecoder
       );
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
@@ -239,7 +251,12 @@ describe('longrunning', () => {
   describe('Operation', () => {
     describe('getOperation', () => {
       it('does not make an api call if cached op is finished', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient();
@@ -262,7 +279,12 @@ describe('longrunning', () => {
       });
 
       it('makes an api call to get the updated operation', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
@@ -287,7 +309,12 @@ describe('longrunning', () => {
       });
 
       it('does not return a promise when given a callback.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
@@ -315,7 +342,12 @@ describe('longrunning', () => {
       });
 
       it('returns a promise that resolves to the correct data', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
@@ -325,7 +357,7 @@ describe('longrunning', () => {
             const operation = responses[0] as longrunning.Operation;
             return operation.getOperation();
           })
-          .then(responses => {
+          .then((responses: {[name: string]: {}}) => {
             const result = responses[0];
             const metadata = responses[1];
             const rawResponse = responses[2];
@@ -342,7 +374,12 @@ describe('longrunning', () => {
       });
 
       it('returns a promise that rejects an operation error.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, ERROR_OP);
         };
         const client = mockOperationsClient();
@@ -362,12 +399,22 @@ describe('longrunning', () => {
       });
 
       it('uses provided promise constructor.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
 
         let called = false;
-        function MockPromise(executor) {
+        function MockPromise(
+          executor: (
+            resolve: (value?: unknown) => void,
+            reject: (reason?: {}) => void
+          ) => void
+        ) {
           const promise = new Promise(executor);
           called = true;
           return promise;
@@ -388,7 +435,12 @@ describe('longrunning', () => {
 
     describe('promise', () => {
       it('resolves to the correct data', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -414,7 +466,12 @@ describe('longrunning', () => {
       });
 
       it('resolves if operation completes immediately', async () => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient({expectedCalls: 0});
@@ -431,7 +488,12 @@ describe('longrunning', () => {
       });
 
       it('resolves error', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -458,7 +520,12 @@ describe('longrunning', () => {
       });
 
       it('does not hang on invalid API response', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({finalOperation: BAD_OP});
@@ -482,8 +549,8 @@ describe('longrunning', () => {
         const client = mockOperationsClient();
         const desc = new LongrunningDescriptor(
           client,
-          mockDecoder,
-          mockDecoder
+          (mockDecoder as unknown) as AnyDecoder,
+          (mockDecoder as unknown) as AnyDecoder
         );
         const initialRetryDelayMillis = 1;
         const retryDelayMultiplier = 2;
@@ -500,7 +567,12 @@ describe('longrunning', () => {
           totalTimeoutMillis
         );
         let called = false;
-        function MockPromise(executor) {
+        function MockPromise(
+          executor: (
+            resolve: (value?: unknown) => void,
+            reject: (reason?: {}) => void
+          ) => void
+        ) {
           const promise = new Promise(executor);
           called = true;
           return promise;
@@ -522,7 +594,12 @@ describe('longrunning', () => {
 
     describe('cancel', () => {
       it('cancels the Operation and the current api call', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({
@@ -554,7 +631,12 @@ describe('longrunning', () => {
 
     describe('polling', () => {
       it('succesful operation emits complete', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -582,7 +664,12 @@ describe('longrunning', () => {
       });
 
       it('operation error emits an error', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -610,7 +697,12 @@ describe('longrunning', () => {
       });
 
       it('emits progress on updated operations.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const updatedMetadataVal = 'updated';
@@ -658,7 +750,12 @@ describe('longrunning', () => {
       });
 
       it('times out when polling', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({

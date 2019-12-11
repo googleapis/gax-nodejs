@@ -36,7 +36,7 @@ import * as assert from 'assert';
 import * as through2 from 'through2';
 //@ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
-interface Operation{
+interface Operation {
   promise(): Function;
 }
 describe('Run unit tests of echo client', () => {
@@ -388,7 +388,11 @@ describe('Run unit tests of echo client', () => {
   });
 });
 
-function mockSimpleGrpcMethod(expectedRequest: {}, response: {} | null, error?: {}) {
+function mockSimpleGrpcMethod(
+  expectedRequest: {},
+  response: {} | null,
+  error?: {}
+) {
   return (actualRequest: {}, options: {}, callback: Function) => {
     assert.deepStrictEqual(actualRequest, expectedRequest);
     if (error) {
@@ -401,7 +405,11 @@ function mockSimpleGrpcMethod(expectedRequest: {}, response: {} | null, error?: 
   };
 }
 
-function mockServerStreamingGrpcMethod(expectedRequest: {}, response: {} | null, error?: {}) {
+function mockServerStreamingGrpcMethod(
+  expectedRequest: {},
+  response: {} | null,
+  error?: {}
+) {
   return (actualRequest: Function) => {
     assert.deepStrictEqual(actualRequest, expectedRequest);
     const mockStream = through2.obj((chunk, enc, callback) => {
@@ -415,7 +423,11 @@ function mockServerStreamingGrpcMethod(expectedRequest: {}, response: {} | null,
   };
 }
 
-function mockBidiStreamingGrpcMethod(expectedRequest: {}, response: {} | null, error?: {}) {
+function mockBidiStreamingGrpcMethod(
+  expectedRequest: {},
+  response: {} | null,
+  error?: {}
+) {
   return () => {
     const mockStream = through2.obj((chunk, enc, callback) => {
       assert.deepStrictEqual(chunk, expectedRequest);
@@ -429,7 +441,11 @@ function mockBidiStreamingGrpcMethod(expectedRequest: {}, response: {} | null, e
   };
 }
 
-function mockLongRunningGrpcMethod(expectedRequest: {}, response: {} | null, error?: {}) {
+function mockLongRunningGrpcMethod(
+  expectedRequest: {},
+  response: {} | null,
+  error?: {}
+) {
   return (request: Function) => {
     assert.deepStrictEqual(request, expectedRequest);
     const mockOperation = {
