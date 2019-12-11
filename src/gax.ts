@@ -34,6 +34,7 @@
  */
 
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
+import {Map} from './index';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -438,7 +439,7 @@ export function createMaxRetriesBackoffSettings(
  *   properties for the content of options.
  * @return {BundleOptions} - A new options.
  */
-export function createBundleOptions(options: BundlingConfig): BundleOptions {
+export function createBundleOptions(options: Map): BundleOptions {
   const params = [
     'element_count_threshold',
     'element_count_limit',

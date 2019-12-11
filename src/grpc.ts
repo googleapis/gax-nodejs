@@ -41,6 +41,7 @@ import * as semver from 'semver';
 import * as walk from 'walkdir';
 
 import * as gax from './gax';
+import {Map} from './index';
 
 const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
 
@@ -290,7 +291,7 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
   // tslint:disable-next-line variable-name
-  async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
+  async createStub(CreateStub: typeof ClientStub, options: Map) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
     const grpcOptions: {[index: string]: string|number|undefined} = {};

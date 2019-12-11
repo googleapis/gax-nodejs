@@ -128,7 +128,7 @@ export class PagedApiCaller implements APICaller {
 
     const maxResults = settings.maxResults || -1;
     const allResources: Array<{}> = [];
-    function pushResources(err: Error, resources: [], next) {
+    function pushResources(err: Error, resources: [], next: {} | null) {
       if (err) {
         canceller.callback!(err);
         return;
