@@ -40,6 +40,7 @@ import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
 import {APICallback} from './apitypes';
+import {Map} from './index';
 
 const configData = require('./operations_client_config');
 
@@ -137,7 +138,7 @@ export class OperationsClient {
       opts.fallback
         ? operationsProtos.lookupService('google.longrunning.Operations')
         : operationsProtos.google.longrunning.Operations,
-      opts
+      opts as unknown as Map
     ) as Promise<{[method: string]: Function}>;
     const operationsStubMethods = [
       'getOperation',

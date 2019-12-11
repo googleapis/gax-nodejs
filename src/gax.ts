@@ -721,7 +721,7 @@ export function constructSettings(
       timeout,
       retry,
       bundleOptions: bundlingConfig
-        ? createBundleOptions(bundlingConfig)
+        ? createBundleOptions(bundlingConfig as unknown as Map)
         : null,
       otherArgs,
       promise: promise || Promise,
