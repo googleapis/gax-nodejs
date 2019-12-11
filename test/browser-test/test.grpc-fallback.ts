@@ -252,6 +252,7 @@ describe('grpc-fallback', () => {
       // @ts-ignore
       // assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
       assert.strictEqual(
+        //@ts-ignore
         fallOptions.otherArgs.headers['x-goog-request-params'],
         'abc=def'
       );

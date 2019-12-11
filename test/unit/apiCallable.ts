@@ -329,7 +329,8 @@ describe('retryable', () => {
   it('cancels in the middle of retries', done => {
     let callCount = 0;
     // tslint:disable-next-line
-    let promise: {cancel: Function};
+    // @ts-ignore
+    let promise;
     function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       if (callCount <= 2) {
@@ -337,6 +338,7 @@ describe('retryable', () => {
         return;
       }
       setTimeout(() => {
+        // @ts-ignore
         promise.cancel();
       }, 0);
       setTimeout(() => {
@@ -344,8 +346,8 @@ describe('retryable', () => {
       }, 10);
     }
     const apiCall = createApiCall(func, settings);
-    const gaxPromise = apiCall({}, undefined);
-    gaxPromise
+    promise = apiCall({}, undefined);
+    promise
       .then(() => {
         done(new Error('should not reach'));
       })

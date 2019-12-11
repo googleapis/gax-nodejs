@@ -217,15 +217,14 @@ describe('deepCopyForResponse', () => {
 
 describe('Task', () => {
   function testTask(apiCall?: SimpleCallbackFunction) {
-    if (apiCall) {
-      return new Task(apiCall, {}, 'field1', null);
-    }
-    return undefined;
+    //@ts-ignore
+    return new Task(apiCall, {}, 'field1', null);
   }
 
   let id = 0;
   function extendElements(
-    task: Task,
+    //@ts-ignore
+    task,
     elements: string[] | number[],
     callback?: TaskCallback
   ) {
@@ -264,12 +263,9 @@ describe('Task', () => {
       testCases.forEach(t => {
         it(t.message, () => {
           const task = testTask();
-          const baseCount = task && task.getElementCount();
-          extendElements(task!, t.data);
-          expect(task && task.getElementCount()).to.eq(
-            baseCount! + t.want,
-            t.message
-          );
+          const baseCount = task.getElementCount();
+          extendElements(task, t.data);
+          expect(task.getElementCount()).to.eq(baseCount! + t.want, t.message);
         });
       });
     });
@@ -279,9 +275,9 @@ describe('Task', () => {
       testCases.forEach(t => {
         it(t.message, () => {
           const task = testTask();
-          const baseSize = task && task.getRequestByteSize();
-          extendElements(task!, t.data);
-          expect(task!.getRequestByteSize()).to.eq(
+          const baseSize = task.getRequestByteSize();
+          extendElements(task, t.data);
+          expect(task.getRequestByteSize()).to.eq(
             baseSize! + t.want * sizePerData
           );
         });
@@ -461,19 +457,20 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task!, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    extendElements(task!, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    task!.run();
-    task!._data.forEach(data => {
-      task!.cancel(data.callback.id!);
+    task.run();
+    //@ts-ignore
+    task._data.forEach(data => {
+      task.cancel(data.callback.id!);
     });
   });
 
@@ -491,25 +488,25 @@ describe('Task', () => {
     });
 
     const task = testTask(apiCall);
-    task!._subresponseField = 'field1';
+    task._subresponseField = 'field1';
     const callback = sinon.spy(() => {
       if (callback.callCount === 2) {
         done();
       }
     });
-    extendElements(task!, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], err => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    const cancelId = task!._data[task!._data.length - 1].callback.id;
-    extendElements(task!, [4, 5, 6], (err, resp) => {
+    const cancelId = task._data[task._data.length - 1].callback.id;
+    extendElements(task, [4, 5, 6], (err, resp) => {
       // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([4, 5, 6]);
       callback();
     });
-    task!.run();
-    task!.cancel(cancelId!);
+    task.run();
+    task.cancel(cancelId!);
   });
 });
 

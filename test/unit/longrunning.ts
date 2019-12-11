@@ -42,11 +42,6 @@ import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
 import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
-interface Options {
-  expectedCalls?: number;
-  dontResolve?: boolean;
-  finalOperation?: {};
-}
 // tslint:disable-next-line no-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
@@ -114,8 +109,10 @@ interface SpyableOperationsClient extends OperationsClient {
 }
 
 describe('longrunning', () => {
-  function mockOperationsClient(opts?: Options): SpyableOperationsClient {
-    let remainingCalls = opts && opts.expectedCalls ? opts.expectedCalls : null;
+  //@ts-ignore
+  function mockOperationsClient(opts?): SpyableOperationsClient {
+    opts = opts || {};
+    let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
     const getOperationSpy = sinon.spy(() => {
       let resolver;
@@ -130,9 +127,9 @@ describe('longrunning', () => {
         resolver([PENDING_OP]);
         // @ts-ignore
         --remainingCalls;
-      } else if (!opts!.dontResolve) {
+      } else if (!opts.dontResolve) {
         // @ts-ignore
-        resolver([opts!.finalOperation || SUCCESSFUL_OP]);
+        resolver([!opts.finalOperation || SUCCESSFUL_OP]);
       }
       return promise;
     });
@@ -285,7 +282,7 @@ describe('longrunning', () => {
           options: {},
           callback: Function
         ) => {
-          callback(null, PENDING_OP);
+          callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
@@ -315,7 +312,7 @@ describe('longrunning', () => {
           options: {},
           callback: Function
         ) => {
-          callback(null, PENDING_OP);
+          callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
@@ -348,7 +345,7 @@ describe('longrunning', () => {
           options: {},
           callback: Function
         ) => {
-          callback(null, PENDING_OP);
+          callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
