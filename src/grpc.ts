@@ -82,7 +82,6 @@ export interface ClientStubOptions {
   // TODO: use sslCreds?: grpc.ChannelCredentials;
   // tslint:disable-next-line no-any
   sslCreds?: any;
-  [name: string]: string|number|undefined;
 }
 
 export class ClientStub extends grpc.Client {

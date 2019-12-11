@@ -506,7 +506,7 @@ function constructRetry(
   let codes: number[] | null = null;
   if (retryCodes && 'retry_codes_name' in methodConfig) {
     const retryCodesName = methodConfig['retry_codes_name'];
-    codes = (retryCodes[retryCodesName] || []).map(name => {
+    codes = (retryCodesName? retryCodes[retryCodesName] : []).map(name => {
       return Number(retryNames[name]);
     });
   }
@@ -514,7 +514,7 @@ function constructRetry(
   let backoffSettings: BackoffSettings | null = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
     const params = retryParams[
-      methodConfig.retry_params_name
+      methodConfig.retry_params_name ? methodConfig.retry_params_name : ''
     ] as RetryParamsConfig;
     backoffSettings = createBackoffSettings(
       params.initial_retry_delay_millis,
@@ -684,19 +684,19 @@ export function constructSettings(
   const overridingMethods = overrides.methods || {};
   // tslint:disable-next-line forin
   for (const methodName in methods) {
-    const methodConfig = methods[methodName];
+    const methodConfig = methods[methodName] || {};
     const jsName = methodName[0].toLowerCase() + methodName.slice(1);
 
     let retry = constructRetry(
       methodConfig,
-      serviceConfig.retry_codes,
-      serviceConfig.retry_params,
+      serviceConfig.retry_codes ? serviceConfig.retry_codes : {},
+      serviceConfig.retry_params ? serviceConfig.retry_params: {},
       retryNames
     );
     let bundlingConfig = methodConfig.bundling;
     let timeout = methodConfig.timeout_millis;
     if (methodName in overridingMethods) {
-      const overridingMethod = overridingMethods[methodName];
+      const overridingMethod = overridingMethods[methodName] || {};
       if (overridingMethod) {
         if ('bundling' in overridingMethod) {
           bundlingConfig = overridingMethod.bundling;
@@ -709,8 +709,8 @@ export function constructSettings(
         retry!,
         constructRetry(
           overridingMethod,
-          overrides.retry_codes,
-          overrides.retry_params,
+          overrides.retry_codes ? overrides.retry_codes : {},
+          overrides.retry_params ? overrides.retry_params : {},
           retryNames
         )!
       );
