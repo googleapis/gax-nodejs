@@ -34,7 +34,6 @@
  */
 
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
-import {Map} from './index';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -439,7 +438,7 @@ export function createMaxRetriesBackoffSettings(
  *   properties for the content of options.
  * @return {BundleOptions} - A new options.
  */
-export function createBundleOptions(options: Map): BundleOptions {
+export function createBundleOptions(options: BundlingConfig): BundleOptions {
   const params = [
     'element_count_threshold',
     'element_count_limit',
@@ -448,6 +447,7 @@ export function createBundleOptions(options: Map): BundleOptions {
     'delay_threshold_millis',
   ];
   params.forEach(param => {
+    //@ts-ignore
     if (param in options && typeof options[param] !== 'number') {
       throw new Error(`${param} should be a number`);
     }
@@ -721,7 +721,7 @@ export function constructSettings(
       timeout,
       retry,
       bundleOptions: bundlingConfig
-        ? createBundleOptions((bundlingConfig as unknown) as Map)
+        ? createBundleOptions(bundlingConfig)
         : null,
       otherArgs,
       promise: promise || Promise,

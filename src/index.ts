@@ -123,10 +123,6 @@ export interface Descriptors {
   longrunning: {[name: string]: LongrunningDescriptor};
 }
 
-export interface Map {
-  [index: string]: number;
-}
-
 export interface Callback<
   ResponseObject,
   NextRequestObject,
