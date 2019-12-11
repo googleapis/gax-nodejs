@@ -159,7 +159,7 @@ export class OperationsClient {
         innerCallPromise,
         defaults[methodName],
         //@ts-ignore
-        PAGE_DESCRIPTORS[methodName],
+        PAGE_DESCRIPTORS[methodName]
       );
     }
   }
