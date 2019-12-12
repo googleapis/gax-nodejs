@@ -285,6 +285,7 @@ describe('longrunning', () => {
           callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient();
+        console.warn(client);
         const apiCall = createApiCall(func, client);
         apiCall({})
           .then(responses => {
@@ -293,6 +294,7 @@ describe('longrunning', () => {
               if (err) {
                 done(err);
               }
+              console.warn(client);
               expect(result).to.deep.eq(RESPONSE_VAL);
               expect(metadata).to.deep.eq(METADATA_VAL);
               expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
