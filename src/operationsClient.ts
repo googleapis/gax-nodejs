@@ -48,7 +48,7 @@ const version = require('../../package.json').version;
 
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
-const PAGE_DESCRIPTORS = {
+const PAGE_DESCRIPTORS: {[method: string]: PageDescriptor} = {
   listOperations: new PageDescriptor(
     'pageToken',
     'nextPageToken',
@@ -158,7 +158,6 @@ export class OperationsClient {
       this._innerApiCalls[methodName] = createApiCall(
         innerCallPromise,
         defaults[methodName],
-        //@ts-ignore
         PAGE_DESCRIPTORS[methodName]
       );
     }

@@ -439,7 +439,7 @@ export function createMaxRetriesBackoffSettings(
  * @return {BundleOptions} - A new options.
  */
 export function createBundleOptions(options: BundlingConfig): BundleOptions {
-  const params = [
+  const params: Array<keyof BundlingConfig> = [
     'element_count_threshold',
     'element_count_limit',
     'request_byte_threshold',
@@ -447,7 +447,6 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
     'delay_threshold_millis',
   ];
   params.forEach(param => {
-    //@ts-ignore
     if (param in options && typeof options[param] !== 'number') {
       throw new Error(`${param} should be a number`);
     }
