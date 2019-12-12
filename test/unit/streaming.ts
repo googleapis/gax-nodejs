@@ -213,8 +213,8 @@ describe('streaming', () => {
   });
 
   it('cancels in the middle', done => {
-    //@ts-ignore
-    function schedulePush(s, c: number) {
+    // tslint:disable-next-line no-any
+    function schedulePush(s: any, c: number) {
       const intervalId = setInterval(() => {
         s.push(c);
         c++;

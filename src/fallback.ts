@@ -284,8 +284,8 @@ export class GrpcClient {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
         ].apply(serviceStub, [req, callback]);
-
-        let cancelController: AbortController, cancelSignal;
+        // tslint:disable-next-line no-any
+        let cancelController: AbortController, cancelSignal: any;
         if (isBrowser && typeof AbortController !== 'undefined') {
           cancelController = new AbortController();
         } else {

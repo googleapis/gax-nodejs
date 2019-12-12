@@ -109,13 +109,14 @@ interface SpyableOperationsClient extends OperationsClient {
 }
 
 describe('longrunning', () => {
-  //@ts-ignore
-  function mockOperationsClient(opts?): SpyableOperationsClient {
+  // tslint:disable-next-line no-any
+  function mockOperationsClient(opts?: any): SpyableOperationsClient {
     opts = opts || {};
     let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
     const getOperationSpy = sinon.spy(() => {
-      let resolver;
+      // tslint:disable-next-line no-any
+      let resolver: any;
       const promise = new Promise(resolve => {
         resolver = resolve;
       });
@@ -123,12 +124,9 @@ describe('longrunning', () => {
       (promise as any).cancel = cancelGetOperationSpy;
 
       if (remainingCalls && remainingCalls > 1) {
-        // @ts-ignore
         resolver([PENDING_OP]);
-        // @ts-ignore
         --remainingCalls;
       } else if (!opts.dontResolve) {
-        // @ts-ignore
         resolver([opts.finalOperation || SUCCESSFUL_OP]);
       }
       return promise;

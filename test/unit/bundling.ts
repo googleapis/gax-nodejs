@@ -216,22 +216,22 @@ describe('deepCopyForResponse', () => {
 });
 
 describe('Task', () => {
-  function testTask(apiCall?: SimpleCallbackFunction) {
-    //@ts-ignore
+  // tslint:disable-next-line no-any
+  function testTask(apiCall?: any) {
     return new Task(apiCall, {}, 'field1', null);
   }
 
   let id = 0;
   function extendElements(
-    //@ts-ignore
-    task,
+    // tslint:disable-next-line no-any
+    task: any,
     elements: string[] | number[],
-    callback?: TaskCallback
+    // tslint:disable-next-line no-any
+    callback?: any
   ) {
     if (!callback) {
       callback = () => {};
     }
-    //@ts-ignore
     callback.id = id++;
     let bytes = 0;
     elements.forEach((element: string | number) => {
@@ -356,10 +356,10 @@ describe('Task', () => {
           let callbackCount = 0;
           // tslint:disable-next-line no-any
           (t as any).data.forEach((d: string[]) => {
-            extendElements(task!, d, (err, data) => {
+            // tslint:disable-next-line no-any
+            extendElements(task!, d, (err: any, data: {field1: []}) => {
               // tslint:disable-next-line no-unused-expression
               expect(err).to.be.null;
-              // @ts-ignore
               expect(data.field1.length).to.be.eq(d.length);
               callbackCount++;
               if (callbackCount === t.data.length) {
@@ -417,18 +417,18 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task!, [1, 2, 3], (err, resp) => {
+    extendElements(task!, [1, 2, 3], (err: {}, resp: {field1: number[]}) => {
       // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([1, 2, 3]);
       callback();
     });
-    extendElements(task!, [4, 5, 6], err => {
+    extendElements(task!, [4, 5, 6], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
     });
     const cancelId = task!._data[task!._data.length - 1].callback.id;
 
-    extendElements(task!, [7, 8, 9], (err, resp) => {
+    extendElements(task!, [7, 8, 9], (err: {}, resp: {field1: number[]}) => {
       // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([7, 8, 9]);
       callback();
@@ -457,18 +457,17 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
     task.run();
-    //@ts-ignore
     task._data.forEach(data => {
       task.cancel(data.callback.id!);
     });
@@ -494,13 +493,13 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
     const cancelId = task._data[task._data.length - 1].callback.id;
-    extendElements(task, [4, 5, 6], (err, resp) => {
+    extendElements(task, [4, 5, 6], (err: {}, resp: {field1: number[]}) => {
       // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([4, 5, 6]);
       callback();

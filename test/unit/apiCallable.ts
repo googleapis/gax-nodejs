@@ -328,9 +328,8 @@ describe('retryable', () => {
 
   it('cancels in the middle of retries', done => {
     let callCount = 0;
-    // tslint:disable-next-line
-    // @ts-ignore
-    let promise;
+    // tslint:disable-next-line no-any
+    let promise: any;
     function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       if (callCount <= 2) {
@@ -338,7 +337,6 @@ describe('retryable', () => {
         return;
       }
       setTimeout(() => {
-        // @ts-ignore
         promise.cancel();
       }, 0);
       setTimeout(() => {
@@ -351,7 +349,7 @@ describe('retryable', () => {
       .then(() => {
         done(new Error('should not reach'));
       })
-      .catch(err => {
+      .catch((err: Error) => {
         expect(err).to.be.an.instanceOf(Error);
         done();
       });

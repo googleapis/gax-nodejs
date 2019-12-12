@@ -209,8 +209,8 @@ describe('paged iteration', () => {
   });
 
   describe('stream conversion', () => {
-    //@ts-ignore
-    let spy;
+    // tslint:disable-next-line no-any
+    let spy: any;
     let apiCall: GaxCallPromise;
     beforeEach(() => {
       spy = sinon.spy(func);
@@ -241,7 +241,6 @@ describe('paged iteration', () => {
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, {}),
         () => {
-          //@ts-ignore
           expect(spy.callCount).to.eq(pagesToStream + 1);
         },
         done,
@@ -260,7 +259,6 @@ describe('paged iteration', () => {
       streamChecker(
         stream,
         () => {
-          //@ts-ignore
           expect(spy.callCount).to.eq(2);
         },
         done,
@@ -277,7 +275,6 @@ describe('paged iteration', () => {
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, options),
         () => {
-          //@ts-ignore
           expect(spy.callCount).to.eq(pagesToStream);
         },
         done,
@@ -294,7 +291,6 @@ describe('paged iteration', () => {
       streamChecker(
         stream,
         () => {
-          //@ts-ignore
           expect(spy.callCount).to.eq(3);
           expect(onData.callCount).to.eq(pageSize * 2 + 2);
         },
@@ -307,12 +303,10 @@ describe('paged iteration', () => {
       // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       setTimeout(() => {
-        //@ts-ignore
         expect(spy.callCount).to.eq(0);
         streamChecker(
           stream,
           () => {
-            //@ts-ignore
             expect(spy.callCount).to.eq(pagesToStream + 1);
           },
           done,
@@ -325,7 +319,6 @@ describe('paged iteration', () => {
       // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       stream.on('end', () => {
-        //@ts-ignore
         expect(spy.callCount).to.eq(pagesToStream + 1);
         done();
       });
@@ -355,7 +348,6 @@ describe('paged iteration', () => {
         })
         .on('end', () => {
           expect(count).to.eq(pageSize + 1);
-          //@ts-ignore
           expect(spy.callCount).to.eq(2);
           done();
         })

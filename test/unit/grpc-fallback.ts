@@ -147,7 +147,6 @@ describe('grpc-fallback', () => {
     echoService: protobuf.Service,
     stubOptions: {};
   const createdAbortControllers: string[] = [];
-  // @ts-ignore
   const savedAbortController = abortController.AbortController;
 
   before(() => {
