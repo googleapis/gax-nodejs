@@ -199,9 +199,10 @@ export class GrpcClient {
                 (metadata[key]! as Array<
                   string | number | string[] | undefined
                 >).push(...value);
-              }
-              else{
-                throw new Error(`Can not add value ${value} to the call metadata.`);
+              } else {
+                throw new Error(
+                  `Can not add value ${value} to the call metadata.`
+                );
               }
             }
           } else {

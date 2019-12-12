@@ -246,17 +246,8 @@ describe('grpc-fallback', () => {
     const savedFetch = window.fetch;
     // @ts-ignore
     window.fetch = (url, options) => {
-      console.warn(options);
-    // window.fetch = (url, fallOptions) => {
-      // @ts-ignore
-      // Object.assign(fallOptions, options);
       // @ts-ignore
       assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
-      // assert.strictEqual(
-      //   //@ts-ignore
-      //   fallOptions.otherArgs.headers['x-goog-request-params'],
-      //   'abc=def'
-      // );
       return Promise.resolve({
         ok: true,
         arrayBuffer: () => {

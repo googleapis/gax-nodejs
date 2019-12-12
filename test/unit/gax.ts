@@ -126,7 +126,7 @@ describe('gax construct settings', () => {
     expect(settings.otherArgs).eql(otherArgs);
   });
 
-  it.only('overrides settings', () => {
+  it('overrides settings', () => {
     const overrides = {interfaces: {}};
     //@ts-ignore
     overrides.interfaces[SERVICE_NAME] = {
