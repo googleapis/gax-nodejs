@@ -126,7 +126,7 @@ describe('gax construct settings', () => {
     expect(settings.otherArgs).eql(otherArgs);
   });
 
-  it('overrides settings', () => {
+  it.only('overrides settings', () => {
     const overrides = {interfaces: {}};
     //@ts-ignore
     overrides.interfaces[SERVICE_NAME] = {
@@ -143,7 +143,6 @@ describe('gax construct settings', () => {
       overrides,
       RETRY_DICT
     );
-    console.warn(defaults);
     let settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
 

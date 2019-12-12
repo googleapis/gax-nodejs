@@ -129,7 +129,7 @@ describe('longrunning', () => {
         --remainingCalls;
       } else if (!opts.dontResolve) {
         // @ts-ignore
-        resolver([!opts.finalOperation || SUCCESSFUL_OP]);
+        resolver([opts.finalOperation || SUCCESSFUL_OP]);
       }
       return promise;
     });
@@ -282,7 +282,7 @@ describe('longrunning', () => {
           options: {},
           callback: Function
         ) => {
-          callback(null, SUCCESSFUL_OP);
+          callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
         console.warn(client);
@@ -314,7 +314,7 @@ describe('longrunning', () => {
           options: {},
           callback: Function
         ) => {
-          callback(null, SUCCESSFUL_OP);
+          callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);
@@ -347,7 +347,7 @@ describe('longrunning', () => {
           options: {},
           callback: Function
         ) => {
-          callback(null, SUCCESSFUL_OP);
+          callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
         const apiCall = createApiCall(func, client);

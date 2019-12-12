@@ -229,7 +229,7 @@ describe('grpc-fallback', () => {
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);
   });
 
-  it('should be able to add extra headers to the request', async () => {
+  it.only('should be able to add extra headers to the request', async () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     // tslint:disable-next-line no-any
@@ -245,17 +245,18 @@ describe('grpc-fallback', () => {
     const response = responseType.create(requestObject);
     const savedFetch = window.fetch;
     // @ts-ignore
-    // window.fetch = (url, options) => {
-    window.fetch = (url, fallOptions) => {
+    window.fetch = (url, options) => {
+      console.warn(options);
+    // window.fetch = (url, fallOptions) => {
       // @ts-ignore
-      Object.assign(fallOptions, options);
+      // Object.assign(fallOptions, options);
       // @ts-ignore
-      // assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
-      assert.strictEqual(
-        //@ts-ignore
-        fallOptions.otherArgs.headers['x-goog-request-params'],
-        'abc=def'
-      );
+      assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
+      // assert.strictEqual(
+      //   //@ts-ignore
+      //   fallOptions.otherArgs.headers['x-goog-request-params'],
+      //   'abc=def'
+      // );
       return Promise.resolve({
         ok: true,
         arrayBuffer: () => {

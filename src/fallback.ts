@@ -152,7 +152,7 @@ export class GrpcClient {
     configOverrides: gax.ClientConfig,
     headers: OutgoingHttpHeaders
   ) {
-    function buildMetadata(moreHeaders: OutgoingHttpHeaders) {
+    function buildMetadata(abTests: {}, moreHeaders: OutgoingHttpHeaders) {
       const metadata: OutgoingHttpHeaders = {};
       if (!headers) {
         headers = {};
@@ -199,6 +199,9 @@ export class GrpcClient {
                 (metadata[key]! as Array<
                   string | number | string[] | undefined
                 >).push(...value);
+              }
+              else{
+                throw new Error(`Can not add value ${value} to the call metadata.`);
               }
             }
           } else {
