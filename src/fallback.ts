@@ -66,7 +66,15 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
+interface NodeFetchType {
+  (url: RequestInfo, init?: RequestInit): Promise<Response>;
+}
+
 const CLIENT_VERSION_HEADER = 'x-goog-api-client';
+
+interface FallbackServiceStub {
+  [method: string]: Function;
+}
 
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
@@ -111,7 +119,7 @@ export class GrpcClient {
    * @param {Object} jsonObject - A JSON version of a protofile created usin protobuf.js
    * @returns {Object} Root namespace of proto JSON
    */
-  loadProto(jsonObject) {
+  loadProto(jsonObject: {}) {
     const rootObject = protobuf.Root.fromJSON(jsonObject);
     return rootObject;
   }
@@ -144,8 +152,8 @@ export class GrpcClient {
     configOverrides: gax.ClientConfig,
     headers: OutgoingHttpHeaders
   ) {
-    function buildMetadata(abTests, moreHeaders) {
-      const metadata = {};
+    function buildMetadata(abTests: {}, moreHeaders: OutgoingHttpHeaders) {
+      const metadata: OutgoingHttpHeaders = {};
       if (!headers) {
         headers = {};
       }
@@ -154,8 +162,8 @@ export class GrpcClient {
       for (const key in headers) {
         if (headers.hasOwnProperty(key)) {
           metadata[key] = Array.isArray(headers[key])
-            ? headers[key]
-            : [headers[key]];
+            ? (headers[key] as string[])
+            : ([headers[key]] as string[]);
         }
       }
 
@@ -163,9 +171,13 @@ export class GrpcClient {
       const clientVersions: string[] = [];
       if (
         metadata[CLIENT_VERSION_HEADER] &&
-        metadata[CLIENT_VERSION_HEADER][0]
+        (metadata[CLIENT_VERSION_HEADER] as Array<
+          string | number | string[]
+        >)[0]
       ) {
-        clientVersions.push(...metadata[CLIENT_VERSION_HEADER][0].split(' '));
+        clientVersions.push(
+          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
+        );
       }
       clientVersions.push(`grpc-web/${version}`);
       metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(' ')];
@@ -183,10 +195,18 @@ export class GrpcClient {
             if (metadata[key] === undefined) {
               metadata[key] = value;
             } else {
-              metadata[key].push(...value);
+              if (Array.isArray(metadata[key])) {
+                (metadata[key]! as Array<
+                  string | number | string[] | undefined
+                >).push(...value);
+              } else {
+                throw new Error(
+                  `Can not add value ${value} to the call metadata.`
+                );
+              }
             }
           } else {
-            metadata[key] = [value];
+            metadata[key] = [value] as string[];
           }
         }
       }
@@ -215,7 +235,16 @@ export class GrpcClient {
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     // an RPC function to be passed to protobufjs RPC API
-    function serviceClientImpl(method, requestData, callback) {
+    function serviceClientImpl(
+      method:
+        | protobuf.Method
+        | protobuf.rpc.ServiceMethod<
+            protobuf.Message<{}>,
+            protobuf.Message<{}>
+          >,
+      requestData: Uint8Array,
+      callback: protobuf.RPCImplCallback
+    ) {
       return [method, requestData, callback];
     }
 
@@ -233,17 +262,30 @@ export class GrpcClient {
       throw new Error('No authentication was provided');
     }
     const authHeader = await this.authClient.getRequestHeaders();
-    const serviceStub = service.create(serviceClientImpl, false, false);
+    const serviceStub = (service.create(
+      serviceClientImpl,
+      false,
+      false
+    ) as unknown) as FallbackServiceStub;
     const methods = this.getServiceMethods(service);
 
-    const newServiceStub = service.create(serviceClientImpl, false, false);
+    const newServiceStub = (service.create(
+      serviceClientImpl,
+      false,
+      false
+    ) as unknown) as FallbackServiceStub;
     for (const methodName of methods) {
-      newServiceStub[methodName] = (req, options, metadata, callback) => {
+      newServiceStub[methodName] = (
+        req: {},
+        options: {[name: string]: string},
+        metadata: {},
+        callback: Function
+      ) => {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
         ].apply(serviceStub, [req, callback]);
-
-        let cancelController, cancelSignal;
+        // tslint:disable-next-line no-any
+        let cancelController: AbortController, cancelSignal: any;
         if (isBrowser && typeof AbortController !== 'undefined') {
           cancelController = new AbortController();
         } else {
@@ -297,27 +339,29 @@ export class GrpcClient {
 
         const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
-        const fetch = isBrowser() ? window.fetch : nodeFetch;
+        const fetch = isBrowser()
+          ? window.fetch
+          : ((nodeFetch as unknown) as NodeFetchType);
         fetch(url, {
           headers,
           method: 'post',
           body: requestData,
           signal: cancelSignal,
         })
-          .then(response => {
+          .then((response: Response | nodeFetch.Response) => {
             return Promise.all([
               Promise.resolve(response.ok),
               response.arrayBuffer(),
             ]);
           })
-          .then(([ok, buffer]) => {
+          .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
             if (!ok) {
               const status = statusDecoder.decodeRpcStatus(buffer);
               throw new Error(JSON.stringify(status));
             }
             serviceCallback(null, new Uint8Array(buffer));
           })
-          .catch(err => {
+          .catch((err: Error) => {
             if (!cancelRequested || err.name !== 'AbortError') {
               serviceCallback(err);
             }

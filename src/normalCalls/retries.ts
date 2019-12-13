@@ -128,7 +128,6 @@ export function retryable(
           callback(err);
         } else {
           const toSleep = Math.random() * delay;
-          // @ts-ignore
           timeoutId = setTimeout(() => {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);

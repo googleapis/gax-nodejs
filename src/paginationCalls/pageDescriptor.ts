@@ -33,7 +33,7 @@ import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
 import {APICaller} from '../apiCaller';
-import {GaxCall} from '../apitypes';
+import {GaxCall, APICallback} from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
@@ -72,7 +72,7 @@ export class PageDescriptor implements Descriptor {
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
-    function callback(err: Error | null, resources, next) {
+    function callback(err: Error | null, resources: Array<{}>, next: {}) {
       if (err) {
         stream.emit('error', err);
         return;
@@ -112,7 +112,7 @@ export class PageDescriptor implements Descriptor {
     stream.on('resume', () => {
       if (!started) {
         started = true;
-        apiCall(request, options, callback);
+        apiCall(request, options, (callback as unknown) as APICallback);
       }
     });
     return stream;

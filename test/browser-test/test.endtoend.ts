@@ -31,9 +31,10 @@
 
 import * as assert from 'assert';
 import {expect} from 'chai';
+// @ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
-function sleep(timeout) {
+function sleep(timeout: number) {
   return new Promise(resolve => {
     setTimeout(resolve, timeout);
   });
@@ -108,7 +109,7 @@ describe('Run tests against gRPC server', () => {
       pageSize: 2,
     };
     const [response] = await client.pagedExpand(request);
-    const result = response.map(r => r.content);
+    const result = response.map((r: {content: string}) => r.content);
     assert.deepStrictEqual(words, result);
   });
 

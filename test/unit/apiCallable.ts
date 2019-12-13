@@ -33,6 +33,7 @@ import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 
 import * as gax from '../../src/gax';
+import {Task} from '../../src/bundlingCalls/task';
 import {GoogleError} from '../../src/googleError';
 
 import * as utils from './utils';
@@ -47,7 +48,12 @@ const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
 describe('createApiCall', () => {
   it('calls api call', done => {
     let deadlineArg: {};
-    function func(argument: {}, metadata: {}, options, callback) {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       callback(null, argument);
     }
@@ -61,7 +67,12 @@ describe('createApiCall', () => {
   });
 
   it('is customized by call options', done => {
-    function func(argument, metadata, options, callback) {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: {getTime: Function}},
+      callback: Function
+    ) {
       callback(null, options.deadline.getTime());
     }
     const apiCall = createApiCall(func, {settings: {timeout: 100}});
@@ -76,7 +87,12 @@ describe('createApiCall', () => {
   });
 
   it('chooses the proper timeout', done => {
-    function func(argument, metadata, options, callback) {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: {getTime: Function}},
+      callback: Function
+    ) {
       callback(null, options.deadline.getTime());
     }
 
@@ -107,15 +123,20 @@ describe('createApiCall', () => {
 
 describe('Promise', () => {
   it('calls api call', done => {
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: string;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
     // tslint:disable-next-line no-any
     (apiCall as any)(null)
-      .then(response => {
+      .then((response: number[]) => {
         expect(response).to.be.an('array');
         expect(response[0]).to.eq(42);
         // tslint:disable-next-line no-unused-expression
@@ -138,7 +159,7 @@ describe('Promise', () => {
   });
 
   it('has cancel method', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       setTimeout(() => {
         callback(null, 42);
       }, 0);
@@ -150,7 +171,7 @@ describe('Promise', () => {
       .then(() => {
         done(new Error('should not reach'));
       })
-      .catch(err => {
+      .catch((err: {code: number}) => {
         expect(err).to.be.an.instanceOf(GoogleError);
         expect(err.code).to.equal(status.CANCELLED);
         done();
@@ -162,7 +183,7 @@ describe('Promise', () => {
     const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
 
     let callCount = 0;
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       let err: GoogleError;
       let response: number;
@@ -201,7 +222,7 @@ describe('Promise', () => {
   });
 
   it('does not return promise when callback is supplied', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
@@ -217,18 +238,23 @@ describe('Promise', () => {
 
   it('uses a provided promise module.', done => {
     let called = false;
-    function MockPromise(resolver) {
+    function MockPromise(
+      resolver: (
+        resolve: (value?: unknown) => void,
+        reject: (reason?: {}) => void
+      ) => void
+    ) {
       called = true;
       return new Promise(resolver);
     }
 
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
     // @ts-ignore incomplete options
     apiCall({}, {promise: MockPromise})
-      .then(response => {
+      .then((response: number[]) => {
         expect(response).to.be.an('array');
         expect(response[0]).to.eq(42);
         // tslint:disable-next-line no-unused-expression
@@ -245,8 +271,13 @@ describe('retryable', () => {
 
   it('retries the API call', done => {
     let toAttempt = 3;
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: string;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       toAttempt--;
       if (toAttempt > 0) {
@@ -267,8 +298,13 @@ describe('retryable', () => {
 
   it('retries the API call with promise', done => {
     let toAttempt = 3;
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: string;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       toAttempt--;
       if (toAttempt > 0) {
@@ -292,8 +328,9 @@ describe('retryable', () => {
 
   it('cancels in the middle of retries', done => {
     let callCount = 0;
-    let promise;
-    function func(argument, metadata, options, callback) {
+    // tslint:disable-next-line no-any
+    let promise: any;
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       if (callCount <= 2) {
         fail(argument, metadata, options, callback);
@@ -312,7 +349,7 @@ describe('retryable', () => {
       .then(() => {
         done(new Error('should not reach'));
       })
-      .catch(err => {
+      .catch((err: Error) => {
         expect(err).to.be.an.instanceOf(Error);
         done();
       });
@@ -414,7 +451,7 @@ describe('retryable', () => {
   });
 
   it('aborts on unexpected exception', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       const error = new GoogleError();
       error.code = FAKE_STATUS_CODE_2;
       callback(error);
@@ -432,7 +469,7 @@ describe('retryable', () => {
   });
 
   it('does not retry even when no responses', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, null);
     }
     const apiCall = createApiCall(func, settings);
@@ -476,7 +513,7 @@ describe('retryable', () => {
   });
 
   it.skip('reports A/B testing', () => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, argument);
     }
     const mockBuilder = sinon.mock();
@@ -520,12 +557,12 @@ describe('retryable', () => {
   });
 
   it('forwards metadata to builder', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, {});
     }
 
-    let gotHeaders;
-    const mockBuilder = (abTest, headers) => {
+    let gotHeaders: {h1?: string; h2?: string};
+    const mockBuilder = (abTest: {}, headers: {}) => {
       gotHeaders = headers;
     };
     const settings = {

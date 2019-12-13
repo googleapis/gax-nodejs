@@ -41,6 +41,7 @@ import * as semver from 'semver';
 import * as walk from 'walkdir';
 
 import * as gax from './gax';
+import {ClientOptions} from '@grpc/grpc-js/build/src/client';
 
 const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
 
@@ -82,6 +83,7 @@ export interface ClientStubOptions {
   // TODO: use sslCreds?: grpc.ChannelCredentials;
   // tslint:disable-next-line no-any
   sslCreds?: any;
+  [index: string]: string | number | undefined | {};
 }
 
 export class ClientStub extends grpc.Client {
@@ -293,13 +295,19 @@ export class GrpcClient {
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
-    const grpcOptions: {[index: string]: string} = {};
+    const grpcOptions: ClientOptions = {};
     Object.keys(options).forEach(key => {
       if (key.startsWith('grpc.')) {
-        grpcOptions[key.replace(/^grpc\./, '')] = options[key];
+        grpcOptions[key.replace(/^grpc\./, '')] = options[key] as
+          | string
+          | number;
       }
     });
-    const stub = new CreateStub(serviceAddress, creds, grpcOptions);
+    const stub = new CreateStub(
+      serviceAddress,
+      creds,
+      grpcOptions as ClientOptions
+    );
     return stub;
   }
 

@@ -31,13 +31,18 @@
 import {expect} from 'chai';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
-import * as semver from 'semver';
 import * as sinon from 'sinon';
 
 import {protobuf} from '../../src/index';
-import {GoogleProtoFilesRoot, GrpcClient} from '../../src/grpc';
+import {
+  GoogleProtoFilesRoot,
+  GrpcClient,
+  GrpcClientOptions,
+  GrpcModule,
+  ClientStub,
+} from '../../src/grpc';
 
-function gaxGrpc(options?) {
+function gaxGrpc(options?: GrpcClientOptions) {
   return new GrpcClient(options);
 }
 
@@ -50,7 +55,7 @@ describe('grpc', () => {
     });
 
     it('returns unknown when grpc module is mocked', () => {
-      const mockGrpc = {};
+      const mockGrpc = ({} as unknown) as GrpcModule;
       expect(gaxGrpc({grpc: mockGrpc}).grpcVersion).to.eq('');
     });
   });
@@ -59,7 +64,7 @@ describe('grpc', () => {
     const grpcClient = gaxGrpc();
 
     it('builds metadata', () => {
-      const headers = {
+      const headers: {[name: string]: string} = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
@@ -125,9 +130,9 @@ describe('grpc', () => {
   describe('createStub', () => {
     const TEST_PATH = path.resolve(__dirname, '../../test');
     class DummyStub {
-      constructor(public address, public creds, public options) {}
+      constructor(public address: {}, public creds: {}, public options: {}) {}
     }
-    let grpcClient;
+    let grpcClient: GrpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
     const stubAuth = {getClient: sinon.stub()};
     const stubGrpc = {
@@ -155,11 +160,15 @@ describe('grpc', () => {
       stubGrpc.credentials.combineChannelCredentials
         .withArgs(dummySslCreds, dummyGrpcAuth)
         .returns(dummyChannelCreds);
-      grpcClient = gaxGrpc({auth: stubAuth, grpc: stubGrpc});
+      grpcClient = gaxGrpc(({
+        auth: stubAuth,
+        grpc: stubGrpc,
+      } as unknown) as GrpcClientOptions);
     });
 
     it('creates a stub', () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
+      // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
@@ -176,6 +185,7 @@ describe('grpc', () => {
         'grpc.initial_reconnect_backoff_ms': 10000,
         other_dummy_options: 'test',
       };
+      // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
@@ -201,6 +211,7 @@ describe('grpc', () => {
         port: 443,
         sslCreds: customCreds,
       };
+      // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
@@ -416,7 +427,7 @@ describe('grpc', () => {
         const correctPath = path.join('test', 'example', 'import.proto');
         const findIncludePath = proxyquire('../../src/grpc', {
           fs: {
-            existsSync(path) {
+            existsSync(path: string) {
               return path === correctPath;
             },
           },
