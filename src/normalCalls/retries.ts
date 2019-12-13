@@ -131,11 +131,11 @@ export function retryable(
           timeoutId = setTimeout(() => {
             now = new Date();
             delay = Math.min(delay * delayMult, maxDelay);
-            timeout = Math.min(
-              timeout! * timeoutMult!,
-              maxTimeout!,
-              deadline - now.getTime()
-            );
+            const timeoutCal =
+              timeout && timeoutMult ? timeout * timeoutMult : 0;
+            const rpcTimeout = maxTimeout ? maxTimeout : 0;
+            const newDeadline = deadline ? deadline - now.getTime() : 0;
+            timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
             repeat();
           }, toSleep);
         }
