@@ -43,7 +43,6 @@ import {RetryOptions} from '../gax';
 import {GoogleError} from '../googleError';
 
 import {addTimeoutArg} from './timeout';
-import {MIN_VALUE} from 'long';
 
 /**
  * Creates a function equivalent to func, but that retries on certain
@@ -63,12 +62,12 @@ export function retryable(
   retry: RetryOptions,
   otherArgs: GRPCCallOtherArgs
 ): SimpleCallbackFunction {
-  const delayMult = retry.backoffSettings.retryDelayMultiplier; //*
-  const maxDelay = retry.backoffSettings.maxRetryDelayMillis; //*
+  const delayMult = retry.backoffSettings.retryDelayMultiplier;
+  const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
   const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
   const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
 
-  let delay = retry.backoffSettings.initialRetryDelayMillis; //*
+  let delay = retry.backoffSettings.initialRetryDelayMillis;
   let timeout = retry.backoffSettings.initialRpcTimeoutMillis;
 
   /**
