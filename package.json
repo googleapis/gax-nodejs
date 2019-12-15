@@ -27,7 +27,7 @@
     "node-fetch": "^2.6.0",
     "protobufjs": "^6.8.8",
     "retry-request": "^4.0.0",
-    "semver": "^6.0.0",
+    "semver": "^7.0.0",
     "walkdir": "^0.4.0"
   },
   "devDependencies": {
