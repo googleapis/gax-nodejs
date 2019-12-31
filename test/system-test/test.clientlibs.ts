@@ -120,25 +120,6 @@ describe('Run system tests for some libraries', () => {
       await runSystemTest('nodejs-video-intelligence');
     });
   });
-  // Pub/Sub has streaming methods and pagination
-  describe('pubsub', () => {
-    before(async () => {
-      await preparePackage('nodejs-pubsub');
-      // TODO: remove the next line when pubsub system test works again
-      await execa('perl', [
-        '-p',
-        '-i',
-        '-e',
-        "s/it\\('should seek to a snapshot'/it.skip('should seek to a snapshot'/",
-        'nodejs-pubsub/system-test/pubsub.ts',
-      ]);
-    });
-    it.skip('should pass system tests', async function() {
-      // Pub/Sub tests can be slow since they check packaging
-      this.timeout(300000);
-      await runSystemTest('nodejs-pubsub');
-    });
-  });
   // Speech only has smoke tests, but still...
   describe('speech', () => {
     before(async () => {
