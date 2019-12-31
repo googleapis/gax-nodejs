@@ -54,7 +54,7 @@
     "eslint-config-prettier": "^6.0.0",
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-prettier": "^3.0.0",
-    "execa": "^3.0.0",
+    "execa": "^4.0.0",
     "file-loader": "^5.0.0",
     "fs-extra": "^8.0.0",
     "google-proto-files": "^1.0.0",
