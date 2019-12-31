@@ -79,7 +79,11 @@ describe('loadProto', () => {
 });
 
 describe('createStub', () => {
-  let gaxGrpc, protos, echoService, stubOptions, stubExtraOptions;
+  let gaxGrpc: GrpcClient,
+    protos,
+    echoService: protobuf.Service,
+    stubOptions: {},
+    stubExtraOptions: {};
 
   beforeEach(() => {
     // @ts-ignore incomplete options
@@ -138,9 +142,11 @@ describe('createStub', () => {
 });
 
 describe('grpc-fallback', () => {
-  let gaxGrpc, protos, echoService, stubOptions;
-  const createdAbortControllers = [];
-  // @ts-ignore
+  let gaxGrpc: GrpcClient,
+    protos: protobuf.NamespaceBase,
+    echoService: protobuf.Service,
+    stubOptions: {};
+  const createdAbortControllers: string[] = [];
   const savedAbortController = abortController.AbortController;
 
   before(() => {
@@ -231,7 +237,7 @@ describe('grpc-fallback', () => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
-
+    //@ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         ok: true,
@@ -242,7 +248,7 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err, result) => {
+      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
         assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
         done();
@@ -269,7 +275,7 @@ describe('grpc-fallback', () => {
         },
       ],
     };
-
+    //@ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         ok: false,
@@ -280,14 +286,20 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err, result) => {
-        assert.strictEqual(err.message, JSON.stringify(expectedError));
-        done();
-      });
+      echoStub.echo(
+        requestObject,
+        {},
+        {},
+        (err: {message: string}, result: {}) => {
+          assert.strictEqual(err.message, JSON.stringify(expectedError));
+          done();
+        }
+      );
     });
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
+    // @ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);

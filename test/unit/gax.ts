@@ -43,6 +43,7 @@ const A_CONFIG = {
   interfaces: {},
 };
 
+//@ts-ignore
 A_CONFIG.interfaces[SERVICE_NAME] = {
   retry_codes: {
     foo_retry: ['code_a', 'code_b'],
@@ -82,14 +83,14 @@ const RETRY_DICT = {
   code_c: 3,
 };
 
-function expectRetryOptions(obj) {
+function expectRetryOptions(obj: {[name: string]: {}}) {
   expect(obj).to.be.an.instanceOf(Object);
   expect(obj).to.have.all.keys('retryCodes', 'backoffSettings');
   expect(obj.retryCodes).to.be.an.instanceOf(Array);
   expectBackoffSettings(obj.backoffSettings);
 }
 
-function expectBackoffSettings(obj) {
+function expectBackoffSettings(obj: {[name: string]: {}}) {
   expect(obj).to.be.an.instanceOf(Object);
   expect(obj).to.have.all.keys(
     'initialRetryDelayMillis',
@@ -127,6 +128,7 @@ describe('gax construct settings', () => {
 
   it('overrides settings', () => {
     const overrides = {interfaces: {}};
+    //@ts-ignore
     overrides.interfaces[SERVICE_NAME] = {
       methods: {
         PageStreamingMethod: null,
@@ -141,7 +143,6 @@ describe('gax construct settings', () => {
       overrides,
       RETRY_DICT
     );
-
     let settings = defaults.bundlingMethod;
     expect(settings.timeout).to.eq(40000);
 
@@ -152,6 +153,7 @@ describe('gax construct settings', () => {
 
   it('overrides settings more precisely', () => {
     const overrides = {interfaces: {}};
+    //@ts-ignore
     overrides.interfaces[SERVICE_NAME] = {
       retry_codes: {
         bar_retry: [],

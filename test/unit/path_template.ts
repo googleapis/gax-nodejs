@@ -157,7 +157,7 @@ describe('PathTemplate', () => {
   });
 
   describe('method `inspect`', () => {
-    const tests = {
+    const tests: {[name: string]: string} = {
       'bar/**/foo/*': 'bar/{$0=**}/foo/{$1=*}',
       'buckets/*/objects/*': 'buckets/{$0=*}/objects/{$1=*}',
       '/buckets/{hello}': 'buckets/{hello=*}',

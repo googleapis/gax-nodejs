@@ -33,22 +33,35 @@ import {GaxCallPromise} from '../../src/apitypes';
 import {createApiCall as realCreateApiCall} from '../../src/createApiCall';
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
+import {Descriptor} from '../../src/descriptor';
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
-export function fail(argument, metadata, options, callback) {
+export function fail(
+  argument: {},
+  metadata: {},
+  options: Options,
+  callback: Function
+) {
   const error = new GoogleError();
   error.code = FAKE_STATUS_CODE_1;
   callback(error);
 }
 
-export function createApiCall(func, opts?) {
-  opts = opts || {};
-  const settings = new gax.CallSettings(opts.settings || {});
-  const descriptor = opts.descriptor;
+export interface Options {
+  settings?: gax.CallOptions;
+  descriptor?: Descriptor;
+  returnCancelFunc?: boolean;
+  cancel?: Function;
+  deadline?: string;
+}
+
+export function createApiCall(func: Function, opts?: Options) {
+  const settings = new gax.CallSettings((opts && opts.settings) || {});
+  const descriptor = opts && opts.descriptor;
   return realCreateApiCall(
     Promise.resolve((argument, metadata, options, callback) => {
-      if (opts.returnCancelFunc) {
+      if (opts && opts.returnCancelFunc) {
         return {
           cancel: func(argument, metadata, options, callback),
           completed: true,
@@ -60,7 +73,7 @@ export function createApiCall(func, opts?) {
       func(argument, metadata, options, callback);
       return {
         cancel:
-          opts.cancel ||
+          (opts && opts.cancel) ||
           (() => {
             callback(new Error('canceled'));
           }),
