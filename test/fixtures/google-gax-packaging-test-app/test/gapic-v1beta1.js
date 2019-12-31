@@ -15,6 +15,7 @@
 'use strict';
 
 const assert = require('assert');
+const {describe, it} = require('mocha');
 const through2 = require('through2');
 
 const showcaseModule = require('../src');

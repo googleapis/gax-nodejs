@@ -30,6 +30,7 @@
  */
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as protobuf from 'protobufjs';
 import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
