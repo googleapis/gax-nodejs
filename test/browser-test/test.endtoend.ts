@@ -30,6 +30,7 @@
  */
 
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import {expect} from 'chai';
 // @ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';

@@ -71,6 +71,7 @@ export {
 } from './grpc';
 export {Operation, operation} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
+export {Status} from './status';
 export {StreamType} from './streamingCalls/streaming';
 export {routingHeader};
 

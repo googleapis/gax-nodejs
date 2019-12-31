@@ -15,6 +15,7 @@
 'use strict';
 
 const assert = require('assert');
+const {describe, it} = require('mocha');
 const grpc = require('@grpc/grpc-js');
 
 // Import the clients for each version supported by this package.
