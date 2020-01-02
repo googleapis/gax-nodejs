@@ -57,6 +57,7 @@ export {
   ClientConfig,
   constructSettings,
   RetryOptions,
+  ServiceConfig,
 } from './gax';
 export {GoogleError} from './googleError';
 export {
