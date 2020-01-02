@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import {expect} from 'chai';
 import * as assert from 'assert';
+import {describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
@@ -79,6 +79,9 @@ describe('compileProtos tool', () => {
     const js = await readFile(expectedJSResultFile);
     assert(js.toString().includes('TestMessage'));
     assert(js.toString().includes('LibraryService'));
+    assert(
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
 
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));

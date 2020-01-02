@@ -439,7 +439,7 @@ export function createMaxRetriesBackoffSettings(
  * @return {BundleOptions} - A new options.
  */
 export function createBundleOptions(options: BundlingConfig): BundleOptions {
-  const params = [
+  const params: Array<keyof BundlingConfig> = [
     'element_count_threshold',
     'element_count_limit',
     'request_byte_threshold',
@@ -494,9 +494,9 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
  * @return {?RetryOptions} The new retry options.
  */
 function constructRetry(
-  methodConfig: MethodConfig,
-  retryCodes: {[index: string]: string[]},
-  retryParams: {[index: string]: {}},
+  methodConfig: MethodConfig | null,
+  retryCodes: {[index: string]: string[]} | undefined,
+  retryParams: {[index: string]: {}} | undefined,
   retryNames: {[index: string]: {}}
 ): RetryOptions | null | undefined {
   if (!methodConfig) {
@@ -506,7 +506,7 @@ function constructRetry(
   let codes: number[] | null = null;
   if (retryCodes && 'retry_codes_name' in methodConfig) {
     const retryCodesName = methodConfig['retry_codes_name'];
-    codes = (retryCodes[retryCodesName] || []).map(name => {
+    codes = (retryCodes[retryCodesName!] || []).map(name => {
       return Number(retryNames[name]);
     });
   }
@@ -514,7 +514,7 @@ function constructRetry(
   let backoffSettings: BackoffSettings | null = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
     const params = retryParams[
-      methodConfig.retry_params_name
+      methodConfig.retry_params_name!
     ] as RetryParamsConfig;
     backoffSettings = createBackoffSettings(
       params.initial_retry_delay_millis,
@@ -566,9 +566,9 @@ function mergeRetryOptions(
 }
 
 export interface ServiceConfig {
-  retry_codes: {[index: string]: string[]};
-  retry_params: {[index: string]: RetryParamsConfig};
-  methods: {[index: string]: MethodConfig};
+  retry_codes?: {[index: string]: string[]};
+  retry_params?: {[index: string]: RetryParamsConfig};
+  methods: {[index: string]: MethodConfig | null};
 }
 
 export interface RetryParamsConfig {
@@ -582,19 +582,18 @@ export interface RetryParamsConfig {
 }
 
 export interface MethodConfig {
-  retry_codes_name: string;
-  retry_params_name: string;
-  bundling?: BundlingConfig;
+  retry_codes_name?: string;
+  retry_params_name?: string;
+  bundling?: BundlingConfig | null;
   timeout_millis?: number;
 }
 
 export interface BundlingConfig {
-  [index: string]: number;
   element_count_threshold: number;
   element_count_limit: number;
-  request_byte_threshold: number;
-  request_byte_limit: number;
-  delay_threshold_millis: number;
+  request_byte_threshold?: number;
+  request_byte_limit?: number;
+  delay_threshold_millis?: number;
 }
 
 export interface ClientConfig {
@@ -694,8 +693,8 @@ export function constructSettings(
       serviceConfig.retry_params,
       retryNames
     );
-    let bundlingConfig = methodConfig.bundling;
-    let timeout = methodConfig.timeout_millis;
+    let bundlingConfig = methodConfig!.bundling;
+    let timeout = methodConfig!.timeout_millis;
     if (methodName in overridingMethods) {
       const overridingMethod = overridingMethods[methodName];
       if (overridingMethod) {

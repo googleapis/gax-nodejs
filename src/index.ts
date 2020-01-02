@@ -72,6 +72,7 @@ export {
 } from './grpc';
 export {Operation, operation} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
+export {Status} from './status';
 export {StreamType} from './streamingCalls/streaming';
 export {routingHeader};
 
@@ -85,6 +86,7 @@ lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 export {lro};
+export {OperationsClient} from './operationsClient';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
 
@@ -95,6 +97,7 @@ import * as fallback from './fallback';
 export {fallback};
 
 export {
+  APICallback,
   GRPCCallResult,
   ServerStreamingCall,
   ClientStreamingCall,
@@ -140,4 +143,27 @@ export interface LROperation<ResultType, MetadataType>
   promise(): Promise<
     [ResultType, MetadataType, operationProtos.google.longrunning.Operation]
   >;
+}
+
+export interface PaginationCallback<
+  RequestObject,
+  ResponseObject,
+  ResponseType
+> {
+  (
+    err: Error | null,
+    values?: ResponseType[],
+    nextPageRequest?: RequestObject,
+    rawResponse?: ResponseObject
+  ): void;
+}
+
+export interface PaginationResponse<
+  RequestObject,
+  ResponseObject,
+  ResponseType
+> {
+  values?: ResponseType[];
+  nextPageRequest?: RequestObject;
+  rawResponse?: ResponseObject;
 }

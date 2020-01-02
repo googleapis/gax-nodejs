@@ -34,8 +34,10 @@ import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
+import {APICallback, GaxCallPromise} from '../../src/apitypes';
 
 import * as util from './utils';
+import {Stream} from 'stream';
 
 describe('paged iteration', () => {
   const pageSize = 3;
@@ -47,7 +49,12 @@ describe('paged iteration', () => {
     descriptor,
   };
 
-  function func(request, metadata, options, callback) {
+  function func(
+    request: {pageToken?: number},
+    metadata: {},
+    options: {},
+    callback: APICallback
+  ) {
     const pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
       callback(null, {nums: []});
@@ -127,7 +134,12 @@ describe('paged iteration', () => {
   it('sets additional arguments to the callback', done => {
     let counter = 0;
     const apiCall = util.createApiCall(func, createOptions);
-    function callback(err, resources, next, rawResponse) {
+    function callback(
+      err: {},
+      resources: {},
+      next: {},
+      rawResponse: {nums: {}}
+    ) {
       if (err) {
         done(err);
         return;
@@ -138,18 +150,27 @@ describe('paged iteration', () => {
       expect(rawResponse).to.have.property('nums');
       expect(rawResponse.nums).to.eq(resources);
       if (next) {
-        apiCall(next, {autoPaginate: false}, callback);
+        apiCall(
+          next,
+          {autoPaginate: false},
+          (callback as unknown) as APICallback
+        );
       } else {
         expect(counter).to.eq(pagesToStream + 1);
         done();
       }
     }
-    apiCall({}, {autoPaginate: false}, callback);
+    apiCall({}, {autoPaginate: false}, (callback as unknown) as APICallback);
   });
 
   it('retries on failure', done => {
     let callCount = 0;
-    function failingFunc(request, metadata, options, callback) {
+    function failingFunc(
+      request: {},
+      metadata: {},
+      options: {},
+      callback: APICallback
+    ) {
       callCount++;
       if (callCount % 2 === 0) {
         util.fail(request, metadata, options, callback);
@@ -188,14 +209,20 @@ describe('paged iteration', () => {
   });
 
   describe('stream conversion', () => {
-    let spy;
-    let apiCall;
+    // tslint:disable-next-line no-any
+    let spy: any;
+    let apiCall: GaxCallPromise;
     beforeEach(() => {
       spy = sinon.spy(func);
       apiCall = util.createApiCall(spy, createOptions);
     });
 
-    function streamChecker(stream, onEnd, done, start) {
+    function streamChecker(
+      stream: Stream,
+      onEnd: Function,
+      done: (...args: string[]) => void,
+      start: number
+    ) {
       let counter = start;
       stream
         .on('data', data => {

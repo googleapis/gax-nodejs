@@ -4,6 +4,60 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.12.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.2...v1.12.0) (2019-12-09)
+
+
+### Features
+
+* export OperationsClient ([#677](https://www.github.com/googleapis/gax-nodejs/issues/677)) ([66425fa](https://www.github.com/googleapis/gax-nodejs/commit/66425fa4ff75ae142fd972de21b92a4e22c9a8d7))
+
+
+### Bug Fixes
+
+* servicePath and port may be undefined ([#668](https://www.github.com/googleapis/gax-nodejs/issues/668)) ([10eaaa6](https://www.github.com/googleapis/gax-nodejs/commit/10eaaa695fde3bd272dd9995c6c8c6287ad45929))
+* **deps:** pin TypeScript below 3.7.0 ([70dd3b7](https://www.github.com/googleapis/gax-nodejs/commit/70dd3b7a876f50c3a7bf503ddc6190a5b82e5285))
+
+### [1.11.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.1...v1.11.2) (2019-11-22)
+
+
+### Bug Fixes
+
+* **deps:** unpin @grpc/grpc-js, set it to ^0.6.12 ([#665](https://www.github.com/googleapis/gax-nodejs/issues/665)) ([265461e](https://www.github.com/googleapis/gax-nodejs/commit/265461e7573c9bbd650eb0558313c05330691717))
+
+* servicePath and port may be undefined ([#668](https://github.com/googleapis/gax-nodejs/pull/668))
+([54fa7b9](https://www.github.com/googleapis/gax-nodejs/commit/54fa7b96915852255f511bddc575177c3cabb3ac))
+
+### [1.11.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.0...v1.11.1) (2019-11-15)
+
+
+### Bug Fixes
+
+* **deps:** use typescript ~3.6.0 ([#662](https://www.github.com/googleapis/gax-nodejs/issues/662)) ([2a4f255](https://www.github.com/googleapis/gax-nodejs/commit/2a4f255b0d0ea58488485465c48f248b153f1cf9))
+
+## [1.11.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.10.0...v1.11.0) (2019-11-14)
+
+
+### Features
+
+* export types for paginated calls ([#657](https://www.github.com/googleapis/gax-nodejs/issues/657)) ([b4007c7](https://www.github.com/googleapis/gax-nodejs/commit/b4007c70550517c90b43698674a57645c73111dc))
+
+
+### Bug Fixes
+
+* add license to protos/protos.js ([#655](https://www.github.com/googleapis/gax-nodejs/issues/655)) ([e7071d1](https://www.github.com/googleapis/gax-nodejs/commit/e7071d198618ebe278cddea0f8d3f02a806ba040))
+
+## [1.10.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.9.1...v1.10.0) (2019-11-12)
+
+
+### Features
+
+* export APICallback type ([#653](https://www.github.com/googleapis/gax-nodejs/issues/653)) ([e814cc1](https://www.github.com/googleapis/gax-nodejs/commit/e814cc194437ef2b283d24fffae99d33f7397547))
+
+
+### Bug Fixes
+
+* **docs:** add jsdoc-region-tag plugin ([#651](https://www.github.com/googleapis/gax-nodejs/issues/651)) ([6a6e7e6](https://www.github.com/googleapis/gax-nodejs/commit/6a6e7e654d57a96433165203d8bf92485eaa9872))
+
 ### [1.9.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.9.0...v1.9.1) (2019-11-11)
 
 
