@@ -230,7 +230,7 @@ describe('grpc-fallback', () => {
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);
   });
 
-  it.only('should be able to add extra headers to the request', async () => {
+  it('should be able to add extra headers to the request', async () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     // tslint:disable-next-line no-any
