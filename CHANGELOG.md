@@ -4,6 +4,21 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.13.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.12.0...v1.13.0) (2020-01-02)
+
+
+### Features
+
+* export GRPC error code enum ([#693](https://www.github.com/googleapis/gax-nodejs/issues/693)) ([8215535](https://www.github.com/googleapis/gax-nodejs/commit/8215535faf0ed84889f0aac3b898646515a5aeb7))
+* export ServiceConfig ([#695](https://www.github.com/googleapis/gax-nodejs/issues/695)) ([198101a](https://www.github.com/googleapis/gax-nodejs/commit/198101a292c829e31763aa566e9b351a1548d5ed))
+
+
+### Bug Fixes
+
+* fix possible invalid retry variables ([#682](https://www.github.com/googleapis/gax-nodejs/issues/682)) ([2cb343c](https://www.github.com/googleapis/gax-nodejs/commit/2cb343c99735059bc626231cd91b7d0cbb5c0042))
+* **deps:** update dependency semver to v7 ([#683](https://www.github.com/googleapis/gax-nodejs/issues/683)) ([b28e6b1](https://www.github.com/googleapis/gax-nodejs/commit/b28e6b13337cd4033a52bba428e9f67bd64b8ff4))
+* **types:** enable noImplicitAny in tsconfig ([#679](https://www.github.com/googleapis/gax-nodejs/issues/679)) ([6ecdeb7](https://www.github.com/googleapis/gax-nodejs/commit/6ecdeb77c399d04f27a9551933c3b12f5c0c003c))
+
 ## [1.12.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.2...v1.12.0) (2019-12-09)
 
 
