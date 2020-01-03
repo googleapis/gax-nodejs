@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as execa from 'execa';
+import * as execa from '../util/execa';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';

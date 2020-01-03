@@ -50,7 +50,7 @@ module.exports = function(config) {
 
     client: {
       childProcess: {
-        path: './build/test/system-test/showcase-server.js',
+        path: './build/test/util/showcase-server.js',
         args: [],
         options: {},
       },

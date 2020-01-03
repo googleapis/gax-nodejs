@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as execa from 'execa';
+import * as execa from '../util/execa';
 import * as fs from 'fs';
 import {ncp} from 'ncp';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
 
-import {ShowcaseServer} from './showcase-server';
+import {ShowcaseServer} from '../util/showcase-server';
 
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);

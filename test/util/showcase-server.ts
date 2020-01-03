@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as execa from 'execa';
+import * as execa from './execa';
 //@ts-ignore
 import * as download from 'download';
 import * as fs from 'fs';
