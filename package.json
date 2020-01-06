@@ -72,7 +72,7 @@
     "karma-webpack": "^4.0.2",
     "linkinator": "^1.5.0",
     "mkdirp": "^0.5.1",
-    "mocha": "^6.1.4",
+    "mocha": "^7.0.0",
     "ncp": "^2.0.0",
     "null-loader": "^3.0.0",
     "pegjs": "~0.10.0",
