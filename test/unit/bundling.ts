@@ -46,7 +46,7 @@ import {
 import {GoogleError} from '../../src/googleError';
 
 import {createApiCall} from './utils';
-import {SimpleCallbackFunction} from '../../src/apitypes';
+import {SimpleCallbackFunction, RequestType} from '../../src/apitypes';
 
 function createOuter(value: {}, otherValue?: {}) {
   if (otherValue === undefined) {
@@ -119,7 +119,9 @@ describe('computeBundleId', () => {
     ];
     testCases.forEach(t => {
       it(t.message, () => {
-        expect(computeBundleId(t.object, t.fields)).to.equal(t.want);
+        expect(
+          computeBundleId((t.object as unknown) as RequestType, t.fields)
+        ).to.equal(t.want);
       });
     });
   });

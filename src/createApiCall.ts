@@ -40,6 +40,7 @@ import {
   GRPCCall,
   GRPCCallOtherArgs,
   RequestType,
+  SimpleCallbackFunction,
 } from './apitypes';
 import {Descriptor} from './descriptor';
 import {CallOptions, CallSettings} from './gax';
@@ -92,9 +93,10 @@ export function createApiCall(
       currentApiCaller = createAPICaller(settings, undefined);
     }
 
-    const status = currentApiCaller.init(thisSettings, callback);
+    const ongoingCall = currentApiCaller.init(thisSettings, callback);
     funcPromise
-      .then(func => {
+      .then((func: GRPCCall) => {
+        // Initially, the function is just what gRPC server stub contains.
         func = currentApiCaller.wrap(func);
         const retry = thisSettings.retry;
         if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
@@ -110,12 +112,17 @@ export function createApiCall(
           thisSettings.otherArgs as GRPCCallOtherArgs
         );
       })
-      .then(apiCall => {
-        currentApiCaller.call(apiCall, request, thisSettings, status);
+      .then((apiCall: SimpleCallbackFunction) => {
+        // After adding retries / timeouts, the call function becomes simpler:
+        // it only accepts request and callback.
+        currentApiCaller.call(apiCall, request, thisSettings, ongoingCall);
       })
       .catch(err => {
-        currentApiCaller.fail(status, err);
+        currentApiCaller.fail(ongoingCall, err);
       });
-    return currentApiCaller.result(status);
+
+    // Calls normally return a "cancellable promise" that can be used to `await` for the actual result,
+    // or to cancel the ongoing call.
+    return currentApiCaller.result(ongoingCall);
   };
 }

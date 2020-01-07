@@ -31,11 +31,12 @@
 
 import {APICaller, ApiCallerSettings} from '../apiCaller';
 import {
-  GaxCall,
   GRPCCall,
   NextPageRequestType,
   SimpleCallbackFunction,
   UnaryCall,
+  RawResponseType,
+  RequestType,
 } from '../apitypes';
 import {APICallback} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
@@ -43,6 +44,98 @@ import {CallOptions} from '../gax';
 import {GoogleError} from '../googleError';
 
 import {PageDescriptor} from './pageDescriptor';
+import {resolve} from 'dns';
+
+/**
+ * ResourceCollector class implements asynchronous logic of calling the API call that supports pagination,
+ * page by page, collecting all resources (up to `maxResults`) in the array.
+ *
+ * Usage:
+ *   const resourceCollector = new ResourceCollector(apiCall, maxResults); // -1 for unlimited
+ *   resourceCollector.processAllPages(request).then(resources => ...);
+ */
+class ResourceCollector {
+  apiCall: SimpleCallbackFunction;
+  resources: Array<{}>;
+  maxResults: number;
+  resolveCallback: (resources: Array<{}>) => void;
+  rejectCallback: (err: Error) => void;
+
+  constructor(apiCall: SimpleCallbackFunction, maxResults = -1) {
+    this.apiCall = apiCall;
+    this.resources = [];
+    this.maxResults = maxResults;
+    this.resolveCallback = (resources: Array<{}>) => {
+      throw new Error('Undefined callback');
+    };
+    this.rejectCallback = (err: Error) => {
+      throw new Error('Undefined callback');
+    };
+  }
+
+  private callback(
+    err: Error | null,
+    resources: Array<{}>,
+    nextPageRequest: NextPageRequestType,
+    rawResponse: RawResponseType
+  ) {
+    if (err) {
+      // Something went wrong with this request - failing everything
+      this.rejectCallback(err);
+      return;
+    }
+
+    // Process one page
+    for (const resource of resources) {
+      this.resources.push(resource);
+      if (this.resources.length === this.maxResults) {
+        nextPageRequest = null;
+        break;
+      }
+    }
+
+    // All done?
+    if (!nextPageRequest) {
+      this.resolveCallback(this.resources);
+      return;
+    }
+
+    // Schedule the next call
+    setImmediate(
+      this.apiCall,
+      nextPageRequest,
+      (
+        err: Error | null,
+        resources: Array<{}>,
+        nextPageRequest: NextPageRequestType,
+        rawResponse: RawResponseType
+      ) => {
+        this.callback(err, resources, nextPageRequest, rawResponse);
+      }
+    );
+  }
+
+  processAllPages(firstRequest: RequestType): Promise<Array<{}>> {
+    return new Promise((resolve, reject) => {
+      this.resolveCallback = resolve;
+      this.rejectCallback = reject;
+
+      // Schedule the first call
+      setImmediate(
+        this.apiCall,
+        firstRequest,
+        (
+          err: Error | null,
+          resources: Array<{}>,
+          nextPageRequest: NextPageRequestType,
+          rawResponse: RawResponseType
+        ) => {
+          this.callback(err, resources, nextPageRequest, rawResponse);
+        }
+      );
+    });
+  }
+}
 
 export class PagedApiCaller implements APICaller {
   pageDescriptor: PageDescriptor;
@@ -58,17 +151,36 @@ export class PagedApiCaller implements APICaller {
     this.pageDescriptor = pageDescriptor;
   }
 
-  private createActualCallback(
+  /**
+   * This function translates between regular gRPC calls (that accepts a request and returns a response,
+   * and does not know anything about pages and page tokens) and the users' callback (that expects
+   * to see resources from one page, a request to get the next page, and the raw response from the server).
+   *
+   * It generates a function that can be passed as a callback function to a gRPC call, will understand
+   * pagination-specific fields in the response, and call the users' callback after having those fields
+   * parsed.
+   *
+   * @param request Request object. It needs to be passed to all subsequent next page requests
+   * (the main content of the request object stays unchanged, only the next page token changes)
+   * @param callback The user's callback that expects the page content, next page request, and raw response.
+   */
+  private generateParseResponseCallback(
     request: NextPageRequestType,
     callback: APICallback
   ): APICallback {
-    const self = this;
-    return function fetchNextPageToken(
-      err: Error | null,
-      response: NextPageRequestType | undefined
-    ) {
+    const resourceFieldName = this.pageDescriptor.resourceField;
+    const responsePageTokenFieldName = this.pageDescriptor
+      .responsePageTokenField;
+    const requestPageTokenFieldName = this.pageDescriptor.requestPageTokenField;
+    return (err: Error | null, response: NextPageRequestType | undefined) => {
       if (err) {
         callback(err);
+        return;
+      }
+      if (!request) {
+        callback(
+          new GoogleError('Undefined request in pagination method callback.')
+        );
         return;
       }
       if (!response) {
@@ -77,17 +189,25 @@ export class PagedApiCaller implements APICaller {
         );
         return;
       }
-      const resources = response[self.pageDescriptor.resourceField];
-      const pageToken = response[self.pageDescriptor.responsePageTokenField];
+      const resources = response[resourceFieldName];
+      const pageToken = response[responsePageTokenFieldName];
+      let nextPageRequest = null;
       if (pageToken) {
-        request![self.pageDescriptor.requestPageTokenField] = pageToken;
-        callback(err, resources, request, response);
-      } else {
-        callback(err, resources, null, response);
+        nextPageRequest = Object.assign({}, request);
+        nextPageRequest[requestPageTokenFieldName] = pageToken;
       }
+      callback(err, resources, nextPageRequest, response);
     };
   }
 
+  /**
+   * Adds a special ability to understand pagination-specific fields to the existing gRPC call.
+   * The original gRPC call just calls callback(err, result).
+   * The wrapped one will call callback(err, resources, nextPageRequest, rawResponse) instead.
+   *
+   * @param func gRPC call (normally, a service stub call). The gRPC call is expected to accept four parameters:
+   * request, metadata, call options, and callback.
+   */
   wrap(func: GRPCCall): GRPCCall {
     const self = this;
     return function wrappedCall(argument, metadata, options, callback) {
@@ -95,11 +215,19 @@ export class PagedApiCaller implements APICaller {
         argument,
         metadata,
         options,
-        self.createActualCallback(argument, callback)
+        self.generateParseResponseCallback(argument, callback)
       );
     };
   }
 
+  /**
+   * Makes it possible to use both callback-based and promise-based calls.
+   * Returns an OngoingCall or OngoingCallPromise object.
+   * Regardless of which one is returned, it always has a `.callback` to call.
+   *
+   * @param settings Call settings. Can only be used to replace Promise with another promise implementation.
+   * @param [callback] Callback to be called, if any.
+   */
   init(settings: ApiCallerSettings, callback?: APICallback) {
     if (callback) {
       return new OngoingCall(callback);
@@ -107,48 +235,47 @@ export class PagedApiCaller implements APICaller {
     return new OngoingCallPromise(settings.promise);
   }
 
+  /**
+   * Implements auto-pagination logic.
+   *
+   * @param apiCall A function that performs gRPC request and calls its callback with a response or an error.
+   * It's supposed to be a gRPC service stub function wrapped into several layers of wrappers that make it
+   * accept just two parameters: (request, callback).
+   * @param request A request object that came from the user.
+   * @param settings Call settings. We are interested in `maxResults`, autoPaginate`, `pageToken`, and `pageSize`
+   * (they are all optional).
+   * @param ongoingCall An instance of OngoingCall or OngoingCallPromise that can be used for call cancellation,
+   * and is used to return results to the user.
+   */
   call(
     apiCall: SimpleCallbackFunction,
-    argument: {[index: string]: {}},
+    request: RequestType,
     settings: CallOptions,
-    canceller: OngoingCall
+    ongoingCall: OngoingCall
   ) {
-    argument = Object.assign({}, argument);
+    request = Object.assign({}, request);
+
+    // If settings object contain pageToken or pageSize, override the corresponding fields in the request object.
     if (settings.pageToken) {
-      argument[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
+      request[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
     }
     if (settings.pageSize) {
-      argument[this.pageDescriptor.requestPageSizeField!] = settings.pageSize;
+      request[this.pageDescriptor.requestPageSizeField!] = settings.pageSize;
     }
+
     if (!settings.autoPaginate) {
       // they don't want auto-pagination this time - okay, just call once
-      canceller.call(apiCall, argument);
+      ongoingCall.call(apiCall, request);
       return;
     }
 
     const maxResults = settings.maxResults || -1;
-    const allResources: Array<{}> = [];
-    function pushResources(err: Error, resources: Array<{}>, next: {} | null) {
-      if (err) {
-        canceller.callback!(err);
-        return;
-      }
 
-      for (let i = 0; i < resources.length; ++i) {
-        allResources.push(resources[i]);
-        if (allResources.length === maxResults) {
-          next = null;
-          break;
-        }
-      }
-      if (!next) {
-        canceller.callback!(null, allResources);
-        return;
-      }
-      setImmediate(apiCall, next, pushResources);
-    }
-
-    setImmediate(apiCall, argument, pushResources);
+    const resourceCollector = new ResourceCollector(apiCall, maxResults);
+    resourceCollector.processAllPages(request).then(
+      resources => ongoingCall.callback(null, resources),
+      err => ongoingCall.callback(err)
+    );
   }
 
   fail(canceller: OngoingCallPromise, err: GoogleError): void {
