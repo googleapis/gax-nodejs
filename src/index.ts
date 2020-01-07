@@ -58,6 +58,11 @@ export {
   constructSettings,
   RetryOptions,
   ServiceConfig,
+  createRetryOptions,
+  createBundleOptions,
+  createBackoffSettings,
+  createDefaultBackoffSettings,
+  createMaxRetriesBackoffSettings,
 } from './gax';
 export {GoogleError} from './googleError';
 export {
