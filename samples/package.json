@@ -1,6 +1,6 @@
 {
   "description": "Samples for the google-gax npm module.",
-  "license": "Apache-2.0",
+  "license": "BSD-3-Clause",
   "author": "Google LLC",
   "engines": {
     "node": ">=8"
@@ -8,12 +8,14 @@
   "repository": "googleapis/gax-nodejs",
   "private": true,
   "scripts": {
-    "test": "mocha system-test"
+    "test": "c8 mocha system-test"
   },
   "dependencies": {
     "google-gax": "^1.13.0"
   },
   "devDependencies": {
+    "c8": "^7.0.0",
+    "chai": "^4.2.0",
     "mocha": "^7.0.0"
   }
 }
