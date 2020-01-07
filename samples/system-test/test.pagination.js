@@ -31,45 +31,20 @@
 
 'use strict';
 
-// [START gax_quickstart]
-async function main() {
-  // Wraps a function to retry it several times.
+/* eslint-disable node/no-unpublished-require */
 
-  const gax = require('google-gax');
+const path = require('path');
+const {assert} = require('chai');
+const {describe, it} = require('mocha');
+const cp = require('child_process');
 
-  // Let's say we have an API call. It only supports callbacks,
-  // accepts 4 parameters (just like gRPC stub calls do),
-  // and can fail sometimes...
-  let callCounter = 0;
-  function doStuff(request, options, metadata, callback) {
-    ++callCounter;
-    if (callCounter % 2 === 1) {
-      // ...like, every second call.
-      console.log('This call failed');
-      const error = new Error('It failed!');
-      error.code = 42;
-      callback(error);
-      return;
-    }
+const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
-    console.log('This call succeeded');
-    callback(null, {response: 'ok'});
-  }
+const cwd = path.join(__dirname, '..');
 
-  // We define call settings object:
-  const settings = new gax.CallSettings();
-  settings.retry = gax.createRetryOptions(
-    /* retryCodes: */ [42],
-    /* backoffSettings: */ gax.createDefaultBackoffSettings()
-  );
-
-  // and use createApiCall to get a promisifed function that handles retries!
-  const wrappedFunction = gax.createApiCall(doStuff, settings);
-
-  // Try it!
-  const [result] = await wrappedFunction({request: 'empty'});
-  console.log(result);
-}
-
-main().catch(console.error);
-// [END gax_quickstart]
+describe('Pagination', () => {
+  it('should run pagination sample', async () => {
+    const stdout = execSync('node pagination.js', {cwd});
+    assert.match(stdout, new RegExp(`'cat', 'dog', 'snake', 'turtle', 'wolf'`));
+  });
+});

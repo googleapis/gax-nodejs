@@ -101,9 +101,8 @@
     "compile-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t json google/rpc/status.proto google/rpc/error_details.proto google/protobuf/any.proto -p ./protos > protos/status.json && pbjs -t static-module google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
     "prepare": "npm run compile && node ./build/tools/prepublish.js && mkdirp build/protos && cp protos/operations.d.ts build/protos/",
-    "posttest": "npm run lint",
     "system-test": "c8 mocha build/test/system-test --timeout 120000",
-    "samples-test": "echo no sample tests 😱",
+    "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
     "browser-test": "karma start"

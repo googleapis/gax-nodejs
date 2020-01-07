@@ -29,47 +29,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
-
-// [START gax_quickstart]
+// [START gax_pagination]
 async function main() {
-  // Wraps a function to retry it several times.
+  // Showcases auto-pagination functionality.
 
   const gax = require('google-gax');
 
-  // Let's say we have an API call. It only supports callbacks,
-  // accepts 4 parameters (just like gRPC stub calls do),
-  // and can fail sometimes...
-  let callCounter = 0;
+  // Let's say we have an API call that returns results grouped into pages.
+  // It accepts 4 parameters (just like gRPC stub calls do):
   function doStuff(request, options, metadata, callback) {
-    ++callCounter;
-    if (callCounter % 2 === 1) {
-      // ...like, every second call.
-      console.log('This call failed');
-      const error = new Error('It failed!');
-      error.code = 42;
-      callback(error);
-      return;
-    }
+    let result = {};
 
-    console.log('This call succeeded');
-    callback(null, {response: 'ok'});
+    if (!request.pageToken) {
+      result = {
+        animals: ['cat', 'dog'],
+        nextPageToken: 'page2',
+      };
+    } else if (request.pageToken === 'page2') {
+      result = {
+        animals: ['snake', 'turtle'],
+        nextPageToken: 'page3',
+      };
+    } else if (request.pageToken === 'page3') {
+      result = {
+        animals: ['wolf'],
+        nextPageToken: null,
+      };
+    }
+    callback(null, result);
   }
 
-  // We define call settings object:
+  // Default call settings work for us here:
   const settings = new gax.CallSettings();
-  settings.retry = gax.createRetryOptions(
-    /* retryCodes: */ [42],
-    /* backoffSettings: */ gax.createDefaultBackoffSettings()
+
+  // We define a page descriptor that defines request and response fields that
+  // are used for pagination. In the request object, it's `nextPageToken`;
+  // in response object, it's `pageToken` and `animals` (which is a resource
+  // field, i.e. the only response field that the user actually needs).
+  const pageDescriptor = new gax.PageDescriptor(
+    /* requestPageTokenField: */ 'pageToken',
+    /* responsePageTokenField: */ 'nextPageToken',
+    /* resourceField: */ 'animals'
   );
 
-  // and use createApiCall to get a promisifed function that handles retries!
-  const wrappedFunction = gax.createApiCall(doStuff, settings);
+  // Create API call:
+  const wrappedFunction = gax.createApiCall(
+    /* func: */ doStuff,
+    /* settings: */ settings,
+    /* descriptor: */ pageDescriptor
+  );
 
-  // Try it!
-  const [result] = await wrappedFunction({request: 'empty'});
-  console.log(result);
+  // Call it!
+  const [resources] = await wrappedFunction({request: 'empty'});
+  console.log(resources);
 }
 
 main().catch(console.error);
-// [END gax_quickstart]
+// [END gax_pagination]
