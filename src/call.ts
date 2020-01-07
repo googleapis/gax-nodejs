@@ -43,7 +43,7 @@ import {
 import {GoogleError} from './googleError';
 
 export class OngoingCall {
-  callback?: APICallback;
+  callback: APICallback;
   cancelFunc?: () => void;
   completed: boolean;
 
@@ -58,7 +58,7 @@ export class OngoingCall {
    *   The callback function to be called.
    * @private
    */
-  constructor(callback?: APICallback) {
+  constructor(callback: APICallback) {
     this.callback = callback;
     this.completed = false;
   }
@@ -118,23 +118,30 @@ export class OngoingCallPromise extends OngoingCall {
    */
   // tslint:disable-next-line variable-name
   constructor(PromiseCtor: PromiseConstructor) {
-    super();
-    this.promise = new PromiseCtor((resolve, reject) => {
-      this.callback = (
-        err: GoogleError | null,
-        response?: ResponseType,
-        next?: NextPageRequestType | null,
-        rawResponse?: RawResponseType
-      ) => {
-        if (err) {
-          reject(err);
-        } else if (response !== undefined) {
-          resolve([response, next, rawResponse]);
-        } else {
-          throw new GoogleError('Neither error nor response are defined');
-        }
-      };
+    let resolveCallback: (
+      result: [ResponseType, NextPageRequestType, RawResponseType]
+    ) => void;
+    let rejectCallback: (err: Error) => void;
+    const callback: APICallback = (
+      err: GoogleError | null,
+      response?: ResponseType,
+      next?: NextPageRequestType,
+      rawResponse?: RawResponseType
+    ) => {
+      if (err) {
+        rejectCallback(err);
+      } else if (response !== undefined) {
+        resolveCallback([response, next || null, rawResponse || null]);
+      } else {
+        throw new GoogleError('Neither error nor response are defined');
+      }
+    };
+    const promise = new PromiseCtor((resolve, reject) => {
+      resolveCallback = resolve;
+      rejectCallback = reject;
     }) as CancellablePromise<ResultTuple>;
+    super(callback);
+    this.promise = promise;
     this.promise.cancel = () => {
       this.cancel();
     };

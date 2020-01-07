@@ -41,6 +41,34 @@ import {Task, TaskCallback} from './task';
 
 function noop() {}
 
+/**
+ * Parameter to configure bundling behavior.
+ * @typedef {Object} BundleOptions
+ * @property {number} elementCountThreshold -
+ *   the bundled request will be sent once the count of outstanding elements
+ *   in the repeated field reaches this value.
+ * @property {number} elementCountLimit -
+ *   represents a hard limit on the number of elements in the repeated field
+ *   of the bundle; if adding a request to a bundle would exceed this value,
+ *   the bundle is sent and the new request is added to a fresh bundle. It is
+ *   invalid for a single request to exceed this limit.
+ * @property {number} requestByteThreshold -
+ *   the bundled request will be sent once the count of bytes in the request
+ *   reaches this value. Note that this value is pessimistically approximated
+ *   by summing the bytesizes of the elements in the repeated field, and
+ *   therefore may be an under-approximation.
+ * @property {number} requestByteLimit -
+ *   represents a hard limit on the size of the bundled request; if adding
+ *   a request to a bundle would exceed this value, the bundle is sent and
+ *   the new request is added to a fresh bundle. It is invalid for a single
+ *   request to exceed this limit. Note that this value is pessimistically
+ *   approximated by summing the bytesizes of the elements in the repeated
+ *   field, with a buffer applied to correspond to the resulting
+ *   under-approximation.
+ * @property {number} delayThreshold -
+ *   the bundled request will be sent this amount of time after the first
+ *   element in the bundle was added to it.
+ */
 export interface BundleOptions {
   elementCountLimit?: number;
   requestByteLimit?: number;

@@ -48,12 +48,14 @@ export interface GRPCCallResult {
 // parameter is defined for paginated calls and stores the next page request
 // object, the third parameter stores raw (unprocessed) response object in cases
 // when it might be useful for users.
-export interface RequestType {}
+export interface RequestType {
+  [index: string]: string | number | {};
+}
 export type ResponseType = {} | null;
 export type NextPageRequestType = {
-  [index: string]: string;
+  [index: string]: string | number | {};
 } | null;
-export type RawResponseType = Operation | {};
+export type RawResponseType = Operation | {} | null;
 export type ResultTuple = [
   ResponseType,
   NextPageRequestType | undefined,
@@ -61,7 +63,7 @@ export type ResultTuple = [
 ];
 
 export interface SimpleCallbackFunction {
-  (argument: RequestType, callback: APICallback): GRPCCallResult;
+  (request: RequestType, callback: APICallback): GRPCCallResult;
 }
 
 export type APICallback = (
