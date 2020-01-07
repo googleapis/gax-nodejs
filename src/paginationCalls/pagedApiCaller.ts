@@ -35,107 +35,14 @@ import {
   NextPageRequestType,
   SimpleCallbackFunction,
   UnaryCall,
-  RawResponseType,
   RequestType,
 } from '../apitypes';
 import {APICallback} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
 import {CallOptions} from '../gax';
 import {GoogleError} from '../googleError';
-
 import {PageDescriptor} from './pageDescriptor';
-import {resolve} from 'dns';
-
-/**
- * ResourceCollector class implements asynchronous logic of calling the API call that supports pagination,
- * page by page, collecting all resources (up to `maxResults`) in the array.
- *
- * Usage:
- *   const resourceCollector = new ResourceCollector(apiCall, maxResults); // -1 for unlimited
- *   resourceCollector.processAllPages(request).then(resources => ...);
- */
-class ResourceCollector {
-  apiCall: SimpleCallbackFunction;
-  resources: Array<{}>;
-  maxResults: number;
-  resolveCallback: (resources: Array<{}>) => void;
-  rejectCallback: (err: Error) => void;
-
-  constructor(apiCall: SimpleCallbackFunction, maxResults = -1) {
-    this.apiCall = apiCall;
-    this.resources = [];
-    this.maxResults = maxResults;
-    this.resolveCallback = (resources: Array<{}>) => {
-      throw new Error('Undefined callback');
-    };
-    this.rejectCallback = (err: Error) => {
-      throw new Error('Undefined callback');
-    };
-  }
-
-  private callback(
-    err: Error | null,
-    resources: Array<{}>,
-    nextPageRequest: NextPageRequestType,
-    rawResponse: RawResponseType
-  ) {
-    if (err) {
-      // Something went wrong with this request - failing everything
-      this.rejectCallback(err);
-      return;
-    }
-
-    // Process one page
-    for (const resource of resources) {
-      this.resources.push(resource);
-      if (this.resources.length === this.maxResults) {
-        nextPageRequest = null;
-        break;
-      }
-    }
-
-    // All done?
-    if (!nextPageRequest) {
-      this.resolveCallback(this.resources);
-      return;
-    }
-
-    // Schedule the next call
-    setImmediate(
-      this.apiCall,
-      nextPageRequest,
-      (
-        err: Error | null,
-        resources: Array<{}>,
-        nextPageRequest: NextPageRequestType,
-        rawResponse: RawResponseType
-      ) => {
-        this.callback(err, resources, nextPageRequest, rawResponse);
-      }
-    );
-  }
-
-  processAllPages(firstRequest: RequestType): Promise<Array<{}>> {
-    return new Promise((resolve, reject) => {
-      this.resolveCallback = resolve;
-      this.rejectCallback = reject;
-
-      // Schedule the first call
-      setImmediate(
-        this.apiCall,
-        firstRequest,
-        (
-          err: Error | null,
-          resources: Array<{}>,
-          nextPageRequest: NextPageRequestType,
-          rawResponse: RawResponseType
-        ) => {
-          this.callback(err, resources, nextPageRequest, rawResponse);
-        }
-      );
-    });
-  }
-}
+import {ResourceCollector} from './resourceCollector';
 
 export class PagedApiCaller implements APICaller {
   pageDescriptor: PageDescriptor;
@@ -278,11 +185,11 @@ export class PagedApiCaller implements APICaller {
     );
   }
 
-  fail(canceller: OngoingCallPromise, err: GoogleError): void {
-    canceller.callback!(err);
+  fail(ongoingCall: OngoingCallPromise, err: GoogleError): void {
+    ongoingCall.callback!(err);
   }
 
-  result(canceller: OngoingCallPromise) {
-    return canceller.promise;
+  result(ongoingCall: OngoingCallPromise) {
+    return ongoingCall.promise;
   }
 }
