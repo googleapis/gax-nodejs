@@ -133,6 +133,7 @@ export interface CallOptions {
   timeout?: number;
   retry?: RetryOptions | null;
   autoPaginate?: boolean;
+  fetchAllPages?: boolean;
   pageToken?: string;
   pageSize?: number;
   maxResults?: number;
@@ -149,6 +150,7 @@ export class CallSettings {
   timeout: number;
   retry?: RetryOptions | null;
   autoPaginate?: boolean;
+  fetchAllPages?: boolean;
   pageToken?: string;
   pageSize?: number;
   maxResults?: number;
@@ -186,6 +188,7 @@ export class CallSettings {
     this.retry = settings.retry;
     this.autoPaginate =
       'autoPaginate' in settings ? settings.autoPaginate : true;
+    this.fetchAllPages = 'fetchAllPages' in settings? settings.fetchAllPages : false;
     this.pageToken = settings.pageToken;
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
@@ -211,6 +214,7 @@ export class CallSettings {
     let timeout = this.timeout;
     let retry = this.retry;
     let autoPaginate = this.autoPaginate;
+    let fetchAllPages = this.fetchAllPages;
     let pageToken = this.pageToken;
     let pageSize = this.pageSize;
     let maxResults = this.maxResults;
@@ -227,6 +231,11 @@ export class CallSettings {
 
     if ('autoPaginate' in options && !options.autoPaginate) {
       autoPaginate = false;
+    }
+
+    if ('fetchAllPages' in options && options.fetchAllPages) {
+      fetchAllPages = true;
+      autoPaginate = true;
     }
 
     if ('pageToken' in options) {
@@ -277,6 +286,7 @@ export class CallSettings {
       bundleOptions: this.bundleOptions,
       longrunning,
       autoPaginate,
+      fetchAllPages,
       pageToken,
       pageSize,
       maxResults,

@@ -46,6 +46,8 @@ import {ResourceCollector} from './resourceCollector';
 
 export class PagedApiCaller implements APICaller {
   pageDescriptor: PageDescriptor;
+  nextPageRequest: NextPageRequestType;
+  curResponse: NextPageRequestType;
   /**
    * Creates an API caller that returns a stream to performs page-streaming.
    *
@@ -56,6 +58,8 @@ export class PagedApiCaller implements APICaller {
    */
   constructor(pageDescriptor: PageDescriptor) {
     this.pageDescriptor = pageDescriptor;
+    this.nextPageRequest = {};
+    this.curResponse = {};
   }
 
   /**
@@ -96,15 +100,64 @@ export class PagedApiCaller implements APICaller {
         );
         return;
       }
+      this.curResponse = response;
       const resources = response[resourceFieldName];
       const pageToken = response[responsePageTokenFieldName];
       let nextPageRequest = null;
       if (pageToken) {
         nextPageRequest = Object.assign({}, request);
         nextPageRequest[requestPageTokenFieldName] = pageToken;
+        this.nextPageRequest = nextPageRequest;
       }
       callback(err, resources, nextPageRequest, response);
     };
+  }
+
+  private asyncCall(
+    apiCall: SimpleCallbackFunction, 
+    request: RequestType | null, 
+    settings: CallOptions,
+    ongoingCall: OngoingCall
+  ){
+    const nextPageRequest = this.nextPageRequest;
+    const response = this.curResponse;
+    var asyncIterable = {
+      [Symbol.asyncIterator]() {
+        const cache: {}[] = [];
+        return {
+          request: {},
+          async next() {
+            if(cache.length > 0){
+                return Promise.resolve({ done: false, value: cache.shift() });
+            }
+            if (request) {
+                ongoingCall.call(apiCall, request);
+                request = nextPageRequest;
+                for(const res in response)
+                  cache.push(res);
+                return Promise.resolve({done: false, value: cache.shift()});
+            }
+            return Promise.resolve({done: true, value: -1});
+          }
+        };
+      }
+    };
+    return asyncIterable; // return iterable
+  }
+
+  private syncCall(
+    apiCall: SimpleCallbackFunction,
+    request: RequestType,
+    settings: CallOptions,
+    ongoingCall: OngoingCall
+  ) {
+    const maxResults = settings.maxResults || -1;
+
+    const resourceCollector = new ResourceCollector(apiCall, maxResults);
+    resourceCollector.processAllPages(request).then(
+      resources => ongoingCall.callback(null, resources),
+      err => ongoingCall.callback(err)
+    );
   }
 
   /**
@@ -176,13 +229,12 @@ export class PagedApiCaller implements APICaller {
       return;
     }
 
-    const maxResults = settings.maxResults || -1;
-
-    const resourceCollector = new ResourceCollector(apiCall, maxResults);
-    resourceCollector.processAllPages(request).then(
-      resources => ongoingCall.callback(null, resources),
-      err => ongoingCall.callback(err)
-    );
+    if(!settings.fetchAllPages){
+      // if users want to use async iterator to fetch data
+      this.asyncCall(apiCall, request, settings, ongoingCall);
+      return;
+    }
+    else this.syncCall(apiCall, request, settings, ongoingCall);
   }
 
   fail(ongoingCall: OngoingCallPromise, err: GoogleError): void {
