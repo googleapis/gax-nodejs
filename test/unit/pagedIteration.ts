@@ -45,7 +45,7 @@ describe('paged iteration', () => {
   const descriptor = new PageDescriptor('pageToken', 'nextPageToken', 'nums');
   const retryOptions = util.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
   const createOptions = {
-    settings: {retry: retryOptions},
+    settings: {retry: retryOptions, fetchAllPages: true},
     descriptor,
   };
 
