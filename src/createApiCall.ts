@@ -94,7 +94,6 @@ export function createApiCall(
     }
 
     const ongoingCall = currentApiCaller.init(thisSettings, callback);
-    let iterableObject;
     funcPromise
       .then((func: GRPCCall) => {
         // Initially, the function is just what gRPC server stub contains.
@@ -116,7 +115,7 @@ export function createApiCall(
       .then((apiCall: SimpleCallbackFunction) => {
         // After adding retries / timeouts, the call function becomes simpler:
         // it only accepts request and callback.
-        iterableObject = currentApiCaller.call(apiCall, request, thisSettings, ongoingCall);
+         currentApiCaller.call(apiCall, request, thisSettings, ongoingCall);
       })
       .catch(err => {
         currentApiCaller.fail(ongoingCall, err);
@@ -124,6 +123,6 @@ export function createApiCall(
 
     // Calls normally return a "cancellable promise" that can be used to `await` for the actual result,
     // or to cancel the ongoing call or an iterable to get data on-demand.
-    return currentApiCaller.result(iterableObject? iterableObject : ongoingCall);
+    return currentApiCaller.result(ongoingCall);
   };
 }

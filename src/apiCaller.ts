@@ -61,15 +61,15 @@ export interface APICaller {
     apiCall: SimpleCallbackFunction,
     argument: {},
     settings: {},
-    canceller: OngoingCallPromise | OngoingCall | StreamProxy | Object
-  ): void | Object;
+    canceller: OngoingCallPromise | OngoingCall | StreamProxy
+  ): void;
   fail(
-    canceller: OngoingCallPromise | OngoingCall | CancellableStream | Object,
+    canceller: OngoingCallPromise | OngoingCall | CancellableStream,
     err: GoogleError
   ): void;
   result(
-    canceller: OngoingCallPromise | OngoingCall | CancellableStream | Object
-  ): CancellablePromise<ResultTuple> | CancellableStream | Object;
+    canceller: OngoingCallPromise | OngoingCall | CancellableStream
+  ): CancellablePromise<ResultTuple> | CancellableStream;
 }
 
 export function createAPICaller(
