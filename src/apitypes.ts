@@ -104,7 +104,7 @@ export type GRPCCall =
 // GAX wraps gRPC calls so that the wrapper functions return either a
 // cancellable promise, or a stream (also cancellable!)
 export type CancellableStream = Duplex & GRPCCallResult;
-export type GaxCallResult = CancellablePromise<ResultTuple> | CancellableStream;
+export type GaxCallResult = CancellablePromise<ResultTuple> | CancellableStream | Object;
 export interface GaxCallPromise {
   (
     argument: {},

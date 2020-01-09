@@ -131,23 +131,22 @@ describe('paged iteration', () => {
       .catch(done);
   });
 
-  // it('use async iterator when fetchAllPages is false', done => {
-  //   createOptions.settings.fetchAllPages = false;
-  //   const apiCall = util.createApiCall(func, createOptions);
-  //   const expected: Array<{}> = [];
-  //   for (let i = 0; i < pageSize * pagesToStream; ++i) {
-  //     expected.push(i);
-  //   }
-  //   const results = apiCall({fetchAllPages: false});
-  //   expect(results).to.be('object');
-  //   const outputResults = [];
-  //   for await(const resource of results){
-  //       outputResults.push(resource);
-  //   }
-  //   results.to.deep.equal(outputResults);
-  //   done();
-  //   });
-  // });
+  it.only('use async iterator when fetchAllPages is false', done => {
+    createOptions.settings.fetchAllPages = false;
+    const apiCall = util.createApiCall(func, createOptions);
+    const expected: Array<{}> = [];
+    for (let i = 0; i < pageSize * pagesToStream; ++i) {
+      expected.push(i);
+    }
+    const results = apiCall({fetchAllPages: false});
+    expect(results).to.be('object');
+    const outputResults = [];
+    for await(const resource of results){
+        outputResults.push(resource);
+    }
+    results.to.deep.equal(outputResults);
+    done();
+  });
 
   it('sets additional arguments to the callback', done => {
     let counter = 0;

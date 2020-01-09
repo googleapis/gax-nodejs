@@ -212,7 +212,7 @@ export class PagedApiCaller implements APICaller {
     request: RequestType,
     settings: CallOptions,
     ongoingCall: OngoingCall
-  ) {
+  ): Object | void{
     request = Object.assign({}, request);
 
     // If settings object contain pageToken or pageSize, override the corresponding fields in the request object.
@@ -226,13 +226,11 @@ export class PagedApiCaller implements APICaller {
     if (!settings.autoPaginate) {
       // they don't want auto-pagination this time - okay, just call once
       ongoingCall.call(apiCall, request);
-      return;
     }
 
     if(!settings.fetchAllPages){
       // if users want to use async iterator to fetch data
-      this.asyncCall(apiCall, request, settings, ongoingCall);
-      return;
+      return this.asyncCall(apiCall, request, settings, ongoingCall);
     }
     else this.syncCall(apiCall, request, settings, ongoingCall);
   }
@@ -241,7 +239,11 @@ export class PagedApiCaller implements APICaller {
     ongoingCall.callback!(err);
   }
 
-  result(ongoingCall: OngoingCallPromise) {
-    return ongoingCall.promise;
+  result(ongoingCall: OngoingCallPromise | Object) {
+    if(ongoingCall.constructor === Object){
+      return ongoingCall;
+    }
+    // @ts-ignore
+    else return ongoingCall.promise;
   }
 }
