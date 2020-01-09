@@ -60,7 +60,7 @@ async function main() {
   }
 
   // Default call settings work for us here:
-  const settings = new gax.CallSettings({fetchAllPages: true});
+  const settings = new gax.CallSettings();
 
   // We define a page descriptor that defines request and response fields that
   // are used for pagination. In the request object, it's `nextPageToken`;

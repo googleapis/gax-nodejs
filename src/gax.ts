@@ -188,7 +188,7 @@ export class CallSettings {
     this.retry = settings.retry;
     this.autoPaginate =
       'autoPaginate' in settings ? settings.autoPaginate : true;
-    this.fetchAllPages = 'fetchAllPages' in settings? settings.fetchAllPages : false;
+    this.fetchAllPages = 'fetchAllPages' in settings? settings.fetchAllPages : true;
     this.pageToken = settings.pageToken;
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
@@ -233,9 +233,8 @@ export class CallSettings {
       autoPaginate = false;
     }
 
-    if ('fetchAllPages' in options && options.fetchAllPages) {
-      fetchAllPages = true;
-      autoPaginate = true;
+    if ('fetchAllPages' in options && !options.fetchAllPages) {
+      fetchAllPages = false;
     }
 
     if ('pageToken' in options) {

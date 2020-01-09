@@ -45,7 +45,7 @@ describe('paged iteration', () => {
   const descriptor = new PageDescriptor('pageToken', 'nextPageToken', 'nums');
   const retryOptions = util.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
   const createOptions = {
-    settings: {retry: retryOptions, fetchAllPages: true},
+    settings: {retry: retryOptions},
     descriptor,
   };
 
@@ -129,23 +129,6 @@ describe('paged iteration', () => {
         done();
       })
       .catch(done);
-  });
-
-  it.only('use async iterator when fetchAllPages is false', done => {
-    createOptions.settings.fetchAllPages = false;
-    const apiCall = util.createApiCall(func, createOptions);
-    const expected: Array<{}> = [];
-    for (let i = 0; i < pageSize * pagesToStream; ++i) {
-      expected.push(i);
-    }
-    const results = apiCall({fetchAllPages: false});
-    expect(results).to.be('object');
-    const outputResults = [];
-    for await(const resource of results){
-        outputResults.push(resource);
-    }
-    results.to.deep.equal(outputResults);
-    done();
   });
 
   it('sets additional arguments to the callback', done => {
