@@ -38,6 +38,7 @@ import {APICallback, GaxCallPromise} from '../../src/apitypes';
 
 import * as util from './utils';
 import {Stream} from 'stream';
+import * as gax from '../../src/gax';
 
 describe('paged iteration', () => {
   const pageSize = 3;
@@ -207,6 +208,32 @@ describe('paged iteration', () => {
       expect(spy.callCount).to.eq(3);
     });
   });
+
+  describe('use async iterator', () => {
+    let spy: any;
+    let apiCall: GaxCallPromise;
+    beforeEach(() => {
+      spy = sinon.spy(func);
+      apiCall = util.createApiCall(spy, createOptions);
+    });
+
+    async function iterableChecker(
+      iterable: any
+    ){
+      let counter = 0;
+      for await (const resource of iterable){
+        counter++;
+        if(counter == 10) break;
+      }
+      expect(counter).to.equal(10);
+
+    }
+    it.only('returns an iterable, count to 10', ()=>{
+      const settings = new gax.CallSettings((createOptions && createOptions.settings) || {});
+      iterableChecker(
+        descriptor.async(apiCall, {}, settings));
+    });
+  })
 
   describe('stream conversion', () => {
     // tslint:disable-next-line no-any
