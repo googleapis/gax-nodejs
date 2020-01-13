@@ -228,7 +228,7 @@ describe('paged iteration', () => {
       expect(counter).to.equal(10);
 
     }
-    it.only('returns an iterable, count to 10', ()=>{
+    it('returns an iterable, count to 10', ()=>{
       const settings = new gax.CallSettings((createOptions && createOptions.settings) || {});
       iterableChecker(
         descriptor.async(apiCall, {}, settings));
