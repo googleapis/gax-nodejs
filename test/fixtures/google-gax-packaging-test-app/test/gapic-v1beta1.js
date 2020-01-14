@@ -194,7 +194,7 @@ describe('EchoClient', () => {
         responses: responsesElement,
       };
 
-      client._descriptors.page.pagedExpand.async = (apiCall, request, options) => {
+      client._descriptors.page.pagedExpand.asyncIterate = (apiCall, request, options) => {
         const asyncIterable = {
           [Symbol.asyncIterator]() {
             return {
