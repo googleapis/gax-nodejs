@@ -219,7 +219,7 @@ describe('paged iteration', () => {
       const settings = new gax.CallSettings(
         (createOptions && createOptions.settings) || {}
       );
-      iterableChecker(descriptor.async(apiCall, {}, settings));
+      iterableChecker(descriptor.asyncIterate(apiCall, {}, settings));
     });
   });
 

@@ -590,7 +590,7 @@ class EchoClient {
       options = options || {};
       request = request || {};
       const callSettings = new gax.CallSettings(options);
-      return this._descriptors.page.pagedExpand.async(this._innerCallPromise['pagedExpand'], request, callSettings);
+      return this._descriptors.page.pagedExpand.asyncIterate(this._innerCallPromise['pagedExpand'], request, callSettings);
   }
 }
 
