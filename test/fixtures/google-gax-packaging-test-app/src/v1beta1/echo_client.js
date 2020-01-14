@@ -195,8 +195,9 @@ class EchoClient {
       'wait',
       'pagedExpand',
     ];
+    this._innerCallPromise = {};
     for (const methodName of echoStubMethods) {
-      const innerCallPromise = echoStub.then(
+      this._innerCallPromise[methodName] = echoStub.then(
         stub => (...args) => {
           return stub[methodName].apply(stub, args);
         },
@@ -205,7 +206,7 @@ class EchoClient {
         }
       );
       this._innerApiCalls[methodName] = gaxModule.createApiCall(
-        innerCallPromise,
+        this._innerCallPromise[methodName],
         defaults[methodName],
         this._descriptors.page[methodName] ||
           this._descriptors.stream[methodName] ||
@@ -581,6 +582,19 @@ class EchoClient {
     options = options || {};
 
     return this._innerApiCalls.pagedExpand(request, options, callback);
+  }
+
+
+  pagedExpandStream(request, options) {
+      request = request || {};
+      const callSettings = new gax.CallSettings(options);
+      return this._descriptors.page.pagedExpand.createStream(this._innerApiCalls.pagedExpand, request, callSettings);
+  }
+
+  pagedExpandAsync(request, options) {
+      request = request || {};
+      const callSettings = new gax.CallSettings(options);
+      return this._descriptors.page.pagedExpand.async(this._innerCallPromise['pagedExpand'], request, callSettings);
   }
 }
 

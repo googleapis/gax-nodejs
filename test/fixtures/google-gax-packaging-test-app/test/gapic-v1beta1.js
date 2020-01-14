@@ -173,6 +173,13 @@ describe('EchoClient', () => {
         assert.deepStrictEqual(response, expectedResponse.responses);
         done();
       });
+
+      const iterable = client.pagedExpandAsync(request);
+      let responses = {};
+      for await (const resource of iterable){
+        responses.push(resource);
+      }
+      assert.deepStrictEqual(response, expectedResponse.responses);
     });
 
     it('invokes pagedExpand with error', done => {
