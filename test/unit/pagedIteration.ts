@@ -210,6 +210,7 @@ describe('paged iteration', () => {
   });
 
   describe('use async iterator', () => {
+    // tslint:disable-next-line no-any
     let spy: any;
     let apiCall: GaxCallPromise;
     beforeEach(() => {
@@ -218,22 +219,23 @@ describe('paged iteration', () => {
     });
 
     async function iterableChecker(
+      // tslint:disable-next-line no-any
       iterable: any
-    ){
+    ) {
       let counter = 0;
-      for await (const resource of iterable){
+      for await (const resource of iterable) {
         counter++;
-        if(counter == 10) break;
+        if (counter === 10) break;
       }
       expect(counter).to.equal(10);
-
     }
-    it('returns an iterable, count to 10', ()=>{
-      const settings = new gax.CallSettings((createOptions && createOptions.settings) || {});
-      iterableChecker(
-        descriptor.async(apiCall, {}, settings));
+    it('returns an iterable, count to 10', () => {
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      iterableChecker(descriptor.async(apiCall, {}, settings));
     });
-  })
+  });
 
   describe('stream conversion', () => {
     // tslint:disable-next-line no-any

@@ -33,7 +33,13 @@ import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
 import {APICaller} from '../apiCaller';
-import {GaxCall, APICallback, SimpleCallbackFunction, RequestType, GaxCallPromise} from '../apitypes';
+import {
+  GaxCall,
+  APICallback,
+  SimpleCallbackFunction,
+  RequestType,
+  GaxCallPromise,
+} from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
@@ -124,98 +130,101 @@ export class PageDescriptor implements Descriptor {
   }
 
   // create async iterator(settings) => iterable
-  async(    
-    apiCall: GaxCall,
-    request: {},
-    options: CallSettings
-    ): Object{
-      console.warn('enter async block...');
-      const iterable = this.createIterator(options);
-      const funcPromise = typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
-      funcPromise.then((func: GaxCall)=> {
+  async(apiCall: GaxCall, request: {}, options: CallSettings): {} {
+    console.warn('enter async block...');
+    const iterable = this.createIterator(options);
+    const funcPromise =
+      typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
+    funcPromise
+      .then((func: GaxCall) => {
         this.resolveParams(request, func, options);
-      }).catch((error) => {
+      })
+      .catch(error => {
         throw new Error(error);
-      });      
-      return iterable;
+      });
+    return iterable;
   }
 
-  createIterator(options: CallSettings): Object{
-
+  createIterator(options: CallSettings): {} {
     const responsePageTokenFieldName = this.responsePageTokenField;
     const requestPageTokenFieldName = this.requestPageTokenField;
-    var asyncIterable = {
-        [Symbol.asyncIterator]() {
-            const funcPromise = new Promise((resolve, reject) => {
-                resolveFunction = resolve;
-            })
-            const requestPromise = new Promise((resolve, reject) => {
-                resolveRequest = resolve;
-            })
-            const cache: Object[] = [];
-            let nextPageRequest: RequestType = {};
-            let firstCall = true;
-            return {
-                async next() {
-                    const ongoingCall = new call_1.OngoingCallPromise(options.promise);
+    const asyncIterable = {
+      [Symbol.asyncIterator]() {
+        const funcPromise = new Promise((resolve, reject) => {
+          resolveFunction = resolve;
+        });
+        const requestPromise = new Promise((resolve, reject) => {
+          resolveRequest = resolve;
+        });
+        const cache: Array<{}> = [];
+        let nextPageRequest: RequestType = {};
+        let firstCall = true;
+        return {
+          async next() {
+            const ongoingCall = new call_1.OngoingCallPromise(options.promise);
 
-                    let func = await funcPromise as SimpleCallbackFunction;
-                    let request = await requestPromise as RequestType;
-                    if(firstCall){
-                      ongoingCall.call(func, request);
-                      const [response, nextRequest, rawresponse] = await ongoingCall.promise;
-                      //@ts-ignore
-                      cache.push(...response.responses.map(r=> r.content));
-                      //@ts-ignore
-                      const pageToken = response[responsePageTokenFieldName];
-                      if (pageToken) {
-                          nextPageRequest = Object.assign({}, request);
-                          nextPageRequest[requestPageTokenFieldName] = pageToken;
-                      }
-                      firstCall = false;
-                      return Promise.resolve({ done: false, value: cache.shift() });
-                    }
-                    else{
-                        if (cache.length > 0) {
-                            const value = cache.shift();
-                            return Promise.resolve({ done: false, value: value });
-                        }
-                        else if (nextPageRequest) {
-                          ongoingCall.call(func, nextPageRequest);
-                          const [response, nextRequest, rawResponse] = await ongoingCall.promise;
-                          //@ts-ignore
-                          const pageToken = response[responsePageTokenFieldName];
-                          if (pageToken) {
-                              nextPageRequest[requestPageTokenFieldName] = pageToken;
-                          }
-                          //@ts-ignore
-                          else nextPageRequest = null;
-                          //@ts-ignore
-                          cache.push(...response.responses.map(r=> r.content));
-                          const value = cache.shift();
-                          return Promise.resolve({ done: false, value: value });
-                      }
-                        else {
-                            return Promise.resolve({ done: true, value: -1 });
-                        }
-                    }
+            const func = (await funcPromise) as SimpleCallbackFunction;
+            const request = (await requestPromise) as RequestType;
+            if (firstCall) {
+              ongoingCall.call(func, request);
+              const [
+                response,
+                nextRequest,
+                rawresponse,
+              ] = await ongoingCall.promise;
+              //@ts-ignore
+              cache.push(...response.responses.map(r => r.content));
+              //@ts-ignore
+              const pageToken = response[responsePageTokenFieldName];
+              if (pageToken) {
+                nextPageRequest = Object.assign({}, request);
+                nextPageRequest[requestPageTokenFieldName] = pageToken;
+              }
+              firstCall = false;
+              return Promise.resolve({done: false, value: cache.shift()});
+            } else {
+              if (cache.length > 0) {
+                const value = cache.shift();
+                return Promise.resolve({done: false, value});
+              } else if (nextPageRequest) {
+                ongoingCall.call(func, nextPageRequest);
+                const [
+                  response,
+                  nextRequest,
+                  rawResponse,
+                ] = await ongoingCall.promise;
+                //@ts-ignore
+                const pageToken = response[responsePageTokenFieldName];
+                if (pageToken) {
+                  nextPageRequest[requestPageTokenFieldName] = pageToken;
                 }
-            };
-        }
+                //@ts-ignore
+                else nextPageRequest = null;
+                //@ts-ignore
+                cache.push(...response.responses.map(r => r.content));
+                const value = cache.shift();
+                return Promise.resolve({done: false, value});
+              } else {
+                return Promise.resolve({done: true, value: -1});
+              }
+            }
+          },
+        };
+      },
     };
     return asyncIterable; // return iterable
-}
+  }
 
-resolveParams(request: RequestType, func: GaxCall, settings: CallSettings){
-  if (settings.pageToken) {
+  resolveParams(request: RequestType, func: GaxCall, settings: CallSettings) {
+    if (settings.pageToken) {
       request[this.requestPageTokenField] = settings.pageToken;
-  }
-  if (settings.pageSize) {
+    }
+    if (settings.pageSize) {
       request[this.requestPageSizeField!] = settings.pageSize;
+    }
+    resolveRequest(request);
+    resolveFunction(func);
   }
-  resolveRequest(request);
-  resolveFunction(func);
-}
 
   getApiCaller(settings: CallSettings): APICaller {
     if (!settings.autoPaginate) {
