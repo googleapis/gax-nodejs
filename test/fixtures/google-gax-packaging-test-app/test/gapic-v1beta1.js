@@ -173,13 +173,22 @@ describe('EchoClient', () => {
         assert.deepStrictEqual(response, expectedResponse.responses);
         done();
       });
-
+      // test paging method by async iterator
       const iterable = client.pagedExpandAsync(request);
       let responses = {};
       for await (const resource of iterable){
         responses.push(resource);
       }
       assert.deepStrictEqual(response, expectedResponse.responses);
+
+      // test page method by stream
+      const stream = client.pagedExpandStream(request, {}).on('data', (response: {}) =>{
+          assert.deepStrictEqual(response, expectedResponse);
+          done();
+      }).on('error', (err: FakeError) => {
+          done(err);
+      });
+      stream.write(request);
     });
 
     it('invokes pagedExpand with error', done => {
