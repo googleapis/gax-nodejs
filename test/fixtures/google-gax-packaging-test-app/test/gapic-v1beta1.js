@@ -182,10 +182,10 @@ describe('EchoClient', () => {
       assert.deepStrictEqual(response, expectedResponse.responses);
 
       // test page method by stream
-      const stream = client.pagedExpandStream(request, {}).on('data', (response: {}) =>{
+      const stream = client.pagedExpandStream(request, {}).on('data', (response) =>{
           assert.deepStrictEqual(response, expectedResponse);
           done();
-      }).on('error', (err: FakeError) => {
+      }).on('error', (err) => {
           done(err);
       });
       stream.write(request);

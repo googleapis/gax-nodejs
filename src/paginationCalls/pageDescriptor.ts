@@ -46,7 +46,6 @@ import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {PagedApiCaller} from './pagedApiCaller';
 import * as call_1 from '../call';
-import G = require('glob');
 
 let resolveFunction: Function;
 let resolveRequest: Function;
