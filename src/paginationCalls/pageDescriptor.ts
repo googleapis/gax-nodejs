@@ -115,7 +115,11 @@ export class PageDescriptor implements Descriptor {
   }
 
   // create async iterator(settings) => iterable
-  asyncIterate(apiCall: GaxCall, request: RequestType, options: CallSettings): {} {
+  asyncIterate(
+    apiCall: GaxCall,
+    request: RequestType,
+    options: CallSettings
+  ): {} {
     const iterable = this.createIterator(options);
     const funcPromise =
       typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
