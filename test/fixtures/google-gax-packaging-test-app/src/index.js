@@ -73,12 +73,14 @@ async function testShowcase() {
   await testEcho(grpcClient);
   await testExpand(grpcClient);
   await testPagedExpand(grpcClient);
+  await testPagedExpandAsync(grpcClient);
   await testCollect(grpcClient);
   await testChat(grpcClient);
   await testWait(grpcClient);
 
   await testEcho(fallbackClient);
   await testPagedExpand(fallbackClient);
+  await testPagedExpandAsync(fallbackClient);
   await testWait(fallbackClient);
 
   // Fallback clients do not currently support streaming
@@ -131,6 +133,20 @@ async function testPagedExpand(client) {
   };
   const [response] = await client.pagedExpand(request);
   const result = response.map(r => r.content);
+  assert.deepStrictEqual(words, result);
+}
+
+async function testPagedExpandAsync(client) {
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const request = {
+    content: words.join(' '),
+    pageSize: 2,
+  };
+  const resources = client.pagedExpandAsync(request);
+  const result = {};
+  for await (const resource of resources){
+    result.push(resource)
+  }
   assert.deepStrictEqual(words, result);
 }
 

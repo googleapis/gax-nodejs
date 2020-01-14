@@ -584,13 +584,6 @@ class EchoClient {
     return this._innerApiCalls.pagedExpand(request, options, callback);
   }
 
-
-  pagedExpandStream(request, options) {
-      request = request || {};
-      const callSettings = new gax.CallSettings(options);
-      return this._descriptors.page.pagedExpand.createStream(this._innerApiCalls.pagedExpand, request, callSettings);
-  }
-
   pagedExpandAsync(request, options) {
       request = request || {};
       const callSettings = new gax.CallSettings(options);

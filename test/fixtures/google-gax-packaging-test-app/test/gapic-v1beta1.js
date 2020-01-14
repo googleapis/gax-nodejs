@@ -175,7 +175,7 @@ describe('EchoClient', () => {
       });
     });
 
-    it('invokes pagedExpand using async iterator & stream', async () => {
+    it('invokes pagedExpand using async iterator', async () => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
@@ -193,21 +193,23 @@ describe('EchoClient', () => {
         responses: responses,
       };
 
+      client._descriptors.page.pagedExpand.async = (apiCall, request, options) => {
+        const asyncIterable = {
+          [Symbol.asyncIterator]() {
+            return {
+              async next(){}
+            }
+          }
+        }
+        return asyncIterable;
+      }
+
       // test paging method by async iterator
       const iterable = client.pagedExpandAsync(request);
       for await (const resource of iterable){
         responses.push(resource);
       }
       assert.deepStrictEqual(response, expectedResponse.responses);
-
-      // test page method by stream
-      const stream = client.pagedExpandStream(request, {}).on('data', (response) =>{
-          assert.deepStrictEqual(response, expectedResponse);
-          done();
-      }).on('error', (err) => {
-          done(err);
-      });
-      stream.write(request);
     });
 
     it('invokes pagedExpand with error', done => {
