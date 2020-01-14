@@ -45,15 +45,14 @@ import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {PagedApiCaller} from './pagedApiCaller';
-import * as call_1 from '../call';
-
-let resolveFunction: Function;
-let resolveRequest: Function;
+import * as call from '../call';
 
 /**
  * A descriptor for methods that support pagination.
  */
 export class PageDescriptor implements Descriptor {
+  resolveFunction: Function;
+  resolveRequest: Function;
   requestPageTokenField: string;
   responsePageTokenField: string;
   requestPageSizeField?: string;
@@ -67,6 +66,8 @@ export class PageDescriptor implements Descriptor {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
     this.resourceField = resourceField;
+    this.resolveFunction = () => {};
+    this.resolveRequest = () => {};
   }
 
   /**
@@ -146,6 +147,8 @@ export class PageDescriptor implements Descriptor {
   createIterator(options: CallSettings): {} {
     const responsePageTokenFieldName = this.responsePageTokenField;
     const requestPageTokenFieldName = this.requestPageTokenField;
+    let resolveRequest = this.resolveRequest;
+    let resolveFunction = this.resolveFunction;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         const funcPromise = new Promise((resolve, reject) => {
@@ -159,7 +162,7 @@ export class PageDescriptor implements Descriptor {
         let firstCall = true;
         return {
           async next() {
-            const ongoingCall = new call_1.OngoingCallPromise(options.promise);
+            const ongoingCall = new call.OngoingCallPromise(options.promise);
 
             const func = (await funcPromise) as SimpleCallbackFunction;
             const request = (await requestPromise) as RequestType;
@@ -220,8 +223,8 @@ export class PageDescriptor implements Descriptor {
     if (settings.pageSize) {
       request[this.requestPageSizeField!] = settings.pageSize;
     }
-    resolveRequest(request);
-    resolveFunction(func);
+    this.resolveRequest(request);
+    this.resolveFunction(func);
   }
 
   getApiCaller(settings: CallSettings): APICaller {
