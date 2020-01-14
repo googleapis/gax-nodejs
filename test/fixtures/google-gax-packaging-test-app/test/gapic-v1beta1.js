@@ -173,6 +173,26 @@ describe('EchoClient', () => {
         assert.deepStrictEqual(response, expectedResponse.responses);
         done();
       });
+    });
+
+    it('invokes pagedExpand using async iterator & stream', async () => {
+      const client = new showcaseModule.v1beta1.EchoClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const request = {};
+
+      // Mock response
+      const nextPageToken = '';
+      const responsesElement = {};
+      const responses = [responsesElement];
+      const expectedResponse = {
+        nextPageToken: nextPageToken,
+        responses: responses,
+      };
+
       // test paging method by async iterator
       const iterable = client.pagedExpandAsync(request);
       for await (const resource of iterable){
