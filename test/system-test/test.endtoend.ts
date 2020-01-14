@@ -79,7 +79,7 @@ describe('Run end-to-end test', () => {
     });
   });
 
-  it.only('should be able to run unit tests of test app', async () => {
+  it('should be able to run unit tests of test app', async () => {
     await execa('npm', ['test'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
