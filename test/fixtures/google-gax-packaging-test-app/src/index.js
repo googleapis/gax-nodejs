@@ -80,7 +80,6 @@ async function testShowcase() {
 
   await testEcho(fallbackClient);
   await testPagedExpand(fallbackClient);
-  await testPagedExpandAsync(fallbackClient);
   await testWait(fallbackClient);
 
   // Fallback clients do not currently support streaming
@@ -142,12 +141,12 @@ async function testPagedExpandAsync(client) {
     content: words.join(' '),
     pageSize: 2,
   };
-  const resources = client.pagedExpandAsync(request);
-  const result = {};
-  for await (const resource of resources){
-    result.push(resource)
+  const response = [];
+  const iterable = client.pagedExpandAsync(request);
+  for await (const resource of iterable){
+    response.push(resource);
   }
-  assert.deepStrictEqual(words, result);
+  assert.deepStrictEqual(words, response);
 }
 
 async function testCollect(client) {
