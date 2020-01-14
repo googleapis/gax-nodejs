@@ -175,7 +175,6 @@ describe('EchoClient', () => {
       });
       // test paging method by async iterator
       const iterable = client.pagedExpandAsync(request);
-      let responses = {};
       for await (const resource of iterable){
         responses.push(resource);
       }
