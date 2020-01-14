@@ -585,6 +585,7 @@ class EchoClient {
   }
 
   pagedExpandAsync(request, options) {
+      options = options || {};
       request = request || {};
       const callSettings = new gax.CallSettings(options);
       return this._descriptors.page.pagedExpand.async(this._innerCallPromise['pagedExpand'], request, callSettings);
