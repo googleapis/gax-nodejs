@@ -119,7 +119,7 @@ export class PageDescriptor implements Descriptor {
     apiCall: GaxCall,
     request: RequestType,
     options: CallSettings
-  ): {} {
+  ): AsyncIterable<{} | undefined> {
     const iterable = this.createIterator(options);
     const funcPromise =
       typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
@@ -133,7 +133,7 @@ export class PageDescriptor implements Descriptor {
     return iterable;
   }
 
-  createIterator(options: CallSettings): {} {
+  createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
     const responsePageTokenFieldName = this.responsePageTokenField;
     const requestPageTokenFieldName = this.requestPageTokenField;
     let resolveRequest = this.resolveRequest;
