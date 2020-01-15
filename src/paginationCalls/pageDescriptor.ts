@@ -114,7 +114,9 @@ export class PageDescriptor implements Descriptor {
     return stream;
   }
 
-  // create async iterator(settings) => iterable
+  /**
+   * Create an async iterable which can be recursively called for data on-demand.
+   */
   asyncIterate(
     apiCall: GaxCall,
     request: RequestType,
