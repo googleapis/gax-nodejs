@@ -211,7 +211,7 @@ describe('EchoClient', () => {
       const response = {};
       const iterable = client.pagedExpandAsync(request);
       for await (const resource of iterable){
-        response.push(resource);
+        response.push(resource.map(r=> r.content));
       }
       assert.deepStrictEqual(response, expectedResponse.responses);
     });

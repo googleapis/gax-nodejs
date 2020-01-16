@@ -23,7 +23,6 @@ import {
   APICallback,
   SimpleCallbackFunction,
   RequestType,
-  GaxCallPromise,
 } from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
@@ -32,6 +31,9 @@ import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 import {PagedApiCaller} from './pagedApiCaller';
 import * as call from '../call';
 
+export interface ResponseType {
+  [index: string]: string;
+}
 /**
  * A descriptor for methods that support pagination.
  */
@@ -149,7 +151,7 @@ export class PageDescriptor implements Descriptor {
           resolveRequest = resolve;
         });
         const cache: Array<{}> = [];
-        let nextPageRequest: RequestType = {};
+        let nextPageRequest: RequestType | null = {};
         let firstCall = true;
         return {
           async next() {
@@ -164,14 +166,14 @@ export class PageDescriptor implements Descriptor {
                 nextRequest,
                 rawresponse,
               ] = await ongoingCall.promise;
-              //@ts-ignore
-              cache.push(...response.responses.map(r => r.content));
-              //@ts-ignore
-              const pageToken = response[responsePageTokenFieldName];
+              const pageToken = (response as ResponseType)
+                .responsePageTokenFieldName;
               if (pageToken) {
                 nextPageRequest = Object.assign({}, request);
                 nextPageRequest[requestPageTokenFieldName] = pageToken;
               }
+              const responses = (response as ResponseType).resourceField;
+              cache.push(...((responses as unknown) as Iterable<{}>));
               firstCall = false;
               return Promise.resolve({done: false, value: cache.shift()});
             } else {
@@ -185,17 +187,14 @@ export class PageDescriptor implements Descriptor {
                   nextRequest,
                   rawResponse,
                 ] = await ongoingCall.promise;
-                //@ts-ignore
-                const pageToken = response[responsePageTokenFieldName];
+                const pageToken = (response as ResponseType)
+                  .responsePageTokenFieldName;
                 if (pageToken) {
                   nextPageRequest[requestPageTokenFieldName] = pageToken;
-                }
-                //@ts-ignore
-                else nextPageRequest = null;
-                //@ts-ignore
-                cache.push(...response.responses.map(r => r.content));
-                const value = cache.shift();
-                return Promise.resolve({done: false, value});
+                } else nextPageRequest = null;
+                const responses = (response as ResponseType).resourceField;
+                cache.push(...((responses as unknown) as Iterable<{}>));
+                return Promise.resolve({done: false, value: cache.shift()});
               } else {
                 return Promise.resolve({done: true, value: -1});
               }

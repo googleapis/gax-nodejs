@@ -146,7 +146,7 @@ async function testPagedExpandAsync(client) {
   const response = [];
   const iterable = client.pagedExpandAsync(request);
   for await (const resource of iterable){
-    response.push(resource);
+    response.push(resource.map(r => r.content));
   }
   assert.deepStrictEqual(words, response);
 }
