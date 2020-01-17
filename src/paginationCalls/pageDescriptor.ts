@@ -207,7 +207,7 @@ export class PageDescriptor implements Descriptor {
       nextPageRequest[requestPageTokenFieldName] = pageToken;
     }
     const responses = (response as ResponseType).resourceField;
-    cache.push(...((responses as unknown) as Iterable<{}>));
+    cache.push(...responses);
     return nextPageRequest;
   }
 
