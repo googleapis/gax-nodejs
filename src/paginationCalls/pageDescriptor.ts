@@ -139,16 +139,16 @@ export class PageDescriptor implements Descriptor {
 
   createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
     const requestPageTokenFieldName = this.requestPageTokenField;
-    let resolveRequest = this.resolveRequest;
-    let resolveFunction = this.resolveFunction;
+    const self = this;
     const getNextPageRequest = this.getNextPageRequest;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         const funcPromise = new Promise((resolve, reject) => {
-          resolveFunction = resolve;
+          self.resolveFunction = resolve;
         });
         const requestPromise = new Promise((resolve, reject) => {
-          resolveRequest = resolve;
+          console.log('saving request promise');
+          self.resolveRequest = resolve;
         });
         const cache: Array<{}> = [];
         let nextPageRequest: RequestType | null = {};
@@ -157,33 +157,24 @@ export class PageDescriptor implements Descriptor {
           async next() {
             const ongoingCall = new call.OngoingCallPromise(options.promise);
             const func = (await funcPromise) as SimpleCallbackFunction;
+            console.log('awaiting on request promise');
             const request = (await requestPromise) as RequestType;
+            console.log('got request:', request);
             if (cache.length > 0) {
               const value = cache.shift();
               return Promise.resolve({done: false, value});
             }
-            if (firstCall) {
-              nextPageRequest = await getNextPageRequest(
-                cache,
-                func,
-                request,
-                ongoingCall,
-                requestPageTokenFieldName
-              );
-              firstCall = false;
-              return Promise.resolve({done: false, value: cache.shift()});
-            }
-            if (nextPageRequest) {
-              nextPageRequest = await getNextPageRequest(
-                cache,
-                func,
-                nextPageRequest,
-                ongoingCall,
-                requestPageTokenFieldName
-              );
-              return Promise.resolve({done: false, value: cache.shift()});
-            }
-            return Promise.resolve({done: true, value: -1});
+
+            nextPageRequest = await getNextPageRequest(
+              cache,
+              func,
+              firstCall ? request : nextPageRequest!,
+              ongoingCall,
+              requestPageTokenFieldName
+            );
+            firstCall = false;
+
+            return Promise.resolve({done: nextPageRequest === null, value: cache.shift()});
           },
         };
       },
