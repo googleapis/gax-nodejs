@@ -139,6 +139,8 @@ export class PageDescriptor implements Descriptor {
 
   createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
     const requestPageTokenFieldName = this.requestPageTokenField;
+    const responsePageTokenFieldName = this.responsePageTokenField;
+    const resourceField = this.resourceField;
     const self = this;
     const getNextPageRequest = this.getNextPageRequest;
     const asyncIterable = {
@@ -147,7 +149,6 @@ export class PageDescriptor implements Descriptor {
           self.resolveFunction = resolve;
         });
         const requestPromise = new Promise((resolve, reject) => {
-          console.log('saving request promise');
           self.resolveRequest = resolve;
         });
         const cache: Array<{}> = [];
@@ -157,24 +158,25 @@ export class PageDescriptor implements Descriptor {
           async next() {
             const ongoingCall = new call.OngoingCallPromise(options.promise);
             const func = (await funcPromise) as SimpleCallbackFunction;
-            console.log('awaiting on request promise');
             const request = (await requestPromise) as RequestType;
-            console.log('got request:', request);
             if (cache.length > 0) {
               const value = cache.shift();
               return Promise.resolve({done: false, value});
             }
-
+            if (!firstCall && !nextPageRequest) {
+              return Promise.resolve({done: true, value: -1});
+            }
             nextPageRequest = await getNextPageRequest(
               cache,
               func,
               firstCall ? request : nextPageRequest!,
               ongoingCall,
-              requestPageTokenFieldName
+              requestPageTokenFieldName,
+              responsePageTokenFieldName,
+              resourceField
             );
             firstCall = false;
-
-            return Promise.resolve({done: nextPageRequest === null, value: cache.shift()});
+            return Promise.resolve({done: false, value: cache.shift()});
           },
         };
       },
@@ -187,17 +189,20 @@ export class PageDescriptor implements Descriptor {
     func: SimpleCallbackFunction,
     request: RequestType,
     ongoingCall: call.OngoingCallPromise,
-    requestPageTokenFieldName: string
+    requestPageTokenFieldName: string,
+    responsePageTokenField: string,
+    resourceField: string
   ): Promise<RequestType | null> {
+    const self = this;
     ongoingCall.call(func, request);
     let nextPageRequest = null;
     const [response, nextRequest, rawResponse] = await ongoingCall.promise;
-    const pageToken = (response as ResponseType).responsePageTokenFieldName;
+    const pageToken = (response as ResponseType)[responsePageTokenField];
     if (pageToken) {
       nextPageRequest = Object.assign({}, request);
       nextPageRequest[requestPageTokenFieldName] = pageToken;
     }
-    const responses = (response as ResponseType).resourceField;
+    const responses = (response as ResponseType)[resourceField];
     cache.push(...responses);
     return nextPageRequest;
   }

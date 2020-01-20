@@ -72,31 +72,31 @@ async function testShowcase() {
   const fallbackClient = new gapic.v1beta1.EchoClient(fallbackClientOpts);
 
   // assuming gRPC server is started locally
-//  await testEcho(grpcClient);
-//  await testExpand(grpcClient);
-//  await testPagedExpand(grpcClient);
+ await testEcho(grpcClient);
+ await testExpand(grpcClient);
+ await testPagedExpand(grpcClient);
   await testPagedExpandAsync(grpcClient);
-//  await testCollect(grpcClient);
-//  await testChat(grpcClient);
-//  await testWait(grpcClient);
+ await testCollect(grpcClient);
+ await testChat(grpcClient);
+ await testWait(grpcClient);
 
-//  await testEcho(fallbackClient);
-//  await testPagedExpand(fallbackClient);
-//  await testWait(fallbackClient);
+ await testEcho(fallbackClient);
+ await testPagedExpand(fallbackClient);
+ await testWait(fallbackClient);
 
   // Fallback clients do not currently support streaming
-//  try {
-//    await testExpand(fallbackClient)
-//    throw new Error("Expand did not throw an error: Streaming calls should fail with fallback clients")
-//  } catch (err) {}
-//  try {
-//    await testCollect(fallbackClient)
-//    throw new Error("Collect did not throw an error: Streaming calls should fail with fallback clients")
-//  } catch (err) {}
-//  try {
-//    await testChat(fallbackClient)
-//    throw new Error("Chat did not throw an error: Streaming calls should fail with fallback clients")
-//  } catch (err) {}
+ try {
+   await testExpand(fallbackClient)
+   throw new Error("Expand did not throw an error: Streaming calls should fail with fallback clients")
+ } catch (err) {}
+ try {
+   await testCollect(fallbackClient)
+   throw new Error("Collect did not throw an error: Streaming calls should fail with fallback clients")
+ } catch (err) {}
+ try {
+   await testChat(fallbackClient)
+   throw new Error("Chat did not throw an error: Streaming calls should fail with fallback clients")
+ } catch (err) {}
 }
 
 async function testEcho(client) {
@@ -145,12 +145,9 @@ async function testPagedExpandAsync(client) {
   };
   const response = [];
   const iterable = client.pagedExpandAsync(request);
-  console.log('iterable:', iterable);
   for await (const resource of iterable) {
-    response.push(resource.map(r => r.content));
-    console.log('pushed', resource);
+    response.push(resource.content);
   }
-  console.log('we are here and will fail now');
   assert.deepStrictEqual(words, response);
 }
 
