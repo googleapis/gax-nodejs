@@ -44,6 +44,7 @@ export class PageDescriptor implements Descriptor {
   responsePageTokenField: string;
   requestPageSizeField?: string;
   resourceField: string;
+  cache: Array<{}>;
 
   constructor(
     requestPageTokenField: string,
@@ -55,6 +56,7 @@ export class PageDescriptor implements Descriptor {
     this.resourceField = resourceField;
     this.resolveFunction = () => {};
     this.resolveRequest = () => {};
+    this.cache = [];
   }
 
   /**
@@ -142,6 +144,7 @@ export class PageDescriptor implements Descriptor {
     const responsePageTokenFieldName = this.responsePageTokenField;
     const resourceField = this.resourceField;
     const self = this;
+    const cache = this.cache;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         const funcPromise = new Promise((resolve, reject) => {
@@ -150,7 +153,6 @@ export class PageDescriptor implements Descriptor {
         const requestPromise = new Promise((resolve, reject) => {
           self.resolveRequest = resolve;
         });
-        const cache: Array<{}> = [];
         let nextPageRequest: RequestType | null = {};
         let firstCall = true;
         return {
@@ -165,13 +167,9 @@ export class PageDescriptor implements Descriptor {
               return Promise.resolve({done: true, value: undefined});
             }
             nextPageRequest = await self.getNextPageRequest(
-              cache,
               func,
               firstCall ? request : nextPageRequest!,
-              ongoingCall,
-              requestPageTokenFieldName,
-              responsePageTokenFieldName,
-              resourceField
+              ongoingCall
             );
             firstCall = false;
             if (cache.length === 0) {
@@ -187,24 +185,20 @@ export class PageDescriptor implements Descriptor {
   }
 
   async getNextPageRequest(
-    cache: Array<{}>,
     func: SimpleCallbackFunction,
     request: RequestType,
-    ongoingCall: call.OngoingCallPromise,
-    requestPageTokenFieldName: string,
-    responsePageTokenField: string,
-    resourceField: string
+    ongoingCall: call.OngoingCallPromise
   ): Promise<RequestType | null> {
     ongoingCall.call(func, request);
     let nextPageRequest = null;
     const [response, nextRequest, rawResponse] = await ongoingCall.promise;
-    const pageToken = (response as ResponseType)[responsePageTokenField];
+    const pageToken = (response as ResponseType)[this.responsePageTokenField];
     if (pageToken) {
       nextPageRequest = Object.assign({}, request);
-      nextPageRequest[requestPageTokenFieldName] = pageToken;
+      nextPageRequest[this.requestPageTokenField] = pageToken;
     }
-    const responses = (response as ResponseType)[resourceField];
-    cache.push(...responses);
+    const responses = (response as ResponseType)[this.resourceField];
+    this.cache.push(...responses);
     return nextPageRequest;
   }
 
