@@ -170,10 +170,7 @@ export class PageDescriptor implements Descriptor {
               cache,
               func,
               firstCall ? request : nextPageRequest!,
-              ongoingCall,
-              requestPageTokenFieldName,
-              responsePageTokenFieldName,
-              resourceField
+              ongoingCall
             );
             firstCall = false;
             if (cache.length === 0) {
@@ -192,15 +189,15 @@ export class PageDescriptor implements Descriptor {
     cache: Array<{}>,
     func: SimpleCallbackFunction,
     request: RequestType,
-    ongoingCall: call.OngoingCallPromise,
-    requestPageTokenFieldName: string,
-    responsePageTokenField: string,
-    resourceField: string
+    ongoingCall: call.OngoingCallPromise
   ): Promise<RequestType | null> {
+    const requestPageTokenFieldName = this.requestPageTokenField;
+    const responsePageTokenFieldName = this.responsePageTokenField;
+    const resourceField = this.resourceField;
     ongoingCall.call(func, request);
     let nextPageRequest = null;
     const [response, nextRequest, rawResponse] = await ongoingCall.promise;
-    const pageToken = (response as ResponseType)[responsePageTokenField];
+    const pageToken = (response as ResponseType)[responsePageTokenFieldName];
     if (pageToken) {
       nextPageRequest = Object.assign({}, request);
       nextPageRequest[requestPageTokenFieldName] = pageToken;
