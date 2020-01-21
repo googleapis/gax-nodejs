@@ -38,8 +38,7 @@ export interface ResponseType {
  * A descriptor for methods that support pagination.
  */
 export class PageDescriptor implements Descriptor {
-  resolveFunction: Function;
-  resolveRequest: Function;
+  resolveParams: Function;
   requestPageTokenField: string;
   responsePageTokenField: string;
   requestPageSizeField?: string;
@@ -54,8 +53,7 @@ export class PageDescriptor implements Descriptor {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
     this.resourceField = resourceField;
-    this.resolveFunction = () => {};
-    this.resolveRequest = () => {};
+    this.resolveParams = () => {};
     this.cache = [];
   }
 
@@ -131,7 +129,7 @@ export class PageDescriptor implements Descriptor {
       typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
     funcPromise
       .then((func: GaxCall) => {
-        this.resolveParams(request, func, options);
+        this.makeCall(request, func, options);
       })
       .catch(error => {
         throw new Error(error);
@@ -140,26 +138,21 @@ export class PageDescriptor implements Descriptor {
   }
 
   createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
-    const requestPageTokenFieldName = this.requestPageTokenField;
-    const responsePageTokenFieldName = this.responsePageTokenField;
-    const resourceField = this.resourceField;
     const self = this;
     const cache = this.cache;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
-        const funcPromise = new Promise((resolve, reject) => {
-          self.resolveFunction = resolve;
-        });
-        const requestPromise = new Promise((resolve, reject) => {
-          self.resolveRequest = resolve;
+        const paramPromise = new Promise((resolve, reject) => {
+          self.resolveParams = resolve;
         });
         let nextPageRequest: RequestType | null = {};
         let firstCall = true;
         return {
           async next() {
             const ongoingCall = new call.OngoingCallPromise(options.promise);
-            const func = (await funcPromise) as SimpleCallbackFunction;
-            const request = (await requestPromise) as RequestType;
+            const [request, func] = (await paramPromise) as Array<
+              RequestType | SimpleCallbackFunction
+            >;
             if (cache.length > 0) {
               return Promise.resolve({done: false, value: cache.shift()});
             }
@@ -167,8 +160,8 @@ export class PageDescriptor implements Descriptor {
               return Promise.resolve({done: true, value: undefined});
             }
             nextPageRequest = await self.getNextPageRequest(
-              func,
-              firstCall ? request : nextPageRequest!,
+              func as SimpleCallbackFunction,
+              firstCall ? (request as RequestType) : nextPageRequest!,
               ongoingCall
             );
             firstCall = false;
@@ -202,15 +195,14 @@ export class PageDescriptor implements Descriptor {
     return nextPageRequest;
   }
 
-  resolveParams(request: RequestType, func: GaxCall, settings: CallSettings) {
+  makeCall(request: RequestType, func: GaxCall, settings: CallSettings) {
     if (settings.pageToken) {
       request[this.requestPageTokenField] = settings.pageToken;
     }
     if (settings.pageSize) {
       request[this.requestPageSizeField!] = settings.pageSize;
     }
-    this.resolveRequest(request);
-    this.resolveFunction(func);
+    this.resolveParams([request, func]);
   }
 
   getApiCaller(settings: CallSettings): APICaller {
