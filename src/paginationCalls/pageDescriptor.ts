@@ -138,11 +138,11 @@ export class PageDescriptor implements Descriptor {
   }
 
   createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
-    const requestPageTokenFieldName = this.requestPageTokenField;
-    const responsePageTokenFieldName = this.responsePageTokenField;
-    const resourceField = this.resourceField;
     const self = this;
-    const getNextPageRequest = this.getNextPageRequest;
+    const requestPageTokenFieldName = self.requestPageTokenField;
+    const responsePageTokenFieldName = self.responsePageTokenField;
+    const resourceField = self.resourceField;
+    const getNextPageRequest = self.getNextPageRequest;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         const funcPromise = new Promise((resolve, reject) => {
@@ -176,6 +176,10 @@ export class PageDescriptor implements Descriptor {
               resourceField
             );
             firstCall = false;
+            if (cache.length === 0) {
+              nextPageRequest = null;
+              return Promise.resolve({done: true, value: -1});
+            }
             return Promise.resolve({done: false, value: cache.shift()});
           },
         };
@@ -193,7 +197,6 @@ export class PageDescriptor implements Descriptor {
     responsePageTokenField: string,
     resourceField: string
   ): Promise<RequestType | null> {
-    const self = this;
     ongoingCall.call(func, request);
     let nextPageRequest = null;
     const [response, nextRequest, rawResponse] = await ongoingCall.promise;

@@ -75,7 +75,7 @@ async function testShowcase() {
  await testEcho(grpcClient);
  await testExpand(grpcClient);
  await testPagedExpand(grpcClient);
-  await testPagedExpandAsync(grpcClient);
+ await testPagedExpandAsync(grpcClient);
  await testCollect(grpcClient);
  await testChat(grpcClient);
  await testWait(grpcClient);
