@@ -150,9 +150,14 @@ export class PageDescriptor implements Descriptor {
         return {
           async next() {
             const ongoingCall = new call.OngoingCallPromise(options.promise);
+            // Wait 6s for parameters [request, func] to be resolved, throw error nothing returns after timeout.
+            const timer = setTimeout(() => {
+              throw Error('Missing apiCall or request.');
+            }, 6000);
             const [request, func] = (await paramPromise) as Array<
               RequestType | SimpleCallbackFunction
             >;
+            clearTimeout(timer);
             if (cache.length > 0) {
               return Promise.resolve({done: false, value: cache.shift()});
             }
