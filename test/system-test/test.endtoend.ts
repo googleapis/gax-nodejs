@@ -55,7 +55,7 @@ describe('Run end-to-end test', () => {
     await grpcServer.start();
   });
 
-  it.only('should be able to prepare test app', async () => {
+  it('should be able to prepare test app', async () => {
     await ncpp(testAppSource, testAppDestination);
     await ncpp(gaxTarball, path.join(testAppDestination, 'google-gax.tgz'));
     await execa('npm', ['install'], {
@@ -68,7 +68,7 @@ describe('Run end-to-end test', () => {
     await execa('npm', ['test'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
-  it.only('should be able to run tests against gRPC server', async () => {
+  it('should be able to run tests against gRPC server', async () => {
     await execa('npm', ['start'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
