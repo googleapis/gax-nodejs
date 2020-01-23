@@ -142,7 +142,7 @@ export class PageDescriptor implements Descriptor {
     const cache = this.cache;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
-        const paramPromise = new Promise((resolve, reject) => {
+        const paramPromise: Promise<[RequestType, SimpleCallbackFunction]> = new Promise((resolve, reject) => {
           self.resolveParams = resolve;
         });
         let nextPageRequest: RequestType | null = {};
@@ -150,14 +150,7 @@ export class PageDescriptor implements Descriptor {
         return {
           async next() {
             const ongoingCall = new call.OngoingCallPromise(options.promise);
-            // Wait 6s for parameters [request, func] to be resolved, throw error nothing returns after timeout.
-            const timer = setTimeout(() => {
-              throw Error('Missing apiCall or request.');
-            }, 6000);
-            const [request, func] = (await paramPromise) as Array<
-              RequestType | SimpleCallbackFunction
-            >;
-            clearTimeout(timer);
+            const [request, func] = await paramPromise;
             if (cache.length > 0) {
               return Promise.resolve({done: false, value: cache.shift()});
             }
@@ -165,8 +158,8 @@ export class PageDescriptor implements Descriptor {
               return Promise.resolve({done: true, value: undefined});
             }
             nextPageRequest = await self.getNextPageRequest(
-              func as SimpleCallbackFunction,
-              firstCall ? (request as RequestType) : nextPageRequest!,
+              func,
+              firstCall ? request : nextPageRequest!,
               ongoingCall
             );
             firstCall = false;
