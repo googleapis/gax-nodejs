@@ -161,7 +161,7 @@ async function testPagedExpandAsync(client) {
 
 async function testCollect(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const timer = setTimeout(() => {throw Error('End-to-end testCollect method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testCollect method fails with timeout')}, 12000);
   const result = await new Promise((resolve, reject) => {
     const stream = client.collect((err, result) => {
       if (err) {
