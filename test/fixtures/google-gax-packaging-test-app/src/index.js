@@ -114,7 +114,7 @@ async function testExpand(client) {
   const request = {
     content: words.join(' '),
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testExpand method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testExpand method fails with timeout')}, 12000);
   const result = await new Promise((resolve, reject) => {
     const stream = client.expand(request);
     const result = [];
