@@ -103,7 +103,7 @@ async function testEcho(client) {
   const request = {
     content: 'test',
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testEcho method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testEcho method fails with timeout')}, 12000);
   const [response] = await client.echo(request);
   clearTimeout(timer);
   assert.deepStrictEqual(request.content, response.content);
@@ -136,7 +136,7 @@ async function testPagedExpand(client) {
     content: words.join(' '),
     pageSize: 2,
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpand method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpand method fails with timeout')}, 12000);
   const [response] = await client.pagedExpand(request);
   clearTimeout(timer);
   const result = response.map(r => r.content);
@@ -151,7 +151,7 @@ async function testPagedExpandAsync(client) {
   };
   const response = [];
   const iterable = client.pagedExpandAsync(request);
-  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpandAsync method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpandAsync method fails with timeout')}, 12000);
   for await (const resource of iterable) {
     response.push(resource.content);
   }
@@ -191,7 +191,7 @@ async function testChat(client) {
     'this',
     'one',
   ];
-  const timer = setTimeout(() => {throw Error('End-to-end testChat method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testChat method fails with timeout')}, 12000);
   const result = await new Promise((resolve, reject) => {
     const result = [];
     const stream = client.chat();
@@ -221,7 +221,7 @@ async function testWait(client) {
       content: 'done',
     },
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testWait method fails with timeout')}, 6000);
+  const timer = setTimeout(() => {throw Error('End-to-end testWait method fails with timeout')}, 12000);
   const [operation] = await client.wait(request);
   const [response] = await operation.promise();
   clearTimeout(timer);
