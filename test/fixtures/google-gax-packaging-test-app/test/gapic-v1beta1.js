@@ -185,35 +185,28 @@ describe('EchoClient', () => {
 
       // Mock request
       const request = {};
-
-      const nextPageToken = '';
       const expectedResponse = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-      client._descriptors.page.pagedExpand.asyncIterate = (
-        apiCall,
-        request,
-        options
-      ) => {
+      client._descriptors.page.pagedExpand.asyncIterate = (apiCall, request, options) => {
         let count = 0;
         const asyncIterable = {
           [Symbol.asyncIterator]() {
             return {
-              async next() {
+              async next(){
                 count = count + 1;
-                if (count === 10)
-                  return Promise.resolve({done: true, value: undefined});
+                if(count === 10) return Promise.resolve({done: true, value: undefined});
                 return Promise.resolve({done: false, value: count});
-              },
-            };
-          },
-        };
+              }
+            }
+          }
+        }
         return asyncIterable;
-      };
+      }
 
       // test paging method by async iterator
       const response = [];
       const iterable = client.pagedExpandAsync(request);
-      for await (const resource of iterable) {
+      for await (const resource of iterable){
         response.push(resource);
       }
       assert.deepStrictEqual(response, expectedResponse);

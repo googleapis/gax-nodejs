@@ -202,9 +202,7 @@ describe('paged iteration', () => {
       apiCall = util.createApiCall(spy, createOptions);
     });
 
-    async function iterableChecker(
-      iterable: AsyncIterable<{} | undefined>
-    ) {
+    async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
       let counter = 0;
       for await (const resource of iterable) {
         counter++;

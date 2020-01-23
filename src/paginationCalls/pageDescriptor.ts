@@ -144,7 +144,7 @@ export class PageDescriptor implements Descriptor {
         const paramPromise: Promise<[
           RequestType,
           SimpleCallbackFunction
-        ]> = new Promise((resolve) => {
+        ]> = new Promise(resolve => {
           self.resolveParams = resolve;
         });
         let nextPageRequest: RequestType | null = {};
