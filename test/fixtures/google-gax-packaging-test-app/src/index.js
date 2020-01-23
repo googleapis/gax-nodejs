@@ -53,11 +53,11 @@ async function testShowcase() {
       return {
         getRequestHeaders: () => {
           return {
-            'Authorization': 'Bearer zzzz'
+            Authorization: 'Bearer zzzz',
           };
-        }
+        },
       };
-    }
+    },
   };
 
   const fallbackClientOpts = {
@@ -72,38 +72,46 @@ async function testShowcase() {
   const fallbackClient = new gapic.v1beta1.EchoClient(fallbackClientOpts);
 
   // assuming gRPC server is started locally
- await testEcho(grpcClient);
- await testExpand(grpcClient);
- await testPagedExpand(grpcClient);
- await testPagedExpandAsync(grpcClient);
- await testCollect(grpcClient);
- await testChat(grpcClient);
- await testWait(grpcClient);
+  await testEcho(grpcClient);
+  await testExpand(grpcClient);
+  await testPagedExpand(grpcClient);
+  await testPagedExpandAsync(grpcClient);
+  await testCollect(grpcClient);
+  await testChat(grpcClient);
+  await testWait(grpcClient);
 
- await testEcho(fallbackClient);
- await testPagedExpand(fallbackClient);
- await testWait(fallbackClient);
+  await testEcho(fallbackClient);
+  await testPagedExpand(fallbackClient);
+  await testWait(fallbackClient);
 
   // Fallback clients do not currently support streaming
- try {
-   await testExpand(fallbackClient)
-   throw new Error("Expand did not throw an error: Streaming calls should fail with fallback clients")
- } catch (err) {}
- try {
-   await testCollect(fallbackClient)
-   throw new Error("Collect did not throw an error: Streaming calls should fail with fallback clients")
- } catch (err) {}
- try {
-   await testChat(fallbackClient)
-   throw new Error("Chat did not throw an error: Streaming calls should fail with fallback clients")
- } catch (err) {}
+  try {
+    await testExpand(fallbackClient);
+    throw new Error(
+      'Expand did not throw an error: Streaming calls should fail with fallback clients'
+    );
+  } catch (err) {}
+  try {
+    await testCollect(fallbackClient);
+    throw new Error(
+      'Collect did not throw an error: Streaming calls should fail with fallback clients'
+    );
+  } catch (err) {}
+  try {
+    await testChat(fallbackClient);
+    throw new Error(
+      'Chat did not throw an error: Streaming calls should fail with fallback clients'
+    );
+  } catch (err) {}
 }
 
 async function testEcho(client) {
   const request = {
     content: 'test',
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testEcho method fails with timeout')}, 12000);
+  const timer = setTimeout(() => {
+    throw new Error('End-to-end testEcho method fails with timeout');
+  }, 12000);
   const [response] = await client.echo(request);
   clearTimeout(timer);
   assert.deepStrictEqual(request.content, response.content);
@@ -134,7 +142,9 @@ async function testPagedExpand(client) {
     content: words.join(' '),
     pageSize: 2,
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpand method fails with timeout')}, 12000);
+  const timer = setTimeout(() => {
+    throw new Error('End-to-end testPagedExpand method fails with timeout');
+  }, 12000);
   const [response] = await client.pagedExpand(request);
   clearTimeout(timer);
   const result = response.map(r => r.content);
@@ -149,7 +159,11 @@ async function testPagedExpandAsync(client) {
   };
   const response = [];
   const iterable = client.pagedExpandAsync(request);
-  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpandAsync method fails with timeout')}, 12000);
+  const timer = setTimeout(() => {
+    throw new Error(
+      'End-to-end testPagedExpandAsync method fails with timeout'
+    );
+  }, 12000);
   for await (const resource of iterable) {
     response.push(resource.content);
   }

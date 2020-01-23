@@ -139,13 +139,12 @@ export class PageDescriptor implements Descriptor {
 
   createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
     const self = this;
-    const cache = this.cache;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         const paramPromise: Promise<[
           RequestType,
           SimpleCallbackFunction
-        ]> = new Promise((resolve, reject) => {
+        ]> = new Promise((resolve) => {
           self.resolveParams = resolve;
         });
         let nextPageRequest: RequestType | null = {};
@@ -154,8 +153,8 @@ export class PageDescriptor implements Descriptor {
           async next() {
             const ongoingCall = new call.OngoingCallPromise(options.promise);
             const [request, func] = await paramPromise;
-            if (cache.length > 0) {
-              return Promise.resolve({done: false, value: cache.shift()});
+            if (self.cache.length > 0) {
+              return Promise.resolve({done: false, value: self.cache.shift()});
             }
             if (!firstCall && !nextPageRequest) {
               return Promise.resolve({done: true, value: undefined});
@@ -166,16 +165,16 @@ export class PageDescriptor implements Descriptor {
               ongoingCall
             );
             firstCall = false;
-            if (cache.length === 0) {
+            if (self.cache.length === 0) {
               nextPageRequest = null;
               return Promise.resolve({done: true, value: undefined});
             }
-            return Promise.resolve({done: false, value: cache.shift()});
+            return Promise.resolve({done: false, value: self.cache.shift()});
           },
         };
       },
     };
-    return asyncIterable; // return iterable
+    return asyncIterable;
   }
 
   async getNextPageRequest(

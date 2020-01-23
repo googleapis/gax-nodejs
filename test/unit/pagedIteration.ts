@@ -196,17 +196,14 @@ describe('paged iteration', () => {
   });
 
   describe('use async iterator', () => {
-    // tslint:disable-next-line no-any
-    let spy: any;
+    const spy = sinon.spy(func);
     let apiCall: GaxCallPromise;
     beforeEach(() => {
-      spy = sinon.spy(func);
       apiCall = util.createApiCall(spy, createOptions);
     });
 
     async function iterableChecker(
-      // tslint:disable-next-line no-any
-      iterable: any
+      iterable: AsyncIterable<{} | undefined>
     ) {
       let counter = 0;
       for await (const resource of iterable) {

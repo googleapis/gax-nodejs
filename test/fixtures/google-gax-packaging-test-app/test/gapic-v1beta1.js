@@ -186,34 +186,37 @@ describe('EchoClient', () => {
       // Mock request
       const request = {};
 
-      // Mock response
       const nextPageToken = '';
-      const responsesElement = {};
-      const expectedResponse = {
-        nextPageToken: nextPageToken,
-        responses: responsesElement,
-      };
+      const expectedResponse = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-      client._descriptors.page.pagedExpand.asyncIterate = (apiCall, request, options) => {
+      client._descriptors.page.pagedExpand.asyncIterate = (
+        apiCall,
+        request,
+        options
+      ) => {
+        let count = 0;
         const asyncIterable = {
           [Symbol.asyncIterator]() {
             return {
-              async next(){
-                return Promise.resolve({done: true, value: -1});
-              }
-            }
-          }
-        }
+              async next() {
+                count = count + 1;
+                if (count === 10)
+                  return Promise.resolve({done: true, value: undefined});
+                return Promise.resolve({done: false, value: count});
+              },
+            };
+          },
+        };
         return asyncIterable;
-      }
+      };
 
       // test paging method by async iterator
-      const response = {};
+      const response = [];
       const iterable = client.pagedExpandAsync(request);
-      for await (const resource of iterable){
-        response.push(resource.map(r=> r.content));
+      for await (const resource of iterable) {
+        response.push(resource);
       }
-      assert.deepStrictEqual(response, expectedResponse.responses);
+      assert.deepStrictEqual(response, expectedResponse);
     });
 
     it('invokes pagedExpand with error', done => {
