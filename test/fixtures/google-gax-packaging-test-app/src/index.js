@@ -114,7 +114,6 @@ async function testExpand(client) {
   const request = {
     content: words.join(' '),
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testExpand method fails with timeout')}, 12000);
   const result = await new Promise((resolve, reject) => {
     const stream = client.expand(request);
     const result = [];
@@ -221,9 +220,7 @@ async function testWait(client) {
       content: 'done',
     },
   };
-  const timer = setTimeout(() => {throw Error('End-to-end testWait method fails with timeout')}, 12000);
   const [operation] = await client.wait(request);
   const [response] = await operation.promise();
-  clearTimeout(timer);
   assert.deepStrictEqual(response.content, request.success.content);
 }
