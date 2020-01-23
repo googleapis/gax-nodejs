@@ -142,7 +142,10 @@ export class PageDescriptor implements Descriptor {
     const cache = this.cache;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
-        const paramPromise: Promise<[RequestType, SimpleCallbackFunction]> = new Promise((resolve, reject) => {
+        const paramPromise: Promise<[
+          RequestType,
+          SimpleCallbackFunction
+        ]> = new Promise((resolve, reject) => {
           self.resolveParams = resolve;
         });
         let nextPageRequest: RequestType | null = {};

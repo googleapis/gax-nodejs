@@ -103,7 +103,9 @@ async function testEcho(client) {
   const request = {
     content: 'test',
   };
+  const timer = setTimeout(() => {throw Error('End-to-end testEcho method fails with timeout')}, 6000);
   const [response] = await client.echo(request);
+  clearTimeout(timer);
   assert.deepStrictEqual(request.content, response.content);
 }
 
@@ -112,6 +114,7 @@ async function testExpand(client) {
   const request = {
     content: words.join(' '),
   };
+  const timer = setTimeout(() => {throw Error('End-to-end testExpand method fails with timeout')}, 6000);
   const result = await new Promise((resolve, reject) => {
     const stream = client.expand(request);
     const result = [];
@@ -123,6 +126,7 @@ async function testExpand(client) {
     });
     stream.on('error', reject);
   });
+  clearTimeout(timer);
   assert.deepStrictEqual(words, result);
 }
 
@@ -132,7 +136,9 @@ async function testPagedExpand(client) {
     content: words.join(' '),
     pageSize: 2,
   };
+  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpand method fails with timeout')}, 6000);
   const [response] = await client.pagedExpand(request);
+  clearTimeout(timer);
   const result = response.map(r => r.content);
   assert.deepStrictEqual(words, result);
 }
@@ -145,14 +151,17 @@ async function testPagedExpandAsync(client) {
   };
   const response = [];
   const iterable = client.pagedExpandAsync(request);
+  const timer = setTimeout(() => {throw Error('End-to-end testPagedExpandAsync method fails with timeout')}, 6000);
   for await (const resource of iterable) {
     response.push(resource.content);
   }
+  clearTimeout(timer);
   assert.deepStrictEqual(words, response);
 }
 
 async function testCollect(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const timer = setTimeout(() => {throw Error('End-to-end testCollect method fails with timeout')}, 6000);
   const result = await new Promise((resolve, reject) => {
     const stream = client.collect((err, result) => {
       if (err) {
@@ -167,6 +176,7 @@ async function testCollect(client) {
     }
     stream.end();
   });
+  clearTimeout(timer);
   assert.deepStrictEqual(result.content, words.join(' '));
 }
 
@@ -181,6 +191,7 @@ async function testChat(client) {
     'this',
     'one',
   ];
+  const timer = setTimeout(() => {throw Error('End-to-end testChat method fails with timeout')}, 6000);
   const result = await new Promise((resolve, reject) => {
     const result = [];
     const stream = client.chat();
@@ -196,6 +207,7 @@ async function testChat(client) {
     }
     stream.end();
   });
+  clearTimeout(timer);
   assert.deepStrictEqual(result, words);
 }
 
@@ -209,7 +221,9 @@ async function testWait(client) {
       content: 'done',
     },
   };
+  const timer = setTimeout(() => {throw Error('End-to-end testWait method fails with timeout')}, 6000);
   const [operation] = await client.wait(request);
   const [response] = await operation.promise();
+  clearTimeout(timer);
   assert.deepStrictEqual(response.content, request.success.content);
 }
