@@ -80,6 +80,100 @@ function normalizePath(filePath: string): string {
   return path.join(...filePath.split('/'));
 }
 
+function getAllEnums(dts: string): Set<string> {
+  const result = new Set<string>();
+  const lines = dts.split('\n');
+  const nestedIds = [];
+  let currentEnum = undefined;
+  for (const line of lines) {
+    const match = line.match(
+      /^\s*(?:export )?(namespace|class|interface|enum) (\w+) .*{/
+    );
+    if (match) {
+      const [, keyword, id] = match;
+      nestedIds.push(id);
+      if (keyword === 'enum') {
+        currentEnum = nestedIds.join('.');
+        result.add(currentEnum);
+      }
+      continue;
+    }
+    if (line.match(/^\s*}/)) {
+      nestedIds.pop();
+      currentEnum = undefined;
+      continue;
+    }
+  }
+
+  return result;
+}
+
+function updateDtsTypes(dts: string, enums: Set<string>): string {
+  const lines = dts.split('\n');
+  const result: string[] = [];
+
+  for (const line of lines) {
+    let typeName: string | undefined = undefined;
+    // Enums can be used in interfaces and in classes.
+    // For simplicity, we'll check these two cases independently.
+    // encoding?: (google.cloud.speech.v1p1beta1.RecognitionConfig.AudioEncoding|null);
+    const interfaceMatch = line.match(/\w+\?: \(([\w.]+)\|null\);/);
+    if (interfaceMatch) {
+      typeName = interfaceMatch[1];
+    }
+    // public encoding: google.cloud.speech.v1p1beta1.RecognitionConfig.AudioEncoding;
+    const classMatch = line.match(/public \w+: ([\w.]+);/);
+    if (classMatch) {
+      typeName = classMatch[1];
+    }
+
+    if (line.match(/\(number\|Long(?:\|null)?\)/)) {
+      typeName = 'Long';
+    }
+
+    let replaced = line;
+    if (typeName && enums.has(typeName)) {
+      // enum: E => E|keyof typeof E  to allow all string values
+      replaced = replaced.replace(
+        typeName,
+        `${typeName}|keyof typeof ${typeName}`
+      );
+    } else if (typeName === 'Uint8Array') {
+      // bytes: Uint8Array => Uint8Array|string to allow base64-encoded strings
+      replaced = replaced.replace(typeName, `${typeName}|string`);
+    } else if (typeName === 'Long') {
+      // Longs can be passed as strings :(
+      // number|Long => number|Long|string
+      replaced = replaced.replace('number|Long', 'number|Long|string');
+    }
+
+    // add brackets if we have added a |
+    replaced = replaced.replace(/: ([\w.]+\|[ \w.|]+);/, ': ($1);');
+
+    result.push(replaced);
+  }
+
+  return result.join('\n');
+}
+
+function fixDtsFile(dts: string): string {
+  // 1. fix for pbts output: the corresponding protobufjs PR
+  // https://github.com/protobufjs/protobuf.js/pull/1166
+  // is merged but not yet released.
+  if (!dts.match(/import \* as Long/)) {
+    dts = 'import * as Long from "long";\n' + dts;
+  }
+
+  // 2. add Apache license to the generated .d.ts file
+  dts = apacheLicense + dts;
+
+  // 3. major hack: update types to allow passing strings
+  // where enums, longs, or bytes are expected
+  const enums = getAllEnums(dts);
+  dts = updateDtsTypes(dts, enums);
+  return dts;
+}
+
 /**
  * Returns a combined list of proto files listed in all JSON files given.
  *
@@ -153,14 +247,7 @@ async function compileProtos(protos: string[]): Promise<void> {
   await pbtsMain(pbjsArgs4ts);
 
   let tsResult = (await readFile(tsOutput)).toString();
-  // fix for pbts output: the corresponding protobufjs PR
-  // https://github.com/protobufjs/protobuf.js/pull/1166
-  // is merged but not yet released.
-  if (!tsResult.match(/import \* as Long/)) {
-    tsResult = 'import * as Long from "long";\n' + tsResult;
-  }
-  // add Apache license to the generated .d.ts file
-  tsResult = apacheLicense + tsResult;
+  tsResult = fixDtsFile(tsResult);
   await writeFile(tsOutput, tsResult);
 }
 
