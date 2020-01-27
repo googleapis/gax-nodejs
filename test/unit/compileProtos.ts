@@ -31,8 +31,12 @@ const testDir = path.join(process.cwd(), '.compileProtos-test');
 const resultDir = path.join(testDir, 'protos');
 const cwd = process.cwd();
 
+const expectedJsonResultFile = path.join(resultDir, 'protos.json');
+const expectedJSResultFile = path.join(resultDir, 'protos.js');
+const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
+
 describe('compileProtos tool', () => {
-  before(async () => {
+  beforeEach(async () => {
     if (fs.existsSync(testDir)) {
       await rmrf(testDir);
     }
@@ -42,7 +46,7 @@ describe('compileProtos tool', () => {
     process.chdir(testDir);
   });
 
-  after(() => {
+  afterEach(() => {
     process.chdir(cwd);
   });
 
@@ -50,9 +54,6 @@ describe('compileProtos tool', () => {
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);
-    const expectedJsonResultFile = path.join(resultDir, 'protos.json');
-    const expectedJSResultFile = path.join(resultDir, 'protos.js');
-    const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
     assert(fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
     assert(fs.existsSync(expectedTSResultFile));
@@ -90,10 +91,40 @@ describe('compileProtos tool', () => {
         'empty'
       ),
     ]);
-    const expectedResultFile = path.join(resultDir, 'protos.json');
-    assert(fs.existsSync(expectedResultFile));
+    assert(fs.existsSync(expectedJsonResultFile));
 
-    const json = await readFile(expectedResultFile);
+    const json = await readFile(expectedJsonResultFile);
     assert.strictEqual(json.toString(), '{}');
+  });
+
+  it('fixes types in the TS file', async () => {
+    await compileProtos.main([
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
+    ]);
+    assert(fs.existsSync(expectedTSResultFile));
+    const ts = await readFile(expectedTSResultFile);
+
+    assert(ts.toString().includes('import * as Long'));
+    assert(
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(ts.toString().includes('longField?: (number|Long|string|null);'));
+    assert(ts.toString().includes('bytesField?: (Uint8Array|string|null);'));
+    assert(
+      ts
+        .toString()
+        .includes(
+          'enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);'
+        )
+    );
+    assert(ts.toString().includes('public longField: (number|Long|string);'));
+    assert(ts.toString().includes('public bytesField: (Uint8Array|string);'));
+    assert(
+      ts
+        .toString()
+        .includes(
+          'public enumField: (google.TestEnum|keyof typeof google.TestEnum);'
+        )
+    );
   });
 });
