@@ -117,6 +117,13 @@ describe('compileProtos tool', () => {
           'enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);'
         )
     );
+    assert(
+      ts
+        .toString()
+        .includes(
+          '"case"?: (google.TestEnum|keyof typeof google.TestEnum|null);'
+        )
+    );
     assert(ts.toString().includes('public longField: (number|Long|string);'));
     assert(ts.toString().includes('public bytesField: (Uint8Array|string);'));
     assert(
@@ -124,6 +131,13 @@ describe('compileProtos tool', () => {
         .toString()
         .includes(
           'public enumField: (google.TestEnum|keyof typeof google.TestEnum);'
+        )
+    );
+    assert(
+      ts
+        .toString()
+        .includes(
+          'public case: (google.TestEnum|keyof typeof google.TestEnum);'
         )
     );
   });
