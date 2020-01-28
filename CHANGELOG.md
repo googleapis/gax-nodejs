@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.14.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.0...v1.14.1) (2020-01-28)
+
+
+### Bug Fixes
+
+* properly parse special field names in compileProtos ([#716](https://www.github.com/googleapis/gax-nodejs/issues/716)) ([e195df7](https://www.github.com/googleapis/gax-nodejs/commit/e195df7a89a5c1de72c41bf84f8c1bcf7a8f17c8))
+
 ## [1.14.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.13.0...v1.14.0) (2020-01-27)
 
 
