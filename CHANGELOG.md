@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [1.14.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.13.0...v1.14.0) (2020-01-27)
+
+
+### Features
+
+* allow strings for enums, bytes, and Long in .d.ts ([#714](https://www.github.com/googleapis/gax-nodejs/issues/714)) ([154d771](https://www.github.com/googleapis/gax-nodejs/commit/154d771c8dcd16572d3862127b1b7863f75eb39a))
+* some basic samples, plus two new exports ([#702](https://www.github.com/googleapis/gax-nodejs/issues/702)) ([1204e2e](https://www.github.com/googleapis/gax-nodejs/commit/1204e2e28d6c24786c38deb57efd859536d168bc))
+
+
+### Bug Fixes
+
+* **deps:** use semver v6, mkdirp v0.5.1 to keep supporting node8 for a while ([#707](https://www.github.com/googleapis/gax-nodejs/issues/707)) ([d257dc9](https://www.github.com/googleapis/gax-nodejs/commit/d257dc98a66ec6fe3850a32efe04c3a0c5bb18a8))
+
 ## [1.13.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.12.0...v1.13.0) (2020-01-02)
 
 
