@@ -30,4 +30,5 @@ message TestMessage {
   int64 long_field = 1;
   bytes bytes_field = 2; 
   TestEnum enum_field = 3;
+  TestEnum case = 4; // special name
 }

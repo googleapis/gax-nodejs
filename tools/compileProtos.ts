@@ -117,7 +117,7 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
     // Enums can be used in interfaces and in classes.
     // For simplicity, we'll check these two cases independently.
     // encoding?: (google.cloud.speech.v1p1beta1.RecognitionConfig.AudioEncoding|null);
-    const interfaceMatch = line.match(/\w+\?: \(([\w.]+)\|null\);/);
+    const interfaceMatch = line.match(/"?\w+"?\?: \(([\w.]+)\|null\);/);
     if (interfaceMatch) {
       typeName = interfaceMatch[1];
     }
