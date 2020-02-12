@@ -103,7 +103,7 @@
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
     "browser-test": "karma start",
-    "prelint": "cd samples; npm link ../"
+    "prelint": "cd samples; npm link ../; npm i"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
