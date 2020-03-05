@@ -96,13 +96,11 @@ export class OngoingCallPromise extends OngoingCall {
   /**
    * GaxPromise is GRPCCallbackWrapper, but it holds a promise when
    * the API call finishes.
-   * @param {Function} PromiseCtor - A constructor for a promise that implements
-   * the ES6 specification of promise.
    * @constructor
    * @private
    */
   // tslint:disable-next-line variable-name
-  constructor(PromiseCtor: PromiseConstructor) {
+  constructor() {
     let resolveCallback: (
       result: [ResponseType, NextPageRequestType, RawResponseType]
     ) => void;
@@ -121,7 +119,7 @@ export class OngoingCallPromise extends OngoingCall {
         throw new GoogleError('Neither error nor response are defined');
       }
     };
-    const promise = new PromiseCtor((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       resolveCallback = resolve;
       rejectCallback = reject;
     }) as CancellablePromise<ResultTuple>;

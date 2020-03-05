@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICaller} from '../apiCaller';
 import {
   APICallback,
   BiDiStreamingCall,
@@ -42,7 +42,7 @@ export class StreamingApiCaller implements APICaller {
     this.descriptor = descriptor;
   }
 
-  init(settings: ApiCallerSettings, callback: APICallback): StreamProxy {
+  init(callback: APICallback): StreamProxy {
     return new StreamProxy(this.descriptor.type, callback);
   }
 

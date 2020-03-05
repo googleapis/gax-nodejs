@@ -64,7 +64,6 @@ interface FallbackServiceStub {
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
-  promise?: PromiseConstructor;
   fallback: boolean;
   grpcVersion: string;
 
@@ -74,8 +73,6 @@ export class GrpcClient {
    *
    * @param {Object=} options.auth - An instance of OAuth2Client to use in browser, or an instance of GoogleAuth from google-auth-library
    *  to use in Node.js. Required for browser, optional for Node.js.
-   * @param {Function=} options.promise - A constructor for a promise that
-   * implements the ES6 specification of promise.
    * @constructor
    */
 
@@ -93,7 +90,6 @@ export class GrpcClient {
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
-    this.promise = 'promise' in options ? options.promise! : Promise;
     this.fallback = true;
     this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
   }
@@ -202,8 +198,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       Status,
-      {metadataBuilder: buildMetadata},
-      this.promise
+      {metadataBuilder: buildMetadata}
     );
   }
 
@@ -374,8 +369,6 @@ export class GrpcClient {
  * gRPC-fallback version of lro
  *
  * @param {Object=} options.auth - An instance of google-auth-library.
- * @param {Function=} options.promise - A constructor for a promise that
- * implements the ES6 specification of promise.
  * @return {Object} A OperationsClientBuilder that will return a OperationsClient
  */
 export function lro(options: GrpcClientOptions) {

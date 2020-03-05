@@ -28,19 +28,12 @@ import {GoogleError} from './googleError';
 import {NormalApiCaller} from './normalCalls/normalApiCaller';
 import {StreamProxy} from './streamingCalls/streaming';
 
-export interface ApiCallerSettings {
-  promise: PromiseConstructor;
-}
-
 /**
  * An interface for all kinds of API callers (normal, that just calls API, and
  * all special ones: long-running, paginated, bundled, streaming).
  */
 export interface APICaller {
-  init(
-    settings: ApiCallerSettings,
-    callback?: APICallback
-  ): OngoingCallPromise | OngoingCall | StreamProxy;
+  init(callback?: APICallback): OngoingCallPromise | OngoingCall | StreamProxy;
   wrap(func: GRPCCall): GRPCCall;
   call(
     apiCall: SimpleCallbackFunction,

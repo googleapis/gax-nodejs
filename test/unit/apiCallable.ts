@@ -221,34 +221,6 @@ describe('Promise', () => {
       })
     ).to.be.undefined;
   });
-
-  it('uses a provided promise module.', done => {
-    let called = false;
-    function MockPromise(
-      resolver: (
-        resolve: (value?: unknown) => void,
-        reject: (reason?: {}) => void
-      ) => void
-    ) {
-      called = true;
-      return new Promise(resolver);
-    }
-
-    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
-      callback(null, 42);
-    }
-    const apiCall = createApiCall(func);
-    // @ts-ignore incomplete options
-    apiCall({}, {promise: MockPromise})
-      .then((response: number[]) => {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.eq(42);
-        // tslint:disable-next-line no-unused-expression
-        expect(called).to.be.true;
-        done();
-      })
-      .catch(done);
-  });
 });
 
 describe('retryable', () => {

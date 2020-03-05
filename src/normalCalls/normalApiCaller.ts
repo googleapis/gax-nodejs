@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICaller} from '../apiCaller';
 import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
 import {GoogleError} from '../googleError';
@@ -23,14 +23,11 @@ import {GoogleError} from '../googleError';
  * Creates an API caller for regular unary methods.
  */
 export class NormalApiCaller implements APICaller {
-  init(
-    settings: ApiCallerSettings,
-    callback?: APICallback
-  ): OngoingCallPromise | OngoingCall {
+  init(callback?: APICallback): OngoingCallPromise | OngoingCall {
     if (callback) {
       return new OngoingCall(callback);
     }
-    return new OngoingCallPromise(settings.promise);
+    return new OngoingCallPromise();
   }
 
   wrap(func: GRPCCall): GRPCCall {
