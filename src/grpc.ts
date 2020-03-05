@@ -42,7 +42,6 @@ const COMMON_PROTO_FILES = walk
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;
-  promise?: PromiseConstructor;
   grpc?: GrpcModule;
 }
 
@@ -76,7 +75,6 @@ export class ClientStub extends grpc.Client {
 
 export class GrpcClient {
   auth: GoogleAuth;
-  promise: PromiseConstructor;
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean;
@@ -93,14 +91,10 @@ export class GrpcClient {
    * @param {Object=} options.grpc - When specified, this will be used
    *   for the 'grpc' module in this context. By default, it will load the grpc
    *   module in the standard way.
-   * @param {Function=} options.promise - A constructor for a promise that
-   * implements the ES6 specification of promise. If not provided, native
-   * promises will be used.
    * @constructor
    */
   constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
-    this.promise = options.promise || Promise;
     this.fallback = false;
 
     if ('grpc' in options) {
@@ -258,8 +252,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       this.grpc.status,
-      {metadataBuilder: this.metadataBuilder(headers)},
-      this.promise
+      {metadataBuilder: this.metadataBuilder(headers)}
     );
   }
 

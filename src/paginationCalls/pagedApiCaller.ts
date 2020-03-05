@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICaller} from '../apiCaller';
 import {
   GRPCCall,
   NextPageRequestType,
@@ -120,11 +120,11 @@ export class PagedApiCaller implements APICaller {
    * @param settings Call settings. Can only be used to replace Promise with another promise implementation.
    * @param [callback] Callback to be called, if any.
    */
-  init(settings: ApiCallerSettings, callback?: APICallback) {
+  init(callback?: APICallback) {
     if (callback) {
       return new OngoingCall(callback);
     }
-    return new OngoingCallPromise(settings.promise);
+    return new OngoingCallPromise();
   }
 
   /**
