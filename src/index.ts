@@ -114,7 +114,7 @@ export interface Descriptors {
   page: {[name: string]: PageDescriptor};
   stream: {[name: string]: StreamDescriptor};
   longrunning: {[name: string]: LongrunningDescriptor};
-  batching: {[name: string]: BundleDescriptor};
+  batching?: {[name: string]: BundleDescriptor};
 }
 
 export interface Callback<
