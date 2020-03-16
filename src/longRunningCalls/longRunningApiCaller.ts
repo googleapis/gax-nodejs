@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APICaller} from '../apiCaller';
+import {APICaller, ApiCallerSettings} from '../apiCaller';
 import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
 import {
@@ -45,11 +45,14 @@ export class LongrunningApiCaller implements APICaller {
     this.longrunningDescriptor = longrunningDescriptor;
   }
 
-  init(callback?: APICallback): OngoingCallPromise | OngoingCall {
+  init(
+    settings: ApiCallerSettings,
+    callback?: APICallback
+  ): OngoingCallPromise | OngoingCall {
     if (callback) {
       return new OngoingCall(callback);
     }
-    return new OngoingCallPromise();
+    return new OngoingCallPromise(settings.promise);
   }
 
   wrap(func: GRPCCall): GRPCCall {

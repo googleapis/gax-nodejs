@@ -48,6 +48,9 @@ import {BundleOptions} from './bundlingCalls/bundleExecutor';
  * @property {boolean=} isBundling - If set to false and the call is configured
  *   for bundling, bundling is not performed.
  * @property {BackoffSettings=} longrunning - BackoffSettings used for polling.
+ * @property {Function=} promise - A constructor for a promise that implements the ES6
+ * specification of promise which will be used to create promises. If not
+ * provided, native promises will be used.
  * @example
  * // suppress bundling for bundled method.
  * api.bundlingMethod(
@@ -124,6 +127,7 @@ export interface CallOptions {
   bundleOptions?: BundleOptions | null;
   isBundling?: boolean;
   longrunning?: BackoffSettings;
+  promise?: PromiseConstructor;
 }
 
 export class CallSettings {
@@ -138,6 +142,7 @@ export class CallSettings {
   bundleOptions?: BundleOptions | null;
   isBundling: boolean;
   longrunning?: BackoffSettings;
+  promise: PromiseConstructor;
 
   /**
    * @param {Object} settings - An object containing parameters of this settings.
@@ -154,6 +159,9 @@ export class CallSettings {
    * in the page streaming request.
    * @param {Object} settings.otherArgs - Additional arguments to be passed to
    *   the API calls.
+   * @param {Function=} settings.promise - A constructor for a promise that
+   * implements the ES6 specification of promise. If not provided, native
+   * promises will be used.
    *
    * @constructor
    */
@@ -170,6 +178,7 @@ export class CallSettings {
     this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
     this.longrunning =
       'longrunning' in settings ? settings.longrunning : undefined;
+    this.promise = 'promise' in settings ? settings.promise! : Promise;
   }
 
   /**
@@ -193,6 +202,7 @@ export class CallSettings {
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
+    let promise = this.promise;
     if ('timeout' in options) {
       timeout = options.timeout!;
     }
@@ -242,6 +252,10 @@ export class CallSettings {
       longrunning = options.longrunning;
     }
 
+    if ('promise' in options) {
+      promise = options.promise!;
+    }
+
     return new CallSettings({
       timeout,
       retry,
@@ -253,6 +267,7 @@ export class CallSettings {
       maxResults,
       otherArgs,
       isBundling,
+      promise,
     });
   }
 }
@@ -598,6 +613,8 @@ export interface ClientConfig {
  *   those codes.
  * @param {Object} otherArgs - the non-request arguments to be passed to the API
  *   calls.
+ * @param {Function=} promise - A constructor for a promise that implements the
+ * ES6 specification of promise. If not provided, native promises will be used.
  * @return {Object} A mapping from method name to CallSettings, or null if the
  *   service is not found in the config.
  */
@@ -606,7 +623,8 @@ export function constructSettings(
   clientConfig: ClientConfig,
   configOverrides: ClientConfig,
   retryNames: {},
-  otherArgs?: {}
+  otherArgs?: {},
+  promise?: PromiseConstructor
 ) {
   otherArgs = otherArgs || {};
   // tslint:disable-next-line no-any
@@ -661,6 +679,7 @@ export function constructSettings(
         ? createBundleOptions(bundlingConfig)
         : null,
       otherArgs,
+      promise: promise || Promise,
     });
   }
 

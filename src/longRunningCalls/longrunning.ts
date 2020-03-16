@@ -163,7 +163,8 @@ export class Operation extends EventEmitter {
     function promisifyResponse() {
       if (!callback) {
         // tslint:disable-next-line variable-name
-        return new Promise((resolve, reject) => {
+        const PromiseCtor = self._callOptions!.promise!;
+        return new PromiseCtor((resolve, reject) => {
           if (self.latestResponse.error) {
             const error = new GoogleError(self.latestResponse.error.message!);
             error.code = self.latestResponse.error.code!;
@@ -338,7 +339,8 @@ export class Operation extends EventEmitter {
    */
   promise() {
     // tslint:disable-next-line variable-name
-    return new Promise((resolve, reject) => {
+    const PromiseCtor = this._callOptions!.promise!;
+    return new PromiseCtor((resolve, reject) => {
       this.on('error', reject).on(
         'complete',
         (result, metadata, rawResponse) => {
