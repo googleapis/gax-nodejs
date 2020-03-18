@@ -531,7 +531,7 @@ export interface MethodConfig {
 
 export interface BundlingConfig {
   element_count_threshold: number;
-  element_count_limit: number;
+  element_count_limit?: number;
   request_byte_threshold?: number;
   request_byte_limit?: number;
   delay_threshold_millis?: number;
