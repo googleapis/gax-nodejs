@@ -151,7 +151,7 @@ export class PageDescriptor implements Descriptor {
         let firstCall = true;
         return {
           async next() {
-            const ongoingCall = new call.OngoingCallPromise(options.promise);
+            const ongoingCall = new call.OngoingCallPromise();
             const [request, func] = await paramPromise;
             if (self.cache.length > 0) {
               return Promise.resolve({done: false, value: self.cache.shift()});
