@@ -100,7 +100,7 @@ export class GrpcClient {
     const minimumVersion = '10.0.0';
     if (semver.lt(process.version, minimumVersion)) {
       const errorMessage =
-        `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit:` +
+        `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit: ` +
         'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
       throw new Error(errorMessage);
     }
