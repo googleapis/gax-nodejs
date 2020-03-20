@@ -78,7 +78,7 @@ export function createApiCall(
       currentApiCaller = createAPICaller(settings, undefined);
     }
 
-    const ongoingCall = currentApiCaller.init(thisSettings, callback);
+    const ongoingCall = currentApiCaller.init(callback);
     funcPromise
       .then((func: GRPCCall) => {
         // Initially, the function is just what gRPC server stub contains.

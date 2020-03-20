@@ -378,40 +378,6 @@ describe('longrunning', () => {
             done();
           });
       });
-
-      it('uses provided promise constructor.', done => {
-        const func = (
-          argument: {},
-          metadata: {},
-          options: {},
-          callback: Function
-        ) => {
-          callback(null, PENDING_OP);
-        };
-
-        let called = false;
-        function MockPromise(
-          executor: (
-            resolve: (value?: unknown) => void,
-            reject: (reason?: {}) => void
-          ) => void
-        ) {
-          const promise = new Promise(executor);
-          called = true;
-          return promise;
-        }
-
-        const client = mockOperationsClient();
-        const apiCall = createApiCall(func, client);
-        // @ts-ignore incomplete options
-        apiCall({}, {promise: MockPromise}).then(responses => {
-          const operation = responses[0];
-          operation.getOperation();
-          // tslint:disable-next-line no-unused-expression
-          expect(called).to.be.true;
-          done();
-        });
-      });
     });
 
     describe('promise', () => {
@@ -524,52 +490,6 @@ describe('longrunning', () => {
             expect(error).to.be.an('error');
             done();
           });
-      });
-
-      it('uses provided promise constructor', done => {
-        const client = mockOperationsClient();
-        const desc = new LongrunningDescriptor(
-          client,
-          (mockDecoder as unknown) as AnyDecoder,
-          (mockDecoder as unknown) as AnyDecoder
-        );
-        const initialRetryDelayMillis = 1;
-        const retryDelayMultiplier = 2;
-        const maxRetryDelayMillis = 3;
-        const totalTimeoutMillis = 4;
-        const unusedRpcValue = 0;
-        const backoff = gax.createBackoffSettings(
-          initialRetryDelayMillis,
-          retryDelayMultiplier,
-          maxRetryDelayMillis,
-          unusedRpcValue,
-          unusedRpcValue,
-          unusedRpcValue,
-          totalTimeoutMillis
-        );
-        let called = false;
-        function MockPromise(
-          executor: (
-            resolve: (value?: unknown) => void,
-            reject: (reason?: {}) => void
-          ) => void
-        ) {
-          const promise = new Promise(executor);
-          called = true;
-          return promise;
-        }
-        const operation = longrunning.operation(
-          (SUCCESSFUL_OP as {}) as operationProtos.google.longrunning.Operation,
-          desc,
-          backoff,
-          {
-            promise: (MockPromise as {}) as PromiseConstructor,
-          }
-        );
-        operation.promise();
-        // tslint:disable-next-line no-unused-expression
-        expect(called).to.be.true;
-        done();
       });
     });
 
