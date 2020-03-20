@@ -97,20 +97,20 @@ export class GrpcClient {
     this.auth = options.auth || new GoogleAuth(options);
     this.fallback = false;
 
+    const minimumVersion = '10.0.0';
+    if (semver.lt(process.version, minimumVersion)) {
+      const errorMessage =
+        `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit:` +
+        'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
+      throw new Error(errorMessage);
+    }
+
     if ('grpc' in options) {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
-      const minimumVersion = '10.0.0'
-      if (semver.gte(process.version, minimumVersion)) {
-        this.grpc = grpc;
-        this.grpcVersion = require('@grpc/grpc-js/package.json').version;
-      } else {
-        const errorMessage =
-          `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit:` +
-          'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
-        throw new Error(errorMessage);
-      }
+      this.grpc = grpc;
+      this.grpcVersion = require('@grpc/grpc-js/package.json').version;
     }
   }
 
