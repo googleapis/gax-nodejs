@@ -159,3 +159,5 @@ export interface PaginationResponse<
   nextPageRequest?: RequestObject;
   rawResponse?: ResponseObject;
 }
+
+export {ServiceError} from '@grpc/grpc-js';
