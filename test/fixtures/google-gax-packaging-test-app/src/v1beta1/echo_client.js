@@ -54,8 +54,6 @@ class EchoClient {
    *     app is running in an environment which supports
    *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
-   * @param {function} [options.promise] - Custom promise module to use instead
-   *     of native Promises.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
    */
@@ -197,8 +195,9 @@ class EchoClient {
       'wait',
       'pagedExpand',
     ];
+    this._innerCallPromises = {};
     for (const methodName of echoStubMethods) {
-      const innerCallPromise = echoStub.then(
+      this._innerCallPromises[methodName] = echoStub.then(
         stub => (...args) => {
           return stub[methodName].apply(stub, args);
         },
@@ -207,7 +206,7 @@ class EchoClient {
         }
       );
       this._innerApiCalls[methodName] = gaxModule.createApiCall(
-        innerCallPromise,
+        this._innerCallPromises[methodName],
         defaults[methodName],
         this._descriptors.page[methodName] ||
           this._descriptors.stream[methodName] ||
@@ -583,6 +582,13 @@ class EchoClient {
     options = options || {};
 
     return this._innerApiCalls.pagedExpand(request, options, callback);
+  }
+
+  pagedExpandAsync(request, options) {
+      options = options || {};
+      request = request || {};
+      const callSettings = new gax.CallSettings(options);
+      return this._descriptors.page.pagedExpand.asyncIterate(this._innerCallPromises['pagedExpand'], request, callSettings);
   }
 }
 

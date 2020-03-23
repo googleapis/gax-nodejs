@@ -18,21 +18,32 @@ import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
 import {APICaller} from '../apiCaller';
-import {GaxCall, APICallback} from '../apitypes';
+import {
+  GaxCall,
+  APICallback,
+  SimpleCallbackFunction,
+  RequestType,
+} from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {PagedApiCaller} from './pagedApiCaller';
+import * as call from '../call';
 
+export interface ResponseType {
+  [index: string]: string;
+}
 /**
  * A descriptor for methods that support pagination.
  */
 export class PageDescriptor implements Descriptor {
+  resolveParams: Function;
   requestPageTokenField: string;
   responsePageTokenField: string;
   requestPageSizeField?: string;
   resourceField: string;
+  cache: Array<{}>;
 
   constructor(
     requestPageTokenField: string,
@@ -42,6 +53,8 @@ export class PageDescriptor implements Descriptor {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
     this.resourceField = resourceField;
+    this.resolveParams = () => {};
+    this.cache = [];
   }
 
   /**
@@ -101,6 +114,95 @@ export class PageDescriptor implements Descriptor {
       }
     });
     return stream;
+  }
+
+  /**
+   * Create an async iterable which can be recursively called for data on-demand.
+   */
+  asyncIterate(
+    apiCall: GaxCall,
+    request: RequestType,
+    options: CallSettings
+  ): AsyncIterable<{} | undefined> {
+    const iterable = this.createIterator(options);
+    const funcPromise =
+      typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
+    funcPromise
+      .then((func: GaxCall) => {
+        this.makeCall(request, func, options);
+      })
+      .catch(error => {
+        throw new Error(error);
+      });
+    return iterable;
+  }
+
+  createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
+    const self = this;
+    const asyncIterable = {
+      [Symbol.asyncIterator]() {
+        const paramPromise: Promise<[
+          RequestType,
+          SimpleCallbackFunction
+        ]> = new Promise(resolve => {
+          self.resolveParams = resolve;
+        });
+        let nextPageRequest: RequestType | null = {};
+        let firstCall = true;
+        return {
+          async next() {
+            const ongoingCall = new call.OngoingCallPromise();
+            const [request, func] = await paramPromise;
+            if (self.cache.length > 0) {
+              return Promise.resolve({done: false, value: self.cache.shift()});
+            }
+            if (!firstCall && !nextPageRequest) {
+              return Promise.resolve({done: true, value: undefined});
+            }
+            nextPageRequest = await self.getNextPageRequest(
+              func,
+              firstCall ? request : nextPageRequest!,
+              ongoingCall
+            );
+            firstCall = false;
+            if (self.cache.length === 0) {
+              nextPageRequest = null;
+              return Promise.resolve({done: true, value: undefined});
+            }
+            return Promise.resolve({done: false, value: self.cache.shift()});
+          },
+        };
+      },
+    };
+    return asyncIterable;
+  }
+
+  async getNextPageRequest(
+    func: SimpleCallbackFunction,
+    request: RequestType,
+    ongoingCall: call.OngoingCallPromise
+  ): Promise<RequestType | null> {
+    ongoingCall.call(func, request);
+    let nextPageRequest = null;
+    const [response, nextRequest, rawResponse] = await ongoingCall.promise;
+    const pageToken = (response as ResponseType)[this.responsePageTokenField];
+    if (pageToken) {
+      nextPageRequest = Object.assign({}, request);
+      nextPageRequest[this.requestPageTokenField] = pageToken;
+    }
+    const responses = (response as ResponseType)[this.resourceField];
+    this.cache.push(...responses);
+    return nextPageRequest;
+  }
+
+  makeCall(request: RequestType, func: GaxCall, settings: CallSettings) {
+    if (settings.pageToken) {
+      request[this.requestPageTokenField] = settings.pageToken;
+    }
+    if (settings.pageSize) {
+      request[this.requestPageSizeField!] = settings.pageSize;
+    }
+    this.resolveParams([request, func]);
   }
 
   getApiCaller(settings: CallSettings): APICaller {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APICaller, ApiCallerSettings} from '../apiCaller';
+import {APICaller} from '../apiCaller';
 import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';
 import {CallSettings} from '../gax';
@@ -34,14 +34,11 @@ export class BundleApiCaller implements APICaller {
     this.bundler = bundler;
   }
 
-  init(
-    settings: ApiCallerSettings,
-    callback?: APICallback
-  ): OngoingCallPromise | OngoingCall {
+  init(callback?: APICallback): OngoingCallPromise | OngoingCall {
     if (callback) {
       return new OngoingCall(callback);
     }
-    return new OngoingCallPromise(settings.promise);
+    return new OngoingCallPromise();
   }
 
   wrap(func: GRPCCall): GRPCCall {
