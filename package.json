@@ -1,4 +1,7 @@
 {
+  "resolutions": {
+    "gaxios": "2.3.3"
+  },
   "_zzzzz": "zzzzz",
   "name": "google-gax",
   "version": "1.14.2",
@@ -104,7 +107,8 @@
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
     "browser-test": "karma start",
-    "prelint": "cd samples; npm link ../; npm i"
+    "prelint": "cd samples; npm link ../; npm i",
+    "preinstall": "npx npm-force-resolutions"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
