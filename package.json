@@ -11,7 +11,8 @@
     "build/src",
     "build/tools/compileProtos.js",
     "protos",
-    "build/protos/operations.d.ts"
+    "build/protos/operations.d.ts",
+    "package-lock.json"
   ],
   "bin": {
     "compileProtos": "./build/tools/compileProtos.js"
