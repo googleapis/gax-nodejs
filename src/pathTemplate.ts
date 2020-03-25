@@ -34,7 +34,7 @@ export interface Segment {
 }
 
 export interface Bindings {
-  [index: string]: string;
+  [index: string]: string | number;
 }
 
 export class PathTemplate {
@@ -129,7 +129,7 @@ export class PathTemplate {
           );
           throw new TypeError(msg);
         }
-        const tmp = new PathTemplate(bindings[segment.literal]);
+        const tmp = new PathTemplate(bindings[segment.literal].toString());
         Array.prototype.push.apply(out, tmp.segments);
         inABinding = true;
       } else if (segment.kind === extras.END_BINDING) {
