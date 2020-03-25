@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Status} from './status';
+import { Status } from "./status";
 
 import {
   APICallback,
@@ -23,9 +23,9 @@ import {
   RequestType,
   ResponseType,
   ResultTuple,
-  SimpleCallbackFunction,
-} from './apitypes';
-import {GoogleError} from './googleError';
+  SimpleCallbackFunction
+} from "./apitypes";
+import { GoogleError } from "./googleError";
 
 export class OngoingCall {
   callback: APICallback;
@@ -59,7 +59,7 @@ export class OngoingCall {
     if (this.cancelFunc) {
       this.cancelFunc();
     } else {
-      const error = new GoogleError('cancelled');
+      const error = new GoogleError("cancelled");
       error.code = Status.CANCELLED;
       this.callback!(error);
     }
@@ -78,7 +78,7 @@ export class OngoingCall {
     if (this.completed) {
       return;
     }
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const canceller = func(argument, (...args: any[]) => {
       this.completed = true;
       setImmediate(this.callback!, ...args);
@@ -99,7 +99,6 @@ export class OngoingCallPromise extends OngoingCall {
    * @constructor
    * @private
    */
-  // tslint:disable-next-line variable-name
   constructor() {
     let resolveCallback: (
       result: [ResponseType, NextPageRequestType, RawResponseType]
@@ -116,7 +115,7 @@ export class OngoingCallPromise extends OngoingCall {
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
       } else {
-        throw new GoogleError('Neither error nor response are defined');
+        throw new GoogleError("Neither error nor response are defined");
       }
     };
     const promise = new Promise((resolve, reject) => {

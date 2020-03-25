@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
+"use strict";
 
 // [START gax_quickstart]
 async function main() {
   // Wraps a function to retry it several times.
 
-  const gax = require('google-gax');
+  const gax = require("google-gax");
 
   // Let's say we have an API call. It only supports callbacks,
   // accepts 4 parameters (just like gRPC stub calls do),
@@ -30,15 +30,15 @@ async function main() {
     ++callCounter;
     if (callCounter % 2 === 1) {
       // ...like, every second call.
-      console.log('This call failed');
-      const error = new Error('It failed!');
+      console.log("This call failed");
+      const error = new Error("It failed!");
       error.code = 42;
       callback(error);
       return;
     }
 
-    console.log('This call succeeded');
-    callback(null, {response: 'ok'});
+    console.log("This call succeeded");
+    callback(null, { response: "ok" });
   }
 
   // We define call settings object:
@@ -52,7 +52,7 @@ async function main() {
   const wrappedFunction = gax.createApiCall(doStuff, settings);
 
   // Try it!
-  const [result] = await wrappedFunction({request: 'empty'});
+  const [result] = await wrappedFunction({ request: "empty" });
   console.log(result);
 }
 

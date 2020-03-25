@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
-import {describe, it} from 'mocha';
-import * as fs from 'fs';
-import * as path from 'path';
-import {FallbackErrorDecoder} from '../../src/fallbackError';
+import * as assert from "assert";
+import { describe, it } from "mocha";
+import * as fs from "fs";
+import * as path from "path";
+import { FallbackErrorDecoder } from "../../src/fallbackError";
 
-describe('gRPC-fallback error decoding', () => {
-  it('decodes error', () => {
+describe("gRPC-fallback error decoding", () => {
+  it("decodes error", () => {
     // example of an actual google.rpc.Status error message returned by Language API
-    const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
+    const fixtureName = path.resolve(__dirname, "..", "fixtures", "error.bin");
     const errorBin = fs.readFileSync(fixtureName);
     const expectedError = {
       code: 3,
-      message: 'One of content, or gcs_content_uri must be set.',
+      message: "One of content, or gcs_content_uri must be set.",
       details: [
         {
           fieldViolations: [
             {
-              field: 'document.content',
-              description: 'Must have some text content to annotate.',
-            },
-          ],
-        },
-      ],
+              field: "document.content",
+              description: "Must have some text content to annotate."
+            }
+          ]
+        }
+      ]
     };
     const decoder = new FallbackErrorDecoder();
     const decodedError = decoder.decodeRpcStatus(errorBin);

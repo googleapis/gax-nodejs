@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {APICaller} from '../apiCaller';
-import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
-import {OngoingCall, OngoingCallPromise} from '../call';
-import {CallSettings} from '../gax';
-import {GoogleError} from '../googleError';
+import { APICaller } from "../apiCaller";
+import { APICallback, GRPCCall, SimpleCallbackFunction } from "../apitypes";
+import { OngoingCall, OngoingCallPromise } from "../call";
+import { CallSettings } from "../gax";
+import { GoogleError } from "../googleError";
 
-import {BundleExecutor} from './bundleExecutor';
-import {TaskCallback} from './task';
+import { BundleExecutor } from "./bundleExecutor";
+import { TaskCallback } from "./task";
 
 /**
  * An implementation of APICaller for bundled calls.
@@ -52,7 +52,7 @@ export class BundleApiCaller implements APICaller {
     status: OngoingCallPromise
   ) {
     if (!settings.isBundling) {
-      throw new GoogleError('Bundling enabled with no isBundling!');
+      throw new GoogleError("Bundling enabled with no isBundling!");
     }
 
     status.call((argument: {}, callback: TaskCallback) => {

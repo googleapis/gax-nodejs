@@ -18,19 +18,19 @@
  * Provides function wrappers that implement page streaming and retrying.
  */
 
-import {createAPICaller} from './apiCaller';
+import { createAPICaller } from "./apiCaller";
 import {
   APICallback,
   GaxCall,
   GRPCCall,
   GRPCCallOtherArgs,
   RequestType,
-  SimpleCallbackFunction,
-} from './apitypes';
-import {Descriptor} from './descriptor';
-import {CallOptions, CallSettings} from './gax';
-import {retryable} from './normalCalls/retries';
-import {addTimeoutArg} from './normalCalls/timeout';
+  SimpleCallbackFunction
+} from "./apitypes";
+import { Descriptor } from "./descriptor";
+import { CallOptions, CallSettings } from "./gax";
+import { retryable } from "./normalCalls/retries";
+import { addTimeoutArg } from "./normalCalls/timeout";
 
 /**
  * Converts an rpc call into an API call governed by the settings.
@@ -59,7 +59,7 @@ export function createApiCall(
   // we want to be able to accept both promise resolving to a function and a
   // function. Currently client librares are only calling this method with a
   // promise, but it will change.
-  const funcPromise = typeof func === 'function' ? Promise.resolve(func) : func;
+  const funcPromise = typeof func === "function" ? Promise.resolve(func) : func;
 
   // the following apiCaller will be used for all calls of this function...
   const apiCaller = createAPICaller(settings, descriptor);

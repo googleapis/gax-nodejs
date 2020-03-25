@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Status} from './status';
+import { Status } from "./status";
 
 export class GoogleError extends Error {
   code?: Status;

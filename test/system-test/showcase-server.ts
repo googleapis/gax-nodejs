@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import * as execa from 'execa';
-//@ts-ignore
-import * as download from 'download';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as rimraf from 'rimraf';
-import * as util from 'util';
+import * as execa from "execa";
+import * as download from "download";
+import * as fs from "fs";
+import * as path from "path";
+import * as rimraf from "rimraf";
+import * as util from "util";
 
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
@@ -29,13 +28,13 @@ export class ShowcaseServer {
   server: execa.ExecaChildProcess | undefined;
 
   async start() {
-    const testDir = path.join(process.cwd(), '.showcase-server-dir');
+    const testDir = path.join(process.cwd(), ".showcase-server-dir");
     const platform = process.platform;
-    const arch = process.arch === 'x64' ? 'amd64' : process.arch;
-    const showcaseVersion = process.env['SHOWCASE_VERSION'] || '0.6.1';
+    const arch = process.arch === "x64" ? "amd64" : process.arch;
+    const showcaseVersion = process.env["SHOWCASE_VERSION"] || "0.6.1";
     const tarballFilename = `gapic-showcase-${showcaseVersion}-${platform}-${arch}.tar.gz`;
     const fallbackServerUrl = `https://github.com/googleapis/gapic-showcase/releases/download/v${showcaseVersion}/${tarballFilename}`;
-    const binaryName = './gapic-showcase';
+    const binaryName = "./gapic-showcase";
 
     await rmrf(testDir);
     await mkdir(testDir);
@@ -43,22 +42,22 @@ export class ShowcaseServer {
     console.log(`Server will be run from ${testDir}.`);
 
     await download(fallbackServerUrl, testDir);
-    await execa('tar', ['xzf', tarballFilename]);
-    const childProcess = execa(binaryName, ['run'], {
+    await execa("tar", ["xzf", tarballFilename]);
+    const childProcess = execa(binaryName, ["run"], {
       cwd: testDir,
-      stdio: 'inherit',
+      stdio: "inherit"
     });
 
-    console.log('gRPC/gRPC-fallback server is started.');
+    console.log("gRPC/gRPC-fallback server is started.");
 
     childProcess.then(
       () => {
         throw new Error(
-          'gRPC server is not supposed to exit normally - just kill it from the test!'
+          "gRPC server is not supposed to exit normally - just kill it from the test!"
         );
       },
       () => {
-        console.log('gRPC server is terminated.');
+        console.log("gRPC server is terminated.");
       }
     );
 

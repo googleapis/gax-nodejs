@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-import * as fs from 'fs-extra';
-import {getProtoPath} from 'google-proto-files';
-import * as path from 'path';
+import * as fs from "fs-extra";
+import { getProtoPath } from "google-proto-files";
+import * as path from "path";
 
 const subdirs = [
-  'api',
-  'iam/v1',
-  'logging/type',
-  'monitoring/v3',
-  'longrunning',
-  'protobuf',
-  'rpc',
-  'type',
+  "api",
+  "iam/v1",
+  "logging/type",
+  "monitoring/v3",
+  "longrunning",
+  "protobuf",
+  "rpc",
+  "type"
 ];
 
 async function main() {
-  await fs.remove(path.join('protos', 'google'));
-  await fs.ensureDir(path.join('protos', 'google'));
+  await fs.remove(path.join("protos", "google"));
+  await fs.ensureDir(path.join("protos", "google"));
 
   subdirs.forEach(async subdir => {
     const src = getProtoPath(subdir);
-    const target = path.join('protos', 'google', subdir);
+    const target = path.join("protos", "google", subdir);
     await fs.copy(src, target);
   });
 }

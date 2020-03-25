@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-import * as protobuf from 'protobufjs';
-import {Descriptor} from '../descriptor';
-import {CallSettings} from '../gax';
-import {Metadata} from '../grpc';
-import {OperationsClient} from '../operationsClient';
-import {LongrunningApiCaller} from './longRunningApiCaller';
+import * as protobuf from "protobufjs";
+import { Descriptor } from "../descriptor";
+import { OperationsClient } from "../operationsClient";
+import { LongrunningApiCaller } from "./longRunningApiCaller";
 
 /**
  * A callback to upack a google.protobuf.Any message.
@@ -46,7 +44,7 @@ export class LongRunningDescriptor implements Descriptor {
     this.metadataDecoder = metadataDecoder;
   }
 
-  getApiCaller(settings: CallSettings) {
+  getApiCaller() {
     return new LongrunningApiCaller(this);
   }
 }

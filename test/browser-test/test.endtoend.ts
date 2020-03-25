@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
-import {describe, it} from 'mocha';
-import {expect} from 'chai';
+import * as assert from "assert";
+import { describe, it, before } from "mocha";
+import { expect } from "chai";
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import * as EchoClient from "../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client";
 
 function sleep(timeout: number) {
   return new Promise(resolve => {
@@ -26,19 +27,20 @@ function sleep(timeout: number) {
   });
 }
 
-describe('Run tests against gRPC server', () => {
+describe("Run tests against gRPC server", () => {
   const authStub = {
     getRequestHeaders() {
-      return {Authorization: 'Bearer SOME_TOKEN'};
-    },
+      return { Authorization: "Bearer SOME_TOKEN" };
+    }
   };
 
   const opts = {
     auth: authStub,
-    protocol: 'http',
-    port: 1337,
+    protocol: "http",
+    port: 1337
   };
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
   // @ts-ignore
   global.isBrowser = true;
   const client = new EchoClient(opts);
@@ -47,7 +49,7 @@ describe('Run tests against gRPC server', () => {
     this.timeout(40000);
 
     const request = {
-      content: 'test',
+      content: "test"
     };
     const MAX_RETRIES = 20;
     const TIMEOUT = 1000;
@@ -69,18 +71,18 @@ describe('Run tests against gRPC server', () => {
     }
   });
 
-  it('should be able to call simple RPC methods', async () => {
+  it("should be able to call simple RPC methods", async () => {
     const request = {
-      content: 'test',
+      content: "test"
     };
     const [response] = await client.echo(request);
     assert.deepStrictEqual(request.content, response.content);
   });
 
-  it('should throw an error when calling server-side streaming calls', async () => {
-    const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  it("should throw an error when calling server-side streaming calls", async () => {
+    const words = ["nobody", "ever", "reads", "test", "input"];
     const request = {
-      content: words.join(' '),
+      content: words.join(" ")
     };
 
     expect(() => {
@@ -88,40 +90,40 @@ describe('Run tests against gRPC server', () => {
     }).to.throw();
   });
 
-  it('should be able to call paging calls', async () => {
-    const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  it("should be able to call paging calls", async () => {
+    const words = ["nobody", "ever", "reads", "test", "input"];
     const request = {
-      content: words.join(' '),
-      pageSize: 2,
+      content: words.join(" "),
+      pageSize: 2
     };
     const [response] = await client.pagedExpand(request);
-    const result = response.map((r: {content: string}) => r.content);
+    const result = response.map((r: { content: string }) => r.content);
     assert.deepStrictEqual(words, result);
   });
 
-  it('should throw an error when calling client-side streaming calls', async () => {
+  it("should throw an error when calling client-side streaming calls", async () => {
     expect(() => {
       client.collect();
     }).to.throw();
   });
 
-  it('should throw an error when calling bi-direction streaming calls', async () => {
+  it("should throw an error when calling bi-direction streaming calls", async () => {
     expect(() => {
       client.chat();
     }).to.throw();
   });
 
-  it('should be able to call long-running calls', async function() {
+  it("should be able to call long-running calls", async function() {
     // LRO is being tested here, which takes at least 5000ms to finish running
     this.timeout(60000);
     const request = {
       ttl: {
         seconds: 5,
-        nanos: 0,
+        nanos: 0
       },
       success: {
-        content: 'done',
-      },
+        content: "done"
+      }
     };
     const [operation] = await client.wait(request);
     const [response] = await operation.promise();

@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
-import {describe, it} from 'mocha';
-import * as fs from 'fs';
-import * as rimraf from 'rimraf';
-import * as util from 'util';
-import * as path from 'path';
-import * as protobuf from 'protobufjs';
-import * as compileProtos from '../../tools/compileProtos';
+import * as assert from "assert";
+import { describe, it, beforeEach, afterEach } from "mocha";
+import * as fs from "fs";
+import * as rimraf from "rimraf";
+import * as util from "util";
+import * as path from "path";
+import * as protobuf from "protobufjs";
+import * as compileProtos from "../../tools/compileProtos";
 
 const readFile = util.promisify(fs.readFile);
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 
-const testDir = path.join(process.cwd(), '.compileProtos-test');
-const resultDir = path.join(testDir, 'protos');
+const testDir = path.join(process.cwd(), ".compileProtos-test");
+const resultDir = path.join(testDir, "protos");
 const cwd = process.cwd();
 
-const expectedJsonResultFile = path.join(resultDir, 'protos.json');
-const expectedJSResultFile = path.join(resultDir, 'protos.js');
-const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
+const expectedJsonResultFile = path.join(resultDir, "protos.json");
+const expectedJSResultFile = path.join(resultDir, "protos.js");
+const expectedTSResultFile = path.join(resultDir, "protos.d.ts");
 
-describe('compileProtos tool', () => {
+describe("compileProtos tool", () => {
   beforeEach(async () => {
     if (fs.existsSync(testDir)) {
       await rmrf(testDir);
@@ -50,9 +50,9 @@ describe('compileProtos tool', () => {
     process.chdir(cwd);
   });
 
-  it('compiles protos to JSON, JS, TS', async () => {
+  it("compiles protos to JSON, JS, TS", async () => {
     await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
+      path.join(__dirname, "..", "..", "test", "fixtures", "protoLists")
     ]);
     assert(fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
@@ -60,61 +60,61 @@ describe('compileProtos tool', () => {
 
     const json = await readFile(expectedJsonResultFile);
     const root = protobuf.Root.fromJSON(JSON.parse(json.toString()));
-    assert(root.lookup('TestMessage'));
-    assert(root.lookup('LibraryService'));
+    assert(root.lookup("TestMessage"));
+    assert(root.lookup("LibraryService"));
 
     const js = await readFile(expectedJSResultFile);
-    assert(js.toString().includes('TestMessage'));
-    assert(js.toString().includes('LibraryService'));
+    assert(js.toString().includes("TestMessage"));
+    assert(js.toString().includes("LibraryService"));
     assert(
-      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      js.toString().includes("http://www.apache.org/licenses/LICENSE-2.0")
     );
 
     const ts = await readFile(expectedTSResultFile);
-    assert(ts.toString().includes('TestMessage'));
-    assert(ts.toString().includes('LibraryService'));
-    assert(ts.toString().includes('import * as Long'));
+    assert(ts.toString().includes("TestMessage"));
+    assert(ts.toString().includes("LibraryService"));
+    assert(ts.toString().includes("import * as Long"));
     assert(
-      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      ts.toString().includes("http://www.apache.org/licenses/LICENSE-2.0")
     );
   });
 
-  it('writes an empty object if no protos are given', async () => {
+  it("writes an empty object if no protos are given", async () => {
     await compileProtos.main([
       path.join(
         __dirname,
-        '..',
-        '..',
-        'test',
-        'fixtures',
-        'protoLists',
-        'empty'
-      ),
+        "..",
+        "..",
+        "test",
+        "fixtures",
+        "protoLists",
+        "empty"
+      )
     ]);
     assert(fs.existsSync(expectedJsonResultFile));
 
     const json = await readFile(expectedJsonResultFile);
-    assert.strictEqual(json.toString(), '{}');
+    assert.strictEqual(json.toString(), "{}");
   });
 
-  it('fixes types in the TS file', async () => {
+  it("fixes types in the TS file", async () => {
     await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
+      path.join(__dirname, "..", "..", "test", "fixtures", "dts-update")
     ]);
     assert(fs.existsSync(expectedTSResultFile));
     const ts = await readFile(expectedTSResultFile);
 
-    assert(ts.toString().includes('import * as Long'));
+    assert(ts.toString().includes("import * as Long"));
     assert(
-      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      ts.toString().includes("http://www.apache.org/licenses/LICENSE-2.0")
     );
-    assert(ts.toString().includes('longField?: (number|Long|string|null);'));
-    assert(ts.toString().includes('bytesField?: (Uint8Array|string|null);'));
+    assert(ts.toString().includes("longField?: (number|Long|string|null);"));
+    assert(ts.toString().includes("bytesField?: (Uint8Array|string|null);"));
     assert(
       ts
         .toString()
         .includes(
-          'enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);'
+          "enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);"
         )
     );
     assert(
@@ -124,20 +124,20 @@ describe('compileProtos tool', () => {
           '"case"?: (google.TestEnum|keyof typeof google.TestEnum|null);'
         )
     );
-    assert(ts.toString().includes('public longField: (number|Long|string);'));
-    assert(ts.toString().includes('public bytesField: (Uint8Array|string);'));
+    assert(ts.toString().includes("public longField: (number|Long|string);"));
+    assert(ts.toString().includes("public bytesField: (Uint8Array|string);"));
     assert(
       ts
         .toString()
         .includes(
-          'public enumField: (google.TestEnum|keyof typeof google.TestEnum);'
+          "public enumField: (google.TestEnum|keyof typeof google.TestEnum);"
         )
     );
     assert(
       ts
         .toString()
         .includes(
-          'public case: (google.TestEnum|keyof typeof google.TestEnum);'
+          "public case: (google.TestEnum|keyof typeof google.TestEnum);"
         )
     );
   });

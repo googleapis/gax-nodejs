@@ -14,48 +14,48 @@
  * limitations under the License.
  */
 
-import * as protobuf from 'protobufjs';
-import * as gax from './gax';
-import * as nodeFetch from 'node-fetch';
-import * as routingHeader from './routingHeader';
-import {AbortController as NodeAbortController} from 'abort-controller';
-import {Status} from './status';
-import {OutgoingHttpHeaders} from 'http';
+import * as protobuf from "protobufjs";
+import * as gax from "./gax";
+import * as nodeFetch from "node-fetch";
+import * as routingHeader from "./routingHeader";
+import { AbortController as NodeAbortController } from "abort-controller";
+import { Status } from "./status";
+import { OutgoingHttpHeaders } from "http";
 import {
   GoogleAuth,
   OAuth2Client,
   Compute,
   JWT,
   UserRefreshClient,
-  GoogleAuthOptions,
-} from 'google-auth-library';
-import {OperationsClientBuilder} from './operationsClient';
-import {GrpcClientOptions, ClientStubOptions} from './grpc';
-import {GaxCall, GRPCCall} from './apitypes';
-import {Descriptor} from './descriptor';
-import {createApiCall as _createApiCall} from './createApiCall';
-import {isBrowser} from './isbrowser';
-import {FallbackErrorDecoder} from './fallbackError';
+  GoogleAuthOptions
+} from "google-auth-library";
+import { OperationsClientBuilder } from "./operationsClient";
+import { GrpcClientOptions, ClientStubOptions } from "./grpc";
+import { GaxCall, GRPCCall } from "./apitypes";
+import { Descriptor } from "./descriptor";
+import { createApiCall as _createApiCall } from "./createApiCall";
+import { isBrowser } from "./isbrowser";
+import { FallbackErrorDecoder } from "./fallbackError";
 
-export {PathTemplate} from './pathTemplate';
-export {routingHeader};
-export {CallSettings, constructSettings, RetryOptions} from './gax';
-export const version = require('../../package.json').version + '-fallback';
+export { PathTemplate } from "./pathTemplate";
+export { routingHeader };
+export { CallSettings, constructSettings, RetryOptions } from "./gax";
+export const version = require("../../package.json").version + "-fallback";
 
 export {
   BundleDescriptor,
   LongrunningDescriptor,
   PageDescriptor,
-  StreamDescriptor,
-} from './descriptor';
+  StreamDescriptor
+} from "./descriptor";
 
-export {StreamType} from './streamingCalls/streaming';
+export { StreamType } from "./streamingCalls/streaming";
 
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
 }
 
-const CLIENT_VERSION_HEADER = 'x-goog-api-client';
+const CLIENT_VERSION_HEADER = "x-goog-api-client";
 
 interface FallbackServiceStub {
   [method: string]: Function;
@@ -76,12 +76,12 @@ export class GrpcClient {
    * @constructor
    */
 
-  constructor(options: GrpcClientOptions | {auth: OAuth2Client} = {}) {
+  constructor(options: GrpcClientOptions | { auth: OAuth2Client } = {}) {
     if (isBrowser()) {
       if (!options.auth) {
         throw new Error(
           JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.'
+            "You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library."
         );
       }
       this.auth = options.auth as OAuth2Client;
@@ -91,7 +91,7 @@ export class GrpcClient {
         new GoogleAuth(options as GoogleAuthOptions);
     }
     this.fallback = true;
-    this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
+    this.grpcVersion = "fallback"; // won't be used anywhere but we need it to exist in the class
   }
 
   /**
@@ -141,11 +141,9 @@ export class GrpcClient {
       // Since gRPC expects each header to be an array,
       // we are doing the same for fallback here.
       for (const key in headers) {
-        if (headers.hasOwnProperty(key)) {
-          metadata[key] = Array.isArray(headers[key])
-            ? (headers[key] as string[])
-            : ([headers[key]] as string[]);
-        }
+        metadata[key] = Array.isArray(headers[key])
+          ? (headers[key] as string[])
+          : ([headers[key]] as string[]);
       }
 
       // gRPC-fallback request must have 'grpc-web/' in 'x-goog-api-client'
@@ -157,20 +155,17 @@ export class GrpcClient {
         >)[0]
       ) {
         clientVersions.push(
-          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
+          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(" ")
         );
       }
       clientVersions.push(`grpc-web/${version}`);
-      metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(' ')];
+      metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(" ")];
 
       if (!moreHeaders) {
         return metadata;
       }
       for (const key in moreHeaders) {
-        if (
-          key.toLowerCase() !== CLIENT_VERSION_HEADER &&
-          moreHeaders.hasOwnProperty(key)
-        ) {
+        if (key.toLowerCase() !== CLIENT_VERSION_HEADER) {
           const value = moreHeaders[key];
           if (Array.isArray(value)) {
             if (metadata[key] === undefined) {
@@ -198,7 +193,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       Status,
-      {metadataBuilder: buildMetadata}
+      { metadataBuilder: buildMetadata }
     );
   }
 
@@ -232,14 +227,14 @@ export class GrpcClient {
     const statusDecoder = new FallbackErrorDecoder();
 
     if (!this.authClient) {
-      if (this.auth && 'getClient' in this.auth) {
+      if (this.auth && "getClient" in this.auth) {
         this.authClient = await this.auth.getClient();
-      } else if (this.auth && 'getRequestHeaders' in this.auth) {
+      } else if (this.auth && "getRequestHeaders" in this.auth) {
         this.authClient = this.auth;
       }
     }
     if (!this.authClient) {
-      throw new Error('No authentication was provided');
+      throw new Error("No authentication was provided");
     }
     const authHeader = await this.authClient.getRequestHeaders();
     const serviceStub = (service.create(
@@ -257,16 +252,17 @@ export class GrpcClient {
     for (const methodName of methods) {
       newServiceStub[methodName] = (
         req: {},
-        options: {[name: string]: string},
+        options: { [name: string]: string },
         metadata: {},
         callback: Function
       ) => {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
         ].apply(serviceStub, [req, callback]);
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cancelController: AbortController, cancelSignal: any;
-        if (isBrowser && typeof AbortController !== 'undefined') {
+        if (isBrowser && typeof AbortController !== "undefined") {
+          // eslint-disable-next-line no-undef
           cancelController = new AbortController();
         } else {
           cancelController = new NodeAbortController();
@@ -277,22 +273,22 @@ export class GrpcClient {
         let cancelRequested = false;
 
         const headers = Object.assign({}, authHeader);
-        headers['Content-Type'] = 'application/x-protobuf';
+        headers["Content-Type"] = "application/x-protobuf";
         for (const key of Object.keys(options)) {
           headers[key] = options[key][0];
         }
 
-        const grpcFallbackProtocol = opts.protocol || 'https';
+        const grpcFallbackProtocol = opts.protocol || "https";
         let servicePath = opts.servicePath;
         if (
           !servicePath &&
           service.options &&
-          service.options['(google.api.default_host)']
+          service.options["(google.api.default_host)"]
         ) {
-          servicePath = service.options['(google.api.default_host)'];
+          servicePath = service.options["(google.api.default_host)"];
         }
         if (!servicePath) {
-          serviceCallback(new Error('Service path is undefined'));
+          serviceCallback(new Error("Service path is undefined"));
           return;
         }
 
@@ -310,28 +306,29 @@ export class GrpcClient {
 
         const protoNamespaces: string[] = [];
         let currNamespace = method.parent;
-        while (currNamespace.name !== '') {
+        while (currNamespace.name !== "") {
           protoNamespaces.unshift(currNamespace.name);
           currNamespace = currNamespace.parent;
         }
-        const protoServiceName = protoNamespaces.join('.');
+        const protoServiceName = protoNamespaces.join(".");
         const rpcName = method.name;
 
         const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
         const fetch = isBrowser()
-          ? window.fetch
+          ? // eslint-disable-next-line no-undef
+            window.fetch
           : ((nodeFetch as unknown) as NodeFetchType);
         fetch(url, {
           headers,
-          method: 'post',
+          method: "post",
           body: requestData,
-          signal: cancelSignal,
+          signal: cancelSignal
         })
           .then((response: Response | nodeFetch.Response) => {
             return Promise.all([
               Promise.resolve(response.ok),
-              response.arrayBuffer(),
+              response.arrayBuffer()
             ]);
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
@@ -342,7 +339,7 @@ export class GrpcClient {
             serviceCallback(null, new Uint8Array(buffer));
           })
           .catch((err: Error) => {
-            if (!cancelRequested || err.name !== 'AbortError') {
+            if (!cancelRequested || err.name !== "AbortError") {
               serviceCallback(err);
             }
           });
@@ -351,13 +348,13 @@ export class GrpcClient {
           cancel: () => {
             if (!cancelController) {
               console.warn(
-                'AbortController not found: Cancellation is not supported in this environment'
+                "AbortController not found: Cancellation is not supported in this environment"
               );
               return;
             }
             cancelRequested = true;
             cancelController.abort();
-          },
+          }
         };
       };
     }
@@ -372,7 +369,7 @@ export class GrpcClient {
  * @return {Object} A OperationsClientBuilder that will return a OperationsClient
  */
 export function lro(options: GrpcClientOptions) {
-  options = Object.assign({scopes: []}, options);
+  options = Object.assign({ scopes: [] }, options);
   const gaxGrpc = new GrpcClient(options);
   return new OperationsClientBuilder(gaxGrpc);
 }
@@ -405,14 +402,14 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor
 ): GaxCall {
-  if (descriptor && 'streaming' in descriptor) {
+  if (descriptor && "streaming" in descriptor) {
     return () => {
       throw new Error(
-        'The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls.'
+        "The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls."
       );
     };
   }
   return _createApiCall(func, settings, descriptor);
 }
 
-export {protobuf};
+export { protobuf };

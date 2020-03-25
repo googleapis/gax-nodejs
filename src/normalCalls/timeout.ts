@@ -18,8 +18,8 @@ import {
   GRPCCall,
   GRPCCallOtherArgs,
   SimpleCallbackFunction,
-  UnaryCall,
-} from '../apitypes';
+  UnaryCall
+} from "../apitypes";
 
 /**
  * Updates func so that it gets called with the timeout as its final arg.

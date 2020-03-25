@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import {Status} from '../status';
+import { Status } from "../status";
 
-import {APICallback, GRPCCallResult, SimpleCallbackFunction} from '../apitypes';
-import {GoogleError} from '../googleError';
+import {
+  APICallback,
+  GRPCCallResult,
+  SimpleCallbackFunction
+} from "../apitypes";
+import { GoogleError } from "../googleError";
 
 export interface SubResponseInfo {
   field: string;
@@ -25,10 +29,8 @@ export interface SubResponseInfo {
   end?: number;
 }
 
-export interface TaskElement {}
-
 export interface TaskData {
-  elements: TaskElement[];
+  elements: {}[];
   bytes: number;
   callback: TaskCallback;
   cancelled?: boolean;
@@ -54,11 +56,11 @@ export interface TaskCallback extends APICallback {
  * @private
  */
 export function deepCopyForResponse(
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: any,
   subresponseInfo: SubResponseInfo | null
 ) {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let result: any;
   if (obj === null) {
     return null;
@@ -81,7 +83,7 @@ export function deepCopyForResponse(
   if (obj instanceof ArrayBuffer) {
     return (obj as ArrayBuffer).slice(0);
   }
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     result = {};
     Object.keys(obj).forEach(key => {
       if (
@@ -106,7 +108,7 @@ export function deepCopyForResponse(
 
 export class Task {
   _apiCall: SimpleCallbackFunction;
-  _request: {[index: string]: TaskElement[]};
+  _request: { [index: string]: {}[] };
   _bundledField: string;
   _subresponseField?: string | null;
   _data: TaskData[];
@@ -167,13 +169,14 @@ export class Task {
       return [];
     }
     const request = this._request;
-    const elements: TaskElement[] = [];
+    const elements: {}[] = [];
     const ids: string[] = [];
     for (let i = 0; i < this._data.length; ++i) {
-      elements.push.apply(elements, this._data[i].elements);
+      elements.push(...this._data[i].elements);
       ids.push(this._data[i].callback.id!);
     }
     request[this._bundledField] = elements;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     this.callCanceller = this._apiCall(
       request,
@@ -188,7 +191,7 @@ export class Task {
           if (self._subresponseField) {
             subresponseInfo = {
               field: self._subresponseField,
-              start: 0,
+              start: 0
             };
           }
           self._data.forEach(data => {
@@ -204,7 +207,7 @@ export class Task {
         }
         for (let i = 0; i < self._data.length; ++i) {
           if (self._data[i].cancelled) {
-            const error = new GoogleError('cancelled');
+            const error = new GoogleError("cancelled");
             error.code = Status.CANCELLED;
             self._data[i].callback(error);
           } else {
@@ -221,11 +224,11 @@ export class Task {
    * @param {number} bytes - the byte size required to encode elements in the API.
    * @param {APICallback} callback - the callback of the method call.
    */
-  extend(elements: TaskElement[], bytes: number, callback: TaskCallback) {
+  extend(elements: {}[], bytes: number, callback: TaskCallback) {
     this._data.push({
       elements,
       bytes,
-      callback,
+      callback
     });
   }
   /**
@@ -251,7 +254,7 @@ export class Task {
     }
     for (let i = 0; i < this._data.length; ++i) {
       if (this._data[i].callback.id === id) {
-        const error = new GoogleError('cancelled');
+        const error = new GoogleError("cancelled");
         error.code = Status.CANCELLED;
         this._data[i].callback(error);
         this._data.splice(i, 1);

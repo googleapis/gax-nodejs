@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {GaxCallPromise} from '../../src/apitypes';
-import {createApiCall as realCreateApiCall} from '../../src/createApiCall';
-import * as gax from '../../src/gax';
-import {GoogleError} from '../../src/googleError';
-import {Descriptor} from '../../src/descriptor';
+import { GaxCallPromise } from "../../src/apitypes";
+import { createApiCall as realCreateApiCall } from "../../src/createApiCall";
+import * as gax from "../../src/gax";
+import { GoogleError } from "../../src/googleError";
+import { Descriptor } from "../../src/descriptor";
 
 const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
@@ -51,8 +51,8 @@ export function createApiCall(func: Function, opts?: Options) {
           cancel: func(argument, metadata, options, callback),
           completed: true,
           call: () => {
-            throw new Error('should not be run');
-          },
+            throw new Error("should not be run");
+          }
         };
       }
       func(argument, metadata, options, callback);
@@ -60,12 +60,12 @@ export function createApiCall(func: Function, opts?: Options) {
         cancel:
           (opts && opts.cancel) ||
           (() => {
-            callback(new Error('canceled'));
+            callback(new Error("canceled"));
           }),
         completed: true,
         call: () => {
-          throw new Error('should not be run');
-        },
+          throw new Error("should not be run");
+        }
       };
     }),
     settings,
@@ -83,7 +83,7 @@ export function createRetryOptions(
   totalTimeoutMillis?: number
 ) {
   const backoff =
-    typeof backoffSettingsOrInitialRetryDelayMillis === 'number'
+    typeof backoffSettingsOrInitialRetryDelayMillis === "number"
       ? gax.createBackoffSettings(
           backoffSettingsOrInitialRetryDelayMillis,
           retryDelayMultiplier!,

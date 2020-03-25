@@ -20,20 +20,23 @@
  * allowing that causes another errors of non-camelcase symbols anyways.
  * Therefore quote-props is disabled explicitly only in this file. */
 
-import {expect} from 'chai';
-import * as gax from '../../src/gax';
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 
-const SERVICE_NAME = 'test.interface.v1.api';
+import { expect } from "chai";
+import { describe, it } from "mocha";
+import * as gax from "../../src/gax";
+
+const SERVICE_NAME = "test.interface.v1.api";
 
 const A_CONFIG = {
-  interfaces: {},
+  interfaces: {}
 };
 
 //@ts-ignore
 A_CONFIG.interfaces[SERVICE_NAME] = {
   retry_codes: {
-    foo_retry: ['code_a', 'code_b'],
-    bar_retry: ['code_c'],
+    foo_retry: ["code_a", "code_b"],
+    bar_retry: ["code_c"]
   },
   retry_params: {
     default: {
@@ -43,55 +46,55 @@ A_CONFIG.interfaces[SERVICE_NAME] = {
       initial_rpc_timeout_millis: 300,
       rpc_timeout_multiplier: 1.3,
       max_rpc_timeout_millis: 3000,
-      total_timeout_millis: 30000,
-    },
+      total_timeout_millis: 30000
+    }
   },
   methods: {
     BundlingMethod: {
       timeout_millis: 40000,
-      retry_codes_name: 'foo_retry',
-      retry_params_name: 'default',
+      retry_codes_name: "foo_retry",
+      retry_params_name: "default",
       bundling: {
         element_count_threshold: 6,
-        element_count_limit: 10,
-      },
+        element_count_limit: 10
+      }
     },
     PageStreamingMethod: {
-      retry_codes_name: 'bar_retry',
-      retry_params_name: 'default',
-    },
-  },
+      retry_codes_name: "bar_retry",
+      retry_params_name: "default"
+    }
+  }
 };
 
 const RETRY_DICT = {
   code_a: 1,
   code_b: 2,
-  code_c: 3,
+  code_c: 3
 };
 
-function expectRetryOptions(obj: {[name: string]: {}}) {
+function expectRetryOptions(obj: { [name: string]: {} }) {
   expect(obj).to.be.an.instanceOf(Object);
-  expect(obj).to.have.all.keys('retryCodes', 'backoffSettings');
+  expect(obj).to.have.all.keys("retryCodes", "backoffSettings");
   expect(obj.retryCodes).to.be.an.instanceOf(Array);
   expectBackoffSettings(obj.backoffSettings);
 }
 
-function expectBackoffSettings(obj: {[name: string]: {}}) {
+function expectBackoffSettings(obj: { [name: string]: {} }) {
   expect(obj).to.be.an.instanceOf(Object);
   expect(obj).to.have.all.keys(
-    'initialRetryDelayMillis',
-    'retryDelayMultiplier',
-    'maxRetryDelayMillis',
-    'initialRpcTimeoutMillis',
-    'rpcTimeoutMultiplier',
-    'maxRpcTimeoutMillis',
-    'totalTimeoutMillis'
+    "initialRetryDelayMillis",
+    "retryDelayMultiplier",
+    "maxRetryDelayMillis",
+    "initialRpcTimeoutMillis",
+    "rpcTimeoutMultiplier",
+    "maxRpcTimeoutMillis",
+    "totalTimeoutMillis"
   );
 }
 
-describe('gax construct settings', () => {
-  it('creates settings', () => {
-    const otherArgs = {key: 'value'};
+describe("gax construct settings", () => {
+  it("creates settings", () => {
+    const otherArgs = { key: "value" };
     const defaults = gax.constructSettings(
       SERVICE_NAME,
       A_CONFIG,
@@ -112,16 +115,16 @@ describe('gax construct settings', () => {
     expect(settings.otherArgs).eql(otherArgs);
   });
 
-  it('overrides settings', () => {
-    const overrides = {interfaces: {}};
+  it("overrides settings", () => {
+    const overrides = { interfaces: {} };
     //@ts-ignore
     overrides.interfaces[SERVICE_NAME] = {
       methods: {
         PageStreamingMethod: null,
         BundlingMethod: {
-          bundling: null,
-        },
-      },
+          bundling: null
+        }
+      }
     };
     const defaults = gax.constructSettings(
       SERVICE_NAME,
@@ -137,13 +140,13 @@ describe('gax construct settings', () => {
     expect(settings.retry).to.eq(null);
   });
 
-  it('overrides settings more precisely', () => {
-    const overrides = {interfaces: {}};
+  it("overrides settings more precisely", () => {
+    const overrides = { interfaces: {} };
     //@ts-ignore
     overrides.interfaces[SERVICE_NAME] = {
       retry_codes: {
         bar_retry: [],
-        baz_retry: ['code_a'],
+        baz_retry: ["code_a"]
       },
       retry_params: {
         default: {
@@ -153,16 +156,16 @@ describe('gax construct settings', () => {
           initial_rpc_timeout_millis: 3000,
           rpc_timeout_multiplier: 1.3,
           max_rpc_timeout_millis: 30000,
-          total_timeout_millis: 300000,
-        },
+          total_timeout_millis: 300000
+        }
       },
       methods: {
         BundlingMethod: {
-          retry_params_name: 'default',
-          retry_codes_name: 'baz_retry',
-          timeout_millis: 50000,
-        },
-      },
+          retry_params_name: "default",
+          retry_codes_name: "baz_retry",
+          timeout_millis: 50000
+        }
+      }
     };
 
     const defaults = gax.constructSettings(

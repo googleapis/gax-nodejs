@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import {Status} from '../status';
+import { Status } from "../status";
 
-import {SimpleCallbackFunction} from '../apitypes';
-import {GoogleError} from '../googleError';
-import {warn} from '../warnings';
+import { SimpleCallbackFunction } from "../apitypes";
+import { GoogleError } from "../googleError";
+import { warn } from "../warnings";
 
-import {BundleDescriptor} from './bundleDescriptor';
-import {computeBundleId} from './bundlingUtils';
-import {Task, TaskCallback} from './task';
+import { BundleDescriptor } from "./bundleDescriptor";
+import { computeBundleId } from "./bundlingUtils";
+import { Task, TaskCallback } from "./task";
 
 function noop() {}
 
@@ -72,9 +72,9 @@ export interface BundleOptions {
 export class BundleExecutor {
   _options: BundleOptions;
   _descriptor: BundleDescriptor;
-  _tasks: {[index: string]: Task};
-  _timers: {[index: string]: ReturnType<typeof setTimeout>};
-  _invocations: {[index: string]: string};
+  _tasks: { [index: string]: Task };
+  _timers: { [index: string]: ReturnType<typeof setTimeout> };
+  _invocations: { [index: string]: string };
   _invocationId: number;
   /**
    * Organizes requests for an api service that requires to bundle them.
@@ -106,7 +106,7 @@ export class BundleExecutor {
    */
   schedule(
     apiCall: SimpleCallbackFunction,
-    request: {[index: string]: Array<{}> | string},
+    request: { [index: string]: Array<{}> | string },
     callback?: TaskCallback
   ) {
     const bundleId = computeBundleId(
@@ -116,8 +116,8 @@ export class BundleExecutor {
     callback = (callback || noop) as TaskCallback;
     if (bundleId === undefined) {
       warn(
-        'bundling_schedule_bundleid_undefined',
-        'The request does not have enough information for request bundling. ' +
+        "bundling_schedule_bundleid_undefined",
+        "The request does not have enough information for request bundling. " +
           `Invoking immediately. Request: ${JSON.stringify(request)} ` +
           `discriminator fields: ${this._descriptor.requestDiscriminatorFields}`
       );
@@ -125,7 +125,7 @@ export class BundleExecutor {
     }
     if (request[this._descriptor.bundledField] === undefined) {
       warn(
-        'bundling_no_bundled_field',
+        "bundling_no_bundled_field",
         `Request does not contain field ${this._descriptor.bundledField} that must present for bundling. ` +
           `Invoking immediately. Request: ${JSON.stringify(request)}`
       );
@@ -147,6 +147,7 @@ export class BundleExecutor {
     const bundledField = request[this._descriptor.bundledField] as Array<{}>;
     const elementCount = bundledField.length;
     let requestBytes = 0;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     bundledField.forEach(obj => {
       requestBytes += this._descriptor.byteLengthFunction(obj);
@@ -162,22 +163,22 @@ export class BundleExecutor {
       let message;
       if (countLimit > 0 && elementCount > countLimit) {
         message =
-          'The number of elements ' +
+          "The number of elements " +
           elementCount +
-          ' exceeds the limit ' +
+          " exceeds the limit " +
           this._options.elementCountLimit;
       } else {
         message =
-          'The required bytes ' +
+          "The required bytes " +
           requestBytes +
-          ' exceeds the limit ' +
+          " exceeds the limit " +
           this._options.requestByteLimit;
       }
       const error = new GoogleError(message);
       error.code = Status.INVALID_ARGUMENT;
       callback(error);
       return {
-        cancel: noop,
+        cancel: noop
       };
     }
 
@@ -202,7 +203,7 @@ export class BundleExecutor {
     const ret = {
       cancel() {
         self._cancel(callback!.id!);
-      },
+      }
     };
 
     const countThreshold = this._options.elementCountThreshold || 0;
@@ -271,7 +272,7 @@ export class BundleExecutor {
    */
   _runNow(bundleId: string) {
     if (!(bundleId in this._tasks)) {
-      warn('bundle_runnow_bundleid_unknown', `No such bundleid: ${bundleId}`);
+      warn("bundle_runnow_bundleid_unknown", `No such bundleid: ${bundleId}`);
       return;
     }
     this._maybeClearTimeout(bundleId);

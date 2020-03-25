@@ -14,31 +14,28 @@
  * limitations under the License.
  */
 
-import {GoogleAuth, OAuth2Client} from 'google-auth-library';
-import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import * as path from 'path';
+import { GoogleAuth, OAuth2Client } from "google-auth-library";
+import { ProjectIdCallback } from "google-auth-library/build/src/auth/googleauth";
+import * as path from "path";
 
-import {GaxCall} from './apitypes';
-import {createApiCall} from './createApiCall';
-import {PageDescriptor} from './descriptor';
-import * as gax from './gax';
-import {ClientStubOptions, GrpcClient} from './grpc';
-import {GrpcClient as FallbackGrpcClient} from './fallback';
-import {APICallback} from './apitypes';
+import { GaxCall } from "./apitypes";
+import { createApiCall } from "./createApiCall";
+import { PageDescriptor } from "./descriptor";
+import * as gax from "./gax";
+import { ClientStubOptions, GrpcClient } from "./grpc";
+import { GrpcClient as FallbackGrpcClient } from "./fallback";
+import { APICallback } from "./apitypes";
 
-const configData = require('./operations_client_config');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const configData = require("./operations_client_config");
 
-export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
-const version = require('../../package.json').version;
+export const SERVICE_ADDRESS = "longrunning.googleapis.com";
+const version = require("../../package.json").version;
 
 const DEFAULT_SERVICE_PORT = 443;
-const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
-const PAGE_DESCRIPTORS: {[method: string]: PageDescriptor} = {
-  listOperations: new PageDescriptor(
-    'pageToken',
-    'nextPageToken',
-    'operations'
-  ),
+const CODE_GEN_NAME_VERSION = "gapic/0.7.1";
+const PAGE_DESCRIPTORS: { [method: string]: PageDescriptor } = {
+  listOperations: new PageDescriptor("pageToken", "nextPageToken", "operations")
 };
 
 /**
@@ -74,11 +71,11 @@ export interface OperationsClientOptions {
  */
 export class OperationsClient {
   auth?: GoogleAuth | OAuth2Client;
-  private _innerApiCalls: {[name: string]: GaxCall};
+  private _innerApiCalls: { [name: string]: GaxCall };
 
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     operationsProtos: any,
     options: OperationsClientOptions
   ) {
@@ -86,27 +83,27 @@ export class OperationsClient {
       {
         servicePath: SERVICE_ADDRESS,
         port: DEFAULT_SERVICE_PORT,
-        clientConfig: {},
+        clientConfig: {}
       },
       options
     );
 
-    const googleApiClient = ['gl-node/' + process.versions.node];
+    const googleApiClient = ["gl-node/" + process.versions.node];
     if (opts.libName && opts.libVersion) {
-      googleApiClient.push(opts.libName + '/' + opts.libVersion);
+      googleApiClient.push(opts.libName + "/" + opts.libVersion);
     }
-    googleApiClient.push(CODE_GEN_NAME_VERSION, 'gax/' + version);
+    googleApiClient.push(CODE_GEN_NAME_VERSION, "gax/" + version);
     if (opts.fallback) {
-      googleApiClient.push('gl-web/' + version);
+      googleApiClient.push("gl-web/" + version);
     } else {
-      googleApiClient.push('grpc/' + gaxGrpc.grpcVersion);
+      googleApiClient.push("grpc/" + gaxGrpc.grpcVersion);
     }
 
     const defaults = gaxGrpc.constructSettings(
-      'google.longrunning.Operations',
+      "google.longrunning.Operations",
       configData,
       opts.clientConfig || {},
-      {'x-goog-api-client': googleApiClient.join(' ')}
+      { "x-goog-api-client": googleApiClient.join(" ") }
     );
 
     this.auth = gaxGrpc.auth;
@@ -120,21 +117,22 @@ export class OperationsClient {
     // google.longrunning.Operations.
     const operationsStub = gaxGrpc.createStub(
       opts.fallback
-        ? operationsProtos.lookupService('google.longrunning.Operations')
+        ? operationsProtos.lookupService("google.longrunning.Operations")
         : operationsProtos.google.longrunning.Operations,
       opts
-    ) as Promise<{[method: string]: Function}>;
+    ) as Promise<{ [method: string]: Function }>;
     const operationsStubMethods = [
-      'getOperation',
-      'listOperations',
-      'cancelOperation',
-      'deleteOperation',
+      "getOperation",
+      "listOperations",
+      "cancelOperation",
+      "deleteOperation"
     ];
 
     for (const methodName of operationsStubMethods) {
       const innerCallPromise = operationsStub.then(
         stub => (...args: Array<{}>) => {
-          return stub[methodName].apply(stub, args);
+          const func = stub[methodName];
+          return func.apply(stub, args);
         },
         err => () => {
           throw err;
@@ -156,13 +154,13 @@ export class OperationsClient {
   getProjectId(): Promise<string>;
   getProjectId(callback: ProjectIdCallback): void;
   getProjectId(callback?: ProjectIdCallback): void | Promise<string> {
-    if (this.auth && 'getProjectId' in this.auth) {
+    if (this.auth && "getProjectId" in this.auth) {
       return this.auth.getProjectId(callback!);
     }
     if (callback) {
-      callback(new Error('Cannot determine project ID.'));
+      callback(new Error("Cannot determine project ID."));
     } else {
-      return Promise.reject('Cannot determine project ID.');
+      return Promise.reject("Cannot determine project ID.");
     }
   }
 
@@ -439,14 +437,15 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let operationsProtos: any; // loaded protos have any type
     if (gaxGrpc.fallback) {
-      const protoJson = require('../../protos/operations.json');
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const protoJson = require("../../protos/operations.json");
       operationsProtos = gaxGrpc.loadProto(protoJson);
     } else {
       operationsProtos = gaxGrpc.loadProto(
-        path.join(__dirname, '..', '..', 'protos', 'operations.json')
+        path.join(__dirname, "..", "..", "protos", "operations.json")
       );
       Object.assign(this, operationsProtos.google.longrunning);
     }

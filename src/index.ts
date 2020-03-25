@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-import {GrpcClient, GrpcClientOptions, ClientStubOptions} from './grpc';
-import {GoogleAuthOptions} from 'google-auth-library';
+import { GrpcClient, GrpcClientOptions, ClientStubOptions } from "./grpc";
+import { GoogleAuthOptions } from "google-auth-library";
 import {
   LongrunningDescriptor,
   PageDescriptor,
   StreamDescriptor,
-  BundleDescriptor,
-} from './descriptor';
-import * as longrunning from './longRunningCalls/longrunning';
-import * as operationProtos from '../protos/operations';
-import * as operationsClient from './operationsClient';
-import * as routingHeader from './routingHeader';
-import * as gax from './gax';
+  BundleDescriptor
+} from "./descriptor";
+import * as longrunning from "./longRunningCalls/longrunning";
+import * as operationProtos from "../protos/operations";
+import * as operationsClient from "./operationsClient";
+import * as routingHeader from "./routingHeader";
+import * as gax from "./gax";
 
-export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {CancellablePromise, OngoingCall} from './call';
-export {createApiCall} from './createApiCall';
+export { GoogleAuth, GoogleAuthOptions } from "google-auth-library";
+export { CancellablePromise, OngoingCall } from "./call";
+export { createApiCall } from "./createApiCall";
 export {
   BundleDescriptor,
   LongrunningDescriptor,
   PageDescriptor,
-  StreamDescriptor,
-} from './descriptor';
+  StreamDescriptor
+} from "./descriptor";
 export {
   CallOptions,
   CallSettings,
@@ -48,9 +48,9 @@ export {
   createBundleOptions,
   createBackoffSettings,
   createDefaultBackoffSettings,
-  createMaxRetriesBackoffSettings,
-} from './gax';
-export {GoogleError} from './googleError';
+  createMaxRetriesBackoffSettings
+} from "./gax";
+export { GoogleError } from "./googleError";
 export {
   ClientStub,
   ClientStubOptions,
@@ -59,16 +59,16 @@ export {
   GrpcClientOptions,
   GrpcModule,
   Metadata,
-  MetadataValue,
-} from './grpc';
-export {Operation, operation} from './longRunningCalls/longrunning';
-export {PathTemplate} from './pathTemplate';
-export {Status} from './status';
-export {StreamType} from './streamingCalls/streaming';
-export {routingHeader};
+  MetadataValue
+} from "./grpc";
+export { Operation, operation } from "./longRunningCalls/longrunning";
+export { PathTemplate } from "./pathTemplate";
+export { Status } from "./status";
+export { StreamType } from "./streamingCalls/streaming";
+export { routingHeader };
 
 function lro(options: GrpcClientOptions) {
-  options = Object.assign({scopes: lro.ALL_SCOPES}, options);
+  options = Object.assign({ scopes: lro.ALL_SCOPES }, options);
   const gaxGrpc = new GrpcClient(options);
   return new operationsClient.OperationsClientBuilder(gaxGrpc);
 }
@@ -76,16 +76,16 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro};
-export {OperationsClient} from './operationsClient';
+export { lro };
+export { OperationsClient } from "./operationsClient";
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
-export const version = require('../../package.json').version;
+export const version = require("../../package.json").version;
 
-import * as protobuf from 'protobufjs';
-export {protobuf};
+import * as protobuf from "protobufjs";
+export { protobuf };
 
-import * as fallback from './fallback';
-export {fallback};
+import * as fallback from "./fallback";
+export { fallback };
 
 export {
   APICallback,
@@ -96,8 +96,8 @@ export {
   UnaryCall,
   GRPCCall,
   GaxCall,
-  CancellableStream,
-} from './apitypes';
+  CancellableStream
+} from "./apitypes";
 
 export interface ClientOptions
   extends GrpcClientOptions,
@@ -111,10 +111,10 @@ export interface ClientOptions
 }
 
 export interface Descriptors {
-  page: {[name: string]: PageDescriptor};
-  stream: {[name: string]: StreamDescriptor};
-  longrunning: {[name: string]: LongrunningDescriptor};
-  batching?: {[name: string]: BundleDescriptor};
+  page: { [name: string]: PageDescriptor };
+  stream: { [name: string]: StreamDescriptor };
+  longrunning: { [name: string]: LongrunningDescriptor };
+  batching?: { [name: string]: BundleDescriptor };
 }
 
 export interface Callback<
@@ -160,4 +160,4 @@ export interface PaginationResponse<
   rawResponse?: ResponseObject;
 }
 
-export {ServiceError} from '@grpc/grpc-js';
+export { ServiceError } from "@grpc/grpc-js";

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Status} from '../status';
+import { Status } from "../status";
 
 import {
   APICallback,
@@ -22,12 +22,12 @@ import {
   GRPCCallOtherArgs,
   GRPCCallResult,
   RequestType,
-  SimpleCallbackFunction,
-} from '../apitypes';
-import {RetryOptions} from '../gax';
-import {GoogleError} from '../googleError';
+  SimpleCallbackFunction
+} from "../apitypes";
+import { RetryOptions } from "../gax";
+import { GoogleError } from "../googleError";
 
-import {addTimeoutArg} from './timeout';
+import { addTimeoutArg } from "./timeout";
 
 /**
  * Creates a function equivalent to func, but that retries on certain
@@ -81,7 +81,7 @@ export function retryable(
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         const error = new GoogleError(
-          'Retry total timeout exceeded before any response was received'
+          "Retry total timeout exceeded before any response was received"
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -90,8 +90,8 @@ export function retryable(
 
       if (retries && retries >= maxRetries) {
         const error = new GoogleError(
-          'Exceeded maximum number of retries before any ' +
-            'response was received'
+          "Exceeded maximum number of retries before any " +
+            "response was received"
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -108,8 +108,8 @@ export function retryable(
         canceller = null;
         if (retry.retryCodes.indexOf(err!.code!) < 0) {
           err.note =
-            'Exception occurred in retry method that was ' +
-            'not classified as transient';
+            "Exception occurred in retry method that was " +
+            "not classified as transient";
           callback(err);
         } else {
           const toSleep = Math.random() * delay;
@@ -129,8 +129,8 @@ export function retryable(
 
     if (maxRetries && deadline!) {
       const error = new GoogleError(
-        'Cannot set both totalTimeoutMillis and maxRetries ' +
-          'in backoffSettings.'
+        "Cannot set both totalTimeoutMillis and maxRetries " +
+          "in backoffSettings."
       );
       error.code = Status.INVALID_ARGUMENT;
       callback(error);
@@ -146,11 +146,11 @@ export function retryable(
         if (canceller) {
           canceller.cancel();
         } else {
-          const error = new GoogleError('cancelled');
+          const error = new GoogleError("cancelled");
           error.code = Status.CANCELLED;
           callback(error);
         }
-      },
+      }
     };
   };
 }

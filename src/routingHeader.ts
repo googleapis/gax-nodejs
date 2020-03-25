@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as querystring from 'querystring';
+import * as querystring from "querystring";
 
 /**
  * Helpers for constructing routing headers.

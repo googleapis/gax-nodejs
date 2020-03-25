@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-import * as ended from 'is-stream-ended';
-import {PassThrough, Transform} from 'stream';
+import * as ended from "is-stream-ended";
+import { PassThrough, Transform } from "stream";
 
-import {APICaller} from '../apiCaller';
+import { APICaller } from "../apiCaller";
 import {
   GaxCall,
   APICallback,
   SimpleCallbackFunction,
-  RequestType,
-} from '../apitypes';
-import {Descriptor} from '../descriptor';
-import {CallSettings} from '../gax';
-import {NormalApiCaller} from '../normalCalls/normalApiCaller';
+  RequestType
+} from "../apitypes";
+import { Descriptor } from "../descriptor";
+import { CallSettings } from "../gax";
+import { NormalApiCaller } from "../normalCalls/normalApiCaller";
 
-import {PagedApiCaller} from './pagedApiCaller';
-import * as call from '../call';
+import { PagedApiCaller } from "./pagedApiCaller";
+import * as call from "../call";
 
 export interface ResponseType {
   [index: string]: string;
@@ -65,14 +65,14 @@ export class PageDescriptor implements Descriptor {
     request: {},
     options: CallSettings
   ): Transform {
-    const stream = new PassThrough({objectMode: true});
-    options = Object.assign({}, options, {autoPaginate: false});
-    const maxResults = 'maxResults' in options ? options.maxResults : -1;
+    const stream = new PassThrough({ objectMode: true });
+    options = Object.assign({}, options, { autoPaginate: false });
+    const maxResults = "maxResults" in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
     function callback(err: Error | null, resources: Array<{}>, next: {}) {
       if (err) {
-        stream.emit('error', err);
+        stream.emit("error", err);
         return;
       }
       for (let i = 0; i < resources.length; ++i) {
@@ -97,7 +97,7 @@ export class PageDescriptor implements Descriptor {
       }
       // When pageToken is specified in the original options, it will overwrite
       // the page token field in the next request. Therefore it must be cleared.
-      if ('pageToken' in options) {
+      if ("pageToken" in options) {
         delete options.pageToken;
       }
       if (stream.isPaused()) {
@@ -107,7 +107,7 @@ export class PageDescriptor implements Descriptor {
         setImmediate(apiCall, next, options, callback);
       }
     }
-    stream.on('resume', () => {
+    stream.on("resume", () => {
       if (!started) {
         started = true;
         apiCall(request, options, (callback as unknown) as APICallback);
@@ -124,9 +124,9 @@ export class PageDescriptor implements Descriptor {
     request: RequestType,
     options: CallSettings
   ): AsyncIterable<{} | undefined> {
-    const iterable = this.createIterator(options);
+    const iterable = this.createIterator();
     const funcPromise =
-      typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
+      typeof apiCall === "function" ? Promise.resolve(apiCall) : apiCall;
     funcPromise
       .then((func: GaxCall) => {
         this.makeCall(request, func, options);
@@ -137,7 +137,8 @@ export class PageDescriptor implements Descriptor {
     return iterable;
   }
 
-  createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
+  createIterator(): AsyncIterable<{} | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
@@ -154,10 +155,13 @@ export class PageDescriptor implements Descriptor {
             const ongoingCall = new call.OngoingCallPromise();
             const [request, func] = await paramPromise;
             if (self.cache.length > 0) {
-              return Promise.resolve({done: false, value: self.cache.shift()});
+              return Promise.resolve({
+                done: false,
+                value: self.cache.shift()
+              });
             }
             if (!firstCall && !nextPageRequest) {
-              return Promise.resolve({done: true, value: undefined});
+              return Promise.resolve({ done: true, value: undefined });
             }
             nextPageRequest = await self.getNextPageRequest(
               func,
@@ -167,12 +171,12 @@ export class PageDescriptor implements Descriptor {
             firstCall = false;
             if (self.cache.length === 0) {
               nextPageRequest = null;
-              return Promise.resolve({done: true, value: undefined});
+              return Promise.resolve({ done: true, value: undefined });
             }
-            return Promise.resolve({done: false, value: self.cache.shift()});
-          },
+            return Promise.resolve({ done: false, value: self.cache.shift() });
+          }
         };
-      },
+      }
     };
     return asyncIterable;
   }
@@ -184,7 +188,7 @@ export class PageDescriptor implements Descriptor {
   ): Promise<RequestType | null> {
     ongoingCall.call(func, request);
     let nextPageRequest = null;
-    const [response, nextRequest, rawResponse] = await ongoingCall.promise;
+    const [response] = await ongoingCall.promise;
     const pageToken = (response as ResponseType)[this.responsePageTokenField];
     if (pageToken) {
       nextPageRequest = Object.assign({}, request);

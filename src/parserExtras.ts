@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import * as util from 'util';
-import {Segment} from './pathTemplate';
+import * as util from "util";
+import { Segment } from "./pathTemplate";
 
 /* constants used in the pegjs parser */
 export const BINDING = 1;
@@ -34,11 +34,11 @@ function allowOnePathWildcard(segments: Segment[]) {
   let hasPathWildcard = false;
   for (let i = 0; i < segments.length; i++) {
     const s = segments[i];
-    if (s.kind !== TERMINAL || s.literal !== '**') {
+    if (s.kind !== TERMINAL || s.literal !== "**") {
       continue;
     }
     if (hasPathWildcard) {
-      const tooManyWildcards = 'cannot contain more than one path wildcard';
+      const tooManyWildcards = "cannot contain more than one path wildcard";
       throw new TypeError(tooManyWildcards);
     }
     hasPathWildcard = true;
@@ -68,7 +68,7 @@ function updateBindingLiterals(segments: Segment[]) {
   let bindingIndex = 0;
   segments.forEach(s => {
     if (s.kind === BINDING && !s.literal) {
-      s.literal = util.format('$%d', bindingIndex);
+      s.literal = util.format("$%d", bindingIndex);
       bindingIndex += 1;
     }
   });
@@ -92,6 +92,6 @@ export function finishParse(segments: Segment[]) {
   updateBindingLiterals(segments);
   return {
     segments,
-    size: countTerminals(segments),
+    size: countTerminals(segments)
   };
 }

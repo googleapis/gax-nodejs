@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {APICaller} from '../apiCaller';
+import { APICaller } from "../apiCaller";
 import {
   APICallback,
   BiDiStreamingCall,
@@ -22,12 +22,12 @@ import {
   ClientStreamingCall,
   GRPCCall,
   ServerStreamingCall,
-  SimpleCallbackFunction,
-} from '../apitypes';
-import {warn} from '../warnings';
+  SimpleCallbackFunction
+} from "../apitypes";
+import { warn } from "../warnings";
 
-import {StreamDescriptor} from './streamDescriptor';
-import {StreamProxy, StreamType} from './streaming';
+import { StreamDescriptor } from "./streamDescriptor";
+import { StreamProxy, StreamType } from "./streaming";
 
 export class StreamingApiCaller implements APICaller {
   descriptor: StreamDescriptor;
@@ -67,7 +67,7 @@ export class StreamingApiCaller implements APICaller {
         };
       default:
         warn(
-          'streaming_wrap_unknown_stream_type',
+          "streaming_wrap_unknown_stream_type",
           `Unknown stream type: ${this.descriptor.type}`
         );
     }
@@ -84,7 +84,7 @@ export class StreamingApiCaller implements APICaller {
   }
 
   fail(stream: CancellableStream, err: Error) {
-    stream.emit('error', err);
+    stream.emit("error", err);
   }
 
   result(stream: CancellableStream) {

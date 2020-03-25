@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {APICaller} from '../apiCaller';
-import {Descriptor} from '../descriptor';
-import {CallSettings} from '../gax';
+import { APICaller } from "../apiCaller";
+import { Descriptor } from "../descriptor";
+import { CallSettings } from "../gax";
 
-import {StreamType} from './streaming';
-import {StreamingApiCaller} from './streamingApiCaller';
+import { StreamType } from "./streaming";
+import { StreamingApiCaller } from "./streamingApiCaller";
 
 /**
  * A descriptor for streaming calls.
