@@ -139,6 +139,18 @@ describe('PathTemplate', () => {
       const want = 'bar/1/2/foo/3';
       expect(template.render(params)).to.eql(want);
     });
+
+    it('should accept both strings and numbers as values', () => {
+      const template = new PathTemplate(
+        'projects/{project}/sessions/{session}'
+      );
+      const params = {
+        project: 'testProject',
+        session: 123,
+      };
+      const want = 'projects/testProject/sessions/123';
+      expect(template.render(params)).to.eql(want);
+    });
   });
 
   describe('method `inspect`', () => {
