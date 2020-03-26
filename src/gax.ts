@@ -18,7 +18,7 @@
  * Google API Extensions
  */
 
-import { BundleOptions } from "./bundlingCalls/bundleExecutor";
+import {BundleOptions} from './bundlingCalls/bundleExecutor';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -120,7 +120,7 @@ export interface CallOptions {
   maxResults?: number;
   maxRetries?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  otherArgs?: { [index: string]: any };
+  otherArgs?: {[index: string]: any};
   bundleOptions?: BundleOptions | null;
   isBundling?: boolean;
   longrunning?: BackoffSettings;
@@ -134,7 +134,7 @@ export class CallSettings {
   pageSize?: number;
   maxResults?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  otherArgs: { [index: string]: any };
+  otherArgs: {[index: string]: any};
   bundleOptions?: BundleOptions | null;
   isBundling: boolean;
   longrunning?: BackoffSettings;
@@ -162,14 +162,14 @@ export class CallSettings {
     this.timeout = settings.timeout || 30 * 1000;
     this.retry = settings.retry;
     this.autoPaginate =
-      "autoPaginate" in settings ? settings.autoPaginate : true;
+      'autoPaginate' in settings ? settings.autoPaginate : true;
     this.pageToken = settings.pageToken;
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
     this.bundleOptions = settings.bundleOptions;
-    this.isBundling = "isBundling" in settings ? settings.isBundling! : true;
+    this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
     this.longrunning =
-      "longrunning" in settings ? settings.longrunning : undefined;
+      'longrunning' in settings ? settings.longrunning : undefined;
   }
 
   /**
@@ -193,31 +193,31 @@ export class CallSettings {
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
-    if ("timeout" in options) {
+    if ('timeout' in options) {
       timeout = options.timeout!;
     }
-    if ("retry" in options) {
+    if ('retry' in options) {
       retry = options.retry;
     }
 
-    if ("autoPaginate" in options && !options.autoPaginate) {
+    if ('autoPaginate' in options && !options.autoPaginate) {
       autoPaginate = false;
     }
 
-    if ("pageToken" in options) {
+    if ('pageToken' in options) {
       autoPaginate = false;
       pageToken = options.pageToken;
     }
 
-    if ("pageSize" in options) {
+    if ('pageSize' in options) {
       pageSize = options.pageSize;
     }
 
-    if ("maxResults" in options) {
+    if ('maxResults' in options) {
       maxResults = options.maxResults;
     }
 
-    if ("otherArgs" in options) {
+    if ('otherArgs' in options) {
       otherArgs = {};
       for (const key in this.otherArgs) {
         otherArgs[key] = this.otherArgs[key];
@@ -227,16 +227,16 @@ export class CallSettings {
       }
     }
 
-    if ("isBundling" in options) {
+    if ('isBundling' in options) {
       isBundling = options.isBundling!;
     }
 
-    if ("maxRetries" in options) {
+    if ('maxRetries' in options) {
       retry!.backoffSettings!.maxRetries = options.maxRetries;
       delete retry!.backoffSettings!.totalTimeoutMillis;
     }
 
-    if ("longrunning" in options) {
+    if ('longrunning' in options) {
       longrunning = options.longrunning;
     }
 
@@ -379,14 +379,14 @@ export function createMaxRetriesBackoffSettings(
  */
 export function createBundleOptions(options: BundlingConfig): BundleOptions {
   const params: Array<keyof BundlingConfig> = [
-    "element_count_threshold",
-    "element_count_limit",
-    "request_byte_threshold",
-    "request_byte_limit",
-    "delay_threshold_millis"
+    'element_count_threshold',
+    'element_count_limit',
+    'request_byte_threshold',
+    'request_byte_limit',
+    'delay_threshold_millis'
   ];
   params.forEach(param => {
-    if (param in options && typeof options[param] !== "number") {
+    if (param in options && typeof options[param] !== 'number') {
       throw new Error(`${param} should be a number`);
     }
   });
@@ -402,7 +402,7 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
     requestByteThreshold === 0 &&
     delayThreshold === 0
   ) {
-    throw new Error("one threshold should be > 0");
+    throw new Error('one threshold should be > 0');
   }
   return {
     elementCountThreshold,
@@ -434,24 +434,24 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
  */
 function constructRetry(
   methodConfig: MethodConfig | null,
-  retryCodes: { [index: string]: string[] } | undefined,
-  retryParams: { [index: string]: {} } | undefined,
-  retryNames: { [index: string]: {} }
+  retryCodes: {[index: string]: string[]} | undefined,
+  retryParams: {[index: string]: {}} | undefined,
+  retryNames: {[index: string]: {}}
 ): RetryOptions | null | undefined {
   if (!methodConfig) {
     return null;
   }
 
   let codes: number[] | null = null;
-  if (retryCodes && "retry_codes_name" in methodConfig) {
-    const retryCodesName = methodConfig["retry_codes_name"];
+  if (retryCodes && 'retry_codes_name' in methodConfig) {
+    const retryCodesName = methodConfig['retry_codes_name'];
     codes = (retryCodes[retryCodesName!] || []).map(name => {
       return Number(retryNames[name]);
     });
   }
 
   let backoffSettings: BackoffSettings | null = null;
-  if (retryParams && "retry_params_name" in methodConfig) {
+  if (retryParams && 'retry_params_name' in methodConfig) {
     const params = retryParams[
       methodConfig.retry_params_name!
     ] as RetryParamsConfig;
@@ -505,9 +505,9 @@ function mergeRetryOptions(
 }
 
 export interface ServiceConfig {
-  retry_codes?: { [index: string]: string[] };
-  retry_params?: { [index: string]: RetryParamsConfig };
-  methods: { [index: string]: MethodConfig | null };
+  retry_codes?: {[index: string]: string[]};
+  retry_params?: {[index: string]: RetryParamsConfig};
+  methods: {[index: string]: MethodConfig | null};
 }
 
 export interface RetryParamsConfig {
@@ -536,7 +536,7 @@ export interface BundlingConfig {
 }
 
 export interface ClientConfig {
-  interfaces?: { [index: string]: ServiceConfig };
+  interfaces?: {[index: string]: ServiceConfig};
 }
 
 /**
@@ -633,10 +633,10 @@ export function constructSettings(
     if (methodName in overridingMethods) {
       const overridingMethod = overridingMethods[methodName];
       if (overridingMethod) {
-        if ("bundling" in overridingMethod) {
+        if ('bundling' in overridingMethod) {
           bundlingConfig = overridingMethod.bundling;
         }
-        if ("timeout_millis" in overridingMethod) {
+        if ('timeout_millis' in overridingMethod) {
           timeout = overridingMethod.timeout_millis;
         }
       }

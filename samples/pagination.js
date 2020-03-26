@@ -18,7 +18,7 @@
 async function main() {
   // Showcases auto-pagination functionality.
 
-  const gax = require("google-gax");
+  const gax = require('google-gax');
 
   // Let's say we have an API call that returns results grouped into pages.
   // It accepts 4 parameters (just like gRPC stub calls do):
@@ -27,17 +27,17 @@ async function main() {
 
     if (!request.pageToken) {
       result = {
-        animals: ["cat", "dog"],
-        nextPageToken: "page2"
+        animals: ['cat', 'dog'],
+        nextPageToken: 'page2'
       };
-    } else if (request.pageToken === "page2") {
+    } else if (request.pageToken === 'page2') {
       result = {
-        animals: ["snake", "turtle"],
-        nextPageToken: "page3"
+        animals: ['snake', 'turtle'],
+        nextPageToken: 'page3'
       };
-    } else if (request.pageToken === "page3") {
+    } else if (request.pageToken === 'page3') {
       result = {
-        animals: ["wolf"],
+        animals: ['wolf'],
         nextPageToken: null
       };
     }
@@ -52,9 +52,9 @@ async function main() {
   // in response object, it's `pageToken` and `animals` (which is a resource
   // field, i.e. the only response field that the user actually needs).
   const pageDescriptor = new gax.PageDescriptor(
-    /* requestPageTokenField: */ "pageToken",
-    /* responsePageTokenField: */ "nextPageToken",
-    /* resourceField: */ "animals"
+    /* requestPageTokenField: */ 'pageToken',
+    /* responsePageTokenField: */ 'nextPageToken',
+    /* resourceField: */ 'animals'
   );
 
   // Create API call:
@@ -65,7 +65,7 @@ async function main() {
   );
 
   // Call it!
-  const [resources] = await wrappedFunction({ request: "empty" });
+  const [resources] = await wrappedFunction({request: 'empty'});
   console.log(resources);
 }
 

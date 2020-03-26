@@ -18,8 +18,8 @@
  * Provides behavior that supports request bundling.
  */
 
-import at = require("lodash.at");
-import { RequestType } from "../apitypes";
+import at = require('lodash.at');
+import {RequestType} from '../apitypes';
 
 /**
  * Compute the identifier of the `obj`. The objects of the same ID

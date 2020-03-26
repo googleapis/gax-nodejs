@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import { expect } from "chai";
-import { fromParams } from "../../src/routingHeader";
-import { describe, it } from "mocha";
+import {expect} from 'chai';
+import {fromParams} from '../../src/routingHeader';
+import {describe, it} from 'mocha';
 
-describe("fromParams", () => {
-  it("constructs the routing header", () => {
-    const routingHeader = fromParams({ name: "foo", "book.read": true });
-    expect(routingHeader).to.equal("name=foo&book.read=true");
+describe('fromParams', () => {
+  it('constructs the routing header', () => {
+    const routingHeader = fromParams({name: 'foo', 'book.read': true});
+    expect(routingHeader).to.equal('name=foo&book.read=true');
   });
 
-  it("encodes non-ASCII characters", () => {
-    const routingHeader = fromParams({ screaming: "😱", cyrillic: "тест" });
+  it('encodes non-ASCII characters', () => {
+    const routingHeader = fromParams({screaming: '😱', cyrillic: 'тест'});
     expect(routingHeader).to.equal(
-      "screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82"
+      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82'
     );
   });
 });

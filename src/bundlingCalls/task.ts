@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-import { Status } from "../status";
+import {Status} from '../status';
 
-import {
-  APICallback,
-  GRPCCallResult,
-  SimpleCallbackFunction
-} from "../apitypes";
-import { GoogleError } from "../googleError";
+import {APICallback, GRPCCallResult, SimpleCallbackFunction} from '../apitypes';
+import {GoogleError} from '../googleError';
 
 export interface SubResponseInfo {
   field: string;
@@ -83,7 +79,7 @@ export function deepCopyForResponse(
   if (obj instanceof ArrayBuffer) {
     return (obj as ArrayBuffer).slice(0);
   }
-  if (typeof obj === "object") {
+  if (typeof obj === 'object') {
     result = {};
     Object.keys(obj).forEach(key => {
       if (
@@ -108,7 +104,7 @@ export function deepCopyForResponse(
 
 export class Task {
   _apiCall: SimpleCallbackFunction;
-  _request: { [index: string]: {}[] };
+  _request: {[index: string]: {}[]};
   _bundledField: string;
   _subresponseField?: string | null;
   _data: TaskData[];
@@ -207,7 +203,7 @@ export class Task {
         }
         for (let i = 0; i < self._data.length; ++i) {
           if (self._data[i].cancelled) {
-            const error = new GoogleError("cancelled");
+            const error = new GoogleError('cancelled');
             error.code = Status.CANCELLED;
             self._data[i].callback(error);
           } else {
@@ -254,7 +250,7 @@ export class Task {
     }
     for (let i = 0; i < this._data.length; ++i) {
       if (this._data[i].callback.id === id) {
-        const error = new GoogleError("cancelled");
+        const error = new GoogleError('cancelled');
         error.code = Status.CANCELLED;
         this._data[i].callback(error);
         this._data.splice(i, 1);

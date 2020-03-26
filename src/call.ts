@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Status } from "./status";
+import {Status} from './status';
 
 import {
   APICallback,
@@ -24,8 +24,8 @@ import {
   ResponseType,
   ResultTuple,
   SimpleCallbackFunction
-} from "./apitypes";
-import { GoogleError } from "./googleError";
+} from './apitypes';
+import {GoogleError} from './googleError';
 
 export class OngoingCall {
   callback: APICallback;
@@ -59,7 +59,7 @@ export class OngoingCall {
     if (this.cancelFunc) {
       this.cancelFunc();
     } else {
-      const error = new GoogleError("cancelled");
+      const error = new GoogleError('cancelled');
       error.code = Status.CANCELLED;
       this.callback!(error);
     }
@@ -115,7 +115,7 @@ export class OngoingCallPromise extends OngoingCall {
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
       } else {
-        throw new GoogleError("Neither error nor response are defined");
+        throw new GoogleError('Neither error nor response are defined');
       }
     };
     const promise = new Promise((resolve, reject) => {

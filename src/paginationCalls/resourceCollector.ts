@@ -18,7 +18,7 @@ import {
   SimpleCallbackFunction,
   NextPageRequestType,
   RequestType
-} from "../apitypes";
+} from '../apitypes';
 
 /**
  * ResourceCollector class implements asynchronous logic of calling the API call that supports pagination,

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-"use strict";
+'use strict';
 
-const EchoClient = require("./echo_client");
+const EchoClient = require('./echo_client');
 
 module.exports.EchoClient = EchoClient;

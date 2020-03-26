@@ -14,30 +14,30 @@
  * limitations under the License.
  */
 
-import { assert } from "chai";
-import * as sinon from "sinon";
-import { describe, it } from "mocha";
+import {assert} from 'chai';
+import * as sinon from 'sinon';
+import {describe, it} from 'mocha';
 
-import { warn } from "../../src/warnings";
+import {warn} from '../../src/warnings';
 
-describe("warnings", () => {
-  it("should warn the given code once with the first message", done => {
-    const stub = sinon.stub(process, "emitWarning");
-    warn("code1", "message1-1");
-    warn("code1", "message1-2");
-    warn("code1", "message1-3");
-    assert(stub.calledOnceWith("message1-1"));
+describe('warnings', () => {
+  it('should warn the given code once with the first message', done => {
+    const stub = sinon.stub(process, 'emitWarning');
+    warn('code1', 'message1-1');
+    warn('code1', 'message1-2');
+    warn('code1', 'message1-3');
+    assert(stub.calledOnceWith('message1-1'));
     stub.restore();
     done();
   });
-  it("should warn each code once", done => {
-    const stub = sinon.stub(process, "emitWarning");
-    warn("codeA", "messageA-1");
-    warn("codeB", "messageB-1");
-    warn("codeA", "messageA-2");
-    warn("codeB", "messageB-2");
-    warn("codeC", "messageC-1");
-    warn("codeA", "messageA-3");
+  it('should warn each code once', done => {
+    const stub = sinon.stub(process, 'emitWarning');
+    warn('codeA', 'messageA-1');
+    warn('codeB', 'messageB-1');
+    warn('codeA', 'messageA-2');
+    warn('codeB', 'messageB-2');
+    warn('codeC', 'messageC-1');
+    warn('codeA', 'messageA-3');
     assert.strictEqual(stub.callCount, 3);
     stub.restore();
     done();

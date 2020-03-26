@@ -19,4 +19,4 @@
 // (NOTE: echo.proto was taken from gapic-showcase/schema/v1beta1
 //  commit hash: 74e71466e0d5badb3167900a553a6afea62b6e3d)
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-export const echoProtoJson = require("./google-gax-packaging-test-app/protos/protos.json");
+export const echoProtoJson = require('./google-gax-packaging-test-app/protos/protos.json');

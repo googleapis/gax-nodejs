@@ -16,19 +16,19 @@
 
 /* This file describes the gRPC-streaming. */
 
-import { Duplex, DuplexOptions, Readable, Stream, Writable } from "stream";
+import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
 
 import {
   APICallback,
   CancellableStream,
   GRPCCallResult,
   SimpleCallbackFunction
-} from "../apitypes";
+} from '../apitypes';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const duplexify: DuplexifyConstructor = require("duplexify");
+const duplexify: DuplexifyConstructor = require('duplexify');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const retryRequest = require("retry-request");
+const retryRequest = require('retry-request');
 
 // Directly copy over Duplexify interfaces
 export interface DuplexifyOptions extends DuplexOptions {
@@ -112,7 +112,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {Stream} stream - The API request stream.
    */
   forwardEvents(stream: Stream) {
-    const eventsToForward = ["metadata", "response", "status"];
+    const eventsToForward = ['metadata', 'response', 'status'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
@@ -123,14 +123,14 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     // see:
     // https://github.com/GoogleCloudPlatform/google-cloud-node/pull/1775#issuecomment-259141029
     // https://github.com/GoogleCloudPlatform/google-cloud-node/blob/116436fa789d8b0f7fc5100b19b424e3ec63e6bf/packages/common/src/grpc-service.js#L355
-    stream.on("metadata", metadata => {
+    stream.on('metadata', metadata => {
       // Create a response object with succeeds.
       // TODO: unify this logic with the decoration of gRPC response when it's
       // added. see: https://github.com/googleapis/gax-nodejs/issues/65
-      stream.emit("response", {
+      stream.emit('response', {
         code: 200,
-        details: "",
-        message: "OK",
+        details: '',
+        message: 'OK',
         metadata
       });
     });

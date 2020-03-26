@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import * as grpcProtoLoader from "@grpc/proto-loader";
-import * as fs from "fs";
-import { GoogleAuth, GoogleAuthOptions } from "google-auth-library";
-import * as grpc from "@grpc/grpc-js";
-import { OutgoingHttpHeaders } from "http";
-import * as path from "path";
-import * as protobuf from "protobufjs";
-import * as semver from "semver";
-import * as walk from "walkdir";
+import * as grpcProtoLoader from '@grpc/proto-loader';
+import * as fs from 'fs';
+import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import * as grpc from '@grpc/grpc-js';
+import {OutgoingHttpHeaders} from 'http';
+import * as path from 'path';
+import * as protobuf from 'protobufjs';
+import * as semver from 'semver';
+import * as walk from 'walkdir';
 
-import * as gax from "./gax";
-import { ClientOptions } from "@grpc/grpc-js/build/src/client";
+import * as gax from './gax';
+import {ClientOptions} from '@grpc/grpc-js/build/src/client';
 
-const googleProtoFilesDir = path.join(__dirname, "..", "..", "protos");
+const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
@@ -37,7 +37,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 // GoogleProtoFilesRoot below)
 const COMMON_PROTO_FILES = walk
   .sync(googleProtoFilesDir)
-  .filter(f => path.extname(f) === ".proto")
+  .filter(f => path.extname(f) === '.proto')
   .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
@@ -98,20 +98,20 @@ export class GrpcClient {
     this.auth = options.auth || new GoogleAuth(options);
     this.fallback = false;
 
-    const minimumVersion = "10.0.0";
+    const minimumVersion = '10.0.0';
     if (semver.lt(process.version, minimumVersion)) {
       const errorMessage =
         `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit: ` +
-        "https://github.com/googleapis/google-cloud-node#supported-nodejs-versions";
+        'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
       throw new Error(errorMessage);
     }
 
-    if ("grpc" in options) {
+    if ('grpc' in options) {
       this.grpc = options.grpc!;
-      this.grpcVersion = "";
+      this.grpcVersion = '';
     } else {
       this.grpc = grpc;
-      this.grpcVersion = require("@grpc/grpc-js/package.json").version;
+      this.grpcVersion = require('@grpc/grpc-js/package.json').version;
     }
   }
 
@@ -187,7 +187,7 @@ export class GrpcClient {
     } else if (COMMON_PROTO_FILES.indexOf(filename) > -1) {
       return path.join(googleProtoFilesDir, filename);
     }
-    throw new Error(filename + " could not be found in " + protoPath);
+    throw new Error(filename + ' could not be found in ' + protoPath);
   }
 
   metadataBuilder(headers: OutgoingHttpHeaders) {
@@ -210,7 +210,7 @@ export class GrpcClient {
       let metadata = baseMetadata;
       if (moreHeaders) {
         for (const key in moreHeaders) {
-          if (key.toLowerCase() !== "x-goog-api-client") {
+          if (key.toLowerCase() !== 'x-goog-api-client') {
             if (!copied) {
               copied = true;
               metadata = metadata.clone();
@@ -250,7 +250,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       this.grpc.status,
-      { metadataBuilder: this.metadataBuilder(headers) }
+      {metadataBuilder: this.metadataBuilder(headers)}
     );
   }
 
@@ -267,12 +267,12 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
-    const serviceAddress = options.servicePath + ":" + options.port;
+    const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
     const grpcOptions: ClientOptions = {};
     Object.keys(options).forEach(key => {
-      if (key.startsWith("grpc.")) {
-        grpcOptions[key.replace(/^grpc\./, "")] = options[key] as
+      if (key.startsWith('grpc.')) {
+        grpcOptions[key.replace(/^grpc\./, '')] = options[key] as
           | string
           | number;
       }
@@ -320,7 +320,7 @@ export class GoogleProtoFilesRoot extends protobuf.Root {
     // Fully qualified paths don't need to be resolved.
     if (path.isAbsolute(includePath)) {
       if (!fs.existsSync(includePath)) {
-        throw new Error("The include `" + includePath + "` was not found.");
+        throw new Error('The include `' + includePath + '` was not found.');
       }
       return includePath;
     }
@@ -343,7 +343,7 @@ export class GoogleProtoFilesRoot extends protobuf.Root {
       found = fs.existsSync(path.join(current, includePath));
     }
     if (!found) {
-      throw new Error("The include `" + includePath + "` was not found.");
+      throw new Error('The include `' + includePath + '` was not found.');
     }
     return path.join(current, includePath);
   }

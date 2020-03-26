@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as protobuf from "protobufjs";
+import * as protobuf from 'protobufjs';
 
 interface ProtobufAny {
   type_url: string;
@@ -40,10 +40,10 @@ export class FallbackErrorDecoder {
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const errorProtoJson = require("../../protos/status.json");
+    const errorProtoJson = require('../../protos/status.json');
     this.root = protobuf.Root.fromJSON(errorProtoJson);
-    this.anyType = this.root.lookupType("google.protobuf.Any");
-    this.statusType = this.root.lookupType("google.rpc.Status");
+    this.anyType = this.root.lookupType('google.protobuf.Any');
+    this.statusType = this.root.lookupType('google.rpc.Status');
   }
 
   decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {

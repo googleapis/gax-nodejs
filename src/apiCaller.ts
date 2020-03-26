@@ -20,13 +20,13 @@ import {
   GRPCCall,
   ResultTuple,
   SimpleCallbackFunction
-} from "./apitypes";
-import { CancellablePromise, OngoingCall, OngoingCallPromise } from "./call";
-import { Descriptor } from "./descriptor";
-import { CallSettings } from "./gax";
-import { GoogleError } from "./googleError";
-import { NormalApiCaller } from "./normalCalls/normalApiCaller";
-import { StreamProxy } from "./streamingCalls/streaming";
+} from './apitypes';
+import {CancellablePromise, OngoingCall, OngoingCallPromise} from './call';
+import {Descriptor} from './descriptor';
+import {CallSettings} from './gax';
+import {GoogleError} from './googleError';
+import {NormalApiCaller} from './normalCalls/normalApiCaller';
+import {StreamProxy} from './streamingCalls/streaming';
 
 /**
  * An interface for all kinds of API callers (normal, that just calls API, and

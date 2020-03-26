@@ -14,32 +14,32 @@
  * limitations under the License.
  */
 
-import * as execa from "execa";
-import * as fs from "fs";
-import * as path from "path";
-import * as rimraf from "rimraf";
-import * as util from "util";
-import { describe, it, before } from "mocha";
+import * as execa from 'execa';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as rimraf from 'rimraf';
+import * as util from 'util';
+import {describe, it, before} from 'mocha';
 
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
-const baseRepoUrl = "https://github.com/googleapis/";
-const testDir = path.join(process.cwd(), ".system-test-run");
-const gaxDir = path.resolve(__dirname, "..", "..", "..");
+const baseRepoUrl = 'https://github.com/googleapis/';
+const testDir = path.join(process.cwd(), '.system-test-run');
+const gaxDir = path.resolve(__dirname, '..', '..', '..');
 
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require("../../../package.json");
+const pkg = require('../../../package.json');
 const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 
 async function latestRelease(cwd: string): Promise<string> {
-  const { stdout } = await execa("git", ["tag", "--list"], { cwd });
+  const {stdout} = await execa('git', ['tag', '--list'], {cwd});
   const tags = stdout
-    .split("\n")
+    .split('\n')
     .filter(str => str.match(/^v\d+\.\d+\.\d+$/))
     .sort((tag1: string, tag2: string): number => {
       const match1 = tag1.match(/^v(\d+)\.(\d+)\.(\d+)$/);
@@ -62,32 +62,32 @@ async function latestRelease(cwd: string): Promise<string> {
 
 async function preparePackage(packageName: string): Promise<void> {
   await execa(
-    "git",
-    ["clone", `${baseRepoUrl}${packageName}.git`, packageName],
-    { stdio: "inherit" }
+    'git',
+    ['clone', `${baseRepoUrl}${packageName}.git`, packageName],
+    {stdio: 'inherit'}
   );
   const tag = await latestRelease(packageName);
-  await execa("git", ["checkout", tag], { cwd: packageName, stdio: "inherit" });
+  await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
 
-  const packageJson = path.join(packageName, "package.json");
+  const packageJson = path.join(packageName, 'package.json');
   const packageJsonStr = (await readFile(packageJson)).toString();
   const packageJsonObj = JSON.parse(packageJsonStr);
-  packageJsonObj["dependencies"]["google-gax"] = `file:${gaxTarball}`;
-  await writeFile(packageJson, JSON.stringify(packageJsonObj, null, "  "));
-  await execa("npm", ["install"], { cwd: packageName, stdio: "inherit" });
+  packageJsonObj['dependencies']['google-gax'] = `file:${gaxTarball}`;
+  await writeFile(packageJson, JSON.stringify(packageJsonObj, null, '  '));
+  await execa('npm', ['install'], {cwd: packageName, stdio: 'inherit'});
 }
 
 async function runSystemTest(packageName: string): Promise<void> {
-  await execa("npm", ["run", "system-test"], {
+  await execa('npm', ['run', 'system-test'], {
     cwd: packageName,
-    stdio: "inherit"
+    stdio: 'inherit'
   });
 }
 
-describe("Run system tests for some libraries", () => {
+describe('Run system tests for some libraries', () => {
   before(async () => {
-    console.log("Packing google-gax...");
-    await execa("npm", ["pack"], { cwd: gaxDir, stdio: "inherit" });
+    console.log('Packing google-gax...');
+    await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
 
     if (!fs.existsSync(gaxTarball)) {
       throw new Error(`npm pack tarball ${gaxTarball} does not exist`);
@@ -99,21 +99,21 @@ describe("Run system tests for some libraries", () => {
     console.log(`Running tests in ${testDir}.`);
   });
   // Video intelligence API has long running operations
-  describe("video-intelligence", () => {
+  describe('video-intelligence', () => {
     before(async () => {
-      await preparePackage("nodejs-video-intelligence");
+      await preparePackage('nodejs-video-intelligence');
     });
-    it("should pass system tests", async () => {
-      await runSystemTest("nodejs-video-intelligence");
+    it('should pass system tests', async () => {
+      await runSystemTest('nodejs-video-intelligence');
     });
   });
   // Speech only has smoke tests, but still...
-  describe("speech", () => {
+  describe('speech', () => {
     before(async () => {
-      await preparePackage("nodejs-speech");
+      await preparePackage('nodejs-speech');
     });
-    it("should pass system tests", async () => {
-      await runSystemTest("nodejs-speech");
+    it('should pass system tests', async () => {
+      await runSystemTest('nodejs-speech');
     });
   });
 });

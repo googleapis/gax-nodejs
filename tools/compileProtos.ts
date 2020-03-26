@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
-import * as path from "path";
-import * as util from "util";
-import * as pbjs from "protobufjs/cli/pbjs";
-import * as pbts from "protobufjs/cli/pbts";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as util from 'util';
+import * as pbjs from 'protobufjs/cli/pbjs';
+import * as pbts from 'protobufjs/cli/pbts';
 
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
@@ -77,12 +77,12 @@ async function findProtoJsonFiles(directory: string): Promise<string[]> {
  * @return {string} Normalized path.
  */
 function normalizePath(filePath: string): string {
-  return path.join(...filePath.split("/"));
+  return path.join(...filePath.split('/'));
 }
 
 function getAllEnums(dts: string): Set<string> {
   const result = new Set<string>();
-  const lines = dts.split("\n");
+  const lines = dts.split('\n');
   const nestedIds = [];
   let currentEnum = undefined;
   for (const line of lines) {
@@ -92,8 +92,8 @@ function getAllEnums(dts: string): Set<string> {
     if (match) {
       const [, keyword, id] = match;
       nestedIds.push(id);
-      if (keyword === "enum") {
-        currentEnum = nestedIds.join(".");
+      if (keyword === 'enum') {
+        currentEnum = nestedIds.join('.');
         result.add(currentEnum);
       }
       continue;
@@ -109,7 +109,7 @@ function getAllEnums(dts: string): Set<string> {
 }
 
 function updateDtsTypes(dts: string, enums: Set<string>): string {
-  const lines = dts.split("\n");
+  const lines = dts.split('\n');
   const result: string[] = [];
 
   for (const line of lines) {
@@ -128,7 +128,7 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
     }
 
     if (line.match(/\(number\|Long(?:\|null)?\)/)) {
-      typeName = "Long";
+      typeName = 'Long';
     }
 
     let replaced = line;
@@ -138,22 +138,22 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
         typeName,
         `${typeName}|keyof typeof ${typeName}`
       );
-    } else if (typeName === "Uint8Array") {
+    } else if (typeName === 'Uint8Array') {
       // bytes: Uint8Array => Uint8Array|string to allow base64-encoded strings
       replaced = replaced.replace(typeName, `${typeName}|string`);
-    } else if (typeName === "Long") {
+    } else if (typeName === 'Long') {
       // Longs can be passed as strings :(
       // number|Long => number|Long|string
-      replaced = replaced.replace("number|Long", "number|Long|string");
+      replaced = replaced.replace('number|Long', 'number|Long|string');
     }
 
     // add brackets if we have added a |
-    replaced = replaced.replace(/: ([\w.]+\|[ \w.|]+);/, ": ($1);");
+    replaced = replaced.replace(/: ([\w.]+\|[ \w.|]+);/, ': ($1);');
 
     result.push(replaced);
   }
 
-  return result.join("\n");
+  return result.join('\n');
 }
 
 function fixDtsFile(dts: string): string {
@@ -202,35 +202,35 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
  */
 async function compileProtos(protos: string[]): Promise<void> {
   // generate protos.json file from proto list
-  const jsonOutput = path.join("protos", "protos.json");
+  const jsonOutput = path.join('protos', 'protos.json');
   if (protos.length === 0) {
     // no input file, just emit an empty object
-    await writeFile(jsonOutput, "{}");
+    await writeFile(jsonOutput, '{}');
     return;
   }
   const pbjsArgs4JSON = [
-    "--target",
-    "json",
-    "-p",
-    path.join(__dirname, "..", "..", "protos"),
-    "-p",
-    "protos",
-    "-o",
+    '--target',
+    'json',
+    '-p',
+    path.join(__dirname, '..', '..', 'protos'),
+    '-p',
+    'protos',
+    '-o',
     jsonOutput
   ];
   pbjsArgs4JSON.push(...protos);
   await pbjsMain(pbjsArgs4JSON);
 
   // generate protos/protos.js from protos.json
-  const jsOutput = path.join("protos", "protos.js");
+  const jsOutput = path.join('protos', 'protos.js');
   const pbjsArgs4js = [
-    "--target",
-    "static-module",
-    "-p",
-    path.join(__dirname, "..", "..", "protos"),
-    "-p",
-    "protos",
-    "-o",
+    '--target',
+    'static-module',
+    '-p',
+    path.join(__dirname, '..', '..', 'protos'),
+    '-p',
+    'protos',
+    '-o',
     jsOutput
   ];
   pbjsArgs4js.push(...protos);
@@ -242,8 +242,8 @@ async function compileProtos(protos: string[]): Promise<void> {
   await writeFile(jsOutput, jsResult);
 
   // generate protos/protos.d.ts
-  const tsOutput = path.join("protos", "protos.d.ts");
-  const pbjsArgs4ts = [jsOutput, "-o", tsOutput];
+  const tsOutput = path.join('protos', 'protos.d.ts');
+  const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 
   let tsResult = (await readFile(tsOutput)).toString();

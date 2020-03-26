@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import { EventEmitter } from "events";
-import { Status } from "../status";
+import {EventEmitter} from 'events';
+import {Status} from '../status';
 
-import { GaxCallPromise, ResultTuple } from "../apitypes";
-import { CancellablePromise } from "../call";
-import { BackoffSettings, CallOptions } from "../gax";
-import { GoogleError } from "../googleError";
-import { Metadata } from "../grpc";
-import { LongRunningDescriptor } from "./longRunningDescriptor";
-import * as operationProtos from "../../protos/operations";
+import {GaxCallPromise, ResultTuple} from '../apitypes';
+import {CancellablePromise} from '../call';
+import {BackoffSettings, CallOptions} from '../gax';
+import {GoogleError} from '../googleError';
+import {Metadata} from '../grpc';
+import {LongRunningDescriptor} from './longRunningDescriptor';
+import * as operationProtos from '../../protos/operations';
 
 /**
  * @callback GetOperationCallback
@@ -104,8 +104,8 @@ export class Operation extends EventEmitter {
    * @private
    */
   _listenForEvents() {
-    this.on("newListener", event => {
-      if (event === "complete") {
+    this.on('newListener', event => {
+      if (event === 'complete') {
         this.completeListeners++;
 
         if (!this.hasActiveListeners) {
@@ -115,8 +115,8 @@ export class Operation extends EventEmitter {
       }
     });
 
-    this.on("removeListener", event => {
-      if (event === "complete" && --this.completeListeners === 0) {
+    this.on('removeListener', event => {
+      if (event === 'complete' && --this.completeListeners === 0) {
         this.hasActiveListeners = false;
       }
     });
@@ -182,7 +182,7 @@ export class Operation extends EventEmitter {
     }
 
     this.currentCallPromise_ = (operationsClient.getOperation as GaxCallPromise)(
-      { name: this.latestResponse.name },
+      {name: this.latestResponse.name},
       this._callOptions!
     );
 
@@ -204,7 +204,7 @@ export class Operation extends EventEmitter {
     let metadata: Metadata;
 
     if (op.done) {
-      if (op.result === "error") {
+      if (op.result === 'error') {
         const error = new GoogleError(op.error!.message!);
         error.code = op.error!.code!;
         this.error = error;
@@ -280,16 +280,16 @@ export class Operation extends EventEmitter {
 
       if (now.getTime() >= deadline) {
         const error = new GoogleError(
-          "Total timeout exceeded before any response was received"
+          'Total timeout exceeded before any response was received'
         );
         error.code = Status.DEADLINE_EXCEEDED;
-        setImmediate(emit, "error", error);
+        setImmediate(emit, 'error', error);
         return;
       }
 
       self.getOperation((err, result, metadata, rawResponse) => {
         if (err) {
-          setImmediate(emit, "error", err);
+          setImmediate(emit, 'error', err);
           return;
         }
 
@@ -303,7 +303,7 @@ export class Operation extends EventEmitter {
                   previousMetadataBytes
                 )))
           ) {
-            setImmediate(emit, "progress", metadata, rawResponse);
+            setImmediate(emit, 'progress', metadata, rawResponse);
             previousMetadataBytes = rawResponse!.metadata!.value!;
           }
           // special case: some APIs fail to set either result or error
@@ -311,10 +311,10 @@ export class Operation extends EventEmitter {
           // Don't hang forever in this case.
           if (rawResponse!.done) {
             const error = new GoogleError(
-              "Long running operation has finished but there was no result"
+              'Long running operation has finished but there was no result'
             );
             error.code = Status.UNKNOWN;
-            setImmediate(emit, "error", error);
+            setImmediate(emit, 'error', error);
             return;
           }
           setTimeout(() => {
@@ -325,7 +325,7 @@ export class Operation extends EventEmitter {
           return;
         }
 
-        setImmediate(emit, "complete", result, metadata, rawResponse);
+        setImmediate(emit, 'complete', result, metadata, rawResponse);
       });
     }
     retry();
@@ -339,8 +339,8 @@ export class Operation extends EventEmitter {
    */
   promise() {
     return new Promise((resolve, reject) => {
-      this.on("error", reject).on(
-        "complete",
+      this.on('error', reject).on(
+        'complete',
         (result, metadata, rawResponse) => {
           resolve([result, metadata, rawResponse]);
         }

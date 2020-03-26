@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-"use strict";
+'use strict';
 
-const gapicConfig = require("./echo_client_config.json");
+const gapicConfig = require('./echo_client_config.json');
 // eslint-disable-next-line node/no-missing-require
-const gax = require("google-gax");
-const path = require("path");
+const gax = require('google-gax');
+const path = require('path');
 
-const VERSION = require("../../package.json").version;
+const VERSION = require('../../package.json').version;
 
 /**
  * This service is used showcase the four main types of rpcs - unary, server
@@ -102,14 +102,14 @@ class EchoClient {
 
     const nodejsProtoPath = path.join(
       __dirname,
-      "..",
-      "..",
-      "protos",
-      "protos.json"
+      '..',
+      '..',
+      'protos',
+      'protos.json'
     );
     const protos = gaxGrpc.loadProto(
       global.isBrowser || opts.fallback
-        ? require("../../protos/protos.json")
+        ? require('../../protos/protos.json')
         : nodejsProtoPath
     );
 
@@ -118,9 +118,9 @@ class EchoClient {
     // pages). Denote the keys used for pagination and results.
     this._descriptors.page = {
       pagedExpand: new gaxModule.PageDescriptor(
-        "pageToken",
-        "nextPageToken",
-        "responses"
+        'pageToken',
+        'nextPageToken',
+        'responses'
       )
     };
 
@@ -138,7 +138,7 @@ class EchoClient {
 
     const protoFilesRoot =
       global.isBrowser || opts.fallback
-        ? gaxModule.protobuf.Root.fromJSON(require("../../protos/protos.json"))
+        ? gaxModule.protobuf.Root.fromJSON(require('../../protos/protos.json'))
         : gaxModule.protobuf.loadSync(nodejsProtoPath);
 
     // This API contains "long-running operations", which return a
@@ -150,10 +150,10 @@ class EchoClient {
     }).operationsClient(opts);
 
     const waitResponse = protoFilesRoot.lookup(
-      "google.showcase.v1beta1.WaitResponse"
+      'google.showcase.v1beta1.WaitResponse'
     );
     const waitMetadata = protoFilesRoot.lookup(
-      "google.showcase.v1beta1.WaitMetadata"
+      'google.showcase.v1beta1.WaitMetadata'
     );
 
     this._descriptors.longrunning = {
@@ -166,10 +166,10 @@ class EchoClient {
 
     // Put together the default options sent with requests.
     const defaults = gaxGrpc.constructSettings(
-      "google.showcase.v1beta1.Echo",
+      'google.showcase.v1beta1.Echo',
       gapicConfig,
       opts.clientConfig,
-      { "x-goog-api-client": clientHeader.join(" ") }
+      {'x-goog-api-client': clientHeader.join(' ')}
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -181,7 +181,7 @@ class EchoClient {
     // google.showcase.v1beta1.Echo.
     const echoStub = gaxGrpc.createStub(
       global.isBrowser || opts.fallback
-        ? protos.lookupService("google.showcase.v1beta1.Echo")
+        ? protos.lookupService('google.showcase.v1beta1.Echo')
         : protos.google.showcase.v1beta1.Echo,
       opts
     );
@@ -189,12 +189,12 @@ class EchoClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const echoStubMethods = [
-      "echo",
-      "expand",
-      "collect",
-      "chat",
-      "wait",
-      "pagedExpand"
+      'echo',
+      'expand',
+      'collect',
+      'chat',
+      'wait',
+      'pagedExpand'
     ];
     this._innerCallPromises = {};
     for (const methodName of echoStubMethods) {
@@ -220,7 +220,7 @@ class EchoClient {
    * The DNS address for this API service.
    */
   static get servicePath() {
-    return "localhost";
+    return 'localhost';
   }
 
   /**
@@ -228,7 +228,7 @@ class EchoClient {
    * exists for compatibility reasons.
    */
   static get apiEndpoint() {
-    return "localhost";
+    return 'localhost';
   }
 
   /**
@@ -243,7 +243,7 @@ class EchoClient {
    * in this service.
    */
   static get scopes() {
-    return ["https://www.googleapis.com/auth/cloud-platform"];
+    return ['https://www.googleapis.com/auth/cloud-platform'];
   }
 
   /**
@@ -590,7 +590,7 @@ class EchoClient {
     request = request || {};
     const callSettings = new gax.CallSettings(options);
     return this._descriptors.page.pagedExpand.asyncIterate(
-      this._innerCallPromises["pagedExpand"],
+      this._innerCallPromises['pagedExpand'],
       request,
       callSettings
     );

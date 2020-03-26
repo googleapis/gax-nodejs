@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-"use strict";
+'use strict';
 
-const assert = require("assert");
-const grpc = require("@grpc/grpc-js");
+const assert = require('assert');
+const grpc = require('@grpc/grpc-js');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
-  v1beta1: require("./v1beta1")
+  v1beta1: require('./v1beta1')
 });
 
 module.exports.v1beta1 = gapic.v1beta1;
@@ -32,7 +32,7 @@ module.exports.default = Object.assign({}, module.exports);
 if (require.main === module) {
   testShowcase().then(
     () => {
-      console.log("It works!");
+      console.log('It works!');
     },
     err => {
       process.exitCode = 1;
@@ -52,7 +52,7 @@ async function testShowcase() {
       return {
         getRequestHeaders: () => {
           return {
-            Authorization: "Bearer zzzz"
+            Authorization: 'Bearer zzzz'
           };
         }
       };
@@ -61,7 +61,7 @@ async function testShowcase() {
 
   const fallbackClientOpts = {
     fallback: true,
-    protocol: "http",
+    protocol: 'http',
     port: 1337,
     auth: fakeGoogleAuth
   };
@@ -86,10 +86,10 @@ async function testShowcase() {
 
 async function testEcho(client) {
   const request = {
-    content: "test"
+    content: 'test'
   };
   const timer = setTimeout(() => {
-    throw new Error("End-to-end testEcho method fails with timeout");
+    throw new Error('End-to-end testEcho method fails with timeout');
   }, 12000);
   const [response] = await client.echo(request);
   clearTimeout(timer);
@@ -97,32 +97,32 @@ async function testEcho(client) {
 }
 
 async function testExpand(client) {
-  const words = ["nobody", "ever", "reads", "test", "input"];
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
-    content: words.join(" ")
+    content: words.join(' ')
   };
   const result = await new Promise((resolve, reject) => {
     const stream = client.expand(request);
     const result = [];
-    stream.on("data", response => {
+    stream.on('data', response => {
       result.push(response.content);
     });
-    stream.on("end", () => {
+    stream.on('end', () => {
       resolve(result);
     });
-    stream.on("error", reject);
+    stream.on('error', reject);
   });
   assert.deepStrictEqual(words, result);
 }
 
 async function testPagedExpand(client) {
-  const words = ["nobody", "ever", "reads", "test", "input"];
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
-    content: words.join(" "),
+    content: words.join(' '),
     pageSize: 2
   };
   const timer = setTimeout(() => {
-    throw new Error("End-to-end testPagedExpand method fails with timeout");
+    throw new Error('End-to-end testPagedExpand method fails with timeout');
   }, 12000);
   const [response] = await client.pagedExpand(request);
   clearTimeout(timer);
@@ -131,16 +131,16 @@ async function testPagedExpand(client) {
 }
 
 async function testPagedExpandAsync(client) {
-  const words = ["nobody", "ever", "reads", "test", "input"];
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
-    content: words.join(" "),
+    content: words.join(' '),
     pageSize: 2
   };
   const response = [];
   const iterable = client.pagedExpandAsync(request);
   const timer = setTimeout(() => {
     throw new Error(
-      "End-to-end testPagedExpandAsync method fails with timeout"
+      'End-to-end testPagedExpandAsync method fails with timeout'
     );
   }, 12000);
   for await (const resource of iterable) {
@@ -151,7 +151,7 @@ async function testPagedExpandAsync(client) {
 }
 
 async function testCollect(client) {
-  const words = ["nobody", "ever", "reads", "test", "input"];
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const result = await new Promise((resolve, reject) => {
     const stream = client.collect((err, result) => {
       if (err) {
@@ -161,37 +161,37 @@ async function testCollect(client) {
       resolve(result);
     });
     for (const word of words) {
-      const request = { content: word };
+      const request = {content: word};
       stream.write(request);
     }
     stream.end();
   });
-  assert.deepStrictEqual(result.content, words.join(" "));
+  assert.deepStrictEqual(result.content, words.join(' '));
 }
 
 async function testChat(client) {
   const words = [
-    "nobody",
-    "ever",
-    "reads",
-    "test",
-    "input",
-    "especially",
-    "this",
-    "one"
+    'nobody',
+    'ever',
+    'reads',
+    'test',
+    'input',
+    'especially',
+    'this',
+    'one'
   ];
   const result = await new Promise((resolve, reject) => {
     const result = [];
     const stream = client.chat();
-    stream.on("data", response => {
+    stream.on('data', response => {
       result.push(response.content);
     });
-    stream.on("end", () => {
+    stream.on('end', () => {
       resolve(result);
     });
-    stream.on("error", reject);
+    stream.on('error', reject);
     for (const word of words) {
-      stream.write({ content: word });
+      stream.write({content: word});
     }
     stream.end();
   });
@@ -205,7 +205,7 @@ async function testWait(client) {
       nanos: 0
     },
     success: {
-      content: "done"
+      content: 'done'
     }
   };
   const [operation] = await client.wait(request);

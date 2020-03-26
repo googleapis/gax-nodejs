@@ -14,31 +14,31 @@
  * limitations under the License.
  */
 
-"use strict";
+'use strict';
 
-const assert = require("assert");
-const { describe, it } = require("mocha");
-const through2 = require("through2");
+const assert = require('assert');
+const {describe, it} = require('mocha');
+const through2 = require('through2');
 
-const showcaseModule = require("../src");
+const showcaseModule = require('../src');
 
 const FAKE_STATUS_CODE = 1;
 const error = new Error();
 error.code = FAKE_STATUS_CODE;
 
-describe("EchoClient", () => {
-  describe("echo", () => {
-    it("invokes echo without error", done => {
+describe('EchoClient', () => {
+  describe('echo', () => {
+    it('invokes echo without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
       const request = {};
 
       // Mock response
-      const content = "content951530617";
+      const content = 'content951530617';
       const expectedResponse = {
         content: content
       };
@@ -56,10 +56,10 @@ describe("EchoClient", () => {
       });
     });
 
-    it("invokes echo with error", done => {
+    it('invokes echo with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
@@ -71,24 +71,24 @@ describe("EchoClient", () => {
       client.echo(request, (err, response) => {
         assert(err instanceof Error);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        assert(typeof response === "undefined");
+        assert(typeof response === 'undefined');
         done();
       });
     });
   });
 
-  describe("expand", () => {
-    it("invokes expand without error", done => {
+  describe('expand', () => {
+    it('invokes expand without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
       const request = {};
 
       // Mock response
-      const content = "content951530617";
+      const content = 'content951530617';
       const expectedResponse = {
         content: content
       };
@@ -100,21 +100,21 @@ describe("EchoClient", () => {
       );
 
       const stream = client.expand(request);
-      stream.on("data", response => {
+      stream.on('data', response => {
         assert.deepStrictEqual(response, expectedResponse);
         done();
       });
-      stream.on("error", err => {
+      stream.on('error', err => {
         done(err);
       });
 
       stream.write();
     });
 
-    it("invokes expand with error", done => {
+    it('invokes expand with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
@@ -128,10 +128,10 @@ describe("EchoClient", () => {
       );
 
       const stream = client.expand(request);
-      stream.on("data", () => {
+      stream.on('data', () => {
         assert.fail();
       });
-      stream.on("error", err => {
+      stream.on('error', err => {
         assert(err instanceof Error);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
         done();
@@ -141,18 +141,18 @@ describe("EchoClient", () => {
     });
   });
 
-  describe("pagedExpand", () => {
-    it("invokes pagedExpand without error", done => {
+  describe('pagedExpand', () => {
+    it('invokes pagedExpand without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
       const request = {};
 
       // Mock response
-      const nextPageToken = "";
+      const nextPageToken = '';
       const responsesElement = {};
       const responses = [responsesElement];
       const expectedResponse = {
@@ -177,10 +177,10 @@ describe("EchoClient", () => {
       });
     });
 
-    it("invokes pagedExpand using async iterator", async () => {
+    it('invokes pagedExpand using async iterator', async () => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
@@ -195,8 +195,8 @@ describe("EchoClient", () => {
               async next() {
                 count = count + 1;
                 if (count === 10)
-                  return Promise.resolve({ done: true, value: undefined });
-                return Promise.resolve({ done: false, value: count });
+                  return Promise.resolve({done: true, value: undefined});
+                return Promise.resolve({done: false, value: count});
               }
             };
           }
@@ -213,10 +213,10 @@ describe("EchoClient", () => {
       assert.deepStrictEqual(response, expectedResponse);
     });
 
-    it("invokes pagedExpand with error", done => {
+    it('invokes pagedExpand with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
@@ -232,24 +232,24 @@ describe("EchoClient", () => {
       client.pagedExpand(request, (err, response) => {
         assert(err instanceof Error);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        assert(typeof response === "undefined");
+        assert(typeof response === 'undefined');
         done();
       });
     });
   });
 
-  describe("chat", () => {
-    it("invokes chat without error", done => {
+  describe('chat', () => {
+    it('invokes chat without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
       const request = {};
 
       // Mock response
-      const content = "content951530617";
+      const content = 'content951530617';
       const expectedResponse = {
         content: content
       };
@@ -262,21 +262,21 @@ describe("EchoClient", () => {
 
       const stream = client
         .chat()
-        .on("data", response => {
+        .on('data', response => {
           assert.deepStrictEqual(response, expectedResponse);
           done();
         })
-        .on("error", err => {
+        .on('error', err => {
           done(err);
         });
 
       stream.write(request);
     });
 
-    it("invokes chat with error", done => {
+    it('invokes chat with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
@@ -291,10 +291,10 @@ describe("EchoClient", () => {
 
       const stream = client
         .chat()
-        .on("data", () => {
+        .on('data', () => {
           assert.fail();
         })
-        .on("error", err => {
+        .on('error', err => {
           assert(err instanceof Error);
           assert.strictEqual(err.code, FAKE_STATUS_CODE);
           done();
@@ -304,18 +304,18 @@ describe("EchoClient", () => {
     });
   });
 
-  describe("wait", () => {
-    it("invokes wait without error", done => {
+  describe('wait', () => {
+    it('invokes wait without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
       const request = {};
 
       // Mock response
-      const content = "content951530617";
+      const content = 'content951530617';
       const expectedResponse = {
         content: content
       };
@@ -341,10 +341,10 @@ describe("EchoClient", () => {
         });
     });
 
-    it("invokes wait with error", done => {
+    it('invokes wait with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
 
       // Mock request
@@ -373,10 +373,10 @@ describe("EchoClient", () => {
         });
     });
 
-    it("has longrunning decoder functions", () => {
+    it('has longrunning decoder functions', () => {
       const client = new showcaseModule.v1beta1.EchoClient({
-        credentials: { client_email: "bogus", private_key: "bogus" },
-        projectId: "bogus"
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus'
       });
       assert(
         client._descriptors.longrunning.wait.responseDecoder instanceof Function

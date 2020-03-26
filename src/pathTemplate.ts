@@ -18,11 +18,11 @@
  * Path template utility.
  */
 
-import has = require("lodash.has");
-import * as util from "util";
-import * as extras from "./parserExtras";
+import has = require('lodash.has');
+import * as util from 'util';
+import * as extras from './parserExtras';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const parser = require("./pathTemplateParser");
+const parser = require('./pathTemplateParser');
 
 export interface ParseResult {
   size: number;
@@ -66,7 +66,7 @@ export class PathTemplate {
    * @throws {TypeError} if path can't be matched to this template
    */
   match(path: string): Bindings {
-    const pathSegments = path.split("/");
+    const pathSegments = path.split('/');
     const bindings: Bindings = {};
     let segmentCount = this.size;
     let current: string;
@@ -78,13 +78,13 @@ export class PathTemplate {
       if (segment.kind === extras.BINDING) {
         current = segment.literal;
       } else if (segment.kind === extras.TERMINAL) {
-        if (segment.literal === "*") {
+        if (segment.literal === '*') {
           bindings[current] = pathSegments[index];
           index += 1;
-        } else if (segment.literal === "**") {
+        } else if (segment.literal === '**') {
           const size = pathSegments.length - segmentCount + 1;
           segmentCount += size - 1;
-          bindings[current] = pathSegments.slice(index, index + size).join("/");
+          bindings[current] = pathSegments.slice(index, index + size).join('/');
           index += size;
         } else if (segment.literal === pathSegments[index]) {
           index += 1;
@@ -101,7 +101,7 @@ export class PathTemplate {
     });
     if (index !== pathSegments.length || index !== segmentCount) {
       const msg = util.format(
-        "match error: could not instantiate a path template from %s",
+        'match error: could not instantiate a path template from %s',
         path
       );
       throw new TypeError(msg);
@@ -124,7 +124,7 @@ export class PathTemplate {
       if (segment.kind === extras.BINDING) {
         if (!has(bindings, segment.literal)) {
           const msg = util.format(
-            "Value for key %s is not provided in %s",
+            'Value for key %s is not provided in %s',
             segment.literal,
             bindings
           );
@@ -164,22 +164,22 @@ export class PathTemplate {
  *   format.
  */
 function formatSegments(segments: Segment[]): string {
-  let out = "";
+  let out = '';
   let slash = true;
   segments.forEach(segment => {
     if (segment.kind === extras.TERMINAL) {
       if (slash) {
-        out += "/";
+        out += '/';
       }
       out += segment.literal;
       return;
     }
     slash = true;
     if (segment.kind === extras.BINDING) {
-      out += "/{" + segment.literal + "=";
+      out += '/{' + segment.literal + '=';
       slash = false;
     } else {
-      out += segment.literal + "}";
+      out += segment.literal + '}';
     }
   });
   return out.substring(1);

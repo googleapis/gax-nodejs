@@ -17,32 +17,32 @@
 // Karma configuration
 // Use `npm run browser-test` to run browser tests with Karma.
 
-const isDocker = require("is-docker")();
+const isDocker = require('is-docker')();
 
-const webpackConfig = require("./webpack.config.js");
-webpackConfig.performance = { hints: false };
-webpackConfig.resolve.alias["google-gax"] = __dirname;
-process.env.CHROME_BIN = require("puppeteer").executablePath();
+const webpackConfig = require('./webpack.config.js');
+webpackConfig.performance = {hints: false};
+webpackConfig.resolve.alias['google-gax'] = __dirname;
+process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function(config) {
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: "",
+    basePath: '',
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ["mocha", "child-process"],
+    frameworks: ['mocha', 'child-process'],
 
     client: {
       childProcess: {
-        path: "./build/test/system-test/showcase-server.js",
+        path: './build/test/system-test/showcase-server.js',
         args: [],
         options: {}
       }
     },
 
     // list of files / patterns to load in the browser
-    files: ["./test/browser-test/test.*.ts"],
+    files: ['./test/browser-test/test.*.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -50,9 +50,9 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      "./src/*.ts": ["coverage"],
-      "./src/**/*.ts": ["coverage"],
-      "./test/browser-test/*.ts": ["webpack", "sourcemap"]
+      './src/*.ts': ['coverage'],
+      './src/**/*.ts': ['coverage'],
+      './test/browser-test/*.ts': ['webpack', 'sourcemap']
     },
 
     webpack: webpackConfig,
@@ -60,10 +60,10 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ["progress", "coverage", "remap-coverage"],
+    reporters: ['progress', 'coverage', 'remap-coverage'],
 
-    coverageReporter: { type: "in-memory" },
-    remapCoverageReporter: { html: "./coverage" },
+    coverageReporter: {type: 'in-memory'},
+    remapCoverageReporter: {html: './coverage'},
 
     // web server port
     port: 9876,
@@ -80,13 +80,13 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ["ChromeCustom"],
+    browsers: ['ChromeCustom'],
     customLaunchers: {
       ChromeCustom: {
-        base: "ChromeHeadless",
+        base: 'ChromeHeadless',
         // We must disable the Chrome sandbox when running Chrome inside Docker (Chrome's sandbox needs
         // more permissions than Docker allows by default)
-        flags: isDocker ? ["--no-sandbox"] : []
+        flags: isDocker ? ['--no-sandbox'] : []
       }
     },
 
@@ -100,7 +100,7 @@ module.exports = function(config) {
 
     // set correct MIME type when serving .ts files (already compiled to JavaScript):
     mime: {
-      "text/javascript": ["ts"]
+      'text/javascript': ['ts']
     }
   });
 };

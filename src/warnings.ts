@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { isBrowser } from "./isbrowser";
+import {isBrowser} from './isbrowser';
 
 const emittedWarnings = new Set<string>();
 

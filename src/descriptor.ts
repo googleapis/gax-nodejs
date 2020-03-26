@@ -20,14 +20,14 @@
 // can create its own apiCaller that will handle all the specifics for the given
 // call type.
 
-import { APICaller } from "./apiCaller";
-import { CallSettings } from "./gax";
+import {APICaller} from './apiCaller';
+import {CallSettings} from './gax';
 
 export interface Descriptor {
   getApiCaller(settings: CallSettings): APICaller;
 }
 
-export { LongRunningDescriptor as LongrunningDescriptor } from "./longRunningCalls/longRunningDescriptor";
-export { PageDescriptor } from "./paginationCalls/pageDescriptor";
-export { StreamDescriptor } from "./streamingCalls/streamDescriptor";
-export { BundleDescriptor } from "./bundlingCalls/bundleDescriptor";
+export {LongRunningDescriptor as LongrunningDescriptor} from './longRunningCalls/longRunningDescriptor';
+export {PageDescriptor} from './paginationCalls/pageDescriptor';
+export {StreamDescriptor} from './streamingCalls/streamDescriptor';
+export {BundleDescriptor} from './bundlingCalls/bundleDescriptor';

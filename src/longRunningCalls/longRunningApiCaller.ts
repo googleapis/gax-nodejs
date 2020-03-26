@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { APICaller } from "../apiCaller";
-import { APICallback, GRPCCall, SimpleCallbackFunction } from "../apitypes";
-import { OngoingCall, OngoingCallPromise } from "../call";
+import {APICaller} from '../apiCaller';
+import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
+import {OngoingCall, OngoingCallPromise} from '../call';
 import {
   BackoffSettings,
   CallOptions,
   createDefaultBackoffSettings
-} from "../gax";
-import { GoogleError } from "../googleError";
+} from '../gax';
+import {GoogleError} from '../googleError';
 
-import { Operation } from "./longrunning";
-import { LongRunningDescriptor } from "./longRunningDescriptor";
-import * as operationProtos from "../../protos/operations";
+import {Operation} from './longrunning';
+import {LongRunningDescriptor} from './longRunningDescriptor';
+import * as operationProtos from '../../protos/operations';
 
 export class LongrunningApiCaller implements APICaller {
   longrunningDescriptor: LongRunningDescriptor;

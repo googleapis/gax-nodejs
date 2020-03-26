@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Descriptor } from "../descriptor";
-import { CallSettings } from "../gax";
-import { NormalApiCaller } from "../normalCalls/normalApiCaller";
+import {Descriptor} from '../descriptor';
+import {CallSettings} from '../gax';
+import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
-import { BundleApiCaller } from "./bundleApiCaller";
-import { BundleExecutor } from "./bundleExecutor";
+import {BundleApiCaller} from './bundleApiCaller';
+import {BundleExecutor} from './bundleExecutor';
 
 /**
  * A descriptor for calls that can be bundled into one call.
@@ -63,7 +63,7 @@ export class BundleDescriptor implements Descriptor {
     subresponseField: string | null,
     byteLengthFunction: Function
   ) {
-    if (!byteLengthFunction && typeof subresponseField === "function") {
+    if (!byteLengthFunction && typeof subresponseField === 'function') {
       byteLengthFunction = subresponseField;
       subresponseField = null;
     }

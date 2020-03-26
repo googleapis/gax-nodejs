@@ -14,44 +14,44 @@
  * limitations under the License.
  */
 
-import { expect } from "chai";
-import { describe, it } from "mocha";
+import {expect} from 'chai';
+import {describe, it} from 'mocha';
 
-describe("The PathTemplate parser", () => {
-  it("should load the pegjs generated module ok", () => {
+describe('The PathTemplate parser', () => {
+  it('should load the pegjs generated module ok', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const parser = require("../../src/pathTemplateParser");
+    const parser = require('../../src/pathTemplateParser');
     expect(parser).to.not.eql(null);
   });
 
-  describe("function `parse`", () => {
+  describe('function `parse`', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const parser = require("../../src/pathTemplateParser");
+    const parser = require('../../src/pathTemplateParser');
 
-    it("should succeed with valid inputs", () => {
+    it('should succeed with valid inputs', () => {
       const shouldPass = () => {
-        parser.parse("a/b/**/*/{a=hello/world}");
+        parser.parse('a/b/**/*/{a=hello/world}');
       };
       expect(shouldPass).to.not.throw();
     });
 
-    it("should fail on invalid tokens", () => {
+    it('should fail on invalid tokens', () => {
       const shouldFail = () => {
-        parser.parse("hello/wor* ld}");
+        parser.parse('hello/wor* ld}');
       };
       expect(shouldFail).to.throw();
     });
 
-    it("should fail on unexpected eof", () => {
+    it('should fail on unexpected eof', () => {
       const shouldFail = () => {
-        parser.parse("a/{hello=world");
+        parser.parse('a/{hello=world');
       };
       expect(shouldFail).to.throw();
     });
 
-    it("should fail on inner binding", () => {
+    it('should fail on inner binding', () => {
       const shouldFail = () => {
-        parser.parse("buckets/{hello={world}}");
+        parser.parse('buckets/{hello={world}}');
       };
       expect(shouldFail).to.throw();
     });

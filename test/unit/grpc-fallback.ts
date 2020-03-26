@@ -16,21 +16,21 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
-import * as assert from "assert";
-import { describe, it, beforeEach, afterEach, before, after } from "mocha";
-import * as path from "path";
-import * as fs from "fs";
-import * as nodeFetch from "node-fetch";
-import * as abortController from "abort-controller";
-import * as protobuf from "protobufjs";
-import * as sinon from "sinon";
-import { echoProtoJson } from "../fixtures/echoProtoJson";
-import { expect } from "chai";
-import { GrpcClient } from "../../src/fallback";
+import * as assert from 'assert';
+import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as nodeFetch from 'node-fetch';
+import * as abortController from 'abort-controller';
+import * as protobuf from 'protobufjs';
+import * as sinon from 'sinon';
+import {echoProtoJson} from '../fixtures/echoProtoJson';
+import {expect} from 'chai';
+import {GrpcClient} from '../../src/fallback';
 
 const authClient = {
   getRequestHeaders() {
-    return { Authorization: "Bearer SOME_TOKEN" };
+    return {Authorization: 'Bearer SOME_TOKEN'};
   }
 };
 
@@ -44,18 +44,18 @@ const opts = {
   auth: authStub
 };
 
-describe("loadProto", () => {
-  it("should create a root object", () => {
+describe('loadProto', () => {
+  it('should create a root object', () => {
     // @ts-ignore incomplete options
     const gaxGrpc = new GrpcClient(opts);
     const protos = gaxGrpc.loadProto(echoProtoJson);
 
     assert(protos instanceof protobuf.Root);
-    assert(protos.lookupService("Echo") instanceof protobuf.Service);
-    assert(protos.lookupType("EchoRequest") instanceof protobuf.Type);
+    assert(protos.lookupService('Echo') instanceof protobuf.Service);
+    assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
   });
 
-  it("should be able to load no files", () => {
+  it('should be able to load no files', () => {
     // @ts-ignore incomplete options
     const gaxGrpc = new GrpcClient(opts);
     const protos = gaxGrpc.loadProto({});
@@ -66,7 +66,7 @@ describe("loadProto", () => {
   });
 });
 
-describe("createStub", () => {
+describe('createStub', () => {
   let gaxGrpc: GrpcClient,
     protos,
     echoService: protobuf.Service,
@@ -77,28 +77,28 @@ describe("createStub", () => {
     // @ts-ignore incomplete options
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
-    echoService = protos.lookupService("Echo");
+    echoService = protos.lookupService('Echo');
     stubOptions = {
-      servicePath: "foo.example.com",
+      servicePath: 'foo.example.com',
       port: 443
     };
     stubExtraOptions = {
-      servicePath: "foo.example.com",
+      servicePath: 'foo.example.com',
       port: 443,
-      other_dummy_options: "test"
+      other_dummy_options: 'test'
     };
   });
 
-  it("should create a stub", async () => {
+  it('should create a stub', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(echoService, stubOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
 
     // The stub should consist of service methods
-    expect(echoStub.echo).to.be.a("Function");
-    expect(echoStub.pagedExpand).to.be.a("Function");
-    expect(echoStub.wait).to.be.a("Function");
+    expect(echoStub.echo).to.be.a('Function');
+    expect(echoStub.pagedExpand).to.be.a('Function');
+    expect(echoStub.wait).to.be.a('Function');
 
     // There should be 6 methods for the echo service (and 4 other methods in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);
@@ -107,7 +107,7 @@ describe("createStub", () => {
     assert.strictEqual(echoStub.echo.length, 4);
   });
 
-  it("should support optional parameters", async () => {
+  it('should support optional parameters', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(
       echoService,
@@ -117,9 +117,9 @@ describe("createStub", () => {
     assert(echoStub instanceof protobuf.rpc.Service);
 
     // The stub should consist of methods
-    expect(echoStub.echo).to.be.a("Function");
-    expect(echoStub.collect).to.be.a("Function");
-    expect(echoStub.chat).to.be.a("Function");
+    expect(echoStub.echo).to.be.a('Function');
+    expect(echoStub.collect).to.be.a('Function');
+    expect(echoStub.chat).to.be.a('Function');
 
     // There should be 6 methods for the echo service (and 4 other members in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);
@@ -129,7 +129,7 @@ describe("createStub", () => {
   });
 });
 
-describe("grpc-fallback", () => {
+describe('grpc-fallback', () => {
   let gaxGrpc: GrpcClient,
     protos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
@@ -139,16 +139,16 @@ describe("grpc-fallback", () => {
 
   before(() => {
     stubOptions = {
-      servicePath: "foo.example.com",
+      servicePath: 'foo.example.com',
       port: 443
     };
 
     // @ts-ignore incomplete options
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
-    echoService = protos.lookupService("Echo");
+    echoService = protos.lookupService('Echo');
     stubOptions = {
-      servicePath: "foo.example.com",
+      servicePath: 'foo.example.com',
       port: 443
     };
 
@@ -179,12 +179,12 @@ describe("grpc-fallback", () => {
     abortController.AbortController = savedAbortController;
   });
 
-  it("should send grpc-web version in the header", () => {
+  it('should send grpc-web version in the header', () => {
     const gapicConfig = {
       interfaces: {
-        "google.showcase.v1beta1.Echo": {
+        'google.showcase.v1beta1.Echo': {
           retry_codes: {
-            idempotent: ["DEADLINE_EXCEEDED", "UNAVAILABLE"],
+            idempotent: ['DEADLINE_EXCEEDED', 'UNAVAILABLE'],
             non_idempotent: []
           },
           retry_params: {
@@ -201,8 +201,8 @@ describe("grpc-fallback", () => {
           methods: {
             Echo: {
               timeout_millis: 60000,
-              retry_codes_name: "idempotent",
-              retry_params_name: "default"
+              retry_codes_name: 'idempotent',
+              retry_params_name: 'default'
             }
           }
         }
@@ -210,22 +210,22 @@ describe("grpc-fallback", () => {
     };
 
     const settings = gaxGrpc.constructSettings(
-      "google.showcase.v1beta1.Echo",
+      'google.showcase.v1beta1.Echo',
       gapicConfig,
       {},
       {}
     );
     const metadataBuilder = settings.echo.otherArgs.metadataBuilder;
     const headers = metadataBuilder();
-    assert(headers["x-goog-api-client"][0].match("grpc-web/"));
+    assert(headers['x-goog-api-client'][0].match('grpc-web/'));
   });
 
-  it("should make a request", done => {
-    const requestObject = { content: "test-content" };
-    const responseType = protos.lookupType("EchoResponse");
+  it('should make a request', done => {
+    const requestObject = {content: 'test-content'};
+    const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
     //@ts-ignore
-    sinon.stub(nodeFetch, "Promise").returns(
+    sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         ok: true,
         arrayBuffer: () => {
@@ -235,40 +235,35 @@ describe("grpc-fallback", () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(
-        requestObject,
-        {},
-        {},
-        (err: {}, result: { content: {} }) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual(requestObject.content, result.content);
-          done();
-        }
-      );
+      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
+        assert.strictEqual(err, null);
+        assert.strictEqual(requestObject.content, result.content);
+        done();
+      });
     });
   });
 
-  it("should handle an error", done => {
-    const requestObject = { content: "test-content" };
+  it('should handle an error', done => {
+    const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Language API
-    const fixtureName = path.resolve(__dirname, "..", "fixtures", "error.bin");
+    const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
     const errorBin = fs.readFileSync(fixtureName);
     const expectedError = {
       code: 3,
-      message: "One of content, or gcs_content_uri must be set.",
+      message: 'One of content, or gcs_content_uri must be set.',
       details: [
         {
           fieldViolations: [
             {
-              field: "document.content",
-              description: "Must have some text content to annotate."
+              field: 'document.content',
+              description: 'Must have some text content to annotate.'
             }
           ]
         }
       ]
     };
     //@ts-ignore
-    sinon.stub(nodeFetch, "Promise").returns(
+    sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         ok: false,
         arrayBuffer: () => {
@@ -278,19 +273,19 @@ describe("grpc-fallback", () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: { message: string }) => {
+      echoStub.echo(requestObject, {}, {}, (err: {message: string}) => {
         assert.strictEqual(err.message, JSON.stringify(expectedError));
         done();
       });
     });
   });
 
-  it("should be able to cancel an API call using AbortController", async () => {
+  it('should be able to cancel an API call using AbortController', async () => {
     // @ts-ignore
-    sinon.stub(nodeFetch, "Promise").returns(Promise.resolve({}));
+    sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
-    const request = { content: "content" + new Date().toString() };
+    const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
     call.cancel();

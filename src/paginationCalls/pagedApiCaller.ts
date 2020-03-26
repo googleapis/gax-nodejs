@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import { APICaller } from "../apiCaller";
+import {APICaller} from '../apiCaller';
 import {
   GRPCCall,
   NextPageRequestType,
   SimpleCallbackFunction,
   UnaryCall,
   RequestType
-} from "../apitypes";
-import { APICallback } from "../apitypes";
-import { OngoingCall, OngoingCallPromise } from "../call";
-import { CallOptions } from "../gax";
-import { GoogleError } from "../googleError";
-import { PageDescriptor } from "./pageDescriptor";
-import { ResourceCollector } from "./resourceCollector";
+} from '../apitypes';
+import {APICallback} from '../apitypes';
+import {OngoingCall, OngoingCallPromise} from '../call';
+import {CallOptions} from '../gax';
+import {GoogleError} from '../googleError';
+import {PageDescriptor} from './pageDescriptor';
+import {ResourceCollector} from './resourceCollector';
 
 export class PagedApiCaller implements APICaller {
   pageDescriptor: PageDescriptor;
@@ -71,13 +71,13 @@ export class PagedApiCaller implements APICaller {
       }
       if (!request) {
         callback(
-          new GoogleError("Undefined request in pagination method callback.")
+          new GoogleError('Undefined request in pagination method callback.')
         );
         return;
       }
       if (!response) {
         callback(
-          new GoogleError("Undefined response in pagination method callback.")
+          new GoogleError('Undefined response in pagination method callback.')
         );
         return;
       }

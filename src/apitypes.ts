@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Duplex } from "stream";
+import {Duplex} from 'stream';
 
-import { CancellablePromise } from "./call";
-import { CallOptions } from "./gax";
-import { GoogleError } from "./googleError";
-import { Operation } from "./longRunningCalls/longrunning";
+import {CancellablePromise} from './call';
+import {CallOptions} from './gax';
+import {GoogleError} from './googleError';
+import {Operation} from './longRunningCalls/longrunning';
 
 // gRPC functions return object with `.cancel()` method that can be used for
 // canceling the ongoing call.
@@ -112,7 +112,7 @@ export interface GaxCall {
   ): GaxCallResult;
 }
 export interface GRPCCallOtherArgs {
-  options?: { deadline?: Date };
+  options?: {deadline?: Date};
   headers?: {};
   metadataBuilder: (abTests?: {}, headers?: {}) => {};
 }

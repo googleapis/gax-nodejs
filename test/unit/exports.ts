@@ -14,78 +14,78 @@
  * limitations under the License.
  */
 
-import * as index from "../../src/index";
-import * as fallback from "../../src/fallback";
-import * as assert from "assert";
-import { describe, it } from "mocha";
+import * as index from '../../src/index';
+import * as fallback from '../../src/fallback';
+import * as assert from 'assert';
+import {describe, it} from 'mocha';
 
-const version = require("../../../package.json").version;
+const version = require('../../../package.json').version;
 
 // The following export tests validate the Gax interface that is used by client libraries.
 // Removing any of the following exports will break client libraries.
-describe("exports", () => {
-  describe("index", () => {
-    it("exports GrpcClient", () => {
-      assert(typeof index.GrpcClient === "function");
+describe('exports', () => {
+  describe('index', () => {
+    it('exports GrpcClient', () => {
+      assert(typeof index.GrpcClient === 'function');
     });
-    it("exports createApiCall", () => {
-      assert(typeof index.createApiCall === "function");
+    it('exports createApiCall', () => {
+      assert(typeof index.createApiCall === 'function');
     });
-    it("exports PathTemplate", () => {
-      assert(typeof index.PathTemplate === "function");
+    it('exports PathTemplate', () => {
+      assert(typeof index.PathTemplate === 'function');
     });
-    it("exports PageDescriptor", () => {
-      assert(typeof index.PageDescriptor === "function");
+    it('exports PageDescriptor', () => {
+      assert(typeof index.PageDescriptor === 'function');
     });
-    it("exports StreamDescriptor", () => {
-      assert(typeof index.StreamDescriptor === "function");
+    it('exports StreamDescriptor', () => {
+      assert(typeof index.StreamDescriptor === 'function');
     });
-    it("exports BundleDescriptor", () => {
-      assert(typeof index.BundleDescriptor === "function");
+    it('exports BundleDescriptor', () => {
+      assert(typeof index.BundleDescriptor === 'function');
     });
-    it("exports LongrunningDescriptor", () => {
-      assert(typeof index.LongrunningDescriptor === "function");
+    it('exports LongrunningDescriptor', () => {
+      assert(typeof index.LongrunningDescriptor === 'function');
     });
-    it("exports lro", () => {
-      assert(typeof index.lro === "function");
+    it('exports lro', () => {
+      assert(typeof index.lro === 'function');
     });
-    it("exports version", () => {
-      assert(typeof index.version === "string");
+    it('exports version', () => {
+      assert(typeof index.version === 'string');
       assert.strictEqual(index.version, version);
     });
-    it("exports fallback", () => {
-      assert(typeof index.fallback === "object");
+    it('exports fallback', () => {
+      assert(typeof index.fallback === 'object');
     });
   });
 
-  describe("fallback", () => {
-    it("exports GrpcClient", () => {
-      assert(typeof fallback.GrpcClient === "function");
+  describe('fallback', () => {
+    it('exports GrpcClient', () => {
+      assert(typeof fallback.GrpcClient === 'function');
     });
-    it("exports createApiCall", () => {
-      assert(typeof fallback.createApiCall === "function");
+    it('exports createApiCall', () => {
+      assert(typeof fallback.createApiCall === 'function');
     });
-    it("exports PathTemplate", () => {
-      assert(typeof fallback.PathTemplate === "function");
+    it('exports PathTemplate', () => {
+      assert(typeof fallback.PathTemplate === 'function');
     });
-    it("exports PageDescriptor", () => {
-      assert(typeof fallback.PageDescriptor === "function");
+    it('exports PageDescriptor', () => {
+      assert(typeof fallback.PageDescriptor === 'function');
     });
-    it("exports StreamDescriptor", () => {
-      assert(typeof fallback.StreamDescriptor === "function");
+    it('exports StreamDescriptor', () => {
+      assert(typeof fallback.StreamDescriptor === 'function');
     });
-    it("exports BundleDescriptor", () => {
-      assert(typeof fallback.BundleDescriptor === "function");
+    it('exports BundleDescriptor', () => {
+      assert(typeof fallback.BundleDescriptor === 'function');
     });
-    it("exports LongrunningDescriptor", () => {
-      assert(typeof fallback.LongrunningDescriptor === "function");
+    it('exports LongrunningDescriptor', () => {
+      assert(typeof fallback.LongrunningDescriptor === 'function');
     });
-    it("exports lro", () => {
-      assert(typeof fallback.lro === "function");
+    it('exports lro', () => {
+      assert(typeof fallback.lro === 'function');
     });
-    it("exports version", () => {
-      assert(typeof fallback.version === "string");
-      assert.strictEqual(fallback.version, version + "-fallback");
+    it('exports version', () => {
+      assert(typeof fallback.version === 'string');
+      assert.strictEqual(fallback.version, version + '-fallback');
     });
   });
 });

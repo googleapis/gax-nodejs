@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { APICaller } from "../apiCaller";
-import { APICallback, GRPCCall, SimpleCallbackFunction } from "../apitypes";
-import { OngoingCall, OngoingCallPromise } from "../call";
-import { GoogleError } from "../googleError";
+import {APICaller} from '../apiCaller';
+import {APICallback, GRPCCall, SimpleCallbackFunction} from '../apitypes';
+import {OngoingCall, OngoingCallPromise} from '../call';
+import {GoogleError} from '../googleError';
 
 /**
  * Creates an API caller for regular unary methods.
