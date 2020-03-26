@@ -24,7 +24,7 @@ import {describe, it, beforeEach} from 'mocha';
 import {BundleDescriptor} from '../../src/bundlingCalls/bundleDescriptor';
 import {
   BundleExecutor,
-  BundleOptions
+  BundleOptions,
 } from '../../src/bundlingCalls/bundleExecutor';
 import {computeBundleId} from '../../src/bundlingCalls/bundlingUtils';
 import {deepCopyForResponse, Task} from '../../src/bundlingCalls/task';
@@ -51,56 +51,56 @@ describe('computeBundleId', () => {
         message: 'single field value',
         object: {field1: 'dummy_value'},
         fields: ['field1'],
-        want: '["dummy_value"]'
+        want: '["dummy_value"]',
       },
       {
         message: 'composite value with missing field2',
         object: {field1: 'dummy_value'},
         fields: ['field1', 'field2'],
-        want: '["dummy_value",null]'
+        want: '["dummy_value",null]',
       },
       {
         message: 'a composite value',
         object: {field1: 'dummy_value', field2: 'other_value'},
         fields: ['field1', 'field2'],
-        want: '["dummy_value","other_value"]'
+        want: '["dummy_value","other_value"]',
       },
       {
         message: 'null',
         object: {field1: null},
         fields: ['field1'],
-        want: '[null]'
+        want: '[null]',
       },
       {
         message: 'partially nonexisting fields',
         object: {field1: 'dummy_value', field2: 'other_value'},
         fields: ['field1', 'field3'],
-        want: '["dummy_value",null]'
+        want: '["dummy_value",null]',
       },
       {
         message: 'numeric',
         object: {field1: 42},
         fields: ['field1'],
-        want: '[42]'
+        want: '[42]',
       },
       {
         message: 'structured data',
         object: {field1: {foo: 'bar', baz: 42}},
         fields: ['field1'],
-        want: '[{"foo":"bar","baz":42}]'
+        want: '[{"foo":"bar","baz":42}]',
       },
       {
         message: 'a simple dotted value',
         object: createOuter('this is dotty'),
         fields: ['inner.field1'],
-        want: '["this is dotty"]'
+        want: '["this is dotty"]',
       },
       {
         message: 'a complex case',
         object: createOuter('what!?'),
         fields: ['inner.field1', 'inner.field2', 'field1'],
-        want: '["what!?","what!?","what!?"]'
-      }
+        want: '["what!?","what!?","what!?"]',
+      },
     ];
     testCases.forEach(t => {
       it(t.message, () => {
@@ -116,18 +116,18 @@ describe('computeBundleId', () => {
       {
         message: 'empty discriminator fields',
         object: {field1: 'dummy_value'},
-        fields: []
+        fields: [],
       },
       {
         message: 'nonexisting fields',
         object: {field1: 'dummy_value'},
-        fields: ['field3']
+        fields: ['field3'],
       },
       {
         message: 'fails to look up in the middle',
         object: createOuter('this is dotty'),
-        fields: ['inner.field3']
-      }
+        fields: ['inner.field3'],
+      },
     ];
     testCases.forEach(t => {
       it(t.message, () => {
@@ -151,7 +151,7 @@ describe('deepCopyForResponse', () => {
     const output = deepCopyForResponse(input, {
       field: 'foo',
       start: 0,
-      end: 2
+      end: 2,
     });
     expect(output).to.deep.equal({foo: [1, 2], bar: {foo: [1, 2, 3, 4]}});
     expect(output.bar).to.not.equal(input.bar);
@@ -159,7 +159,7 @@ describe('deepCopyForResponse', () => {
     const output2 = deepCopyForResponse(input, {
       field: 'foo',
       start: 2,
-      end: 4
+      end: 4,
     });
     expect(output2).to.deep.equal({foo: [3, 4], bar: {foo: [1, 2, 3, 4]}});
     expect(output2.bar).to.not.equal(input.bar);
@@ -180,8 +180,8 @@ describe('deepCopyForResponse', () => {
       number: 1,
       boolean: false,
       obj: {
-        foo: 1
-      }
+        foo: 1,
+      },
     };
     const output = deepCopyForResponse(input, null);
     expect(output).to.deep.equal(input);
@@ -195,7 +195,7 @@ describe('deepCopyForResponse', () => {
     const output = deepCopyForResponse(input, {
       field: 'foo',
       start: 0,
-      end: 2
+      end: 2,
     });
     expect(output).to.deep.equal(input);
   });
@@ -232,18 +232,18 @@ describe('Task', () => {
       {
         data: [],
         message: 'no messages added',
-        want: 0
+        want: 0,
       },
       {
         data: [data],
         message: 'a single message added',
-        want: 1
+        want: 1,
       },
       {
         data: [data, data, data, data, data],
         message: '5 messages added',
-        want: 5
-      }
+        want: 5,
+      },
     ];
     describe('increases the element count', () => {
       testCases.forEach(t => {
@@ -277,26 +277,26 @@ describe('Task', () => {
       {
         data: [],
         message: 'no messages added',
-        expected: null
+        expected: null,
       },
       {
         data: [[data]],
         message: 'a single message added',
-        expected: [data]
+        expected: [data],
       },
       {
         data: [
           [data, data],
-          [data, data, data]
+          [data, data, data],
         ],
         message: 'a single message added',
-        expected: [data, data, data, data, data]
+        expected: [data, data, data, data, data],
       },
       {
         data: [[data, data, data, data, data]],
         message: '5 messages added',
-        expected: [data, data, data, data, data]
-      }
+        expected: [data, data, data, data, data],
+      },
     ];
     function createApiCall(expected: {}) {
       return function apiCall(req: {field1: {}}, callback: Function) {
@@ -430,7 +430,7 @@ describe('Task', () => {
         cancel() {
           clearTimeout(timeoutId);
           callback(new Error('cancelled'));
-        }
+        },
       };
     });
 
@@ -465,7 +465,7 @@ describe('Task', () => {
         cancel: () => {
           clearTimeout(timeoutId);
           callback(new Error('cancelled'));
-        }
+        },
       };
     });
 
@@ -719,7 +719,7 @@ describe('Executor', () => {
     const limit = 7;
     const executor = newExecutor({
       elementCountThreshold: threshold,
-      elementCountLimit: limit
+      elementCountLimit: limit,
     });
     const spy = sinon.spy((request, callback) => {
       expect(request.field1).to.be.an.instanceOf(Array);
@@ -756,7 +756,7 @@ describe('Executor', () => {
     const limit = 7;
     const executor = newExecutor({
       requestByteThreshold: threshold * unitSize,
-      requestByteLimit: limit * unitSize
+      requestByteLimit: limit * unitSize,
     });
     const spy = sinon.spy((request, callback) => {
       expect(request.field1).to.be.an.instanceOf(Array);
@@ -791,7 +791,7 @@ describe('Executor', () => {
     const threshold = 2;
     const executor = newExecutor({
       elementCountThreshold: threshold,
-      delayThreshold: 10
+      delayThreshold: 10,
     });
     executor._runNow = sinon.spy(executor._runNow.bind(executor));
     const spy = sinon.spy((request, callback) => {
@@ -863,7 +863,7 @@ describe('bundleable', () => {
   );
   const settings = {
     settings: {bundleOptions},
-    descriptor
+    descriptor,
   };
 
   it('bundles requests', done => {

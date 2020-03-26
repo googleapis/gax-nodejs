@@ -27,7 +27,7 @@ import {
   GoogleProtoFilesRoot,
   GrpcClient,
   GrpcClientOptions,
-  GrpcModule
+  GrpcModule,
 } from '../../src/grpc';
 
 function gaxGrpc(options?: GrpcClientOptions) {
@@ -55,7 +55,7 @@ describe('grpc', () => {
       const headers: {[name: string]: string} = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
-        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
+        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
       const builder = grpcClient.metadataBuilder(headers);
       const metadata = builder();
@@ -68,7 +68,7 @@ describe('grpc', () => {
       const headers = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
-        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
+        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
       const builder = grpcClient.metadataBuilder(headers);
       const abTesting = null;
@@ -81,35 +81,35 @@ describe('grpc', () => {
       const headers = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
-        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
+        'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
       const builder = grpcClient.metadataBuilder(headers);
       const abTesting = null;
       const moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
       const metadata = builder(abTesting!, moreHeaders);
       expect(metadata.get('x-goog-api-client')).to.deep.eq([
-        'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0'
+        'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       ]);
     });
 
     it.skip('customize api-client header for A/B testing', () => {
       const headers = {
-        'X-Goog-Api-Client': 'gl-node/nodeVersion gax/gaxVersion'
+        'X-Goog-Api-Client': 'gl-node/nodeVersion gax/gaxVersion',
       };
       const builder = grpcClient.metadataBuilder(headers);
       let metadata = builder({retry: '1'});
       expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
-        'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/1'
+        'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/1',
       ]);
 
       metadata = builder({retry: '2'});
       expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
-        'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/2'
+        'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/2',
       ]);
 
       metadata = builder();
       expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
-        'gl-node/nodeVersion gax/gaxVersion'
+        'gl-node/nodeVersion gax/gaxVersion',
       ]);
     });
   });
@@ -125,8 +125,8 @@ describe('grpc', () => {
       credentials: {
         createSsl: sinon.stub(),
         combineChannelCredentials: sinon.stub(),
-        createFromGoogleCredential: sinon.stub()
-      }
+        createFromGoogleCredential: sinon.stub(),
+      },
     };
 
     beforeEach(() => {
@@ -148,7 +148,7 @@ describe('grpc', () => {
         .returns(dummyChannelCreds);
       grpcClient = gaxGrpc(({
         auth: stubAuth,
-        grpc: stubGrpc
+        grpc: stubGrpc,
       } as unknown) as GrpcClientOptions);
     });
 
@@ -169,7 +169,7 @@ describe('grpc', () => {
         port: 443,
         'grpc.max_send_message_length': 10 * 1024 * 1024,
         'grpc.initial_reconnect_backoff_ms': 10000,
-        other_dummy_options: 'test'
+        other_dummy_options: 'test',
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -179,13 +179,13 @@ describe('grpc', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).has as any).key([
           'max_send_message_length',
-          'initial_reconnect_backoff_ms'
+          'initial_reconnect_backoff_ms',
         ]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).to.not.have as any).key([
           'servicePath',
           'port',
-          'other_dummy_options'
+          'other_dummy_options',
         ]);
       });
     });
@@ -195,7 +195,7 @@ describe('grpc', () => {
       const opts = {
         servicePath: 'foo.example.com',
         port: 443,
-        sslCreds: customCreds
+        sslCreds: customCreds,
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -264,7 +264,7 @@ describe('grpc', () => {
       // test will fail anyway.
       const protos = grpcClient.loadProto(TEST_PATH, [
         TEST_FILE,
-        iamService
+        iamService,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ]) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
@@ -402,8 +402,8 @@ describe('grpc', () => {
           fs: {
             existsSync: () => {
               return false;
-            }
-          }
+            },
+          },
         }).GoogleProtoFilesRoot._findIncludePath;
 
         expect(findIncludePath.bind(null, originPath, includePath)).to.throw();
@@ -415,8 +415,8 @@ describe('grpc', () => {
           fs: {
             existsSync(path: string) {
               return path === correctPath;
-            }
-          }
+            },
+          },
         }).GoogleProtoFilesRoot._findIncludePath;
         expect(findIncludePath(originPath, includePath)).to.equal(correctPath);
       });

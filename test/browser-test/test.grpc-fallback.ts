@@ -32,11 +32,11 @@ const statusJsonProto = require('../../protos/status.json');
 const authStub = {
   getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
-  }
+  },
 };
 
 const opts = {
-  auth: authStub
+  auth: authStub,
 };
 
 describe('loadProto', () => {
@@ -75,12 +75,12 @@ describe('createStub', () => {
     echoService = protos.lookupService('Echo');
     stubOptions = {
       servicePath: 'foo.example.com',
-      port: 443
+      port: 443,
     };
     stubExtraOptions = {
       servicePath: 'foo.example.com',
       port: 443,
-      other_dummy_options: 'test'
+      other_dummy_options: 'test',
     };
   });
 
@@ -136,19 +136,19 @@ describe('grpc-fallback', () => {
   const authStub = {
     getRequestHeaders() {
       return {Authorization: 'Bearer SOME_TOKEN'};
-    }
+    },
   };
 
   const opts = {
     auth: authStub,
     protocol: 'http',
-    port: 1337
+    port: 1337,
   };
 
   before(() => {
     stubOptions = {
       servicePath: 'foo.example.com',
-      port: 443
+      port: 443,
     };
 
     // @ts-ignore incomplete options
@@ -157,7 +157,7 @@ describe('grpc-fallback', () => {
     echoService = protos.lookupService('Echo');
     stubOptions = {
       servicePath: 'foo.example.com',
-      port: 443
+      port: 443,
     };
 
     const AbortController = function() {
@@ -198,7 +198,7 @@ describe('grpc-fallback', () => {
       ok: true,
       arrayBuffer: () => {
         return Promise.resolve(responseType.encode(response).finish());
-      }
+      },
     });
     // eslint-disable-next-line no-undef
     sinon.replace(window, 'fetch', fakeFetch);
@@ -231,7 +231,7 @@ describe('grpc-fallback', () => {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = fallback.routingHeader.fromParams({
-      abc: 'def'
+      abc: 'def',
     });
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject);
@@ -246,7 +246,7 @@ describe('grpc-fallback', () => {
         ok: true,
         arrayBuffer: () => {
           return Promise.resolve(responseType.encode(response).finish());
-        }
+        },
       });
     };
     const [result] = await client.echo(requestObject, options);
@@ -261,7 +261,7 @@ describe('grpc-fallback', () => {
     const expectedError = {
       code: 3,
       message: 'Error message',
-      details: []
+      details: [],
     };
 
     const fakeFetch = sinon.fake.resolves({
@@ -271,7 +271,7 @@ describe('grpc-fallback', () => {
         const statusType = root.lookupType('google.rpc.Status');
         const statusMessage = statusType.fromObject(expectedError);
         return Promise.resolve(statusType.encode(statusMessage).finish());
-      }
+      },
     });
     // eslint-disable-next-line no-undef
     sinon.replace(window, 'fetch', fakeFetch);

@@ -19,7 +19,7 @@ import {
   CancellableStream,
   GRPCCall,
   ResultTuple,
-  SimpleCallbackFunction
+  SimpleCallbackFunction,
 } from './apitypes';
 import {CancellablePromise, OngoingCall, OngoingCallPromise} from './call';
 import {Descriptor} from './descriptor';

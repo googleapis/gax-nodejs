@@ -23,7 +23,7 @@ import {
   RequestType,
   ResponseType,
   ResultTuple,
-  SimpleCallbackFunction
+  SimpleCallbackFunction,
 } from './apitypes';
 import {GoogleError} from './googleError';
 

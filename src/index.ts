@@ -20,7 +20,7 @@ import {
   LongrunningDescriptor,
   PageDescriptor,
   StreamDescriptor,
-  BundleDescriptor
+  BundleDescriptor,
 } from './descriptor';
 import * as longrunning from './longRunningCalls/longrunning';
 import * as operationProtos from '../protos/operations';
@@ -35,7 +35,7 @@ export {
   BundleDescriptor,
   LongrunningDescriptor,
   PageDescriptor,
-  StreamDescriptor
+  StreamDescriptor,
 } from './descriptor';
 export {
   CallOptions,
@@ -48,7 +48,7 @@ export {
   createBundleOptions,
   createBackoffSettings,
   createDefaultBackoffSettings,
-  createMaxRetriesBackoffSettings
+  createMaxRetriesBackoffSettings,
 } from './gax';
 export {GoogleError} from './googleError';
 export {
@@ -59,7 +59,7 @@ export {
   GrpcClientOptions,
   GrpcModule,
   Metadata,
-  MetadataValue
+  MetadataValue,
 } from './grpc';
 export {Operation, operation} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
@@ -96,7 +96,7 @@ export {
   UnaryCall,
   GRPCCall,
   GaxCall,
-  CancellableStream
+  CancellableStream,
 } from './apitypes';
 
 export interface ClientOptions

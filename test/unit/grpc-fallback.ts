@@ -31,17 +31,17 @@ import {GrpcClient} from '../../src/fallback';
 const authClient = {
   getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
-  }
+  },
 };
 
 const authStub = {
   getClient() {
     return Promise.resolve(authClient);
-  }
+  },
 };
 
 const opts = {
-  auth: authStub
+  auth: authStub,
 };
 
 describe('loadProto', () => {
@@ -80,12 +80,12 @@ describe('createStub', () => {
     echoService = protos.lookupService('Echo');
     stubOptions = {
       servicePath: 'foo.example.com',
-      port: 443
+      port: 443,
     };
     stubExtraOptions = {
       servicePath: 'foo.example.com',
       port: 443,
-      other_dummy_options: 'test'
+      other_dummy_options: 'test',
     };
   });
 
@@ -140,7 +140,7 @@ describe('grpc-fallback', () => {
   before(() => {
     stubOptions = {
       servicePath: 'foo.example.com',
-      port: 443
+      port: 443,
     };
 
     // @ts-ignore incomplete options
@@ -149,7 +149,7 @@ describe('grpc-fallback', () => {
     echoService = protos.lookupService('Echo');
     stubOptions = {
       servicePath: 'foo.example.com',
-      port: 443
+      port: 443,
     };
 
     const AbortController = function() {
@@ -185,7 +185,7 @@ describe('grpc-fallback', () => {
         'google.showcase.v1beta1.Echo': {
           retry_codes: {
             idempotent: ['DEADLINE_EXCEEDED', 'UNAVAILABLE'],
-            non_idempotent: []
+            non_idempotent: [],
           },
           retry_params: {
             default: {
@@ -195,18 +195,18 @@ describe('grpc-fallback', () => {
               initial_rpc_timeout_millis: 20000,
               rpc_timeout_multiplier: 1.0,
               max_rpc_timeout_millis: 20000,
-              total_timeout_millis: 600000
-            }
+              total_timeout_millis: 600000,
+            },
           },
           methods: {
             Echo: {
               timeout_millis: 60000,
               retry_codes_name: 'idempotent',
-              retry_params_name: 'default'
-            }
-          }
-        }
-      }
+              retry_params_name: 'default',
+            },
+          },
+        },
+      },
     };
 
     const settings = gaxGrpc.constructSettings(
@@ -230,7 +230,7 @@ describe('grpc-fallback', () => {
         ok: true,
         arrayBuffer: () => {
           return Promise.resolve(responseType.encode(response).finish());
-        }
+        },
       })
     );
 
@@ -256,11 +256,11 @@ describe('grpc-fallback', () => {
           fieldViolations: [
             {
               field: 'document.content',
-              description: 'Must have some text content to annotate.'
-            }
-          ]
-        }
-      ]
+              description: 'Must have some text content to annotate.',
+            },
+          ],
+        },
+      ],
     };
     //@ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(
@@ -268,7 +268,7 @@ describe('grpc-fallback', () => {
         ok: false,
         arrayBuffer: () => {
           return Promise.resolve(errorBin);
-        }
+        },
       })
     );
 

@@ -28,17 +28,17 @@ async function main() {
     if (!request.pageToken) {
       result = {
         animals: ['cat', 'dog'],
-        nextPageToken: 'page2'
+        nextPageToken: 'page2',
       };
     } else if (request.pageToken === 'page2') {
       result = {
         animals: ['snake', 'turtle'],
-        nextPageToken: 'page3'
+        nextPageToken: 'page3',
       };
     } else if (request.pageToken === 'page3') {
       result = {
         animals: ['wolf'],
-        nextPageToken: null
+        nextPageToken: null,
       };
     }
     callback(null, result);

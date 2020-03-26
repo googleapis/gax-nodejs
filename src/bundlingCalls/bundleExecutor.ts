@@ -178,7 +178,7 @@ export class BundleExecutor {
       error.code = Status.INVALID_ARGUMENT;
       callback(error);
       return {
-        cancel: noop
+        cancel: noop,
       };
     }
 
@@ -203,7 +203,7 @@ export class BundleExecutor {
     const ret = {
       cancel() {
         self._cancel(callback!.id!);
-      }
+      },
     };
 
     const countThreshold = this._options.elementCountThreshold || 0;

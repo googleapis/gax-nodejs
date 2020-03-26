@@ -31,7 +31,7 @@ describe('EchoClient', () => {
     it('invokes echo without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -40,7 +40,7 @@ describe('EchoClient', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content: content
+        content: content,
       };
 
       // Mock Grpc layer
@@ -59,7 +59,7 @@ describe('EchoClient', () => {
     it('invokes echo with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -81,7 +81,7 @@ describe('EchoClient', () => {
     it('invokes expand without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -90,7 +90,7 @@ describe('EchoClient', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content: content
+        content: content,
       };
 
       // Mock Grpc layer
@@ -114,7 +114,7 @@ describe('EchoClient', () => {
     it('invokes expand with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -145,7 +145,7 @@ describe('EchoClient', () => {
     it('invokes pagedExpand without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -157,7 +157,7 @@ describe('EchoClient', () => {
       const responses = [responsesElement];
       const expectedResponse = {
         nextPageToken: nextPageToken,
-        responses: responses
+        responses: responses,
       };
 
       // Mock Grpc layer
@@ -180,7 +180,7 @@ describe('EchoClient', () => {
     it('invokes pagedExpand using async iterator', async () => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -197,9 +197,9 @@ describe('EchoClient', () => {
                 if (count === 10)
                   return Promise.resolve({done: true, value: undefined});
                 return Promise.resolve({done: false, value: count});
-              }
+              },
             };
-          }
+          },
         };
         return asyncIterable;
       };
@@ -216,7 +216,7 @@ describe('EchoClient', () => {
     it('invokes pagedExpand with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -242,7 +242,7 @@ describe('EchoClient', () => {
     it('invokes chat without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -251,7 +251,7 @@ describe('EchoClient', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content: content
+        content: content,
       };
 
       // Mock Grpc layer
@@ -276,7 +276,7 @@ describe('EchoClient', () => {
     it('invokes chat with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -308,7 +308,7 @@ describe('EchoClient', () => {
     it('invokes wait without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -317,7 +317,7 @@ describe('EchoClient', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content: content
+        content: content,
       };
 
       // Mock Grpc layer
@@ -344,7 +344,7 @@ describe('EchoClient', () => {
     it('invokes wait with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -376,7 +376,7 @@ describe('EchoClient', () => {
     it('has longrunning decoder functions', () => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
       assert(
         client._descriptors.longrunning.wait.responseDecoder instanceof Function
@@ -441,7 +441,7 @@ function mockLongRunningGrpcMethod(expectedRequest, response, error) {
             resolve([response]);
           }
         });
-      }
+      },
     };
     return Promise.resolve([mockOperation]);
   };

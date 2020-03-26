@@ -20,7 +20,7 @@ import {
   NextPageRequestType,
   SimpleCallbackFunction,
   UnaryCall,
-  RequestType
+  RequestType,
 } from '../apitypes';
 import {APICallback} from '../apitypes';
 import {OngoingCall, OngoingCallPromise} from '../call';

@@ -70,7 +70,7 @@ class EchoClient {
       {
         clientConfig: {},
         port: this.constructor.port,
-        servicePath
+        servicePath,
       },
       opts
     );
@@ -90,7 +90,7 @@ class EchoClient {
       `gl-node/${process.version}`,
       `grpc/${gaxGrpc.grpcVersion}`,
       `gax/${gaxModule.version}`,
-      `gapic/${VERSION}`
+      `gapic/${VERSION}`,
     ];
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
@@ -121,7 +121,7 @@ class EchoClient {
         'pageToken',
         'nextPageToken',
         'responses'
-      )
+      ),
     };
 
     // Some of the methods on this service provide streaming responses.
@@ -133,7 +133,7 @@ class EchoClient {
       collect: new gaxModule.StreamDescriptor(
         gaxModule.StreamType.CLIENT_STREAMING
       ),
-      chat: new gaxModule.StreamDescriptor(gaxModule.StreamType.BIDI_STREAMING)
+      chat: new gaxModule.StreamDescriptor(gaxModule.StreamType.BIDI_STREAMING),
     };
 
     const protoFilesRoot =
@@ -146,7 +146,7 @@ class EchoClient {
     // rather than holding a request open.
     this.operationsClient = new gaxModule.lro({
       auth: gaxGrpc.auth,
-      grpc: gaxGrpc.grpc
+      grpc: gaxGrpc.grpc,
     }).operationsClient(opts);
 
     const waitResponse = protoFilesRoot.lookup(
@@ -161,7 +161,7 @@ class EchoClient {
         this.operationsClient,
         waitResponse.decode.bind(waitResponse),
         waitMetadata.decode.bind(waitMetadata)
-      )
+      ),
     };
 
     // Put together the default options sent with requests.
@@ -194,7 +194,7 @@ class EchoClient {
       'collect',
       'chat',
       'wait',
-      'pagedExpand'
+      'pagedExpand',
     ];
     this._innerCallPromises = {};
     for (const methodName of echoStubMethods) {

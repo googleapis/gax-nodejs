@@ -216,7 +216,7 @@ async function compileProtos(protos: string[]): Promise<void> {
     '-p',
     'protos',
     '-o',
-    jsonOutput
+    jsonOutput,
   ];
   pbjsArgs4JSON.push(...protos);
   await pbjsMain(pbjsArgs4JSON);
@@ -231,7 +231,7 @@ async function compileProtos(protos: string[]): Promise<void> {
     '-p',
     'protos',
     '-o',
-    jsOutput
+    jsOutput,
   ];
   pbjsArgs4js.push(...protos);
   await pbjsMain(pbjsArgs4js);

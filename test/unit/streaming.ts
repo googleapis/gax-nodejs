@@ -148,7 +148,7 @@ describe('streaming', () => {
       code: 200,
       message: 'OK',
       details: '',
-      metadata: responseMetadata
+      metadata: responseMetadata,
     };
     function func() {
       const s = through2.obj();

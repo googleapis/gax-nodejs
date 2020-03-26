@@ -37,8 +37,8 @@ module.exports = function(config) {
       childProcess: {
         path: './build/test/system-test/showcase-server.js',
         args: [],
-        options: {}
-      }
+        options: {},
+      },
     },
 
     // list of files / patterns to load in the browser
@@ -52,7 +52,7 @@ module.exports = function(config) {
     preprocessors: {
       './src/*.ts': ['coverage'],
       './src/**/*.ts': ['coverage'],
-      './test/browser-test/*.ts': ['webpack', 'sourcemap']
+      './test/browser-test/*.ts': ['webpack', 'sourcemap'],
     },
 
     webpack: webpackConfig,
@@ -86,8 +86,8 @@ module.exports = function(config) {
         base: 'ChromeHeadless',
         // We must disable the Chrome sandbox when running Chrome inside Docker (Chrome's sandbox needs
         // more permissions than Docker allows by default)
-        flags: isDocker ? ['--no-sandbox'] : []
-      }
+        flags: isDocker ? ['--no-sandbox'] : [],
+      },
     },
 
     // Continuous Integration mode
@@ -100,7 +100,7 @@ module.exports = function(config) {
 
     // set correct MIME type when serving .ts files (already compiled to JavaScript):
     mime: {
-      'text/javascript': ['ts']
-    }
+      'text/javascript': ['ts'],
+    },
   });
 };

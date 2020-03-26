@@ -22,7 +22,7 @@ import {
   ClientStreamingCall,
   GRPCCall,
   ServerStreamingCall,
-  SimpleCallbackFunction
+  SimpleCallbackFunction,
 } from '../apitypes';
 import {warn} from '../warnings';
 

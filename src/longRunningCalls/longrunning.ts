@@ -134,7 +134,7 @@ export class Operation extends EventEmitter {
     }
     const operationsClient = this.longrunningDescriptor.operationsClient;
     return operationsClient.cancelOperation({
-      name: this.latestResponse.name
+      name: this.latestResponse.name,
     }) as CancellablePromise<ResultTuple>;
   }
 

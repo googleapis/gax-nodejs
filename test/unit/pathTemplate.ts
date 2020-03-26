@@ -63,23 +63,23 @@ describe('PathTemplate', () => {
           want: {
             $0: 'f',
             $1: 'o',
-            $2: 'bar'
-          }
+            $2: 'bar',
+          },
         },
         {
           path: 'buckets/world',
           template: 'buckets/{hello}',
           want: {
-            hello: 'world'
-          }
+            hello: 'world',
+          },
         },
         {
           path: 'buckets/world',
           template: 'buckets/{hello=*}',
           want: {
-            hello: 'world'
-          }
-        }
+            hello: 'world',
+          },
+        },
       ];
       tests.forEach(t => {
         const template = new PathTemplate(t.template);
@@ -113,7 +113,7 @@ describe('PathTemplate', () => {
         $0: 'f',
         $1: 'o',
         $2: 'o',
-        $3: 'google.com:a-b'
+        $3: 'google.com:a-b',
       };
       const want = 'buckets/f/o/o/objects/google.com:a-b';
       expect(template.render(params)).to.eql(want);
@@ -124,7 +124,7 @@ describe('PathTemplate', () => {
       const params = {
         $0: 'f',
         $1: 'o',
-        $2: 'o'
+        $2: 'o',
       };
       expect(() => {
         template.render(params);
@@ -135,7 +135,7 @@ describe('PathTemplate', () => {
       const template = new PathTemplate('bar/**/foo/*');
       const params = {
         $0: '1/2',
-        $1: '3'
+        $1: '3',
       };
       const want = 'bar/1/2/foo/3';
       expect(template.render(params)).to.eql(want);
@@ -147,7 +147,7 @@ describe('PathTemplate', () => {
       );
       const params = {
         project: 'testProject',
-        session: 123
+        session: 123,
       };
       const want = 'projects/testProject/sessions/123';
       expect(template.render(params)).to.eql(want);
@@ -160,7 +160,7 @@ describe('PathTemplate', () => {
       'buckets/*/objects/*': 'buckets/{$0=*}/objects/{$1=*}',
       '/buckets/{hello}': 'buckets/{hello=*}',
       '/buckets/{hello=what}/{world}': 'buckets/{hello=what}/{world=*}',
-      '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what'
+      '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
     };
 
     Object.keys(tests).forEach(template => {

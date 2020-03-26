@@ -250,7 +250,7 @@ export class CallSettings {
       pageSize,
       maxResults,
       otherArgs,
-      isBundling
+      isBundling,
     });
   }
 }
@@ -271,7 +271,7 @@ export function createRetryOptions(
 ): RetryOptions {
   return {
     retryCodes,
-    backoffSettings
+    backoffSettings,
   };
 }
 
@@ -316,7 +316,7 @@ export function createBackoffSettings(
     initialRpcTimeoutMillis,
     rpcTimeoutMultiplier,
     maxRpcTimeoutMillis,
-    totalTimeoutMillis
+    totalTimeoutMillis,
   };
 }
 
@@ -365,7 +365,7 @@ export function createMaxRetriesBackoffSettings(
     initialRpcTimeoutMillis,
     rpcTimeoutMultiplier,
     maxRpcTimeoutMillis,
-    maxRetries
+    maxRetries,
   };
 }
 
@@ -383,7 +383,7 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
     'element_count_limit',
     'request_byte_threshold',
     'request_byte_limit',
-    'delay_threshold_millis'
+    'delay_threshold_millis',
   ];
   params.forEach(param => {
     if (param in options && typeof options[param] !== 'number') {
@@ -409,7 +409,7 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
     elementCountLimit,
     requestByteThreshold,
     requestByteLimit,
-    delayThreshold
+    delayThreshold,
   };
 }
 
@@ -657,7 +657,7 @@ export function constructSettings(
       bundleOptions: bundlingConfig
         ? createBundleOptions(bundlingConfig)
         : null,
-      otherArgs
+      otherArgs,
     });
   }
 

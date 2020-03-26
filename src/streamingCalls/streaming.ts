@@ -22,7 +22,7 @@ import {
   APICallback,
   CancellableStream,
   GRPCCallResult,
-  SimpleCallbackFunction
+  SimpleCallbackFunction,
 } from '../apitypes';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -72,7 +72,7 @@ export enum StreamType {
   CLIENT_STREAMING = 2,
 
   /** Both client and server stream objects. */
-  BIDI_STREAMING = 3
+  BIDI_STREAMING = 3,
 }
 
 export class StreamProxy extends duplexify implements GRPCCallResult {
@@ -92,7 +92,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     super(undefined, undefined, {
       objectMode: true,
       readable: type !== StreamType.CLIENT_STREAMING,
-      writable: type !== StreamType.SERVER_STREAMING
+      writable: type !== StreamType.SERVER_STREAMING,
     } as DuplexOptions);
     this.type = type;
     this._callback = callback;
@@ -131,7 +131,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         code: 200,
         details: '',
         message: 'OK',
-        metadata
+        metadata,
       });
     });
   }
@@ -156,7 +156,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           this.stream = stream;
           this.forwardEvents(stream);
           return stream;
-        }
+        },
       });
       this.setReadable(retryStream);
       return;

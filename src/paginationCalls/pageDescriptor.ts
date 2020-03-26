@@ -22,7 +22,7 @@ import {
   GaxCall,
   APICallback,
   SimpleCallbackFunction,
-  RequestType
+  RequestType,
 } from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
@@ -157,7 +157,7 @@ export class PageDescriptor implements Descriptor {
             if (self.cache.length > 0) {
               return Promise.resolve({
                 done: false,
-                value: self.cache.shift()
+                value: self.cache.shift(),
               });
             }
             if (!firstCall && !nextPageRequest) {
@@ -174,9 +174,9 @@ export class PageDescriptor implements Descriptor {
               return Promise.resolve({done: true, value: undefined});
             }
             return Promise.resolve({done: false, value: self.cache.shift()});
-          }
+          },
         };
-      }
+      },
     };
     return asyncIterable;
   }

@@ -62,7 +62,7 @@ describe('Run end-to-end test', () => {
     await ncpp(gaxTarball, path.join(testAppDestination, 'google-gax.tgz'));
     await execa('npm', ['install'], {
       cwd: testAppDestination,
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
   });
 
@@ -73,7 +73,7 @@ describe('Run end-to-end test', () => {
   it('should be able to run tests against gRPC server', async () => {
     await execa('npm', ['start'], {
       cwd: testAppDestination,
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
   });
 

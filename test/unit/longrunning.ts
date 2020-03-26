@@ -35,12 +35,12 @@ const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 const RESPONSE_VAL = 'response';
 const RESPONSE = {
   typyeUrl: 'mock.proto.message',
-  value: Buffer.from(RESPONSE_VAL)
+  value: Buffer.from(RESPONSE_VAL),
 };
 const METADATA_VAL = 'metadata';
 const METADATA = {
   typeUrl: 'mock.proto.Message',
-  value: Buffer.from(METADATA_VAL)
+  value: Buffer.from(METADATA_VAL),
 };
 const OPERATION_NAME = 'operation_name';
 const SUCCESSFUL_OP = {
@@ -49,7 +49,7 @@ const SUCCESSFUL_OP = {
   metadata: METADATA,
   done: true,
   error: null,
-  response: RESPONSE
+  response: RESPONSE,
 };
 const PENDING_OP = {
   result: null,
@@ -57,11 +57,11 @@ const PENDING_OP = {
   metadata: METADATA,
   done: false,
   error: null,
-  response: null
+  response: null,
 };
 const ERROR = {
   code: FAKE_STATUS_CODE_1,
-  message: 'operation error'
+  message: 'operation error',
 };
 const ERROR_OP = {
   result: 'error',
@@ -69,12 +69,12 @@ const ERROR_OP = {
   metadata: METADATA,
   done: true,
   error: ERROR,
-  response: null
+  response: null,
 };
 const BAD_OP = {
   name: OPERATION_NAME,
   metadata: METADATA,
-  done: true
+  done: true,
 };
 const mockDecoder = (val: {}) => {
   return val.toString();
@@ -124,7 +124,7 @@ describe('longrunning', () => {
     return {
       getOperation: getOperationSpy,
       cancelOperation: cancelOperationSpy,
-      cancelGetOperationSpy
+      cancelGetOperationSpy,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   }
@@ -442,7 +442,7 @@ describe('longrunning', () => {
         const expectedCalls = 3;
         const client = mockOperationsClient({
           expectedCalls,
-          finalOperation: ERROR_OP
+          finalOperation: ERROR_OP,
         });
         const apiCall = createApiCall(func, client);
 
@@ -500,7 +500,7 @@ describe('longrunning', () => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({
-          dontResolve: true
+          dontResolve: true,
         });
         const apiCall = createApiCall(func, client);
 
@@ -537,7 +537,7 @@ describe('longrunning', () => {
         };
         const expectedCalls = 3;
         const client = mockOperationsClient({
-          expectedCalls
+          expectedCalls,
         });
         const apiCall = createApiCall(func, client);
         apiCall({})
@@ -571,7 +571,7 @@ describe('longrunning', () => {
         const expectedCalls = 3;
         const client = mockOperationsClient({
           expectedCalls,
-          finalOperation: ERROR_OP
+          finalOperation: ERROR_OP,
         });
         const apiCall = createApiCall(func, client);
         apiCall({})
@@ -604,7 +604,7 @@ describe('longrunning', () => {
         const updatedMetadataVal = 'updated';
         const updatedMetadata = {
           typeUrl: 'mock.proto.Message',
-          value: Buffer.from(updatedMetadataVal)
+          value: Buffer.from(updatedMetadataVal),
         };
         const updatedOp = {
           result: null,
@@ -612,13 +612,13 @@ describe('longrunning', () => {
           metadata: updatedMetadata,
           done: false,
           error: null,
-          response: null
+          response: null,
         };
 
         const expectedCalls = 3;
         const client = mockOperationsClient({
           expectedCalls,
-          finalOperation: updatedOp
+          finalOperation: updatedOp,
         });
         const apiCall = createApiCall(func, client);
         apiCall({})
@@ -655,7 +655,7 @@ describe('longrunning', () => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({
-          finalOperation: PENDING_OP
+          finalOperation: PENDING_OP,
         });
         const apiCall = createApiCall(func, client);
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -663,7 +663,7 @@ describe('longrunning', () => {
         apiCall(
           {},
           {
-            longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1)
+            longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1),
           }
         )
           .then(responses => {

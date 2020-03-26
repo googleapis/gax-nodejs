@@ -27,7 +27,7 @@ import {
   Compute,
   JWT,
   UserRefreshClient,
-  GoogleAuthOptions
+  GoogleAuthOptions,
 } from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
@@ -46,7 +46,7 @@ export {
   BundleDescriptor,
   LongrunningDescriptor,
   PageDescriptor,
-  StreamDescriptor
+  StreamDescriptor,
 } from './descriptor';
 
 export {StreamType} from './streamingCalls/streaming';
@@ -323,12 +323,12 @@ export class GrpcClient {
           headers,
           method: 'post',
           body: requestData,
-          signal: cancelSignal
+          signal: cancelSignal,
         })
           .then((response: Response | nodeFetch.Response) => {
             return Promise.all([
               Promise.resolve(response.ok),
-              response.arrayBuffer()
+              response.arrayBuffer(),
             ]);
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
@@ -354,7 +354,7 @@ export class GrpcClient {
             }
             cancelRequested = true;
             cancelController.abort();
-          }
+          },
         };
       };
     }

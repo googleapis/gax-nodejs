@@ -22,7 +22,7 @@ import {
   GRPCCallOtherArgs,
   GRPCCallResult,
   RequestType,
-  SimpleCallbackFunction
+  SimpleCallbackFunction,
 } from '../apitypes';
 import {RetryOptions} from '../gax';
 import {GoogleError} from '../googleError';
@@ -150,7 +150,7 @@ export function retryable(
           error.code = Status.CANCELLED;
           callback(error);
         }
-      }
+      },
     };
   };
 }

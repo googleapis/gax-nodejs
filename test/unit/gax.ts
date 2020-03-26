@@ -29,14 +29,14 @@ import * as gax from '../../src/gax';
 const SERVICE_NAME = 'test.interface.v1.api';
 
 const A_CONFIG = {
-  interfaces: {}
+  interfaces: {},
 };
 
 //@ts-ignore
 A_CONFIG.interfaces[SERVICE_NAME] = {
   retry_codes: {
     foo_retry: ['code_a', 'code_b'],
-    bar_retry: ['code_c']
+    bar_retry: ['code_c'],
   },
   retry_params: {
     default: {
@@ -46,8 +46,8 @@ A_CONFIG.interfaces[SERVICE_NAME] = {
       initial_rpc_timeout_millis: 300,
       rpc_timeout_multiplier: 1.3,
       max_rpc_timeout_millis: 3000,
-      total_timeout_millis: 30000
-    }
+      total_timeout_millis: 30000,
+    },
   },
   methods: {
     BundlingMethod: {
@@ -56,20 +56,20 @@ A_CONFIG.interfaces[SERVICE_NAME] = {
       retry_params_name: 'default',
       bundling: {
         element_count_threshold: 6,
-        element_count_limit: 10
-      }
+        element_count_limit: 10,
+      },
     },
     PageStreamingMethod: {
       retry_codes_name: 'bar_retry',
-      retry_params_name: 'default'
-    }
-  }
+      retry_params_name: 'default',
+    },
+  },
 };
 
 const RETRY_DICT = {
   code_a: 1,
   code_b: 2,
-  code_c: 3
+  code_c: 3,
 };
 
 function expectRetryOptions(obj: {[name: string]: {}}) {
@@ -122,9 +122,9 @@ describe('gax construct settings', () => {
       methods: {
         PageStreamingMethod: null,
         BundlingMethod: {
-          bundling: null
-        }
-      }
+          bundling: null,
+        },
+      },
     };
     const defaults = gax.constructSettings(
       SERVICE_NAME,
@@ -146,7 +146,7 @@ describe('gax construct settings', () => {
     overrides.interfaces[SERVICE_NAME] = {
       retry_codes: {
         bar_retry: [],
-        baz_retry: ['code_a']
+        baz_retry: ['code_a'],
       },
       retry_params: {
         default: {
@@ -156,16 +156,16 @@ describe('gax construct settings', () => {
           initial_rpc_timeout_millis: 3000,
           rpc_timeout_multiplier: 1.3,
           max_rpc_timeout_millis: 30000,
-          total_timeout_millis: 300000
-        }
+          total_timeout_millis: 300000,
+        },
       },
       methods: {
         BundlingMethod: {
           retry_params_name: 'default',
           retry_codes_name: 'baz_retry',
-          timeout_millis: 50000
-        }
-      }
+          timeout_millis: 50000,
+        },
+      },
     };
 
     const defaults = gax.constructSettings(

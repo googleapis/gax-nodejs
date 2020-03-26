@@ -80,7 +80,7 @@ async function preparePackage(packageName: string): Promise<void> {
 async function runSystemTest(packageName: string): Promise<void> {
   await execa('npm', ['run', 'system-test'], {
     cwd: packageName,
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
 }
 

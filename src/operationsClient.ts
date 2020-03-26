@@ -26,8 +26,7 @@ import {ClientStubOptions, GrpcClient} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
 import {APICallback} from './apitypes';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const configData = require('./operations_client_config');
+import configData = require('./operations_client_config.json');
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -35,7 +34,11 @@ const version = require('../../package.json').version;
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
 const PAGE_DESCRIPTORS: {[method: string]: PageDescriptor} = {
-  listOperations: new PageDescriptor('pageToken', 'nextPageToken', 'operations')
+  listOperations: new PageDescriptor(
+    'pageToken',
+    'nextPageToken',
+    'operations'
+  ),
 };
 
 /**
@@ -83,7 +86,7 @@ export class OperationsClient {
       {
         servicePath: SERVICE_ADDRESS,
         port: DEFAULT_SERVICE_PORT,
-        clientConfig: {}
+        clientConfig: {},
       },
       options
     );
@@ -125,7 +128,7 @@ export class OperationsClient {
       'getOperation',
       'listOperations',
       'cancelOperation',
-      'deleteOperation'
+      'deleteOperation',
     ];
 
     for (const methodName of operationsStubMethods) {

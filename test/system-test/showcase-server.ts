@@ -45,7 +45,7 @@ export class ShowcaseServer {
     await execa('tar', ['xzf', tarballFilename]);
     const childProcess = execa(binaryName, ['run'], {
       cwd: testDir,
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
 
     console.log('gRPC/gRPC-fallback server is started.');

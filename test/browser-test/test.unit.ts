@@ -36,7 +36,7 @@ describe('Run unit tests of echo client', () => {
   const authStub = {
     getRequestHeaders() {
       return {Authorization: 'Bearer SOME_TOKEN'};
-    }
+    },
   };
 
   describe('echo', () => {
@@ -44,7 +44,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -53,7 +53,7 @@ describe('Run unit tests of echo client', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content
+        content,
       };
 
       // Mock Grpc layer
@@ -73,7 +73,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -96,7 +96,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -105,7 +105,7 @@ describe('Run unit tests of echo client', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content
+        content,
       };
 
       // Mock Grpc layer
@@ -130,7 +130,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -162,7 +162,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -174,7 +174,7 @@ describe('Run unit tests of echo client', () => {
       const responses = [responsesElement];
       const expectedResponse = {
         nextPageToken,
-        responses
+        responses,
       };
 
       // Mock Grpc layer
@@ -198,7 +198,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -225,7 +225,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -234,7 +234,7 @@ describe('Run unit tests of echo client', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content
+        content,
       };
 
       // Mock Grpc layer
@@ -260,7 +260,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -293,7 +293,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -302,7 +302,7 @@ describe('Run unit tests of echo client', () => {
       // Mock response
       const content = 'content951530617';
       const expectedResponse = {
-        content
+        content,
       };
 
       // Mock Grpc layer
@@ -330,7 +330,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
 
       // Mock request
@@ -363,7 +363,7 @@ describe('Run unit tests of echo client', () => {
       const client = new EchoClient({
         auth: authStub,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
-        projectId: 'bogus'
+        projectId: 'bogus',
       });
       assert(
         client._descriptors.longrunning.wait.responseDecoder instanceof Function
@@ -444,7 +444,7 @@ function mockLongRunningGrpcMethod(
             resolve([response]);
           }
         });
-      }
+      },
     };
     return Promise.resolve([mockOperation]);
   };

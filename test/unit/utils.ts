@@ -52,7 +52,7 @@ export function createApiCall(func: Function, opts?: Options) {
           completed: true,
           call: () => {
             throw new Error('should not be run');
-          }
+          },
         };
       }
       func(argument, metadata, options, callback);
@@ -65,7 +65,7 @@ export function createApiCall(func: Function, opts?: Options) {
         completed: true,
         call: () => {
           throw new Error('should not be run');
-        }
+        },
       };
     }),
     settings,

@@ -71,7 +71,7 @@ export class FallbackErrorDecoder {
     const result = {
       code: status.code,
       message: status.message,
-      details: status.details.map(detail => this.decodeProtobufAny(detail))
+      details: status.details.map(detail => this.decodeProtobufAny(detail)),
     };
     return result;
   }

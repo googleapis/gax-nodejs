@@ -25,7 +25,7 @@ import {
   GRPCCall,
   GRPCCallOtherArgs,
   RequestType,
-  SimpleCallbackFunction
+  SimpleCallbackFunction,
 } from './apitypes';
 import {Descriptor} from './descriptor';
 import {CallOptions, CallSettings} from './gax';

@@ -20,7 +20,7 @@ module.exports = {
   entry: './src/fallback.ts',
   output: {
     library: 'Gax',
-    filename: './gax.js'
+    filename: './gax.js',
   },
   resolve: {
     extensions: ['.ts', '.js', '.json'],
@@ -30,28 +30,28 @@ module.exports = {
         __dirname,
         'protos/operations.json'
       ),
-      '../../protos/status.json': path.resolve(__dirname, 'protos/status.json')
-    }
+      '../../protos/status.json': path.resolve(__dirname, 'protos/status.json'),
+    },
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         use: 'ts-loader',
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /node_modules[\\/]retry-request[\\/]/,
-        use: 'null-loader'
+        use: 'null-loader',
       },
       {
         test: /node_modules[\\/]google-auth-library/,
-        use: 'null-loader'
-      }
-    ]
+        use: 'null-loader',
+      },
+    ],
   },
   node: {
-    fs: 'empty'
+    fs: 'empty',
   },
-  mode: 'production'
+  mode: 'production',
 };

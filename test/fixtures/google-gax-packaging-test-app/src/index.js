@@ -21,7 +21,7 @@ const grpc = require('@grpc/grpc-js');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
-  v1beta1: require('./v1beta1')
+  v1beta1: require('./v1beta1'),
 });
 
 module.exports.v1beta1 = gapic.v1beta1;
@@ -44,7 +44,7 @@ if (require.main === module) {
 async function testShowcase() {
   const grpcClientOpts = {
     grpc,
-    sslCreds: grpc.credentials.createInsecure()
+    sslCreds: grpc.credentials.createInsecure(),
   };
 
   const fakeGoogleAuth = {
@@ -52,18 +52,18 @@ async function testShowcase() {
       return {
         getRequestHeaders: () => {
           return {
-            Authorization: 'Bearer zzzz'
+            Authorization: 'Bearer zzzz',
           };
-        }
+        },
       };
-    }
+    },
   };
 
   const fallbackClientOpts = {
     fallback: true,
     protocol: 'http',
     port: 1337,
-    auth: fakeGoogleAuth
+    auth: fakeGoogleAuth,
   };
 
   const grpcClient = new gapic.v1beta1.EchoClient(grpcClientOpts);
@@ -86,7 +86,7 @@ async function testShowcase() {
 
 async function testEcho(client) {
   const request = {
-    content: 'test'
+    content: 'test',
   };
   const timer = setTimeout(() => {
     throw new Error('End-to-end testEcho method fails with timeout');
@@ -99,7 +99,7 @@ async function testEcho(client) {
 async function testExpand(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
-    content: words.join(' ')
+    content: words.join(' '),
   };
   const result = await new Promise((resolve, reject) => {
     const stream = client.expand(request);
@@ -119,7 +119,7 @@ async function testPagedExpand(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
-    pageSize: 2
+    pageSize: 2,
   };
   const timer = setTimeout(() => {
     throw new Error('End-to-end testPagedExpand method fails with timeout');
@@ -134,7 +134,7 @@ async function testPagedExpandAsync(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
-    pageSize: 2
+    pageSize: 2,
   };
   const response = [];
   const iterable = client.pagedExpandAsync(request);
@@ -178,7 +178,7 @@ async function testChat(client) {
     'input',
     'especially',
     'this',
-    'one'
+    'one',
   ];
   const result = await new Promise((resolve, reject) => {
     const result = [];
@@ -202,11 +202,11 @@ async function testWait(client) {
   const request = {
     ttl: {
       seconds: 5,
-      nanos: 0
+      nanos: 0,
     },
     success: {
-      content: 'done'
-    }
+      content: 'done',
+    },
   };
   const [operation] = await client.wait(request);
   const [response] = await operation.promise();

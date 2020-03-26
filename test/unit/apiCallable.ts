@@ -90,8 +90,8 @@ describe('createApiCall', () => {
         retry: gax.createRetryOptions(
           [],
           gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)
-        )
-      }
+        ),
+      },
     });
 
     const start = new Date().getTime();
@@ -187,7 +187,7 @@ describe('Promise', () => {
     }
     const apiCall = createApiCall(func, {
       settings: {retry: retryOptions},
-      returnCancelFunc: true
+      returnCancelFunc: true,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promise = (apiCall as any)(null);
@@ -361,7 +361,7 @@ describe('retryable', () => {
     const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
 
     const maxRetrySettings = {
-      settings: {timeout: 0, retry: maxRetriesRetryOptions}
+      settings: {timeout: 0, retry: maxRetriesRetryOptions},
     };
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
@@ -388,7 +388,7 @@ describe('retryable', () => {
     const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
     const maxRetrySettings = {
-      settings: {timeout: 0, retry: maxRetriesRetryOptions}
+      settings: {timeout: 0, retry: maxRetriesRetryOptions},
     };
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
@@ -436,7 +436,7 @@ describe('retryable', () => {
     const backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
     const retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
     const apiCall = createApiCall(spy, {
-      settings: {timeout: 0, retry: retryOptions}
+      settings: {timeout: 0, retry: retryOptions},
     });
 
     apiCall({}, undefined, err => {
@@ -467,8 +467,8 @@ describe('retryable', () => {
       settings: {
         timeout: 0,
         retry: retryOptions,
-        otherArgs: {metadataBuilder: mockBuilder}
-      }
+        otherArgs: {metadataBuilder: mockBuilder},
+      },
     };
     const apiCall = createApiCall(func, settings);
     mockBuilder.withExactArgs({retry: '2'});
@@ -493,7 +493,7 @@ describe('retryable', () => {
         mockBuilder.reset();
         mockBuilder.withExactArgs({retry: '2'});
         const options = {
-          retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200)
+          retry: utils.createRetryOptions(0, 0, 0, 0, 0, 0, 200),
         };
         return apiCall({}, options);
       })
@@ -513,13 +513,13 @@ describe('retryable', () => {
     };
     const settings = {
       settings: {
-        otherArgs: {metadataBuilder: mockBuilder}
-      }
+        otherArgs: {metadataBuilder: mockBuilder},
+      },
     };
     const apiCall = createApiCall(func, settings);
     const headers = {
       h1: 'val1',
-      h2: 'val2'
+      h2: 'val2',
     };
     apiCall({}, {otherArgs: {headers}}).then(() => {
       expect(gotHeaders.h1).to.deep.equal('val1');

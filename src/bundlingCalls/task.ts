@@ -187,7 +187,7 @@ export class Task {
           if (self._subresponseField) {
             subresponseInfo = {
               field: self._subresponseField,
-              start: 0
+              start: 0,
             };
           }
           self._data.forEach(data => {
@@ -224,7 +224,7 @@ export class Task {
     this._data.push({
       elements,
       bytes,
-      callback
+      callback,
     });
   }
   /**

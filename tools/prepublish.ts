@@ -26,7 +26,7 @@ const subdirs = [
   'longrunning',
   'protobuf',
   'rpc',
-  'type'
+  'type',
 ];
 
 async function main() {

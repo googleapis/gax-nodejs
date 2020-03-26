@@ -52,7 +52,7 @@ describe('compileProtos tool', () => {
 
   it('compiles protos to JSON, JS, TS', async () => {
     await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists')
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);
     assert(fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
@@ -89,7 +89,7 @@ describe('compileProtos tool', () => {
         'fixtures',
         'protoLists',
         'empty'
-      )
+      ),
     ]);
     assert(fs.existsSync(expectedJsonResultFile));
 
@@ -99,7 +99,7 @@ describe('compileProtos tool', () => {
 
   it('fixes types in the TS file', async () => {
     await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update')
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
     ]);
     assert(fs.existsSync(expectedTSResultFile));
     const ts = await readFile(expectedTSResultFile);

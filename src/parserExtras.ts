@@ -92,6 +92,6 @@ export function finishParse(segments: Segment[]) {
   updateBindingLiterals(segments);
   return {
     segments,
-    size: countTerminals(segments)
+    size: countTerminals(segments),
   };
 }

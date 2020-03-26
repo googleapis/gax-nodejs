@@ -176,7 +176,7 @@ export class GrpcClient {
       enums: String,
       defaults: true,
       oneofs: true,
-      includeDirs
+      includeDirs,
     };
     return this.loadFromProto(filename, options);
   }

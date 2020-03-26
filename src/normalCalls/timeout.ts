@@ -18,7 +18,7 @@ import {
   GRPCCall,
   GRPCCallOtherArgs,
   SimpleCallbackFunction,
-  UnaryCall
+  UnaryCall,
 } from '../apitypes';
 
 /**

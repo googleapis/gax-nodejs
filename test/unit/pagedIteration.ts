@@ -36,7 +36,7 @@ describe('paged iteration', () => {
   const retryOptions = util.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
   const createOptions = {
     settings: {retry: retryOptions},
-    descriptor
+    descriptor,
   };
 
   function func(

@@ -33,11 +33,11 @@ describe('gRPC-fallback error decoding', () => {
           fieldViolations: [
             {
               field: 'document.content',
-              description: 'Must have some text content to annotate.'
-            }
-          ]
-        }
-      ]
+              description: 'Must have some text content to annotate.',
+            },
+          ],
+        },
+      ],
     };
     const decoder = new FallbackErrorDecoder();
     const decodedError = decoder.decodeRpcStatus(errorBin);

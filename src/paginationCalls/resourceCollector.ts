@@ -17,7 +17,7 @@
 import {
   SimpleCallbackFunction,
   NextPageRequestType,
-  RequestType
+  RequestType,
 } from '../apitypes';
 
 /**

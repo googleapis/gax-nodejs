@@ -31,13 +31,13 @@ describe('Run tests against gRPC server', () => {
   const authStub = {
     getRequestHeaders() {
       return {Authorization: 'Bearer SOME_TOKEN'};
-    }
+    },
   };
 
   const opts = {
     auth: authStub,
     protocol: 'http',
-    port: 1337
+    port: 1337,
   };
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -49,7 +49,7 @@ describe('Run tests against gRPC server', () => {
     this.timeout(40000);
 
     const request = {
-      content: 'test'
+      content: 'test',
     };
     const MAX_RETRIES = 20;
     const TIMEOUT = 1000;
@@ -73,7 +73,7 @@ describe('Run tests against gRPC server', () => {
 
   it('should be able to call simple RPC methods', async () => {
     const request = {
-      content: 'test'
+      content: 'test',
     };
     const [response] = await client.echo(request);
     assert.deepStrictEqual(request.content, response.content);
@@ -82,7 +82,7 @@ describe('Run tests against gRPC server', () => {
   it('should throw an error when calling server-side streaming calls', async () => {
     const words = ['nobody', 'ever', 'reads', 'test', 'input'];
     const request = {
-      content: words.join(' ')
+      content: words.join(' '),
     };
 
     expect(() => {
@@ -94,7 +94,7 @@ describe('Run tests against gRPC server', () => {
     const words = ['nobody', 'ever', 'reads', 'test', 'input'];
     const request = {
       content: words.join(' '),
-      pageSize: 2
+      pageSize: 2,
     };
     const [response] = await client.pagedExpand(request);
     const result = response.map((r: {content: string}) => r.content);
@@ -119,11 +119,11 @@ describe('Run tests against gRPC server', () => {
     const request = {
       ttl: {
         seconds: 5,
-        nanos: 0
+        nanos: 0,
       },
       success: {
-        content: 'done'
-      }
+        content: 'done',
+      },
     };
     const [operation] = await client.wait(request);
     const [response] = await operation.promise();
