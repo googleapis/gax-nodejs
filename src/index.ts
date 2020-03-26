@@ -25,6 +25,7 @@ import {
 import * as longrunning from './longRunningCalls/longrunning';
 import * as operationProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
+import * as IamClient from './iamService';
 import * as routingHeader from './routingHeader';
 import * as gax from './gax';
 
@@ -76,8 +77,14 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro};
+function IamBuilder(options: GrpcClientOptions) {
+  const gaxGrpc = new GrpcClient(options);
+  return new IamClient.IamClientBuilder(gaxGrpc);
+}
+
+export {lro, IamBuilder};
 export {OperationsClient} from './operationsClient';
+export {IamClient} from './iamService';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
 
