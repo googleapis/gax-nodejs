@@ -4,6 +4,28 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [1.15.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.15.0...v1.15.1) (2020-03-17)
+
+
+### Bug Fixes
+
+* **deps:** rollback dependency @grpc/grpc-js to ^0.6.18 to address https://github.com/grpc/grpc-node/issues/1304.
+
+
+## [1.15.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.2...v1.15.0) (2020-03-16)
+
+
+### Features
+
+* export bundle descriptor in descriptors interface ([#744](https://www.github.com/googleapis/gax-nodejs/issues/744)) ([b1eccf9](https://www.github.com/googleapis/gax-nodejs/commit/b1eccf96c439d67376d249a54c9d22ffe7ff1839))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ^0.7.0 ([#736](https://www.github.com/googleapis/gax-nodejs/issues/736)) ([01c428c](https://www.github.com/googleapis/gax-nodejs/commit/01c428cb1240320b92778abf1297a5ff72346fd9))
+* **deps:** use protobuf.js v6.8.9 ([#743](https://www.github.com/googleapis/gax-nodejs/issues/743)) ([fab91ce](https://www.github.com/googleapis/gax-nodejs/commit/fab91ce334d76212d7e31b5478331339c5acad76))
+
+
 ### [1.14.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.1...v1.14.2) (2020-02-27)
 
 
