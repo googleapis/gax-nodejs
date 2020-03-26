@@ -116,7 +116,7 @@
   },
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
-    "node": ">=8.10.0"
+    "node": ">=10"
   },
   "browser": "build/src/fallback.js"
 }
