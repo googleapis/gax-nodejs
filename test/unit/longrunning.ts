@@ -17,6 +17,7 @@
 import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
+import {describe, it} from 'mocha';
 
 import {LongrunningDescriptor} from '../../src';
 import * as operationProtos from '../../protos/operations';
@@ -28,7 +29,7 @@ import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
 import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
 const RESPONSE_VAL = 'response';
@@ -95,18 +96,18 @@ interface SpyableOperationsClient extends OperationsClient {
 }
 
 describe('longrunning', () => {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function mockOperationsClient(opts?: any): SpyableOperationsClient {
     opts = opts || {};
     let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
     const getOperationSpy = sinon.spy(() => {
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let resolver: any;
       const promise = new Promise(resolve => {
         resolver = resolve;
       });
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (promise as any).cancel = cancelGetOperationSpy;
 
       if (remainingCalls && remainingCalls > 1) {
@@ -124,7 +125,7 @@ describe('longrunning', () => {
       getOperation: getOperationSpy,
       cancelOperation: cancelOperationSpy,
       cancelGetOperationSpy,
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   }
 
@@ -163,10 +164,8 @@ describe('longrunning', () => {
           );
           expect(operation).to.have.property('longrunningDescriptor');
           expect(operation.name).to.deep.eq(OPERATION_NAME);
-          // tslint:disable-next-line no-unused-expression
           expect(operation.done).to.be.false;
           expect(operation.latestResponse).to.deep.eq(PENDING_OP);
-          // tslint:disable-next-line no-unused-expression
           expect(operation.result).to.be.null;
           expect(operation.metadata).to.deep.eq(METADATA_VAL);
           expect(rawResponse).to.deep.eq(PENDING_OP);
@@ -219,7 +218,6 @@ describe('longrunning', () => {
       );
       expect(operation).to.have.property('longrunningDescriptor');
       expect(operation.name).to.deep.eq(OPERATION_NAME);
-      // tslint:disable-next-line no-unused-expression
       expect(operation.done).to.be.true;
       expect(operation.response).to.deep.eq(RESPONSE);
       expect(operation.result).to.deep.eq(RESPONSE_VAL);
@@ -314,7 +312,6 @@ describe('longrunning', () => {
                 expect(client.getOperation.callCount).to.eq(1);
                 done();
               })
-              // tslint:disable-next-line no-unused-expression
             ).to.be.undefined;
           })
           .catch(error => {
@@ -426,7 +423,6 @@ describe('longrunning', () => {
         const [operation] = ((await apiCall({})) as unknown) as [
           longrunning.Operation
         ];
-        // tslint:disable-next-line no-unused-expression
         expect(operation).to.be.not.null;
         const [finalResult] = ((await operation!.promise()) as unknown) as [
           string
@@ -513,9 +509,8 @@ describe('longrunning', () => {
             const operation = responses[0] as longrunning.Operation;
             const p = operation.promise();
             operation.cancel().then(() => {
-              // tslint:disable-next-line no-unused-expression
               expect(client.cancelOperation.called).to.be.true;
-              // tslint:disable-next-line no-unused-expression no-any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               expect((client as any).cancelGetOperationSpy.called).to.be.true;
               done();
             });
@@ -663,6 +658,7 @@ describe('longrunning', () => {
           finalOperation: PENDING_OP,
         });
         const apiCall = createApiCall(func, client);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore incomplete options
         apiCall(
           {},

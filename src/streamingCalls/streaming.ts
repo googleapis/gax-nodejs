@@ -25,7 +25,9 @@ import {
   SimpleCallbackFunction,
 } from '../apitypes';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const retryRequest = require('retry-request');
 
 // Directly copy over Duplexify interfaces

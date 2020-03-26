@@ -157,12 +157,12 @@ export class Operation extends EventEmitter {
   getOperation(): Promise<{}>;
   getOperation(callback: GetOperationCallback): void;
   getOperation(callback?: GetOperationCallback): Promise<{}> | void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const operationsClient = this.longrunningDescriptor.operationsClient;
 
     function promisifyResponse() {
       if (!callback) {
-        // tslint:disable-next-line variable-name
         return new Promise((resolve, reject) => {
           if (self.latestResponse.error) {
             const error = new GoogleError(self.latestResponse.error.message!);
@@ -241,6 +241,7 @@ export class Operation extends EventEmitter {
    * @private
    */
   startPolling_() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
 
     let now = new Date();
@@ -256,7 +257,7 @@ export class Operation extends EventEmitter {
       previousMetadataBytes = this.latestResponse.metadata.value!;
     }
 
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function emit(event: string | symbol, ...args: any[]) {
       self.emit(event, ...args);
     }
@@ -337,7 +338,6 @@ export class Operation extends EventEmitter {
    * on operation error.
    */
   promise() {
-    // tslint:disable-next-line variable-name
     return new Promise((resolve, reject) => {
       this.on('error', reject).on(
         'complete',

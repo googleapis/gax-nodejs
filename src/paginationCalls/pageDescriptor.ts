@@ -124,7 +124,7 @@ export class PageDescriptor implements Descriptor {
     request: RequestType,
     options: CallSettings
   ): AsyncIterable<{} | undefined> {
-    const iterable = this.createIterator(options);
+    const iterable = this.createIterator();
     const funcPromise =
       typeof apiCall === 'function' ? Promise.resolve(apiCall) : apiCall;
     funcPromise
@@ -137,7 +137,8 @@ export class PageDescriptor implements Descriptor {
     return iterable;
   }
 
-  createIterator(options: CallSettings): AsyncIterable<{} | undefined> {
+  createIterator(): AsyncIterable<{} | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const asyncIterable = {
       [Symbol.asyncIterator]() {
@@ -154,7 +155,10 @@ export class PageDescriptor implements Descriptor {
             const ongoingCall = new call.OngoingCallPromise();
             const [request, func] = await paramPromise;
             if (self.cache.length > 0) {
-              return Promise.resolve({done: false, value: self.cache.shift()});
+              return Promise.resolve({
+                done: false,
+                value: self.cache.shift(),
+              });
             }
             if (!firstCall && !nextPageRequest) {
               return Promise.resolve({done: true, value: undefined});
@@ -184,7 +188,7 @@ export class PageDescriptor implements Descriptor {
   ): Promise<RequestType | null> {
     ongoingCall.call(func, request);
     let nextPageRequest = null;
-    const [response, nextRequest, rawResponse] = await ongoingCall.promise;
+    const [response] = await ongoingCall.promise;
     const pageToken = (response as ResponseType)[this.responsePageTokenField];
     if (pageToken) {
       nextPageRequest = Object.assign({}, request);

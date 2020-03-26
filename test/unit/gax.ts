@@ -20,7 +20,10 @@
  * allowing that causes another errors of non-camelcase symbols anyways.
  * Therefore quote-props is disabled explicitly only in this file. */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import {expect} from 'chai';
+import {describe, it} from 'mocha';
 import * as gax from '../../src/gax';
 
 const SERVICE_NAME = 'test.interface.v1.api';

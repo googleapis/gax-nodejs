@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as nodeFetch from 'node-fetch';
@@ -88,7 +90,7 @@ describe('createStub', () => {
   });
 
   it('should create a stub', async () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(echoService, stubOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
@@ -106,7 +108,7 @@ describe('createStub', () => {
   });
 
   it('should support optional parameters', async () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(
       echoService,
       stubExtraOptions
@@ -150,7 +152,6 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    //tslint:disable-next-line variable-name
     const AbortController = function() {
       // @ts-ignore
       this.abort = function() {
@@ -272,15 +273,10 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(
-        requestObject,
-        {},
-        {},
-        (err: {message: string}, result: {}) => {
-          assert.strictEqual(err.message, JSON.stringify(expectedError));
-          done();
-        }
-      );
+      echoStub.echo(requestObject, {}, {}, (err: {message: string}) => {
+        assert.strictEqual(err.message, JSON.stringify(expectedError));
+        done();
+      });
     });
   });
 

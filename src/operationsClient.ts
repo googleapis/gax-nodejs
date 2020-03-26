@@ -26,7 +26,7 @@ import {ClientStubOptions, GrpcClient} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
 import {APICallback} from './apitypes';
 
-const configData = require('./operations_client_config');
+import configData = require('./operations_client_config.json');
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -78,7 +78,7 @@ export class OperationsClient {
 
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     operationsProtos: any,
     options: OperationsClientOptions
   ) {
@@ -134,7 +134,8 @@ export class OperationsClient {
     for (const methodName of operationsStubMethods) {
       const innerCallPromise = operationsStub.then(
         stub => (...args: Array<{}>) => {
-          return stub[methodName].apply(stub, args);
+          const func = stub[methodName];
+          return func.apply(stub, args);
         },
         err => () => {
           throw err;
@@ -439,9 +440,10 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let operationsProtos: any; // loaded protos have any type
     if (gaxGrpc.fallback) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const protoJson = require('../../protos/operations.json');
       operationsProtos = gaxGrpc.loadProto(protoJson);
     } else {

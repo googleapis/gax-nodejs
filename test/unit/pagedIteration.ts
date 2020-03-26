@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import {expect} from 'chai';
 import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
@@ -21,6 +23,7 @@ import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
 import {APICallback, GaxCallPromise} from '../../src/apitypes';
+import {describe, it, beforeEach} from 'mocha';
 
 import * as util from './utils';
 import {Stream} from 'stream';
@@ -76,7 +79,6 @@ describe('paged iteration', () => {
       expected.push(i);
     }
     apiCall({}, undefined, (err, results) => {
-      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(results).to.deep.equal(expected);
       done();
@@ -204,8 +206,10 @@ describe('paged iteration', () => {
 
     async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
       let counter = 0;
+      const resources = [];
       for await (const resource of iterable) {
         counter++;
+        resources.push(resource);
         if (counter === 10) break;
       }
       expect(counter).to.equal(10);
@@ -219,7 +223,7 @@ describe('paged iteration', () => {
   });
 
   describe('stream conversion', () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let spy: any;
     let apiCall: GaxCallPromise;
     beforeEach(() => {
@@ -341,7 +345,7 @@ describe('paged iteration', () => {
 
     it('cooperates with google-cloud-node usage', done => {
       let stream;
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const output = streamEvents((pumpify as any).obj()) as pumpify;
       output.once('reading', () => {
         // @ts-ignore incomplete options

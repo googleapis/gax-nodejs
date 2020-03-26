@@ -50,6 +50,7 @@ export interface MetadataValue {
 }
 
 export interface Metadata {
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (): Metadata;
   set: (key: {}, value?: {} | null) => void;
   clone: () => Metadata;
@@ -64,7 +65,7 @@ export interface ClientStubOptions {
   servicePath?: string;
   port?: number;
   // TODO: use sslCreds?: grpc.ChannelCredentials;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sslCreds?: any;
   [index: string]: string | number | undefined | {};
 }
@@ -192,7 +193,6 @@ export class GrpcClient {
   metadataBuilder(headers: OutgoingHttpHeaders) {
     const Metadata = this.grpc.Metadata;
     const baseMetadata = new Metadata();
-    // tslint:disable-next-line forin
     for (const key in headers) {
       const value = headers[key];
       if (Array.isArray(value)) {
@@ -210,10 +210,7 @@ export class GrpcClient {
       let metadata = baseMetadata;
       if (moreHeaders) {
         for (const key in moreHeaders) {
-          if (
-            key.toLowerCase() !== 'x-goog-api-client' &&
-            moreHeaders!.hasOwnProperty(key)
-          ) {
+          if (key.toLowerCase() !== 'x-goog-api-client') {
             if (!copied) {
               copied = true;
               metadata = metadata.clone();
@@ -269,7 +266,6 @@ export class GrpcClient {
    *   to set up gRPC connection.
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
-  // tslint:disable-next-line variable-name
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);

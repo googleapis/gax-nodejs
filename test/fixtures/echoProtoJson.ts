@@ -18,4 +18,5 @@
 // npx pbjs -p protos -t json -o protos.json ../echo.proto
 // (NOTE: echo.proto was taken from gapic-showcase/schema/v1beta1
 //  commit hash: 74e71466e0d5badb3167900a553a6afea62b6e3d)
-export const echoProtoJson = require('./google-gax-packaging-test-app/protos/protos.json');
+import echoProtoJson = require('./google-gax-packaging-test-app/protos/protos.json');
+export {echoProtoJson};

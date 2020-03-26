@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import {expect} from 'chai';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
+import {describe, it, beforeEach} from 'mocha';
 
 import {protobuf} from '../../src/index';
 import {
@@ -25,7 +28,6 @@ import {
   GrpcClient,
   GrpcClientOptions,
   GrpcModule,
-  ClientStub,
 } from '../../src/grpc';
 
 function gaxGrpc(options?: GrpcClientOptions) {
@@ -57,7 +59,6 @@ describe('grpc', () => {
       };
       const builder = grpcClient.metadataBuilder(headers);
       const metadata = builder();
-      // tslint:disable-next-line forin
       for (const key in headers) {
         expect(metadata.get(key)).to.deep.eq([headers[key]]);
       }
@@ -114,7 +115,6 @@ describe('grpc', () => {
   });
 
   describe('createStub', () => {
-    const TEST_PATH = path.resolve(__dirname, '../../test');
     class DummyStub {
       constructor(public address: {}, public creds: {}, public options: {}) {}
     }
@@ -176,12 +176,12 @@ describe('grpc', () => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).has as any).key([
           'max_send_message_length',
           'initial_reconnect_backoff_ms',
         ]);
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).to.not.have as any).key([
           'servicePath',
           'port',
@@ -225,7 +225,7 @@ describe('grpc', () => {
     it('should load the test file', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
@@ -236,7 +236,7 @@ describe('grpc', () => {
       const fullPath = path.join(TEST_PATH, TEST_FILE);
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(fullPath) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
@@ -248,7 +248,7 @@ describe('grpc', () => {
       const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(nonExistentDir, iamService) as any;
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
@@ -265,7 +265,7 @@ describe('grpc', () => {
       const protos = grpcClient.loadProto(TEST_PATH, [
         TEST_FILE,
         iamService,
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ]) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'

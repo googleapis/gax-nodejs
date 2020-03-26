@@ -20,6 +20,7 @@ import {ncp} from 'ncp';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
+import {describe, it, before, after} from 'mocha';
 
 import {ShowcaseServer} from './showcase-server';
 
@@ -33,6 +34,7 @@ const fixturesDir = path.join(gaxDir, 'test', 'fixtures');
 
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../../package.json');
 const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 
@@ -69,7 +71,10 @@ describe('Run end-to-end test', () => {
   });
 
   it('should be able to run tests against gRPC server', async () => {
-    await execa('npm', ['start'], {cwd: testAppDestination, stdio: 'inherit'});
+    await execa('npm', ['start'], {
+      cwd: testAppDestination,
+      stdio: 'inherit',
+    });
   });
 
   after(async () => {

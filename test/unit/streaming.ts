@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
+import {describe, it} from 'mocha';
 
 import {GaxCallStream, GRPCCall} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
@@ -65,9 +68,7 @@ describe('streaming', () => {
         expect(data).to.deep.equal({resources: [3, 4, 5]});
       }
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.false;
     s.on('data', callback);
     s.on('end', () => {
@@ -97,14 +98,11 @@ describe('streaming', () => {
       streaming.StreamType.CLIENT_STREAMING
     );
     const s = apiCall({}, undefined, (err, response) => {
-      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(response).to.deep.eq(['foo', 'bar']);
       done();
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.false;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     s.write('foo');
     s.write('bar');
@@ -136,9 +134,7 @@ describe('streaming', () => {
       expect(callback.callCount).to.eq(2);
       done();
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     s.write(arg);
     s.write(arg);
@@ -188,9 +184,7 @@ describe('streaming', () => {
       expect(receivedResponse).to.deep.eq(expectedResponse);
       done();
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     setTimeout(() => {
       s.end(s);
@@ -198,7 +192,7 @@ describe('streaming', () => {
   });
 
   it('cancels in the middle', done => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function schedulePush(s: any, c: number) {
       const intervalId = setInterval(() => {
         s.push(c);
@@ -212,7 +206,7 @@ describe('streaming', () => {
     function func() {
       const s = through2.obj();
       schedulePush(s, 0);
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (s as any).cancel = () => {
         s.end();
         s.emit('error', cancelError);

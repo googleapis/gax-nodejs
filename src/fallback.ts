@@ -141,11 +141,9 @@ export class GrpcClient {
       // Since gRPC expects each header to be an array,
       // we are doing the same for fallback here.
       for (const key in headers) {
-        if (headers.hasOwnProperty(key)) {
-          metadata[key] = Array.isArray(headers[key])
-            ? (headers[key] as string[])
-            : ([headers[key]] as string[]);
-        }
+        metadata[key] = Array.isArray(headers[key])
+          ? (headers[key] as string[])
+          : ([headers[key]] as string[]);
       }
 
       // gRPC-fallback request must have 'grpc-web/' in 'x-goog-api-client'
@@ -167,10 +165,7 @@ export class GrpcClient {
         return metadata;
       }
       for (const key in moreHeaders) {
-        if (
-          key.toLowerCase() !== CLIENT_VERSION_HEADER &&
-          moreHeaders.hasOwnProperty(key)
-        ) {
+        if (key.toLowerCase() !== CLIENT_VERSION_HEADER) {
           const value = moreHeaders[key];
           if (Array.isArray(value)) {
             if (metadata[key] === undefined) {
@@ -264,9 +259,10 @@ export class GrpcClient {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
         ].apply(serviceStub, [req, callback]);
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cancelController: AbortController, cancelSignal: any;
         if (isBrowser && typeof AbortController !== 'undefined') {
+          // eslint-disable-next-line no-undef
           cancelController = new AbortController();
         } else {
           cancelController = new NodeAbortController();
@@ -320,7 +316,8 @@ export class GrpcClient {
         const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
         const fetch = isBrowser()
-          ? window.fetch
+          ? // eslint-disable-next-line no-undef
+            window.fetch
           : ((nodeFetch as unknown) as NodeFetchType);
         fetch(url, {
           headers,

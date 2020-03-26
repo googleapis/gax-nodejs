@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as semver from 'semver';
 import {isBrowser} from './isbrowser';
 
 const emittedWarnings = new Set<string>();

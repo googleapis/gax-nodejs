@@ -15,8 +15,9 @@
  */
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {describe, it, before} from 'mocha';
 import {expect} from 'chai';
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
@@ -39,6 +40,7 @@ describe('Run tests against gRPC server', () => {
     port: 1337,
   };
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
   // @ts-ignore
   global.isBrowser = true;
   const client = new EchoClient(opts);

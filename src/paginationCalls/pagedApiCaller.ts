@@ -101,6 +101,7 @@ export class PagedApiCaller implements APICaller {
    * request, metadata, call options, and callback.
    */
   wrap(func: GRPCCall): GRPCCall {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     return function wrappedCall(argument, metadata, options, callback) {
       return (func as UnaryCall)(

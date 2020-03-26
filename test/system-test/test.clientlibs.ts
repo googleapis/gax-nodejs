@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
+import {describe, it, before} from 'mocha';
 
 const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
@@ -31,6 +32,7 @@ const gaxDir = path.resolve(__dirname, '..', '..', '..');
 
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../../package.json');
 const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 

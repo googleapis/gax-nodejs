@@ -16,6 +16,7 @@
 
 import {assert} from 'chai';
 import * as sinon from 'sinon';
+import {describe, it} from 'mocha';
 
 import {warn} from '../../src/warnings';
 

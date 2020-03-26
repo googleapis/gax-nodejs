@@ -21,6 +21,7 @@
 import has = require('lodash.has');
 import * as util from 'util';
 import * as extras from './parserExtras';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const parser = require('./pathTemplateParser');
 
 export interface ParseResult {

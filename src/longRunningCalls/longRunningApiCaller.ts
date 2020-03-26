@@ -20,8 +20,6 @@ import {OngoingCall, OngoingCallPromise} from '../call';
 import {
   BackoffSettings,
   CallOptions,
-  CallSettings,
-  createBackoffSettings,
   createDefaultBackoffSettings,
 } from '../gax';
 import {GoogleError} from '../googleError';

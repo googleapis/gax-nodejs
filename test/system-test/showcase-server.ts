@@ -15,7 +15,6 @@
  */
 
 import * as execa from 'execa';
-//@ts-ignore
 import * as download from 'download';
 import * as fs from 'fs';
 import * as path from 'path';
