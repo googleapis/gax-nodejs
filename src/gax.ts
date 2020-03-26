@@ -119,7 +119,7 @@ export interface CallOptions {
   pageSize?: number;
   maxResults?: number;
   maxRetries?: number;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   otherArgs?: {[index: string]: any};
   bundleOptions?: BundleOptions | null;
   isBundling?: boolean;
@@ -133,7 +133,7 @@ export class CallSettings {
   pageToken?: string;
   pageSize?: number;
   maxResults?: number;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   otherArgs: {[index: string]: any};
   bundleOptions?: BundleOptions | null;
   isBundling: boolean;
@@ -219,11 +219,9 @@ export class CallSettings {
 
     if ('otherArgs' in options) {
       otherArgs = {};
-      // tslint:disable-next-line forin
       for (const key in this.otherArgs) {
         otherArgs[key] = this.otherArgs[key];
       }
-      // tslint:disable-next-line forin
       for (const optionsKey in options.otherArgs!) {
         otherArgs[optionsKey] = options.otherArgs![optionsKey];
       }
@@ -609,7 +607,7 @@ export function constructSettings(
   otherArgs?: {}
 ) {
   otherArgs = otherArgs || {};
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const defaults: any = {};
 
   const serviceConfig = (clientConfig.interfaces || {})[serviceName];
@@ -620,7 +618,6 @@ export function constructSettings(
   const overrides = (configOverrides.interfaces || {})[serviceName] || {};
   const methods = serviceConfig.methods;
   const overridingMethods = overrides.methods || {};
-  // tslint:disable-next-line forin
   for (const methodName in methods) {
     const methodConfig = methods[methodName];
     const jsName = methodName[0].toLowerCase() + methodName.slice(1);

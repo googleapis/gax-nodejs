@@ -147,6 +147,7 @@ export class BundleExecutor {
     const bundledField = request[this._descriptor.bundledField] as Array<{}>;
     const elementCount = bundledField.length;
     let requestBytes = 0;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     bundledField.forEach(obj => {
       requestBytes += this._descriptor.byteLengthFunction(obj);

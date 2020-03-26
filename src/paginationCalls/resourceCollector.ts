@@ -17,7 +17,6 @@
 import {
   SimpleCallbackFunction,
   NextPageRequestType,
-  RawResponseType,
   RequestType,
 } from '../apitypes';
 
@@ -45,8 +44,7 @@ export class ResourceCollector {
   private callback(
     err: Error | null,
     resources: Array<{}>,
-    nextPageRequest: NextPageRequestType,
-    rawResponse: RawResponseType
+    nextPageRequest: NextPageRequestType
   ) {
     if (err) {
       // Something went wrong with this request - failing everything
@@ -71,7 +69,7 @@ export class ResourceCollector {
 
     // Schedule the next call
     const callback = (
-      ...args: [Error | null, Array<{}>, NextPageRequestType, RawResponseType]
+      ...args: [Error | null, Array<{}>, NextPageRequestType]
     ) => this.callback(...args);
     setImmediate(this.apiCall, nextPageRequest, callback);
   }
@@ -83,7 +81,7 @@ export class ResourceCollector {
 
       // Schedule the first call
       const callback = (
-        ...args: [Error | null, Array<{}>, NextPageRequestType, RawResponseType]
+        ...args: [Error | null, Array<{}>, NextPageRequestType]
       ) => this.callback(...args);
       setImmediate(this.apiCall, firstRequest, callback);
     });

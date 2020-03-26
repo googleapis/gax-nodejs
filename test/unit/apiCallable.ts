@@ -16,19 +16,19 @@
 
 import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
+import {describe, it} from 'mocha';
 import * as sinon from 'sinon';
 
 import * as gax from '../../src/gax';
-import {Task} from '../../src/bundlingCalls/task';
 import {GoogleError} from '../../src/googleError';
 
 import * as utils from './utils';
 
 const fail = utils.fail;
 const createApiCall = utils.createApiCall;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
@@ -46,7 +46,6 @@ describe('createApiCall', () => {
     const apiCall = createApiCall(func);
     apiCall(42, undefined, (err, resp) => {
       expect(resp).to.eq(42);
-      // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
       done();
     });
@@ -120,12 +119,11 @@ describe('Promise', () => {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (apiCall as any)(null)
       .then((response: number[]) => {
         expect(response).to.be.an('array');
         expect(response[0]).to.eq(42);
-        // tslint:disable-next-line no-unused-expression
         expect(deadlineArg).to.be.ok;
         done();
       })
@@ -151,7 +149,7 @@ describe('Promise', () => {
       }, 0);
     }
     const apiCall = createApiCall(func, {cancel: done});
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promise = (apiCall as any)(null);
     promise
       .then(() => {
@@ -191,7 +189,7 @@ describe('Promise', () => {
       settings: {retry: retryOptions},
       returnCancelFunc: true,
     });
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promise = (apiCall as any)(null);
     promise
       .then(() => {
@@ -214,7 +212,6 @@ describe('Promise', () => {
     const apiCall = createApiCall(func);
     expect(
       apiCall({}, undefined, (err, response) => {
-        // tslint:disable-next-line no-unused-expression
         expect(err).to.be.null;
         expect(response).to.eq(42);
         done();
@@ -248,7 +245,6 @@ describe('retryable', () => {
     apiCall({}, undefined, (err, resp) => {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
-      // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
       done();
     });
@@ -277,7 +273,6 @@ describe('retryable', () => {
         expect(resp).to.be.an('array');
         expect(resp[0]).to.eq(1729);
         expect(toAttempt).to.eq(0);
-        // tslint:disable-next-line no-unused-expression
         expect(deadlineArg).to.be.ok;
         done();
       })
@@ -286,8 +281,7 @@ describe('retryable', () => {
 
   it('cancels in the middle of retries', done => {
     let callCount = 0;
-    // tslint:disable-next-line no-any
-    let promise: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       if (callCount <= 2) {
@@ -302,7 +296,7 @@ describe('retryable', () => {
       }, 10);
     }
     const apiCall = createApiCall(func, settings);
-    promise = apiCall({}, undefined);
+    const promise = apiCall({}, undefined);
     promise
       .then(() => {
         done(new Error('should not reach'));
@@ -324,7 +318,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.undefined;
       expect(spy.callCount).to.eq(1);
       done();
@@ -347,7 +340,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
       done();
@@ -419,7 +411,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_2);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
       done();
@@ -432,9 +423,7 @@ describe('retryable', () => {
     }
     const apiCall = createApiCall(func, settings);
     apiCall({}, undefined, (err, resp) => {
-      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
-      // tslint:disable-next-line no-unused-expression
       expect(resp).to.be.null;
       done();
     });
@@ -453,7 +442,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       const now = new Date();
       expect(now.getTime() - startTime.getTime()).to.be.at.least(

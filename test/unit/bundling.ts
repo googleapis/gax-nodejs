@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
+import {describe, it, beforeEach} from 'mocha';
 
 import {BundleDescriptor} from '../../src/bundlingCalls/bundleDescriptor';
 import {
@@ -24,11 +27,7 @@ import {
   BundleOptions,
 } from '../../src/bundlingCalls/bundleExecutor';
 import {computeBundleId} from '../../src/bundlingCalls/bundlingUtils';
-import {
-  deepCopyForResponse,
-  Task,
-  TaskCallback,
-} from '../../src/bundlingCalls/task';
+import {deepCopyForResponse, Task} from '../../src/bundlingCalls/task';
 import {GoogleError} from '../../src/googleError';
 
 import {createApiCall} from './utils';
@@ -132,7 +131,6 @@ describe('computeBundleId', () => {
     ];
     testCases.forEach(t => {
       it(t.message, () => {
-        // tslint:disable-next-line no-unused-expression
         expect(computeBundleId(t.object, t.fields)).to.be.undefined;
       });
     });
@@ -204,17 +202,17 @@ describe('deepCopyForResponse', () => {
 });
 
 describe('Task', () => {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function testTask(apiCall?: any) {
     return new Task(apiCall, {}, 'field1', null);
   }
 
   let id = 0;
   function extendElements(
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     task: any,
     elements: string[] | number[],
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     callback?: any
   ) {
     if (!callback) {
@@ -313,7 +311,6 @@ describe('Task', () => {
           const apiCall = sinon.spy(createApiCall(t.expected!));
           const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
           const callback = sinon.spy((err, data) => {
-            // tslint:disable-next-line no-unused-expression
             expect(err).to.be.null;
             expect(data).to.be.an.instanceOf(Object);
             if (callback.callCount === t.data.length) {
@@ -321,7 +318,7 @@ describe('Task', () => {
               done();
             }
           });
-          // tslint:disable-next-line no-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (t as any).data.forEach((d: string[]) => {
             extendElements(task!, d, callback);
           });
@@ -342,11 +339,10 @@ describe('Task', () => {
           const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
           task!._subresponseField = 'field1';
           let callbackCount = 0;
-          // tslint:disable-next-line no-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (t as any).data.forEach((d: string[]) => {
-            // tslint:disable-next-line no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             extendElements(task!, d, (err: any, data: {field1: []}) => {
-              // tslint:disable-next-line no-unused-expression
               expect(err).to.be.null;
               expect(data.field1.length).to.be.eq(d.length);
               callbackCount++;
@@ -377,14 +373,13 @@ describe('Task', () => {
           task!._subresponseField = 'field1';
           const callback = sinon.spy((e, data) => {
             expect(e).to.equal(err);
-            // tslint:disable-next-line no-unused-expression
             expect(data).to.be.undefined;
             if (callback.callCount === t.data.length) {
               expect(apiCall.callCount).to.eq(1);
               done();
             }
           });
-          // tslint:disable-next-line no-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (t as any).data.forEach((d: string[]) => {
             extendElements(task!, d, callback);
           });
@@ -538,7 +533,6 @@ describe('Executor', () => {
     expect(task._data[0].elements).to.eql([3]);
     expect(task._data[1].elements).to.eql([6]);
 
-    // tslint:disable-next-line forin
     for (const bundleId in executor._timers) {
       clearTimeout(executor._timers[bundleId]);
     }
@@ -650,7 +644,6 @@ describe('Executor', () => {
       let counter = 0;
       // @ts-ignore cancellation logic is broken here
       executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
-        // tslint:disable-next-line no-unused-expression
         expect(err).to.be.null;
         counter++;
         // counter should be 2 because event2 callback should be called
@@ -809,7 +802,7 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [1, 2], field2: 'id1'});
     setTimeout(() => {
       expect(spy.callCount).to.eq(1);
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((executor._runNow as any).callCount).to.eq(1);
       done();
     }, 20);

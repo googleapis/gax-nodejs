@@ -20,7 +20,8 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as through2 from 'through2';
-//@ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+// @ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 interface Operation {
   promise(): Function;

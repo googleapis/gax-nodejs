@@ -17,6 +17,7 @@
 'use strict';
 
 const gapicConfig = require('./echo_client_config.json');
+// eslint-disable-next-line node/no-missing-require
 const gax = require('google-gax');
 const path = require('path');
 
@@ -585,10 +586,14 @@ class EchoClient {
   }
 
   pagedExpandAsync(request, options) {
-      options = options || {};
-      request = request || {};
-      const callSettings = new gax.CallSettings(options);
-      return this._descriptors.page.pagedExpand.asyncIterate(this._innerCallPromises['pagedExpand'], request, callSettings);
+    options = options || {};
+    request = request || {};
+    const callSettings = new gax.CallSettings(options);
+    return this._descriptors.page.pagedExpand.asyncIterate(
+      this._innerCallPromises['pagedExpand'],
+      request,
+      callSettings
+    );
   }
 }
 

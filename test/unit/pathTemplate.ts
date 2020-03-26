@@ -15,6 +15,7 @@
  */
 
 import {expect} from 'chai';
+import {describe, it} from 'mocha';
 import {PathTemplate} from '../../src/pathTemplate';
 
 describe('PathTemplate', () => {

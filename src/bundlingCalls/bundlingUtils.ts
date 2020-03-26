@@ -20,7 +20,6 @@
 
 import at = require('lodash.at');
 import {RequestType} from '../apitypes';
-import {Dictionary} from 'lodash';
 
 /**
  * Compute the identifier of the `obj`. The objects of the same ID
@@ -40,7 +39,7 @@ export function computeBundleId(
   const ids: unknown[] = [];
   let hasIds = false;
   for (let i = 0; i < discriminatorFields.length; ++i) {
-    const id = at(obj as Dictionary<unknown>, discriminatorFields[i])[0];
+    const id = at(obj, discriminatorFields[i])[0];
     if (id === undefined) {
       ids.push(null);
     } else {

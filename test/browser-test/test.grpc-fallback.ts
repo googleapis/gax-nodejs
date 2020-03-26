@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {describe, it, beforeEach, before, afterEach, after} from 'mocha';
 import * as protobuf from 'protobufjs';
 import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
@@ -24,6 +26,7 @@ import {expect} from 'chai';
 //@ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const statusJsonProto = require('../../protos/status.json');
 
 const authStub = {
@@ -82,7 +85,7 @@ describe('createStub', () => {
   });
 
   it('should create a stub', async () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(echoService, stubOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
@@ -100,7 +103,7 @@ describe('createStub', () => {
   });
 
   it('should support optional parameters', async () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(
       echoService,
       stubExtraOptions
@@ -127,7 +130,7 @@ describe('grpc-fallback', () => {
     echoService: protobuf.Service,
     stubOptions: {};
   const createdAbortControllers: string[] = [];
-  // @ts-ignore
+  // eslint-disable-next-line no-undef
   const savedAbortController = window.AbortController;
 
   const authStub = {
@@ -157,7 +160,6 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    //tslint:disable-next-line variable-name
     const AbortController = function() {
       // @ts-ignore
       this.abort = function() {
@@ -169,6 +171,7 @@ describe('grpc-fallback', () => {
     };
 
     // @ts-ignore
+    // eslint-disable-next-line no-undef
     window.AbortController = AbortController;
   });
 
@@ -182,6 +185,7 @@ describe('grpc-fallback', () => {
 
   after(() => {
     // @ts-ignore
+    // eslint-disable-next-line no-undef
     window.AbortController = savedAbortController;
   });
 
@@ -196,6 +200,7 @@ describe('grpc-fallback', () => {
         return Promise.resolve(responseType.encode(response).finish());
       },
     });
+    // eslint-disable-next-line no-undef
     sinon.replace(window, 'fetch', fakeFetch);
     const [result] = await client.echo(requestObject);
     assert.strictEqual(requestObject.content, result.content);
@@ -203,11 +208,12 @@ describe('grpc-fallback', () => {
 
   it('should be able to cancel an API call using AbortController', async () => {
     const fakeFetch = sinon.fake.resolves({});
+    // eslint-disable-next-line no-undef
     sinon.replace(window, 'fetch', fakeFetch);
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
     const request = {content: 'content' + new Date().toString()};
-    const call = echoStub.echo(request, {}, {}, (err: {}, result: {}) => {});
+    const call = echoStub.echo(request, {}, {}, () => {});
 
     call.cancel();
 
@@ -218,7 +224,7 @@ describe('grpc-fallback', () => {
   it('should be able to add extra headers to the request', async () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const options: any = {};
     options.otherArgs = {};
     options.otherArgs.headers = {};
@@ -229,8 +235,10 @@ describe('grpc-fallback', () => {
     });
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject);
+    // eslint-disable-next-line no-undef
     const savedFetch = window.fetch;
     // @ts-ignore
+    // eslint-disable-next-line no-undef
     window.fetch = (url, options) => {
       // @ts-ignore
       assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
@@ -243,6 +251,7 @@ describe('grpc-fallback', () => {
     };
     const [result] = await client.echo(requestObject, options);
     assert.strictEqual(requestObject.content, result.content);
+    // eslint-disable-next-line no-undef
     window.fetch = savedFetch;
   });
 
@@ -264,10 +273,11 @@ describe('grpc-fallback', () => {
         return Promise.resolve(statusType.encode(statusMessage).finish());
       },
     });
+    // eslint-disable-next-line no-undef
     sinon.replace(window, 'fetch', fakeFetch);
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: Error, result: {}) => {
+      echoStub.echo(requestObject, {}, {}, (err: Error) => {
         assert.strictEqual(err.message, JSON.stringify(expectedError));
         done();
       });

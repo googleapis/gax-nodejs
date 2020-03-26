@@ -78,7 +78,7 @@ export class OngoingCall {
     if (this.completed) {
       return;
     }
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const canceller = func(argument, (...args: any[]) => {
       this.completed = true;
       setImmediate(this.callback!, ...args);
@@ -99,7 +99,6 @@ export class OngoingCallPromise extends OngoingCall {
    * @constructor
    * @private
    */
-  // tslint:disable-next-line variable-name
   constructor() {
     let resolveCallback: (
       result: [ResponseType, NextPageRequestType, RawResponseType]

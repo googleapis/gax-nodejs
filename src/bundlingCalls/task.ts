@@ -25,10 +25,8 @@ export interface SubResponseInfo {
   end?: number;
 }
 
-export interface TaskElement {}
-
 export interface TaskData {
-  elements: TaskElement[];
+  elements: {}[];
   bytes: number;
   callback: TaskCallback;
   cancelled?: boolean;
@@ -54,11 +52,11 @@ export interface TaskCallback extends APICallback {
  * @private
  */
 export function deepCopyForResponse(
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: any,
   subresponseInfo: SubResponseInfo | null
 ) {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let result: any;
   if (obj === null) {
     return null;
@@ -106,7 +104,7 @@ export function deepCopyForResponse(
 
 export class Task {
   _apiCall: SimpleCallbackFunction;
-  _request: {[index: string]: TaskElement[]};
+  _request: {[index: string]: {}[]};
   _bundledField: string;
   _subresponseField?: string | null;
   _data: TaskData[];
@@ -167,13 +165,14 @@ export class Task {
       return [];
     }
     const request = this._request;
-    const elements: TaskElement[] = [];
+    const elements: {}[] = [];
     const ids: string[] = [];
     for (let i = 0; i < this._data.length; ++i) {
-      elements.push.apply(elements, this._data[i].elements);
+      elements.push(...this._data[i].elements);
       ids.push(this._data[i].callback.id!);
     }
     request[this._bundledField] = elements;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     this.callCanceller = this._apiCall(
       request,
@@ -221,7 +220,7 @@ export class Task {
    * @param {number} bytes - the byte size required to encode elements in the API.
    * @param {APICallback} callback - the callback of the method call.
    */
-  extend(elements: TaskElement[], bytes: number, callback: TaskCallback) {
+  extend(elements: {}[], bytes: number, callback: TaskCallback) {
     this._data.push({
       elements,
       bytes,

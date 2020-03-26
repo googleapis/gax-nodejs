@@ -15,7 +15,7 @@
  */
 
 import * as assert from 'assert';
-import {describe, it} from 'mocha';
+import {describe, it, beforeEach, afterEach} from 'mocha';
 import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 import * as util from 'util';

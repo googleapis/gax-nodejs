@@ -291,6 +291,7 @@ function usage() {
 if (require.main === module) {
   if (process.argv.length <= 2) {
     usage();
+    // eslint-disable-next-line no-process-exit
     process.exit(1);
   }
   // argv[0] is node.js binary, argv[1] is script path

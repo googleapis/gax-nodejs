@@ -15,14 +15,17 @@
  */
 
 import {expect} from 'chai';
+import {describe, it} from 'mocha';
 
 describe('The PathTemplate parser', () => {
   it('should load the pegjs generated module ok', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const parser = require('../../src/pathTemplateParser');
     expect(parser).to.not.eql(null);
   });
 
   describe('function `parse`', () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const parser = require('../../src/pathTemplateParser');
 
     it('should succeed with valid inputs', () => {

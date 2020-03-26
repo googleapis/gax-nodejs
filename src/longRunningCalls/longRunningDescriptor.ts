@@ -16,8 +16,6 @@
 
 import * as protobuf from 'protobufjs';
 import {Descriptor} from '../descriptor';
-import {CallSettings} from '../gax';
-import {Metadata} from '../grpc';
 import {OperationsClient} from '../operationsClient';
 import {LongrunningApiCaller} from './longRunningApiCaller';
 
@@ -46,7 +44,7 @@ export class LongRunningDescriptor implements Descriptor {
     this.metadataDecoder = metadataDecoder;
   }
 
-  getApiCaller(settings: CallSettings) {
+  getApiCaller() {
     return new LongrunningApiCaller(this);
   }
 }
