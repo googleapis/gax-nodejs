@@ -394,11 +394,7 @@ describe('longrunning', () => {
         apiCall({})
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
-            try {
-              return operation.promise();
-            } catch (err) {
-              throw Error(err);
-            }
+            return operation.promise();
           })
           .then(responses => {
             const [result, metadata, rawResponse] = responses as Array<{}>;
