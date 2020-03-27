@@ -2796,5 +2796,270 @@
     
             return iam;
         })();
+        google.type = (function() {
+    
+            /**
+             * Namespace type.
+             * @memberof google
+             * @namespace
+             */
+            var type = {};
+    
+            type.Expr = (function() {
+    
+                /**
+                 * Properties of an Expr.
+                 * @memberof google.type
+                 * @interface IExpr
+                 * @property {string|null} [expression] Expr expression
+                 * @property {string|null} [title] Expr title
+                 * @property {string|null} [description] Expr description
+                 * @property {string|null} [location] Expr location
+                 */
+    
+                /**
+                 * Constructs a new Expr.
+                 * @memberof google.type
+                 * @classdesc Represents an Expr.
+                 * @implements IExpr
+                 * @constructor
+                 * @param {google.type.IExpr=} [properties] Properties to set
+                 */
+                function Expr(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * Expr expression.
+                 * @member {string} expression
+                 * @memberof google.type.Expr
+                 * @instance
+                 */
+                Expr.prototype.expression = "";
+    
+                /**
+                 * Expr title.
+                 * @member {string} title
+                 * @memberof google.type.Expr
+                 * @instance
+                 */
+                Expr.prototype.title = "";
+    
+                /**
+                 * Expr description.
+                 * @member {string} description
+                 * @memberof google.type.Expr
+                 * @instance
+                 */
+                Expr.prototype.description = "";
+    
+                /**
+                 * Expr location.
+                 * @member {string} location
+                 * @memberof google.type.Expr
+                 * @instance
+                 */
+                Expr.prototype.location = "";
+    
+                /**
+                 * Creates a new Expr instance using the specified properties.
+                 * @function create
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {google.type.IExpr=} [properties] Properties to set
+                 * @returns {google.type.Expr} Expr instance
+                 */
+                Expr.create = function create(properties) {
+                    return new Expr(properties);
+                };
+    
+                /**
+                 * Encodes the specified Expr message. Does not implicitly {@link google.type.Expr.verify|verify} messages.
+                 * @function encode
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {google.type.IExpr} message Expr message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Expr.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.expression != null && message.hasOwnProperty("expression"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.expression);
+                    if (message.title != null && message.hasOwnProperty("title"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.title);
+                    if (message.description != null && message.hasOwnProperty("description"))
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.description);
+                    if (message.location != null && message.hasOwnProperty("location"))
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.location);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified Expr message, length delimited. Does not implicitly {@link google.type.Expr.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {google.type.IExpr} message Expr message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Expr.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes an Expr message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {google.type.Expr} Expr
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Expr.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.google.type.Expr();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.expression = reader.string();
+                            break;
+                        case 2:
+                            message.title = reader.string();
+                            break;
+                        case 3:
+                            message.description = reader.string();
+                            break;
+                        case 4:
+                            message.location = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes an Expr message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {google.type.Expr} Expr
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Expr.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies an Expr message.
+                 * @function verify
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                Expr.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.expression != null && message.hasOwnProperty("expression"))
+                        if (!$util.isString(message.expression))
+                            return "expression: string expected";
+                    if (message.title != null && message.hasOwnProperty("title"))
+                        if (!$util.isString(message.title))
+                            return "title: string expected";
+                    if (message.description != null && message.hasOwnProperty("description"))
+                        if (!$util.isString(message.description))
+                            return "description: string expected";
+                    if (message.location != null && message.hasOwnProperty("location"))
+                        if (!$util.isString(message.location))
+                            return "location: string expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates an Expr message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {google.type.Expr} Expr
+                 */
+                Expr.fromObject = function fromObject(object) {
+                    if (object instanceof $root.google.type.Expr)
+                        return object;
+                    var message = new $root.google.type.Expr();
+                    if (object.expression != null)
+                        message.expression = String(object.expression);
+                    if (object.title != null)
+                        message.title = String(object.title);
+                    if (object.description != null)
+                        message.description = String(object.description);
+                    if (object.location != null)
+                        message.location = String(object.location);
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from an Expr message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof google.type.Expr
+                 * @static
+                 * @param {google.type.Expr} message Expr
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Expr.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults) {
+                        object.expression = "";
+                        object.title = "";
+                        object.description = "";
+                        object.location = "";
+                    }
+                    if (message.expression != null && message.hasOwnProperty("expression"))
+                        object.expression = message.expression;
+                    if (message.title != null && message.hasOwnProperty("title"))
+                        object.title = message.title;
+                    if (message.description != null && message.hasOwnProperty("description"))
+                        object.description = message.description;
+                    if (message.location != null && message.hasOwnProperty("location"))
+                        object.location = message.location;
+                    return object;
+                };
+    
+                /**
+                 * Converts this Expr to JSON.
+                 * @function toJSON
+                 * @memberof google.type.Expr
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Expr.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return Expr;
+            })();
+    
+            return type;
+        })();
     })
 })

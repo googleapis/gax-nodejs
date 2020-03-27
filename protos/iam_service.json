@@ -238,6 +238,7 @@
                           "policyDelta": {
                             "type": "google.iam.v1.PolicyDelta",
                             "id": 2
+                            
                         }
                     }
                   }
@@ -246,8 +247,39 @@
             }
           }
         }
+      },
+        "type": {
+          "options": {
+            "go_package": "google.golang.org/genproto/googleapis/type/expr;expr",
+            "java_multiple_files": true,
+            "java_outer_classname": "ExprProto",
+            "java_package": "com.google.type",
+            "objc_class_prefix": "GTP"
+          },
+          "nested": {
+            "Expr": {
+              "fields": {
+                "expression": {
+                  "type": "string",
+                  "id": 1
+                },
+                "title": {
+                  "type": "string",
+                  "id": 2
+                },
+                "description": {
+                  "type": "string",
+                  "id": 3
+                },
+                "location": {
+                  "type": "string",
+                  "id": 4
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
-}
 }

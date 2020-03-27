@@ -4,3 +4,4 @@ src/**/doc/*
 build/
 docs/
 protos/
+coverage/

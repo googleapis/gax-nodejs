@@ -80,10 +80,16 @@ export class IamClient {
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
-    const nodejsProtoPath = path.join(__dirname, '..', 'protos', 'protos.json');
+    const nodejsProtoPath = path.join(
+      __dirname,
+      '..',
+      '..',
+      'protos',
+      'iam_service.json'
+    );
 
     const protos = gaxGrpc.loadProto(
-      opts.fallback ? require('../protos/protos.json') : nodejsProtoPath
+      opts.fallback ? require('../../protos/iam_service.json') : nodejsProtoPath
     );
     // Put together the default options sent with requests.
     const defaults = gaxGrpc.constructSettings(
@@ -97,7 +103,7 @@ export class IamClient {
     const iamPolicyStub = gaxGrpc.createStub(
       opts.fallback
         ? (protos as protobuf.Root).lookupService('google.iam.v1.IAMPolicy')
-        : // tslint:disable-next-line no-any
+        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (protos as any).google.iam.v1.IAMPolicy,
       opts
     ) as Promise<{[method: string]: Function}>;
@@ -116,7 +122,8 @@ export class IamClient {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
           }
-          return stub[methodName].apply(stub, args);
+          const func = stub[methodName];
+          return func.apply(stub, args);
         },
         (err: Error | null | undefined) => () => {
           throw err;
@@ -261,29 +268,28 @@ export interface IamClient {
   ): Promise<protosTypes.google.iam.v1.TestIamPermissionsResponse>;
 }
 export class IamClientBuilder {
-    iamClient: (opts: ClientOptions) => IamClient;
-  
+  iamClient: (opts: ClientOptions) => IamClient;
+
+  /**
+   * Builds a new Operations Client
+   * @param gaxGrpc {GrpcClient}
+   */
+  constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
     /**
-     * Builds a new Operations Client
-     * @param gaxGrpc {GrpcClient}
+     * Build a new instance of {@link IamClient}.
+     *
+     * @param {Object=} opts - The optional parameters.
+     * @param {String=} opts.servicePath - Domain name of the API remote host.
+     * @param {number=} opts.port - The port on which to connect to the remote host.
+     * @param {grpc.ClientCredentials=} opts.sslCreds - A ClientCredentials for use with an SSL-enabled channel.
+     * @param {Object=} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
      */
-    constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {  
-      /**
-       * Build a new instance of {@link IamClient}.
-       *
-       * @param {Object=} opts - The optional parameters.
-       * @param {String=} opts.servicePath - Domain name of the API remote host.
-       * @param {number=} opts.port - The port on which to connect to the remote host.
-       * @param {grpc.ClientCredentials=} opts.sslCreds - A ClientCredentials for use with an SSL-enabled channel.
-       * @param {Object=} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
-       */
-      this.iamClient = opts => {
-        if (gaxGrpc.fallback) {
-          opts.fallback = true;
-        }
-        return new IamClient(opts);
-      };
-      Object.assign(this.iamClient, IamClient);
-    }
+    this.iamClient = opts => {
+      if (gaxGrpc.fallback) {
+        opts.fallback = true;
+      }
+      return new IamClient(opts);
+    };
+    Object.assign(this.iamClient, IamClient);
   }
-  
+}
