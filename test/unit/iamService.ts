@@ -28,7 +28,6 @@ import {protobuf} from '../../src';
 import * as protos from '../../protos/iam_service';
 
 function generateSampleMessage<T extends object>(instance: T) {
-
   const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
     instance as protobuf.Message<T>,
     {defaults: true}
