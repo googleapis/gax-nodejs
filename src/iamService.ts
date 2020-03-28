@@ -135,7 +135,7 @@ export class IamClient {
     this._protos = this._gaxGrpc.loadProto(
       opts.fallback
         ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/iam_service.json')
+          require('../protos/iam_service.json')
         : nodejsProtoPath
     );
     // Put together the default options sent with requests.
