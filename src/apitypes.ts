@@ -42,7 +42,7 @@ export type NextPageRequestType = {
 } | null;
 export type RawResponseType = Operation | {} | null;
 export type ResultTuple = [
-  ResponseType,
+  ResponseType | [ResponseType],
   NextPageRequestType | undefined,
   RawResponseType | undefined
 ];
