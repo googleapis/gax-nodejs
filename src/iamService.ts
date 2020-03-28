@@ -376,7 +376,6 @@ export class IamClient {
    */
   close(): Promise<void> {
     this.initialize();
-    console.warn('initialized');
     if (!this._terminated) {
       return this.iamPolicyStub!.then(stub => {
         this._terminated = true;

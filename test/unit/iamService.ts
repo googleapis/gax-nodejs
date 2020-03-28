@@ -20,12 +20,12 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
-import * as IamService from '../../src/iamService';
+import {IamClient} from '../../src/iamService';
+import * as protosTypes from '../../protos/iam_service';
 import {GrpcClient, GrpcClientOptions} from '../../src/grpc';
 import {GrpcClient as FallbackGrpcClient} from '../../src/fallback';
 
-import {protobuf} from '../../src';
-import * as protos from '../../protos/iam_service';
+import * as protobuf from 'protobufjs';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
@@ -54,17 +54,17 @@ function stubSimpleCallWithCallback<ResponseType>(
 
 describe('Iam service', () => {
   it('has servicePath', () => {
-    const servicePath = IamService.IamClient.servicePath;
+    const servicePath = IamClient.servicePath;
     assert(servicePath);
   });
 
   it('has apiEndpoint', () => {
-    const apiEndpoint = IamService.IamClient.apiEndpoint;
+    const apiEndpoint = IamClient.apiEndpoint;
     assert(apiEndpoint);
   });
 
   it('has port', () => {
-    const port = IamService.IamClient.port;
+    const port = IamClient.port;
     assert(port);
     assert(typeof port === 'number');
   });
@@ -72,19 +72,19 @@ describe('Iam service', () => {
   it('should create a client with no option', () => {
     const grpcClient = new GrpcClient();
     const grpcClientOptions = Object.assign({} as GrpcClientOptions);
-    const client = new IamService.IamClient(grpcClient, grpcClientOptions);
+    const client = new IamClient(grpcClient, grpcClientOptions);
     assert(client);
   });
 
   it('should create a client with gRPC fallback', () => {
     const grpcClient = new FallbackGrpcClient();
-    const client = new IamService.IamClient(grpcClient, {fallback: true});
+    const client = new IamClient(grpcClient, {fallback: true});
     assert(client);
   });
 
   it('has initialize method and supports deferred initialization', async () => {
     const grpcClient = new GrpcClient();
-    const client = new IamService.IamClient(grpcClient, {
+    const client = new IamClient(grpcClient, {
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
@@ -96,20 +96,22 @@ describe('Iam service', () => {
 
   it('has close method', () => {
     const grpcClient = new FallbackGrpcClient();
-    const client = new IamService.IamClient(grpcClient, {
+    const client = new IamClient(grpcClient, {
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
-    assert(client.close());
+    client.initialize();
+    client.close();
   });
 
   it('has getProjectId method', async () => {
     const fakeProjectId = 'fake-project-id';
     const grpcClient = new GrpcClient();
-    const client = new IamService.IamClient(grpcClient, {
+    const client = new IamClient(grpcClient, {
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
+    client.initialize();
     client.getProjectId = sinon.stub().resolves(fakeProjectId);
     const result = await client.getProjectId();
     assert.strictEqual(result, fakeProjectId);
@@ -120,10 +122,11 @@ describe('Iam service', () => {
     const fakeProjectId = 'fake-project-id';
     const grpcClient = new FallbackGrpcClient();
 
-    const client = new IamService.IamClient(grpcClient, {
+    const client = new IamClient(grpcClient, {
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
+    client.initialize();
     client.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
     const promise = new Promise((resolve, reject) => {
       client.getProjectId((err?: Error | null, projectId?: string | null) => {
@@ -142,13 +145,13 @@ describe('Iam service', () => {
     it('invokes getIamPolicy without error', async () => {
       const grpcClient = new GrpcClient();
 
-      const client = new IamService.IamClient(grpcClient, {
+      const client = new IamClient(grpcClient, {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
       client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protosTypes.google.iam.v1.GetIamPolicyRequest()
       );
       const expectedHeaderRequestParams = 'resource=';
       const expectedOptions = {
@@ -159,7 +162,7 @@ describe('Iam service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy()
+        new protosTypes.google.iam.v1.Policy()
       );
       client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
       const response = await client.getIamPolicy(request);
@@ -173,13 +176,13 @@ describe('Iam service', () => {
 
     it('invokes getIamPolicy without error using callback', async () => {
       const grpcClient = new GrpcClient();
-      const client = new IamService.IamClient(grpcClient, {
+      const client = new IamClient(grpcClient, {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
       client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protosTypes.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -191,7 +194,7 @@ describe('Iam service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy()
+        new protosTypes.google.iam.v1.Policy()
       );
       client.innerApiCalls.getIamPolicy = stubSimpleCallWithCallback(
         expectedResponse
@@ -199,7 +202,10 @@ describe('Iam service', () => {
       const promise = new Promise((resolve, reject) => {
         client.getIamPolicy(
           request,
-          (err?: Error | null, result?: protos.google.iam.v1.Policy | null) => {
+          (
+            err?: Error | null,
+            result?: protosTypes.google.iam.v1.Policy | null
+          ) => {
             if (err) {
               reject(err);
             } else {
@@ -220,13 +226,13 @@ describe('Iam service', () => {
     it('invokes getIamPolicy with error', async () => {
       const grpcClient = new GrpcClient();
 
-      const client = new IamService.IamClient(grpcClient, {
+      const client = new IamClient(grpcClient, {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
       client.initialize();
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest()
+        new protosTypes.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
