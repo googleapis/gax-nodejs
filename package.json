@@ -8,7 +8,8 @@
     "build/src",
     "build/tools/compileProtos.js",
     "protos",
-    "build/protos"
+    "build/protos/operations.d.ts",
+    "build/protos/iam_service.d.ts"
   ],
   "bin": {
     "compileProtos": "./build/tools/compileProtos.js"
