@@ -20,7 +20,7 @@
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
     "duplexify": "^3.6.0",
-    "google-auth-library": "^5.0.0",
+    "google-auth-library": "^6.0.0",
     "is-stream-ended": "^0.1.4",
     "lodash.at": "^4.6.0",
     "lodash.has": "^4.5.2",
