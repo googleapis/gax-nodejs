@@ -22,7 +22,7 @@ import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
-import {APICallback, GaxCallPromise} from '../../src/apitypes';
+import {APICallback, GaxCall} from '../../src/apitypes';
 import {describe, it, beforeEach} from 'mocha';
 
 import * as util from './utils';
@@ -199,7 +199,7 @@ describe('paged iteration', () => {
 
   describe('use async iterator', () => {
     const spy = sinon.spy(func);
-    let apiCall: GaxCallPromise;
+    let apiCall: GaxCall;
     beforeEach(() => {
       apiCall = util.createApiCall(spy, createOptions);
     });
@@ -210,22 +210,28 @@ describe('paged iteration', () => {
       for await (const resource of iterable) {
         counter++;
         resources.push(resource);
-        if (counter === 10) break;
+        if (counter === 10) {
+          break;
+        }
       }
-      expect(counter).to.equal(10);
+      return resources;
     }
-    it('returns an iterable, count to 10', () => {
+
+    it('returns an iterable, count to 10', async () => {
       const settings = new gax.CallSettings(
         (createOptions && createOptions.settings) || {}
       );
-      iterableChecker(descriptor.asyncIterate(apiCall, {}, settings));
+      const resources = await iterableChecker(
+        descriptor.asyncIterate(apiCall, {}, settings)
+      );
+      expect(resources.length).to.equal(10);
     });
   });
 
   describe('stream conversion', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let spy: any;
-    let apiCall: GaxCallPromise;
+    let apiCall: GaxCall;
     beforeEach(() => {
       spy = sinon.spy(func);
       apiCall = util.createApiCall(spy, createOptions);

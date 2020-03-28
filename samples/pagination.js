@@ -67,6 +67,16 @@ async function main() {
   // Call it!
   const [resources] = await wrappedFunction({request: 'empty'});
   console.log(resources);
+
+  // Alternatively, call it using async iterators!
+  const iterable = pageDescriptor.asyncIterate(wrappedFunction, {
+    request: 'empty',
+  });
+  const asyncResources = [];
+  for await (const resource of iterable) {
+    asyncResources.push(resource);
+  }
+  console.log(asyncResources);
 }
 
 main().catch(console.error);
