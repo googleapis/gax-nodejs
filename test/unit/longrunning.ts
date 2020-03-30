@@ -18,7 +18,6 @@ import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
-import * as assert from 'assert';
 import {LongrunningDescriptor} from '../../src';
 import * as operationProtos from '../../protos/operations';
 import {GaxCallPromise} from '../../src/apitypes';
@@ -130,9 +129,6 @@ describe('longrunning', () => {
   }
 
   describe('createApiCall', () => {
-    it('proto types are loaded correctly', done => {
-      assert(operationProtos);
-    });
     it('longrunning call resolves to the correct datatypes', done => {
       const func = (
         argument: {},

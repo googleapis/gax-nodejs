@@ -21,21 +21,9 @@ import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {IamClient} from '../../src/iamService';
-// import * as protosTypes from '../../protos/operations';
+import * as protosTypes from '../../protos/iam_service';
 import {GrpcClient, GrpcClientOptions} from '../../src/grpc';
 import {GrpcClient as FallbackGrpcClient} from '../../src/fallback';
-
-import * as protobuf from 'protobufjs';
-
-function generateSampleMessage<T extends object>(instance: T) {
-  const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
-    instance as protobuf.Message<T>,
-    {defaults: true}
-  );
-  return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject
-  ) as T;
-}
 
 function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
   return error
@@ -53,9 +41,6 @@ function stubSimpleCallWithCallback<ResponseType>(
 }
 
 describe('Iam service', () => {
-  // it('protoTypes loading correctly', () => {
-  //   assert(protosTypes);
-  // });
   it('has servicePath', () => {
     const servicePath = IamClient.servicePath;
     assert(servicePath);
@@ -103,7 +88,6 @@ describe('Iam service', () => {
       credentials: {client_email: 'bogus', private_key: 'bogus'},
       projectId: 'bogus',
     });
-    client.initialize();
     client.close();
   });
 
@@ -144,121 +128,347 @@ describe('Iam service', () => {
     assert.strictEqual(result, fakeProjectId);
   });
 
-  // describe('getIamPolicy', () => {
-  //   it('invokes getIamPolicy without error', async () => {
-  //     const grpcClient = new GrpcClient();
+  describe('getIamPolicy', () => {
+    it('invokes getIamPolicy without error', async () => {
+      const grpcClient = new GrpcClient();
 
-  //     const client = new IamClient(grpcClient, {
-  //       credentials: {client_email: 'bogus', private_key: 'bogus'},
-  //       projectId: 'bogus',
-  //     });
-  //     client.initialize();
-  //     const request = generateSampleMessage(
-  //       new protosTypes.google.iam.v1.GetIamPolicyRequest()
-  //     );
-  //     const expectedHeaderRequestParams = 'resource=';
-  //     const expectedOptions = {
-  //       otherArgs: {
-  //         headers: {
-  //           'x-goog-request-params': expectedHeaderRequestParams,
-  //         },
-  //       },
-  //     };
-  //     const expectedResponse = generateSampleMessage(
-  //       new protosTypes.google.iam.v1.Policy()
-  //     );
-  //     client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
-  //     const response = await client.getIamPolicy(request);
-  //     assert.deepStrictEqual(response, expectedResponse);
-  //     assert(
-  //       (client.innerApiCalls.getIamPolicy as SinonStub)
-  //         .getCall(0)
-  //         .calledWith(request, expectedOptions, undefined)
-  //     );
-  //   });
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+      } as protosTypes.google.iam.v1.GetIamPolicyRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = {} as protosTypes.google.iam.v1.Policy;
 
-  //   it('invokes getIamPolicy without error using callback', async () => {
-  //     const grpcClient = new GrpcClient();
-  //     const client = new IamClient(grpcClient, {
-  //       credentials: {client_email: 'bogus', private_key: 'bogus'},
-  //       projectId: 'bogus',
-  //     });
-  //     client.initialize();
-  //     const request = generateSampleMessage(
-  //       new protosTypes.google.iam.v1.GetIamPolicyRequest()
-  //     );
-  //     request.resource = '';
-  //     const expectedHeaderRequestParams = 'resource=';
-  //     const expectedOptions = {
-  //       otherArgs: {
-  //         headers: {
-  //           'x-goog-request-params': expectedHeaderRequestParams,
-  //         },
-  //       },
-  //     };
-  //     const expectedResponse = generateSampleMessage(
-  //       new protosTypes.google.iam.v1.Policy()
-  //     );
-  //     client.innerApiCalls.getIamPolicy = stubSimpleCallWithCallback(
-  //       expectedResponse
-  //     );
-  //     const promise = new Promise((resolve, reject) => {
-  //       client.getIamPolicy(
-  //         request,
-  //         (
-  //           err?: Error | null,
-  //           result?: protosTypes.google.iam.v1.Policy | null
-  //         ) => {
-  //           if (err) {
-  //             reject(err);
-  //           } else {
-  //             resolve(result);
-  //           }
-  //         }
-  //       );
-  //     });
-  //     const response = await promise;
-  //     assert.deepStrictEqual(response, expectedResponse);
-  //     assert(
-  //       (client.innerApiCalls.getIamPolicy as SinonStub)
-  //         .getCall(0)
-  //         .calledWith(request, expectedOptions /*, callback defined above */)
-  //     );
-  //   });
+      client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
+      const response = await client.getIamPolicy(request);
+      assert.deepStrictEqual(response, [expectedResponse]);
+      assert(
+        (client.innerApiCalls.getIamPolicy as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
 
-  //   it('invokes getIamPolicy with error', async () => {
-  //     const grpcClient = new GrpcClient();
+    it('invokes getIamPolicy without error using callback', async () => {
+      const grpcClient = new GrpcClient();
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+      } as protosTypes.google.iam.v1.GetIamPolicyRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = {} as protosTypes.google.iam.v1.Policy;
+      client.innerApiCalls.getIamPolicy = stubSimpleCallWithCallback(
+        expectedResponse
+      );
+      const promise = new Promise((resolve, reject) => {
+        client.getIamPolicy(
+          request,
+          (
+            err?: Error | null,
+            result?: protosTypes.google.iam.v1.Policy | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.getIamPolicy as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions /*, callback defined above */)
+      );
+    });
 
-  //     const client = new IamClient(grpcClient, {
-  //       credentials: {client_email: 'bogus', private_key: 'bogus'},
-  //       projectId: 'bogus',
-  //     });
-  //     client.initialize();
-  //     const request = generateSampleMessage(
-  //       new protosTypes.google.iam.v1.GetIamPolicyRequest()
-  //     );
-  //     request.resource = '';
-  //     const expectedHeaderRequestParams = 'resource=';
-  //     const expectedOptions = {
-  //       otherArgs: {
-  //         headers: {
-  //           'x-goog-request-params': expectedHeaderRequestParams,
-  //         },
-  //       },
-  //     };
-  //     const expectedError = new Error('expected');
-  //     client.innerApiCalls.getIamPolicy = stubSimpleCall(
-  //       undefined,
-  //       expectedError
-  //     );
-  //     assert.rejects(async () => {
-  //       await client.getIamPolicy(request);
-  //     }, expectedError);
-  //     assert(
-  //       (client.innerApiCalls.getIamPolicy as SinonStub)
-  //         .getCall(0)
-  //         .calledWith(request, expectedOptions, undefined)
-  //     );
-  //   });
-  // });
+    it('invokes getIamPolicy with error', async () => {
+      const grpcClient = new GrpcClient();
+
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+      } as protosTypes.google.iam.v1.GetIamPolicyRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedError = new Error('expected');
+      client.innerApiCalls.getIamPolicy = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      assert.rejects(async () => {
+        await client.getIamPolicy(request);
+      }, expectedError);
+      assert(
+        (client.innerApiCalls.getIamPolicy as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+  });
+  describe('setIamPolicy', () => {
+    it('invokes setIamPolicy without error', async () => {
+      const grpcClient = new GrpcClient();
+
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+      } as protosTypes.google.iam.v1.SetIamPolicyRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = {} as protosTypes.google.iam.v1.Policy;
+
+      client.innerApiCalls.setIamPolicy = stubSimpleCall(expectedResponse);
+      const response = await client.setIamPolicy(request);
+      assert.deepStrictEqual(response, [expectedResponse]);
+      assert(
+        (client.innerApiCalls.setIamPolicy as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes setIamPolicy without error using callback', async () => {
+      const grpcClient = new GrpcClient();
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+      } as protosTypes.google.iam.v1.SetIamPolicyRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = {} as protosTypes.google.iam.v1.Policy;
+      client.innerApiCalls.setIamPolicy = stubSimpleCallWithCallback(
+        expectedResponse
+      );
+      const promise = new Promise((resolve, reject) => {
+        client.setIamPolicy(
+          request,
+          (
+            err?: Error | null,
+            result?: protosTypes.google.iam.v1.Policy | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.setIamPolicy as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions /*, callback defined above */)
+      );
+    });
+
+    it('invokes setIamPolicy with error', async () => {
+      const grpcClient = new GrpcClient();
+
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+      } as protosTypes.google.iam.v1.SetIamPolicyRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedError = new Error('expected');
+      client.innerApiCalls.setIamPolicy = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      assert.rejects(async () => {
+        await client.setIamPolicy(request);
+      }, expectedError);
+      assert(
+        (client.innerApiCalls.setIamPolicy as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+  });
+  describe('TestIamPermissions', () => {
+    it('invokes TestIamPermissions without error', async () => {
+      const grpcClient = new GrpcClient();
+
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+        permissions: [''],
+      } as protosTypes.google.iam.v1.TestIamPermissionsRequest;
+      const expectedHeaderRequestParams = 'resource=,permissions=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = {permissions: ['']};
+
+      client.innerApiCalls.TestIamPermissions = stubSimpleCall(
+        expectedResponse
+      );
+      const response = await client.testIamPermissions(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.testIamPermissions as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+
+    it('invokes TestIamPermissions without error using callback', async () => {
+      const grpcClient = new GrpcClient();
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+        permissions: [''],
+      } as protosTypes.google.iam.v1.TestIamPermissionsRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedResponse = {
+        permissions: [''],
+      } as protosTypes.google.iam.v1.TestIamPermissionsResponse;
+      client.innerApiCalls.testIamPermissions = stubSimpleCallWithCallback(
+        expectedResponse
+      );
+      const promise = new Promise((resolve, reject) => {
+        client.testIamPermissions(
+          request,
+          (
+            err?: Error | null,
+            result?: protosTypes.google.iam.v1.TestIamPermissionsResponse | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.testIamPermissions as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions /*, callback defined above */)
+      );
+    });
+
+    it('invokes TestIamPermissions with error', async () => {
+      const grpcClient = new GrpcClient();
+
+      const client = new IamClient(grpcClient, {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = {
+        resource: '',
+        permissions: [''],
+      } as protosTypes.google.iam.v1.TestIamPermissionsRequest;
+      const expectedHeaderRequestParams = 'resource=';
+      const expectedOptions = {
+        otherArgs: {
+          headers: {
+            'x-goog-request-params': expectedHeaderRequestParams,
+          },
+        },
+      };
+      const expectedError = new Error('expected');
+      client.innerApiCalls.testIamPermissions = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      assert.rejects(async () => {
+        await client.testIamPermissions(request);
+      }, expectedError);
+      assert(
+        (client.innerApiCalls.testIamPermissions as SinonStub)
+          .getCall(0)
+          .calledWith(request, expectedOptions, undefined)
+      );
+    });
+  });
 });

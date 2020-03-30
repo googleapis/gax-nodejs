@@ -24,6 +24,7 @@ import {
 } from './descriptor';
 import * as longrunning from './longRunningCalls/longrunning';
 import * as operationProtos from '../protos/operations';
+import * as IamProtos from '../protos/iam_service';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
 import * as gax from './gax';
@@ -76,7 +77,7 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro};
+export {lro, IamProtos};
 export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;

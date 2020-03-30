@@ -349,6 +349,8 @@ export class IamClient {
       | protosTypes.google.iam.v1.IAMPolicy.TestIamPermissionsCallback,
     callback?: protosTypes.google.iam.v1.IAMPolicy.TestIamPermissionsCallback
   ): Promise<protosTypes.google.iam.v1.TestIamPermissionsResponse> {
+    console.warn('request: ', request);
+    console.warn('options: ', optionsOrCallback ?? 'no options');
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
       callback = (optionsOrCallback as unknown) as protosTypes.google.iam.v1.IAMPolicy.TestIamPermissionsCallback;
@@ -365,8 +367,14 @@ export class IamClient {
     ] = routingHeader.fromParams({
       resource: request.resource,
     });
-
-    return this.innerApiCalls.testIamPermissions(request, options, callback);
+    console.warn('header: ', options);
+    const response = this.innerApiCalls.testIamPermissions(
+      request,
+      options,
+      callback
+    );
+    console.warn('response: ', response);
+    return response;
   }
 
   /**
@@ -382,11 +390,7 @@ export class IamClient {
         stub.close();
       });
     }
-    try {
-      return Promise.resolve();
-    } catch (err) {
-      throw new Error(err);
-    }
+    return Promise.resolve();
   }
 }
 export interface IamClient {
