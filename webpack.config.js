@@ -31,6 +31,10 @@ module.exports = {
         'protos/operations.json'
       ),
       '../../protos/status.json': path.resolve(__dirname, 'protos/status.json'),
+      '../../protos/iam_service.json': path.resolve(
+        __dirname,
+        'protos/iam_service.json'
+      ),
     },
   },
   module: {
