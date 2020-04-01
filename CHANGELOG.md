@@ -4,6 +4,36 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.0.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.2...v2.0.0) (2020-03-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* use Node.js v10+
+* throw for versions of Node.js older than v10.0.0 (#748)
+* stop accepting Promise constructor (#737)
+
+### Features
+
+* export bundle descriptor in descriptors interface ([#744](https://www.github.com/googleapis/gax-nodejs/issues/744)) ([b1eccf9](https://www.github.com/googleapis/gax-nodejs/commit/b1eccf96c439d67376d249a54c9d22ffe7ff1839))
+* export ServiceError from @grpc/grpc-js ([#754](https://www.github.com/googleapis/gax-nodejs/issues/754)) ([24a4d60](https://www.github.com/googleapis/gax-nodejs/commit/24a4d600738a9597e9a87d6705eaed3dc2285e3b))
+* stop accepting Promise constructor ([#737](https://www.github.com/googleapis/gax-nodejs/issues/737)) ([816bf9b](https://www.github.com/googleapis/gax-nodejs/commit/816bf9b283217208debd979e893a6daf29f1f739))
+* support async iterator for paging method ([#708](https://www.github.com/googleapis/gax-nodejs/issues/708)) ([3ac5afb](https://www.github.com/googleapis/gax-nodejs/commit/3ac5afb3b1b1b22798f15ee07395f3ca765383b4))
+* throw for versions of Node.js older than v10.0.0 ([#748](https://www.github.com/googleapis/gax-nodejs/issues/748)) ([511fc23](https://www.github.com/googleapis/gax-nodejs/commit/511fc233bd66d537c24743ef460ee8c609cd551f))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ^0.7.0 ([#736](https://www.github.com/googleapis/gax-nodejs/issues/736)) ([01c428c](https://www.github.com/googleapis/gax-nodejs/commit/01c428cb1240320b92778abf1297a5ff72346fd9))
+* **deps:** use @grpc/grpc-js v0.7.2 ([#735](https://www.github.com/googleapis/gax-nodejs/issues/735)) ([836e81b](https://www.github.com/googleapis/gax-nodejs/commit/836e81b64f84d8c118e6aea0580f0645658a8490))
+* **deps:** use protobuf.js v6.8.9 ([#743](https://www.github.com/googleapis/gax-nodejs/issues/743)) ([fab91ce](https://www.github.com/googleapis/gax-nodejs/commit/fab91ce334d76212d7e31b5478331339c5acad76))
+* allow passing numbers as path template parameters ([#756](https://www.github.com/googleapis/gax-nodejs/issues/756)) ([c466d3d](https://www.github.com/googleapis/gax-nodejs/commit/c466d3dc68c8f9050d3ae69dcedd708e3509ae17))
+
+
+### Miscellaneous Chores
+
+* require Node.js v10+ ([#759](https://www.github.com/googleapis/gax-nodejs/issues/759)) ([23ec7f6](https://www.github.com/googleapis/gax-nodejs/commit/23ec7f69c3813f6d06ea8b2a473d072337e1b499))
+
 ### [1.14.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.1...v1.14.2) (2020-02-27)
 
 
