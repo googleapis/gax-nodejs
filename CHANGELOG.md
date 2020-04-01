@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.0.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.0...v2.0.1) (2020-03-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency google-auth-library to v6 ([#763](https://www.github.com/googleapis/gax-nodejs/issues/763)) ([72114db](https://www.github.com/googleapis/gax-nodejs/commit/72114db1b15af3034c51a784e3fc619e2ee281e5))
+* make async iteration work for gRPC-fallback; refactor the code ([#765](https://www.github.com/googleapis/gax-nodejs/issues/765)) ([944c06b](https://www.github.com/googleapis/gax-nodejs/commit/944c06b4225c4dd5cdcf08e4ca2497cfe3a69cde))
+
 ## [2.0.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.2...v2.0.0) (2020-03-26)
 
 
