@@ -44,7 +44,7 @@
     "@types/pumpify": "^1.4.1",
     "@types/rimraf": "^3.0.0",
     "@types/semver": "^6.0.0",
-    "@types/sinon": "^7.0.0",
+    "@types/sinon": "^9.0.0",
     "@types/through2": "^2.0.33",
     "c8": "^7.0.0",
     "chai": "*",
