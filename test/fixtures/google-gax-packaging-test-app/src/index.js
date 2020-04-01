@@ -82,7 +82,6 @@ async function testShowcase() {
   await testEcho(fallbackClient);
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
-  await testPagedExpandAsync(fallbackClient);
 }
 
 async function testEcho(client) {
