@@ -82,14 +82,14 @@ export class OperationsClient {
     operationsProtos: any,
     options: OperationsClientOptions
   ) {
-    const opts: OperationsClientOptions & ClientStubOptions = Object.assign(
+    const opts = Object.assign(
       {
         servicePath: SERVICE_ADDRESS,
         port: DEFAULT_SERVICE_PORT,
         clientConfig: {},
       },
       options
-    );
+    ) as OperationsClientOptions & ClientStubOptions;
 
     const googleApiClient = ['gl-node/' + process.versions.node];
     if (opts.libName && opts.libVersion) {
