@@ -70,6 +70,13 @@ describe('compileProtos tool', () => {
       js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
 
+    // check that it uses proper root object; it's taken from fixtures/package.json
+    assert(
+      js
+        .toString()
+        .includes('$protobuf.roots._org_fake_package_42_0_7_prealpha84')
+    );
+
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
     assert(ts.toString().includes('LibraryService'));
@@ -92,9 +99,6 @@ describe('compileProtos tool', () => {
       ),
     ]);
     assert(fs.existsSync(expectedJsonResultFile));
-
-    const json = await readFile(expectedJsonResultFile);
-    assert.strictEqual(json.toString(), '{}');
   });
 
   it('fixes types in the TS file', async () => {
@@ -140,5 +144,27 @@ describe('compileProtos tool', () => {
           'public case: (google.TestEnum|keyof typeof google.TestEnum);'
         )
     );
+  });
+
+  it('proposes the name for protobuf root', async () => {
+    const rootName = await compileProtos.generateRootName([
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
+    ]);
+    assert.strictEqual(rootName, '_org_fake_package_42_0_7_prealpha84_protos');
+  });
+
+  it('falls back to the default name for protobuf root if unable to guess', async () => {
+    const rootName = await compileProtos.generateRootName([
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'fixtures',
+        'protoLists',
+        'empty'
+      ),
+    ]);
+    assert.strictEqual(rootName, 'default');
   });
 });

@@ -30,8 +30,8 @@ const cwd = path.join(__dirname, '..');
 describe('Quickstart', () => {
   it('should run quickstart sample', async () => {
     const stdout = execSync('node quickstart.js', {cwd});
-    assert.match(stdout, new RegExp(`This call failed`));
-    assert.match(stdout, new RegExp(`This call succeeded`));
-    assert.match(stdout, new RegExp(`response: 'ok'`));
+    assert.match(stdout, new RegExp('This call failed'));
+    assert.match(stdout, new RegExp('This call succeeded'));
+    assert.match(stdout, new RegExp("response: 'ok'"));
   });
 });

@@ -198,9 +198,13 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
  * `./protos/protos.json`. No support for changing output filename for now
  * (but it's a TODO!)
  *
+ * @param {string} rootName Name of the root object for pbjs static module (-r option)
  * @param {string[]} protos List of proto files to compile.
  */
-async function compileProtos(protos: string[]): Promise<void> {
+async function compileProtos(
+  rootName: string,
+  protos: string[]
+): Promise<void> {
   // generate protos.json file from proto list
   const jsonOutput = path.join('protos', 'protos.json');
   if (protos.length === 0) {
@@ -224,6 +228,8 @@ async function compileProtos(protos: string[]): Promise<void> {
   // generate protos/protos.js from protos.json
   const jsOutput = path.join('protos', 'protos.js');
   const pbjsArgs4js = [
+    '-r',
+    rootName,
     '--target',
     'static-module',
     '-p',
@@ -252,6 +258,34 @@ async function compileProtos(protos: string[]): Promise<void> {
 }
 
 /**
+ *
+ * @param directories List of directories to process. Normally, just the
+ * `./src` folder of the given client library.
+ * @return {Promise<string>} Resolves to a unique name for protobuf root to use in the JS static module, or 'default'.
+ */
+export async function generateRootName(directories: string[]): Promise<string> {
+  // We need to provide `-r root` option to `pbjs -t static-module`, otherwise
+  // we'll have big problems if two different libraries are used together.
+  // It's OK to play some guessing game here: if we locate `package.json`
+  // with a package name and version, we'll use it; otherwise, we'll fallback
+  // to 'default'.
+  for (const directory of directories) {
+    const packageJson = path.resolve(directory, '..', 'package.json');
+    if (fs.existsSync(packageJson)) {
+      const json = JSON.parse((await readFile(packageJson)).toString()) as {
+        name: string;
+        version: string;
+      };
+      const name = json.name.replace(/[^\w\d]/g, '_');
+      const version = json.version.replace(/[^\w\d]/g, '_');
+      const hopefullyUniqueName = `${name}_${version}_protos`;
+      return hopefullyUniqueName;
+    }
+  }
+  return 'default';
+}
+
+/**
  * Main function. Takes an array of directories to process.
  * Looks for JSON files matching `PROTO_LIST_REGEX`, parses them to get a list of all
  * proto files used by the client library, and calls `pbjs` to compile them all into
@@ -267,8 +301,9 @@ export async function main(directories: string[]): Promise<void> {
   for (const directory of directories) {
     protoJsonFiles.push(...(await findProtoJsonFiles(directory)));
   }
+  const rootName = await generateRootName(directories);
   const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(protos);
+  await compileProtos(rootName, protos);
 }
 
 /**
@@ -280,12 +315,12 @@ function usage() {
     `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
   );
   console.log(
-    `Each of those files should contain a JSON array of proto files used by the`
+    'Each of those files should contain a JSON array of proto files used by the'
   );
   console.log(
-    `client library. Those proto files will be compiled to JSON using pbjs tool`
+    'client library. Those proto files will be compiled to JSON using pbjs tool'
   );
-  console.log(`from protobufjs.`);
+  console.log('from protobufjs.');
 }
 
 if (require.main === module) {
