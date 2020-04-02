@@ -4,6 +4,22 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.0.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.1...v3.0.0) (2020-04-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* use Node.js v10+
+
+### Bug Fixes
+
+* make sure generated protos.js have unique root name ([#774](https://www.github.com/googleapis/gax-nodejs/issues/774)) ([886a6f3](https://www.github.com/googleapis/gax-nodejs/commit/886a6f388b683166e7378ad2000990b321397974))
+
+
+### Miscellaneous Chores
+
+* update .eslintignore ([#772](https://www.github.com/googleapis/gax-nodejs/issues/772)) ([b16de0c](https://www.github.com/googleapis/gax-nodejs/commit/b16de0c51c78bcad7016b32178f159d5051d0259)), closes [#757](https://www.github.com/googleapis/gax-nodejs/issues/757) [#757](https://www.github.com/googleapis/gax-nodejs/issues/757) [#760](https://www.github.com/googleapis/gax-nodejs/issues/760) [#760](https://www.github.com/googleapis/gax-nodejs/issues/760) [#759](https://www.github.com/googleapis/gax-nodejs/issues/759) [#759](https://www.github.com/googleapis/gax-nodejs/issues/759) [#751](https://www.github.com/googleapis/gax-nodejs/issues/751) [#751](https://www.github.com/googleapis/gax-nodejs/issues/751) [#738](https://www.github.com/googleapis/gax-nodejs/issues/738) [#738](https://www.github.com/googleapis/gax-nodejs/issues/738) [#748](https://www.github.com/googleapis/gax-nodejs/issues/748) [#737](https://www.github.com/googleapis/gax-nodejs/issues/737) [#744](https://www.github.com/googleapis/gax-nodejs/issues/744) [#754](https://www.github.com/googleapis/gax-nodejs/issues/754) [#737](https://www.github.com/googleapis/gax-nodejs/issues/737) [#708](https://www.github.com/googleapis/gax-nodejs/issues/708) [#748](https://www.github.com/googleapis/gax-nodejs/issues/748) [#736](https://www.github.com/googleapis/gax-nodejs/issues/736) [#735](https://www.github.com/googleapis/gax-nodejs/issues/735) [#743](https://www.github.com/googleapis/gax-nodejs/issues/743) [#756](https://www.github.com/googleapis/gax-nodejs/issues/756) [#759](https://www.github.com/googleapis/gax-nodejs/issues/759) [#763](https://www.github.com/googleapis/gax-nodejs/issues/763) [#763](https://www.github.com/googleapis/gax-nodejs/issues/763) [#765](https://www.github.com/googleapis/gax-nodejs/issues/765) [#765](https://www.github.com/googleapis/gax-nodejs/issues/765) [#766](https://www.github.com/googleapis/gax-nodejs/issues/766) [#766](https://www.github.com/googleapis/gax-nodejs/issues/766) [#763](https://www.github.com/googleapis/gax-nodejs/issues/763) [#765](https://www.github.com/googleapis/gax-nodejs/issues/765) [#770](https://www.github.com/googleapis/gax-nodejs/issues/770) [#770](https://www.github.com/googleapis/gax-nodejs/issues/770) [#456](https://www.github.com/googleapis/gax-nodejs/issues/456) [#456](https://www.github.com/googleapis/gax-nodejs/issues/456) [#463](https://www.github.com/googleapis/gax-nodejs/issues/463) [#463](https://www.github.com/googleapis/gax-nodejs/issues/463)
+
 ### [2.0.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.0...v2.0.1) (2020-03-28)
 
 
