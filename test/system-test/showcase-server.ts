@@ -66,7 +66,7 @@ export class ShowcaseServer {
 
   stop() {
     if (!this.server) {
-      throw new Error(`Cannot kill the server, it's not started.`);
+      throw new Error("Cannot kill the server, it's not started.");
     }
     this.server.kill();
   }
