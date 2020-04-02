@@ -30,6 +30,6 @@ const cwd = path.join(__dirname, '..');
 describe('Pagination', () => {
   it('should run pagination sample', async () => {
     const stdout = execSync('node pagination.js', {cwd});
-    assert.match(stdout, new RegExp(`'cat', 'dog', 'snake', 'turtle', 'wolf'`));
+    assert.match(stdout, new RegExp("'cat', 'dog', 'snake', 'turtle', 'wolf'"));
   });
 });
