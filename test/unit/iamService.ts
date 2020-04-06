@@ -62,6 +62,16 @@ describe('Iam service', () => {
     done();
   });
 
+  it('create Iam client using fallback', done => {
+    const grpcClient = new FallbackGrpcClient();
+    const iamClient = new IamClient(grpcClient, {
+      credentials: {client_email: 'bogus', private_key: 'bogus'},
+      projectId: 'bogus',
+    });
+    assert(iamClient);
+    done();
+  });
+
   it('call getIamPolicy', done => {
     const grpcClient = new GrpcClient();
 
