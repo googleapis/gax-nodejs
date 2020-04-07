@@ -288,6 +288,7 @@ export class IamClient {
     ] = routingHeader.fromParams({
       resource: request.resource,
     });
+    this.initialize();
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
 
@@ -327,6 +328,7 @@ export class IamClient {
     ] = routingHeader.fromParams({
       resource: request.resource,
     });
+    this.initialize();
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   testIamPermissions(
@@ -365,12 +367,8 @@ export class IamClient {
     ] = routingHeader.fromParams({
       resource: request.resource,
     });
-    const response = this.innerApiCalls.testIamPermissions(
-      request,
-      options,
-      callback
-    );
-    return response;
+    this.initialize();
+    return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
 
   /**

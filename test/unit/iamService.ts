@@ -83,6 +83,7 @@ describe('Iam service', () => {
     const request = {};
     // Mock response
     const expectedResponse = {};
+    client.initialize();
     // Mock gRPC layer
     client.innerApiCalls.getIamPolicy = mockSimpleGrpcMethod(
       request,
@@ -106,6 +107,7 @@ describe('Iam service', () => {
     const request = {};
     // Mock response
     const expectedResponse = {};
+    client.initialize();
     // Mock gRPC layer
     client.innerApiCalls.setIamPolicy = mockSimpleGrpcMethod(
       request,
@@ -130,6 +132,7 @@ describe('Iam service', () => {
     const request = {};
     // Mock response
     const expectedResponse = {};
+    client.initialize();
     // Mock gRPC layer
     client.innerApiCalls.testIamPermissions = mockSimpleGrpcMethod(
       request,
