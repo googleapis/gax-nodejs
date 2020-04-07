@@ -35,7 +35,7 @@ function gaxGrpc(options?: GrpcClientOptions) {
 describe('grpc', () => {
   describe('grpcVersion', () => {
     it('holds the proper grpc version', () => {
-      const grpcModule = '@grpc/grpc-js';
+      const grpcModule = 'grpc';
       const grpcVersion = require(`${grpcModule}/package.json`).version;
       expect(gaxGrpc().grpcVersion).to.eq(grpcVersion);
     });

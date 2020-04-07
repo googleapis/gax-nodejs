@@ -18,6 +18,7 @@ import * as grpcProtoLoader from '@grpc/proto-loader';
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as grpc from '@grpc/grpc-js';
+import * as grpcLegacy from 'grpc';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
@@ -107,15 +108,8 @@ export class GrpcClient {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
-      if (semver.gte(process.version, '8.13.0')) {
-        this.grpc = grpc;
-        this.grpcVersion = require('@grpc/grpc-js/package.json').version;
-      } else {
-        const errorMessage =
-          'To use @grpc/grpc-js you must run your code on Node.js v8.13.0 or newer. Please see README if you need to use an older version. ' +
-          'https://github.com/googleapis/gax-nodejs/blob/master/README.md';
-        throw new Error(errorMessage);
-      }
+      this.grpc = (grpcLegacy as unknown) as GrpcModule;
+      this.grpcVersion = require('grpc/package.json').version;
     }
   }
 
