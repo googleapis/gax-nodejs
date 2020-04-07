@@ -54,14 +54,6 @@ interface ClientOptions
   apiEndpoint?: string;
 }
 
-interface Callback<ResponseObject, NextRequestObject, RawResponseObject> {
-  (
-    err: Error | null | undefined,
-    value?: ResponseObject | null,
-    nextRequest?: NextRequestObject,
-    rawResponse?: RawResponseObject
-  ): void;
-}
 /**
  *  Google Cloud IAM Client.
  *  This is manually written for providing methods [setIamPolicy, getIamPolicy, testIamPerssion] to the generated client.

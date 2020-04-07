@@ -19,8 +19,7 @@ import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {GrpcClient as FallbackGrpcClient} from '../../src/fallback';
 import {GrpcClient} from '../../src/grpc';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const {IamClient} = require('../../src');
+import {IamClient, IamProtos} from '../../src';
 
 class FakeError {
   name: string;
@@ -80,7 +79,7 @@ describe('Iam service', () => {
       projectId: 'bogus',
     });
     // Mock request
-    const request = {};
+    const request = {} as IamProtos.google.iam.v1.GetIamPolicyRequest;
     // Mock response
     const expectedResponse = {};
     client.initialize();
@@ -90,8 +89,7 @@ describe('Iam service', () => {
       expectedResponse,
       null
     );
-
-    client.getIamPolicy(request, (err: {}, response: {}) => {
+    client.getIamPolicy(request, (error: Error | null, response) => {
       assert.deepStrictEqual(response, expectedResponse);
       done();
     });
@@ -104,7 +102,7 @@ describe('Iam service', () => {
       projectId: 'bogus',
     });
     // Mock request
-    const request = {};
+    const request = {} as IamProtos.google.iam.v1.SetIamPolicyRequest;
     // Mock response
     const expectedResponse = {};
     client.initialize();
@@ -115,7 +113,7 @@ describe('Iam service', () => {
       null
     );
 
-    client.setIamPolicy(request, (err: {}, response: {}) => {
+    client.setIamPolicy(request, (error: Error | null, response) => {
       assert.deepStrictEqual(response, expectedResponse);
       done();
     });
@@ -129,7 +127,7 @@ describe('Iam service', () => {
       projectId: 'bogus',
     });
     // Mock request
-    const request = {};
+    const request = {} as IamProtos.google.iam.v1.TestIamPermissionsRequest;
     // Mock response
     const expectedResponse = {};
     client.initialize();
@@ -140,7 +138,7 @@ describe('Iam service', () => {
       null
     );
 
-    client.testIamPermissions(request, (err: {}, response: {}) => {
+    client.testIamPermissions(request, (error: Error | null, response) => {
       assert.deepStrictEqual(response, expectedResponse);
       done();
     });
