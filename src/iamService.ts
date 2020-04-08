@@ -17,42 +17,18 @@
 // ** All changes to this file may be overwritten. **
 
 import * as gax from './gax';
-import {GrpcClient, GrpcClientOptions, ClientStubOptions} from './grpc';
+import {GrpcClient, ClientStubOptions} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
-import {GoogleAuth, GoogleAuthOptions, OAuth2Client} from 'google-auth-library';
+import {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import * as routingHeader from './routingHeader';
 
-import {
-  LongrunningDescriptor,
-  PageDescriptor,
-  StreamDescriptor,
-  BundleDescriptor,
-} from './descriptor';
 import * as gapicConfig from './iam_policy_service_client_config.json';
 import * as protos from '../protos/iam_service';
 import * as fallback from './fallback';
 import * as path from 'path';
+import {Descriptors, ClientOptions} from './clientInterface';
 let version = require('../../package.json').version;
-
-interface Descriptors {
-  page: {[name: string]: PageDescriptor};
-  stream: {[name: string]: StreamDescriptor};
-  longrunning: {[name: string]: LongrunningDescriptor};
-  batching?: {[name: string]: BundleDescriptor};
-}
-
-interface ClientOptions
-  extends GrpcClientOptions,
-    GoogleAuthOptions,
-    ClientStubOptions {
-  libName?: string;
-  libVersion?: string;
-  clientConfig?: gax.ClientConfig;
-  fallback?: boolean;
-  apiEndpoint?: string;
-}
 
 /**
  *  Google Cloud IAM Client.

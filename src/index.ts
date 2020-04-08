@@ -101,65 +101,13 @@ export {
   CancellableStream,
 } from './apitypes';
 
-export interface ClientOptions
-  extends GrpcClientOptions,
-    GoogleAuthOptions,
-    ClientStubOptions {
-  libName?: string;
-  libVersion?: string;
-  clientConfig?: gax.ClientConfig;
-  fallback?: boolean;
-  apiEndpoint?: string;
-}
-
-export interface Descriptors {
-  page: {[name: string]: PageDescriptor};
-  stream: {[name: string]: StreamDescriptor};
-  longrunning: {[name: string]: LongrunningDescriptor};
-  batching?: {[name: string]: BundleDescriptor};
-}
-
-export interface Callback<
-  ResponseObject,
-  NextRequestObject,
-  RawResponseObject
-> {
-  (
-    err: Error | null | undefined,
-    value?: ResponseObject | null,
-    nextRequest?: NextRequestObject,
-    rawResponse?: RawResponseObject
-  ): void;
-}
-
-export interface LROperation<ResultType, MetadataType>
-  extends longrunning.Operation {
-  promise(): Promise<
-    [ResultType, MetadataType, operationProtos.google.longrunning.Operation]
-  >;
-}
-
-export interface PaginationCallback<
-  RequestObject,
-  ResponseObject,
-  ResponseType
-> {
-  (
-    err: Error | null,
-    values?: ResponseType[],
-    nextPageRequest?: RequestObject,
-    rawResponse?: ResponseObject
-  ): void;
-}
-
-export interface PaginationResponse<
-  RequestObject,
-  ResponseObject,
-  ResponseType
-> {
-  values?: ResponseType[];
-  nextPageRequest?: RequestObject;
-  rawResponse?: ResponseObject;
-}
+export {
+  ClientOptions,
+  Descriptors,
+  Callback,
+  LROperation,
+  PaginationCallback,
+  PaginationResponse,
+} from './clientInterface';
 
 export {ServiceError} from '@grpc/grpc-js';
