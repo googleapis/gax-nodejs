@@ -22,7 +22,7 @@ import {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
 import {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-
+import * as routingHeader from './routingHeader';
 import * as gapicConfig from './iam_policy_service_client_config.json';
 import * as protos from '../protos/iam_service';
 import * as fallback from './fallback';
