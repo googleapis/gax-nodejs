@@ -357,13 +357,17 @@ export interface IamClient {
   getIamPolicy(request: protos.google.iam.v1.GetIamPolicyRequest): void;
   getIamPolicy(
     request: protos.google.iam.v1.GetIamPolicyRequest,
-    options?: gax.CallOptions,
+    options?:
+      | gax.CallOptions
+      | protos.google.iam.v1.IAMPolicy.GetIamPolicyCallback,
     callback?: protos.google.iam.v1.IAMPolicy.GetIamPolicyCallback
   ): Promise<protos.google.iam.v1.Policy>;
   setIamPolicy(request: protos.google.iam.v1.SetIamPolicyRequest): void;
   setIamPolicy(
     request: protos.google.iam.v1.SetIamPolicyRequest,
-    options?: gax.CallOptions,
+    options?:
+      | gax.CallOptions
+      | protos.google.iam.v1.IAMPolicy.SetIamPolicyCallback,
     callback?: protos.google.iam.v1.IAMPolicy.SetIamPolicyCallback
   ): Promise<protos.google.iam.v1.Policy>;
   testIamPermissions(
@@ -371,7 +375,9 @@ export interface IamClient {
   ): void;
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest,
-    options?: gax.CallOptions,
+    options?:
+      | gax.CallOptions
+      | protos.google.iam.v1.IAMPolicy.TestIamPermissionsCallback,
     callback?: protos.google.iam.v1.IAMPolicy.TestIamPermissionsCallback
   ): Promise<protos.google.iam.v1.TestIamPermissionsResponse>;
 }
