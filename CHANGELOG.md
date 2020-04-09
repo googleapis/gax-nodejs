@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.0.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.2...v2.0.3) (2020-04-09)
+
+
+### Bug Fixes
+
+* apache license URL ([#468](https://www.github.com/googleapis/gax-nodejs/issues/468)) ([#779](https://www.github.com/googleapis/gax-nodejs/issues/779)) ([827a703](https://www.github.com/googleapis/gax-nodejs/commit/827a70397e855e9404a95f795358bf819c200317))
+
 ### [2.0.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.1...v2.0.2) (2020-04-02)
 
 
