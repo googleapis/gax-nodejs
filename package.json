@@ -8,7 +8,7 @@
     "build/src",
     "build/tools/compileProtos.js",
     "protos",
-    "build/protos/operations.d.ts"
+    "build/protos/"
   ],
   "bin": {
     "compileProtos": "./build/tools/compileProtos.js"
@@ -96,10 +96,11 @@
     "lint": "gts check && eslint samples/*.js samples/**/*.js",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/*.json build/src && cp src/*.js build/src && cp -r test/fixtures build/test",
-    "compile-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t json google/rpc/status.proto google/rpc/error_details.proto google/protobuf/any.proto -p ./protos > protos/status.json && pbjs -t static-module google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
+    "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t json google/rpc/status.proto google/rpc/error_details.proto google/protobuf/any.proto -p ./protos > protos/status.json && pbjs -t static-module google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
+    "compile-iam-protos": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -o protos/iam_service.d.ts",
     "fix": "gts fix && eslint --fix samples/*.js samples/**/*.js",
-    "prepare": "npm run compile && node ./build/tools/prepublish.js && mkdirp build/protos && cp protos/operations.d.ts build/protos/",
-    "system-test": "c8 mocha build/test/system-test --timeout 120000",
+    "prepare": "npm run compile && node ./build/tools/prepublish.js && mkdirp build/protos && cp -r protos/* build/protos/",
+    "system-test": "c8 mocha build/test/system-test --timeout 600000",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",

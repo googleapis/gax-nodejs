@@ -78,7 +78,7 @@ export class OngoingCall {
     if (this.completed) {
       return;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line
     const canceller = func(argument, (...args: any[]) => {
       this.completed = true;
       setImmediate(this.callback!, ...args);

@@ -18,7 +18,6 @@ import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
-
 import {LongrunningDescriptor} from '../../src';
 import * as operationProtos from '../../protos/operations';
 import {GaxCallPromise} from '../../src/apitypes';
