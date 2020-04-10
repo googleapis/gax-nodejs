@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.1.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.2...v2.1.0) (2020-04-10)
+
+
+### Features
+
+* support Iam_service in Gax ([#762](https://www.github.com/googleapis/gax-nodejs/issues/762)) ([a4c0dd3](https://www.github.com/googleapis/gax-nodejs/commit/a4c0dd38f2cb8bff27b0bbcaaa5e0643044ea8ac))
+
+
+### Bug Fixes
+
+* apache license URL ([#468](https://www.github.com/googleapis/gax-nodejs/issues/468)) ([#779](https://www.github.com/googleapis/gax-nodejs/issues/779)) ([827a703](https://www.github.com/googleapis/gax-nodejs/commit/827a70397e855e9404a95f795358bf819c200317))
+
 ### [2.0.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.1...v2.0.2) (2020-04-02)
 
 
