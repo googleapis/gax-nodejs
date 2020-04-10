@@ -52,7 +52,7 @@ export {
   Metadata,
   MetadataValue,
 } from './grpc';
-export {Operation, operation} from './longRunningCalls/longrunning';
+export {Operation, operation, decodeLRO} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
 export {Status} from './status';
 export {StreamType} from './streamingCalls/streaming';

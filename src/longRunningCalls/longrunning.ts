@@ -19,7 +19,11 @@ import {Status} from '../status';
 
 import {GaxCallPromise, ResultTuple} from '../apitypes';
 import {CancellablePromise} from '../call';
-import {BackoffSettings, CallOptions} from '../gax';
+import {
+  BackoffSettings,
+  CallOptions,
+  createDefaultBackoffSettings,
+} from '../gax';
 import {GoogleError} from '../googleError';
 import {Metadata} from '../grpc';
 import {LongRunningDescriptor} from './longRunningDescriptor';
@@ -369,4 +373,13 @@ export function operation(
   callOptions?: CallOptions
 ) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
+}
+
+export function decodeLRO(
+  op: LROOperation,
+  longrunningDescriptor: LongRunningDescriptor
+) {
+  const backoffSettings = createDefaultBackoffSettings();
+  const operation = new Operation(op, longrunningDescriptor, backoffSettings);
+  return [operation.result, operation.metadata];
 }

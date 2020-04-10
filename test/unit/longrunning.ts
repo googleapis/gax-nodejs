@@ -224,6 +224,20 @@ describe('longrunning', () => {
       expect(operation.latestResponse).to.deep.eq(SUCCESSFUL_OP);
       done();
     });
+
+    it('decode an Operation with correct result & metadata', done => {
+      const client = mockOperationsClient();
+      const desc = new LongrunningDescriptor(
+        client as OperationsClient,
+        (mockDecoder as unknown) as AnyDecoder,
+        (mockDecoder as unknown) as AnyDecoder
+      );
+      const op = (SUCCESSFUL_OP as {}) as operationProtos.google.longrunning.Operation;
+      const [result, metadata] = longrunning.decodeLRO(op, desc);
+      expect(result).to.deep.eq(RESPONSE_VAL);
+      expect(metadata).to.deep.eq(METADATA_VAL);
+      done();
+    });
   });
 
   describe('Operation', () => {
