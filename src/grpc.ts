@@ -64,9 +64,7 @@ export interface ClientStubOptions {
   protocol?: string;
   servicePath?: string;
   port?: number;
-  // TODO: use sslCreds?: grpc.ChannelCredentials;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sslCreds?: any;
+  sslCreds?: grpc.ChannelCredentials;
   [index: string]: string | number | undefined | {};
 }
 

@@ -100,4 +100,4 @@ export {
   PaginationResponse,
 } from './clientInterface';
 
-export {ServiceError} from '@grpc/grpc-js';
+export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
