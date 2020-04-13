@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.2.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.1.0...v2.2.0) (2020-04-13)
+
+
+### Features
+
+* export GRPC ([#789](https://www.github.com/googleapis/gax-nodejs/issues/789)) ([3f8c6f7](https://www.github.com/googleapis/gax-nodejs/commit/3f8c6f7b1ee22511ad651e45a591eb7be169106d))
+
+
+### Bug Fixes
+
+* **types:** use grpc call credentials type ([#790](https://www.github.com/googleapis/gax-nodejs/issues/790)) ([a11d90e](https://www.github.com/googleapis/gax-nodejs/commit/a11d90e578e661a02a5199b3864f7252bf440d62))
+
 ## [2.1.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.2...v2.1.0) (2020-04-10)
 
 
