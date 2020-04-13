@@ -29,6 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import * as grpc from '@grpc/grpc-js'; 
 import {GrpcClient, GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GoogleAuthOptions} from 'google-auth-library';
 import {
@@ -43,6 +44,7 @@ import * as routingHeader from './routingHeader';
 import * as gax from './gax';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+export {grpc}
 export {CancellablePromise, OngoingCall} from './call';
 export {createApiCall} from './createApiCall';
 export {
