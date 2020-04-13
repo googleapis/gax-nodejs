@@ -1,47 +1,24 @@
 /**
- * Copyright 2019 Google LLC
- * All rights reserved.
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import * as grpc from '@grpc/grpc-js'; 
-import {GrpcClient, GrpcClientOptions, ClientStubOptions} from './grpc';
-import {GoogleAuthOptions} from 'google-auth-library';
-import {
-  LongrunningDescriptor,
-  PageDescriptor,
-  StreamDescriptor,
-} from './descriptor';
-import * as longrunning from './longRunningCalls/longrunning';
-import * as operationProtos from '../protos/operations';
+import {GrpcClient, GrpcClientOptions} from './grpc';
+import * as IamProtos from '../protos/iam_service';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
-import * as gax from './gax';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export {grpc}
@@ -59,6 +36,12 @@ export {
   ClientConfig,
   constructSettings,
   RetryOptions,
+  ServiceConfig,
+  createRetryOptions,
+  createBundleOptions,
+  createBackoffSettings,
+  createDefaultBackoffSettings,
+  createMaxRetriesBackoffSettings,
 } from './gax';
 export {GoogleError} from './googleError';
 export {
@@ -73,6 +56,7 @@ export {
 } from './grpc';
 export {Operation, operation} from './longRunningCalls/longrunning';
 export {PathTemplate} from './pathTemplate';
+export {Status} from './status';
 export {StreamType} from './streamingCalls/streaming';
 export {routingHeader};
 
@@ -85,7 +69,9 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro};
+export {lro, IamProtos};
+export {OperationsClient} from './operationsClient';
+export {IamClient} from './iamService';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
 
@@ -96,6 +82,7 @@ import * as fallback from './fallback';
 export {fallback};
 
 export {
+  APICallback,
   GRPCCallResult,
   ServerStreamingCall,
   ClientStreamingCall,
@@ -106,39 +93,13 @@ export {
   CancellableStream,
 } from './apitypes';
 
-export interface ClientOptions
-  extends GrpcClientOptions,
-    GoogleAuthOptions,
-    ClientStubOptions {
-  libName?: string;
-  libVersion?: string;
-  clientConfig?: gax.ClientConfig;
-  fallback?: boolean;
-  apiEndpoint?: string;
-}
+export {
+  ClientOptions,
+  Descriptors,
+  Callback,
+  LROperation,
+  PaginationCallback,
+  PaginationResponse,
+} from './clientInterface';
 
-export interface Descriptors {
-  page: {[name: string]: PageDescriptor};
-  stream: {[name: string]: StreamDescriptor};
-  longrunning: {[name: string]: LongrunningDescriptor};
-}
-
-export interface Callback<
-  ResponseObject,
-  NextRequestObject,
-  RawResponseObject
-> {
-  (
-    err: Error | null | undefined,
-    value?: ResponseObject | null,
-    nextRequest?: NextRequestObject,
-    rawResponse?: RawResponseObject
-  ): void;
-}
-
-export interface LROperation<ResultType, MetadataType>
-  extends longrunning.Operation {
-  promise(): Promise<
-    [ResultType, MetadataType, operationProtos.google.longrunning.Operation]
-  >;
-}
+export {ServiceError} from '@grpc/grpc-js';

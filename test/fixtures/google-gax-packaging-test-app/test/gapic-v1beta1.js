@@ -1,20 +1,23 @@
-// Copyright 2019 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 'use strict';
 
 const assert = require('assert');
+const {describe, it} = require('mocha');
 const through2 = require('through2');
 
 const showcaseModule = require('../src');
@@ -174,6 +177,42 @@ describe('EchoClient', () => {
       });
     });
 
+    it('invokes pagedExpand using async iterator', async () => {
+      const client = new showcaseModule.v1beta1.EchoClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+
+      // Mock request
+      const request = {};
+      const expectedResponse = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+      client._descriptors.page.pagedExpand.asyncIterate = () => {
+        let count = 0;
+        const asyncIterable = {
+          [Symbol.asyncIterator]() {
+            return {
+              async next() {
+                count = count + 1;
+                if (count === 10)
+                  return Promise.resolve({done: true, value: undefined});
+                return Promise.resolve({done: false, value: count});
+              },
+            };
+          },
+        };
+        return asyncIterable;
+      };
+
+      // test paging method by async iterator
+      const response = [];
+      const iterable = client.pagedExpandAsync(request);
+      for await (const resource of iterable) {
+        response.push(resource);
+      }
+      assert.deepStrictEqual(response, expectedResponse);
+    });
+
     it('invokes pagedExpand with error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
@@ -265,7 +304,7 @@ describe('EchoClient', () => {
     });
   });
 
-  describe('wait', function() {
+  describe('wait', () => {
     it('invokes wait without error', done => {
       const client = new showcaseModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},

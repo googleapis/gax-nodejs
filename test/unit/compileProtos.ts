@@ -1,35 +1,21 @@
-/* Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import {expect} from 'chai';
 import * as assert from 'assert';
+import {describe, it, beforeEach, afterEach} from 'mocha';
 import * as fs from 'fs';
 import * as rimraf from 'rimraf';
 import * as util from 'util';
@@ -45,8 +31,12 @@ const testDir = path.join(process.cwd(), '.compileProtos-test');
 const resultDir = path.join(testDir, 'protos');
 const cwd = process.cwd();
 
+const expectedJsonResultFile = path.join(resultDir, 'protos.json');
+const expectedJSResultFile = path.join(resultDir, 'protos.js');
+const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
+
 describe('compileProtos tool', () => {
-  before(async () => {
+  beforeEach(async () => {
     if (fs.existsSync(testDir)) {
       await rmrf(testDir);
     }
@@ -56,7 +46,7 @@ describe('compileProtos tool', () => {
     process.chdir(testDir);
   });
 
-  after(() => {
+  afterEach(() => {
     process.chdir(cwd);
   });
 
@@ -64,9 +54,6 @@ describe('compileProtos tool', () => {
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);
-    const expectedJsonResultFile = path.join(resultDir, 'protos.json');
-    const expectedJSResultFile = path.join(resultDir, 'protos.js');
-    const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
     assert(fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
     assert(fs.existsSync(expectedTSResultFile));
@@ -79,6 +66,16 @@ describe('compileProtos tool', () => {
     const js = await readFile(expectedJSResultFile);
     assert(js.toString().includes('TestMessage'));
     assert(js.toString().includes('LibraryService'));
+    assert(
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+
+    // check that it uses proper root object; it's taken from fixtures/package.json
+    assert(
+      js
+        .toString()
+        .includes('$protobuf.roots._org_fake_package_42_0_7_prealpha84')
+    );
 
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
@@ -101,10 +98,73 @@ describe('compileProtos tool', () => {
         'empty'
       ),
     ]);
-    const expectedResultFile = path.join(resultDir, 'protos.json');
-    assert(fs.existsSync(expectedResultFile));
+    assert(fs.existsSync(expectedJsonResultFile));
+  });
 
-    const json = await readFile(expectedResultFile);
-    assert.strictEqual(json.toString(), '{}');
+  it('fixes types in the TS file', async () => {
+    await compileProtos.main([
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
+    ]);
+    assert(fs.existsSync(expectedTSResultFile));
+    const ts = await readFile(expectedTSResultFile);
+
+    assert(ts.toString().includes('import * as Long'));
+    assert(
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(ts.toString().includes('longField?: (number|Long|string|null);'));
+    assert(ts.toString().includes('bytesField?: (Uint8Array|string|null);'));
+    assert(
+      ts
+        .toString()
+        .includes(
+          'enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);'
+        )
+    );
+    assert(
+      ts
+        .toString()
+        .includes(
+          '"case"?: (google.TestEnum|keyof typeof google.TestEnum|null);'
+        )
+    );
+    assert(ts.toString().includes('public longField: (number|Long|string);'));
+    assert(ts.toString().includes('public bytesField: (Uint8Array|string);'));
+    assert(
+      ts
+        .toString()
+        .includes(
+          'public enumField: (google.TestEnum|keyof typeof google.TestEnum);'
+        )
+    );
+    assert(
+      ts
+        .toString()
+        .includes(
+          'public case: (google.TestEnum|keyof typeof google.TestEnum);'
+        )
+    );
+  });
+
+  it('proposes the name for protobuf root', async () => {
+    const rootName = await compileProtos.generateRootName([
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
+    ]);
+    assert.strictEqual(rootName, '_org_fake_package_42_0_7_prealpha84_protos');
+  });
+
+  it('falls back to the default name for protobuf root if unable to guess', async () => {
+    const rootName = await compileProtos.generateRootName([
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        'test',
+        'fixtures',
+        'protoLists',
+        'empty'
+      ),
+    ]);
+    assert.strictEqual(rootName, 'default');
   });
 });

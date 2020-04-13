@@ -1,35 +1,22 @@
-/* Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
+import {describe, it} from 'mocha';
 import * as sinon from 'sinon';
 
 import * as gax from '../../src/gax';
@@ -39,29 +26,38 @@ import * as utils from './utils';
 
 const fail = utils.fail;
 const createApiCall = utils.createApiCall;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
-// tslint:disable-next-line no-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
   it('calls api call', done => {
     let deadlineArg: {};
-    function func(argument: {}, metadata: {}, options, callback) {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       callback(null, argument);
     }
     const apiCall = createApiCall(func);
     apiCall(42, undefined, (err, resp) => {
       expect(resp).to.eq(42);
-      // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
       done();
     });
   });
 
   it('is customized by call options', done => {
-    function func(argument, metadata, options, callback) {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: {getTime: Function}},
+      callback: Function
+    ) {
       callback(null, options.deadline.getTime());
     }
     const apiCall = createApiCall(func, {settings: {timeout: 100}});
@@ -76,7 +72,12 @@ describe('createApiCall', () => {
   });
 
   it('chooses the proper timeout', done => {
-    function func(argument, metadata, options, callback) {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: {getTime: Function}},
+      callback: Function
+    ) {
       callback(null, options.deadline.getTime());
     }
 
@@ -107,18 +108,22 @@ describe('createApiCall', () => {
 
 describe('Promise', () => {
   it('calls api call', done => {
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: string;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (apiCall as any)(null)
-      .then(response => {
+      .then((response: number[]) => {
         expect(response).to.be.an('array');
         expect(response[0]).to.eq(42);
-        // tslint:disable-next-line no-unused-expression
         expect(deadlineArg).to.be.ok;
         done();
       })
@@ -138,19 +143,19 @@ describe('Promise', () => {
   });
 
   it('has cancel method', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       setTimeout(() => {
         callback(null, 42);
       }, 0);
     }
     const apiCall = createApiCall(func, {cancel: done});
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promise = (apiCall as any)(null);
     promise
       .then(() => {
         done(new Error('should not reach'));
       })
-      .catch(err => {
+      .catch((err: {code: number}) => {
         expect(err).to.be.an.instanceOf(GoogleError);
         expect(err.code).to.equal(status.CANCELLED);
         done();
@@ -162,7 +167,7 @@ describe('Promise', () => {
     const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
 
     let callCount = 0;
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       let err: GoogleError;
       let response: number;
@@ -184,7 +189,7 @@ describe('Promise', () => {
       settings: {retry: retryOptions},
       returnCancelFunc: true,
     });
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const promise = (apiCall as any)(null);
     promise
       .then(() => {
@@ -201,41 +206,17 @@ describe('Promise', () => {
   });
 
   it('does not return promise when callback is supplied', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
     expect(
       apiCall({}, undefined, (err, response) => {
-        // tslint:disable-next-line no-unused-expression
         expect(err).to.be.null;
         expect(response).to.eq(42);
         done();
       })
     ).to.be.undefined;
-  });
-
-  it('uses a provided promise module.', done => {
-    let called = false;
-    function MockPromise(resolver) {
-      called = true;
-      return new Promise(resolver);
-    }
-
-    function func(argument, metadata, options, callback) {
-      callback(null, 42);
-    }
-    const apiCall = createApiCall(func);
-    // @ts-ignore incomplete options
-    apiCall({}, {promise: MockPromise})
-      .then(response => {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.eq(42);
-        // tslint:disable-next-line no-unused-expression
-        expect(called).to.be.true;
-        done();
-      })
-      .catch(done);
   });
 });
 
@@ -245,8 +226,13 @@ describe('retryable', () => {
 
   it('retries the API call', done => {
     let toAttempt = 3;
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: string;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       toAttempt--;
       if (toAttempt > 0) {
@@ -259,7 +245,6 @@ describe('retryable', () => {
     apiCall({}, undefined, (err, resp) => {
       expect(resp).to.eq(1729);
       expect(toAttempt).to.eq(0);
-      // tslint:disable-next-line no-unused-expression
       expect(deadlineArg).to.be.ok;
       done();
     });
@@ -267,8 +252,13 @@ describe('retryable', () => {
 
   it('retries the API call with promise', done => {
     let toAttempt = 3;
-    let deadlineArg;
-    function func(argument, metadata, options, callback) {
+    let deadlineArg: string;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
       deadlineArg = options.deadline;
       toAttempt--;
       if (toAttempt > 0) {
@@ -283,7 +273,6 @@ describe('retryable', () => {
         expect(resp).to.be.an('array');
         expect(resp[0]).to.eq(1729);
         expect(toAttempt).to.eq(0);
-        // tslint:disable-next-line no-unused-expression
         expect(deadlineArg).to.be.ok;
         done();
       })
@@ -292,8 +281,8 @@ describe('retryable', () => {
 
   it('cancels in the middle of retries', done => {
     let callCount = 0;
-    let promise;
-    function func(argument, metadata, options, callback) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callCount++;
       if (callCount <= 2) {
         fail(argument, metadata, options, callback);
@@ -307,12 +296,12 @@ describe('retryable', () => {
       }, 10);
     }
     const apiCall = createApiCall(func, settings);
-    promise = apiCall({}, undefined);
+    const promise = apiCall({}, undefined);
     promise
       .then(() => {
         done(new Error('should not reach'));
       })
-      .catch(err => {
+      .catch((err: Error) => {
         expect(err).to.be.an.instanceOf(Error);
         done();
       });
@@ -329,7 +318,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.undefined;
       expect(spy.callCount).to.eq(1);
       done();
@@ -352,7 +340,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       expect(spy.callCount).to.eq(toAttempt);
       done();
@@ -414,7 +401,7 @@ describe('retryable', () => {
   });
 
   it('aborts on unexpected exception', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       const error = new GoogleError();
       error.code = FAKE_STATUS_CODE_2;
       callback(error);
@@ -424,7 +411,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_2);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       expect(spy.callCount).to.eq(1);
       done();
@@ -432,14 +418,12 @@ describe('retryable', () => {
   });
 
   it('does not retry even when no responses', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, null);
     }
     const apiCall = createApiCall(func, settings);
     apiCall({}, undefined, (err, resp) => {
-      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
-      // tslint:disable-next-line no-unused-expression
       expect(resp).to.be.null;
       done();
     });
@@ -458,7 +442,6 @@ describe('retryable', () => {
     apiCall({}, undefined, err => {
       expect(err).to.be.an('error');
       expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      // tslint:disable-next-line no-unused-expression
       expect(err!.note).to.be.ok;
       const now = new Date();
       expect(now.getTime() - startTime.getTime()).to.be.at.least(
@@ -476,7 +459,7 @@ describe('retryable', () => {
   });
 
   it.skip('reports A/B testing', () => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, argument);
     }
     const mockBuilder = sinon.mock();
@@ -520,12 +503,12 @@ describe('retryable', () => {
   });
 
   it('forwards metadata to builder', done => {
-    function func(argument, metadata, options, callback) {
+    function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, {});
     }
 
-    let gotHeaders;
-    const mockBuilder = (abTest, headers) => {
+    let gotHeaders: {h1?: string; h2?: string};
+    const mockBuilder = (abTest: {}, headers: {}) => {
       gotHeaders = headers;
     };
     const settings = {

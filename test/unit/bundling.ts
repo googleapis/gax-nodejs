@@ -1,53 +1,46 @@
-/* Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
+import {describe, it, beforeEach} from 'mocha';
 
 import {BundleDescriptor} from '../../src/bundlingCalls/bundleDescriptor';
-import {BundleExecutor} from '../../src/bundlingCalls/bundleExecutor';
+import {
+  BundleExecutor,
+  BundleOptions,
+} from '../../src/bundlingCalls/bundleExecutor';
 import {computeBundleId} from '../../src/bundlingCalls/bundlingUtils';
 import {deepCopyForResponse, Task} from '../../src/bundlingCalls/task';
 import {GoogleError} from '../../src/googleError';
 
 import {createApiCall} from './utils';
+import {SimpleCallbackFunction, RequestType} from '../../src/apitypes';
 
-function createOuter(value, otherValue?) {
+function createOuter(value: {}, otherValue?: {}) {
   if (otherValue === undefined) {
     otherValue = value;
   }
   return {inner: {field1: value, field2: otherValue}, field1: value};
 }
 
-function byteLength(obj) {
+function byteLength(obj: {}) {
   return JSON.stringify(obj).length;
 }
 
@@ -111,7 +104,9 @@ describe('computeBundleId', () => {
     ];
     testCases.forEach(t => {
       it(t.message, () => {
-        expect(computeBundleId(t.object, t.fields)).to.equal(t.want);
+        expect(
+          computeBundleId((t.object as unknown) as RequestType, t.fields)
+        ).to.equal(t.want);
       });
     });
   });
@@ -136,7 +131,6 @@ describe('computeBundleId', () => {
     ];
     testCases.forEach(t => {
       it(t.message, () => {
-        // tslint:disable-next-line no-unused-expression
         expect(computeBundleId(t.object, t.fields)).to.be.undefined;
       });
     });
@@ -173,7 +167,7 @@ describe('deepCopyForResponse', () => {
 
   it('deep copies special values', () => {
     class Copyable {
-      constructor(public id) {}
+      constructor(public id: {}) {}
       copy() {
         return new Copyable(this.id);
       }
@@ -208,18 +202,25 @@ describe('deepCopyForResponse', () => {
 });
 
 describe('Task', () => {
-  function testTask(apiCall?) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function testTask(apiCall?: any) {
     return new Task(apiCall, {}, 'field1', null);
   }
 
   let id = 0;
-  function extendElements(task, elements, callback?) {
+  function extendElements(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    task: any,
+    elements: string[] | number[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback?: any
+  ) {
     if (!callback) {
       callback = () => {};
     }
     callback.id = id++;
     let bytes = 0;
-    elements.forEach(element => {
+    elements.forEach((element: string | number) => {
       bytes += byteLength(element);
     });
     task.extend(elements, bytes, callback);
@@ -250,7 +251,7 @@ describe('Task', () => {
           const task = testTask();
           const baseCount = task.getElementCount();
           extendElements(task, t.data);
-          expect(task.getElementCount()).to.eq(baseCount + t.want, t.message);
+          expect(task.getElementCount()).to.eq(baseCount! + t.want, t.message);
         });
       });
     });
@@ -263,7 +264,7 @@ describe('Task', () => {
           const baseSize = task.getRequestByteSize();
           extendElements(task, t.data);
           expect(task.getRequestByteSize()).to.eq(
-            baseSize + t.want * sizePerData
+            baseSize! + t.want * sizePerData
           );
         });
       });
@@ -297,8 +298,8 @@ describe('Task', () => {
         expected: [data, data, data, data, data],
       },
     ];
-    function createApiCall(expected) {
-      return function apiCall(req, callback) {
+    function createApiCall(expected: {}) {
+      return function apiCall(req: {field1: {}}, callback: Function) {
         expect(req.field1).to.deep.equal(expected);
         return callback(null, req);
       };
@@ -307,10 +308,9 @@ describe('Task', () => {
     describe('sends bundled elements', () => {
       testCases.forEach(t => {
         it(t.message, done => {
-          const apiCall = sinon.spy(createApiCall(t.expected));
-          const task = testTask(apiCall);
+          const apiCall = sinon.spy(createApiCall(t.expected!));
+          const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
           const callback = sinon.spy((err, data) => {
-            // tslint:disable-next-line no-unused-expression
             expect(err).to.be.null;
             expect(data).to.be.an.instanceOf(Object);
             if (callback.callCount === t.data.length) {
@@ -318,11 +318,11 @@ describe('Task', () => {
               done();
             }
           });
-          // tslint:disable-next-line no-any
-          (t as any).data.forEach(d => {
-            extendElements(task, d, callback);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (t as any).data.forEach((d: string[]) => {
+            extendElements(task!, d, callback);
           });
-          task.run();
+          task!.run();
           if (t.expected === null) {
             expect(callback.callCount).to.eq(0);
             expect(apiCall.callCount).to.eq(0);
@@ -335,14 +335,14 @@ describe('Task', () => {
     describe('calls back with the subresponse fields', () => {
       testCases.forEach(t => {
         it(t.message, done => {
-          const apiCall = sinon.spy(createApiCall(t.expected));
-          const task = testTask(apiCall);
-          task._subresponseField = 'field1';
+          const apiCall = sinon.spy(createApiCall(t.expected!));
+          const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
+          task!._subresponseField = 'field1';
           let callbackCount = 0;
-          // tslint:disable-next-line no-any
-          (t as any).data.forEach(d => {
-            extendElements(task, d, (err, data) => {
-              // tslint:disable-next-line no-unused-expression
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (t as any).data.forEach((d: string[]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            extendElements(task!, d, (err: any, data: {field1: []}) => {
               expect(err).to.be.null;
               expect(data.field1.length).to.be.eq(d.length);
               callbackCount++;
@@ -352,7 +352,7 @@ describe('Task', () => {
               }
             });
           });
-          task.run();
+          task!.run();
           if (t.expected === null) {
             expect(callbackCount).to.eq(0);
             expect(apiCall.callCount).to.eq(0);
@@ -369,22 +369,21 @@ describe('Task', () => {
           const apiCall = sinon.spy((resp, callback) => {
             callback(err);
           });
-          const task = testTask(apiCall);
-          task._subresponseField = 'field1';
+          const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
+          task!._subresponseField = 'field1';
           const callback = sinon.spy((e, data) => {
             expect(e).to.equal(err);
-            // tslint:disable-next-line no-unused-expression
             expect(data).to.be.undefined;
             if (callback.callCount === t.data.length) {
               expect(apiCall.callCount).to.eq(1);
               done();
             }
           });
-          // tslint:disable-next-line no-any
-          (t as any).data.forEach(d => {
-            extendElements(task, d, callback);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (t as any).data.forEach((d: string[]) => {
+            extendElements(task!, d, callback);
           });
-          task.run();
+          task!.run();
         });
       });
     });
@@ -394,30 +393,32 @@ describe('Task', () => {
     const apiCall = sinon.spy((resp, callback) => {
       callback(null, resp);
     });
-    const task = testTask(apiCall);
-    task._subresponseField = 'field1';
+    const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
+    task!._subresponseField = 'field1';
     const callback = sinon.spy(() => {
       if (callback.callCount === 2) {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], (err, resp) => {
+    extendElements(task!, [1, 2, 3], (err: {}, resp: {field1: number[]}) => {
+      // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([1, 2, 3]);
       callback();
     });
-    extendElements(task, [4, 5, 6], err => {
+    extendElements(task!, [4, 5, 6], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
     });
-    const cancelId = task._data[task._data.length - 1].callback.id;
+    const cancelId = task!._data[task!._data.length - 1].callback.id;
 
-    extendElements(task, [7, 8, 9], (err, resp) => {
+    extendElements(task!, [7, 8, 9], (err: {}, resp: {field1: number[]}) => {
+      // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([7, 8, 9]);
       callback();
     });
 
-    task.cancel(cancelId!);
-    task.run();
+    task!.cancel(cancelId!);
+    task!.run();
   });
 
   it('cancels ongoing API call', done => {
@@ -439,12 +440,12 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
@@ -475,13 +476,14 @@ describe('Task', () => {
         done();
       }
     });
-    extendElements(task, [1, 2, 3], err => {
+    extendElements(task, [1, 2, 3], (err: GoogleError) => {
       expect(err).to.be.an.instanceOf(GoogleError);
       expect(err!.code).to.equal(status.CANCELLED);
       callback();
     });
     const cancelId = task._data[task._data.length - 1].callback.id;
-    extendElements(task, [4, 5, 6], (err, resp) => {
+    extendElements(task, [4, 5, 6], (err: {}, resp: {field1: number[]}) => {
+      // @ts-ignore unknown field
       expect(resp.field1).to.deep.equal([4, 5, 6]);
       callback();
     });
@@ -491,16 +493,16 @@ describe('Task', () => {
 });
 
 describe('Executor', () => {
-  function apiCall(request, callback) {
+  function apiCall(request: {}, callback: Function) {
     callback(null, request);
     return {cancel: () => {}};
   }
-  function failing(request, callback) {
+  function failing(request: {}, callback: Function) {
     callback(new Error('failure'));
     return {cancel: () => {}};
   }
 
-  function newExecutor(options) {
+  function newExecutor(options: BundleOptions) {
     const descriptor = new BundleDescriptor(
       'field1',
       ['field2'],
@@ -531,7 +533,6 @@ describe('Executor', () => {
     expect(task._data[0].elements).to.eql([3]);
     expect(task._data[1].elements).to.eql([6]);
 
-    // tslint:disable-next-line forin
     for (const bundleId in executor._timers) {
       clearTimeout(executor._timers[bundleId]);
     }
@@ -594,7 +595,7 @@ describe('Executor', () => {
     const executor = newExecutor({delayThreshold: 10});
     let spyApi = sinon.spy(apiCall);
 
-    function timedAPI(request, callback) {
+    function timedAPI(request: {}, callback: Function) {
       let canceled = false;
       // This invokes callback asynchronously by using setTimeout with 0msec, so
       // the callback invocation can be canceled in the same event loop of this
@@ -643,7 +644,6 @@ describe('Executor', () => {
       let counter = 0;
       // @ts-ignore cancellation logic is broken here
       executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
-        // tslint:disable-next-line no-unused-expression
         expect(err).to.be.null;
         counter++;
         // counter should be 2 because event2 callback should be called
@@ -802,7 +802,7 @@ describe('Executor', () => {
     executor.schedule(spy, {field1: [1, 2], field2: 'id1'});
     setTimeout(() => {
       expect(spy.callCount).to.eq(1);
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       expect((executor._runNow as any).callCount).to.eq(1);
       done();
     }, 20);
@@ -851,7 +851,7 @@ describe('Executor', () => {
 });
 
 describe('bundleable', () => {
-  function func(argument, metadata, options, callback) {
+  function func(argument: {}, metadata: {}, options: {}, callback: Function) {
     callback(null, argument);
   }
   const bundleOptions = {elementCountThreshold: 12, delayThreshold: 10};
@@ -915,7 +915,7 @@ describe('bundleable', () => {
   it('suppresses bundling behavior by call options', done => {
     const spy = sinon.spy(func);
     let callbackCount = 0;
-    function bundledCallback(obj) {
+    function bundledCallback(obj: Array<{field1: number[]}>) {
       expect(obj).to.be.an('array');
       callbackCount++;
       expect(obj[0].field1).to.deep.equal([1, 2, 3]);
@@ -924,7 +924,7 @@ describe('bundleable', () => {
         done();
       }
     }
-    function unbundledCallback(obj) {
+    function unbundledCallback(obj: Array<{field1: number[]}>) {
       expect(obj).to.be.an('array');
       callbackCount++;
       expect(callbackCount).to.eq(1);
@@ -932,12 +932,15 @@ describe('bundleable', () => {
     }
     const apiCall = createApiCall(spy, settings);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
+      //@ts-ignore
       .then(bundledCallback)
       .catch(done);
     apiCall({field1: [1, 2, 3], field2: 'id'}, {isBundling: false})
+      //@ts-ignore
       .then(unbundledCallback)
       .catch(done);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
+      //@ts-ignore
       .then(bundledCallback)
       .catch(done);
   });

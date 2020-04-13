@@ -1,16 +1,18 @@
-// Copyright 2019 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 'use strict';
 
@@ -50,11 +52,11 @@ async function testShowcase() {
       return {
         getRequestHeaders: () => {
           return {
-            'Authorization': 'Bearer zzzz'
+            Authorization: 'Bearer zzzz',
           };
-        }
+        },
       };
-    }
+    },
   };
 
   const fallbackClientOpts = {
@@ -72,6 +74,7 @@ async function testShowcase() {
   await testEcho(grpcClient);
   await testExpand(grpcClient);
   await testPagedExpand(grpcClient);
+  await testPagedExpandAsync(grpcClient);
   await testCollect(grpcClient);
   await testChat(grpcClient);
   await testWait(grpcClient);
@@ -79,27 +82,18 @@ async function testShowcase() {
   await testEcho(fallbackClient);
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
-
-  // Fallback clients do not currently support streaming
-  try {
-    await testExpand(fallbackClient)
-    throw new Error("Expand did not throw an error: Streaming calls should fail with fallback clients")
-  } catch (err) {}
-  try {
-    await testCollect(fallbackClient)
-    throw new Error("Collect did not throw an error: Streaming calls should fail with fallback clients")
-  } catch (err) {}
-  try {
-    await testChat(fallbackClient)
-    throw new Error("Chat did not throw an error: Streaming calls should fail with fallback clients")
-  } catch (err) {}
+  await testPagedExpandAsync(fallbackClient);
 }
 
 async function testEcho(client) {
   const request = {
     content: 'test',
   };
+  const timer = setTimeout(() => {
+    throw new Error('End-to-end testEcho method fails with timeout');
+  }, 12000);
   const [response] = await client.echo(request);
+  clearTimeout(timer);
   assert.deepStrictEqual(request.content, response.content);
 }
 
@@ -128,9 +122,33 @@ async function testPagedExpand(client) {
     content: words.join(' '),
     pageSize: 2,
   };
+  const timer = setTimeout(() => {
+    throw new Error('End-to-end testPagedExpand method fails with timeout');
+  }, 12000);
   const [response] = await client.pagedExpand(request);
+  clearTimeout(timer);
   const result = response.map(r => r.content);
   assert.deepStrictEqual(words, result);
+}
+
+async function testPagedExpandAsync(client) {
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const request = {
+    content: words.join(' '),
+    pageSize: 2,
+  };
+  const response = [];
+  const iterable = client.pagedExpandAsync(request);
+  const timer = setTimeout(() => {
+    throw new Error(
+      'End-to-end testPagedExpandAsync method fails with timeout'
+    );
+  }, 12000);
+  for await (const resource of iterable) {
+    response.push(resource.content);
+  }
+  clearTimeout(timer);
+  assert.deepStrictEqual(words, response);
 }
 
 async function testCollect(client) {

@@ -1,20 +1,23 @@
-// Copyright 2019 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     https://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 'use strict';
 
 const gapicConfig = require('./echo_client_config.json');
+// eslint-disable-next-line node/no-missing-require
 const gax = require('google-gax');
 const path = require('path');
 
@@ -52,8 +55,6 @@ class EchoClient {
    *     app is running in an environment which supports
    *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
-   * @param {function} [options.promise] - Custom promise module to use instead
-   *     of native Promises.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
    */
@@ -196,7 +197,7 @@ class EchoClient {
       'pagedExpand',
     ];
     for (const methodName of echoStubMethods) {
-      const innerCallPromise = echoStub.then(
+      const callPromise = echoStub.then(
         stub => (...args) => {
           return stub[methodName].apply(stub, args);
         },
@@ -204,13 +205,14 @@ class EchoClient {
           throw err;
         }
       );
-      this._innerApiCalls[methodName] = gaxModule.createApiCall(
-        innerCallPromise,
+      const apiCall = gaxModule.createApiCall(
+        callPromise,
         defaults[methodName],
         this._descriptors.page[methodName] ||
           this._descriptors.stream[methodName] ||
           this._descriptors.longrunning[methodName]
       );
+      this._innerApiCalls[methodName] = apiCall;
     }
   }
 
@@ -581,6 +583,17 @@ class EchoClient {
     options = options || {};
 
     return this._innerApiCalls.pagedExpand(request, options, callback);
+  }
+
+  pagedExpandAsync(request, options) {
+    options = options || {};
+    request = request || {};
+    const callSettings = new gax.CallSettings(options);
+    return this._descriptors.page.pagedExpand.asyncIterate(
+      this._innerApiCalls.pagedExpand,
+      request,
+      callSettings
+    );
   }
 }
 

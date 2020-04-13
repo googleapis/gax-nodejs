@@ -1,32 +1,17 @@
-/*
- * Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {Status} from '../status';
@@ -41,12 +26,40 @@ import {Task, TaskCallback} from './task';
 
 function noop() {}
 
+/**
+ * Parameter to configure bundling behavior.
+ * @typedef {Object} BundleOptions
+ * @property {number} elementCountThreshold -
+ *   the bundled request will be sent once the count of outstanding elements
+ *   in the repeated field reaches this value.
+ * @property {number} elementCountLimit -
+ *   represents a hard limit on the number of elements in the repeated field
+ *   of the bundle; if adding a request to a bundle would exceed this value,
+ *   the bundle is sent and the new request is added to a fresh bundle. It is
+ *   invalid for a single request to exceed this limit.
+ * @property {number} requestByteThreshold -
+ *   the bundled request will be sent once the count of bytes in the request
+ *   reaches this value. Note that this value is pessimistically approximated
+ *   by summing the bytesizes of the elements in the repeated field, and
+ *   therefore may be an under-approximation.
+ * @property {number} requestByteLimit -
+ *   represents a hard limit on the size of the bundled request; if adding
+ *   a request to a bundle would exceed this value, the bundle is sent and
+ *   the new request is added to a fresh bundle. It is invalid for a single
+ *   request to exceed this limit. Note that this value is pessimistically
+ *   approximated by summing the bytesizes of the elements in the repeated
+ *   field, with a buffer applied to correspond to the resulting
+ *   under-approximation.
+ * @property {number} delayThreshold -
+ *   the bundled request will be sent this amount of time after the first
+ *   element in the bundle was added to it.
+ */
 export interface BundleOptions {
-  elementCountLimit: number;
-  requestByteLimit: number;
-  elementCountThreshold: number;
-  requestByteThreshold: number;
-  delayThreshold: number;
+  elementCountLimit?: number;
+  requestByteLimit?: number;
+  elementCountThreshold?: number;
+  requestByteThreshold?: number;
+  delayThreshold?: number;
 }
 
 /**
@@ -134,6 +147,7 @@ export class BundleExecutor {
     const bundledField = request[this._descriptor.bundledField] as Array<{}>;
     const elementCount = bundledField.length;
     let requestBytes = 0;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     bundledField.forEach(obj => {
       requestBytes += this._descriptor.byteLengthFunction(obj);
@@ -202,11 +216,11 @@ export class BundleExecutor {
       return ret;
     }
 
-    if (!(bundleId in this._timers) && this._options.delayThreshold > 0) {
-      this._timers[bundleId] = setTimeout(() => {
+    if (!(bundleId in this._timers) && this._options.delayThreshold! > 0) {
+      this._timers[bundleId] = (setTimeout(() => {
         delete this._timers[bundleId];
         this._runNow(bundleId);
-      }, this._options.delayThreshold);
+      }, this._options.delayThreshold) as unknown) as NodeJS.Timeout;
     }
 
     return ret;

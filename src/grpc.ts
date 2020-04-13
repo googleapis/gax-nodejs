@@ -1,33 +1,17 @@
-/*
- * Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import * as grpcProtoLoader from '@grpc/proto-loader';
@@ -41,6 +25,7 @@ import * as semver from 'semver';
 import * as walk from 'walkdir';
 
 import * as gax from './gax';
+import {ClientOptions} from '@grpc/grpc-js/build/src/client';
 
 const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
 
@@ -57,7 +42,6 @@ const COMMON_PROTO_FILES = walk
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;
-  promise?: PromiseConstructor;
   grpc?: GrpcModule;
 }
 
@@ -66,6 +50,7 @@ export interface MetadataValue {
 }
 
 export interface Metadata {
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (): Metadata;
   set: (key: {}, value?: {} | null) => void;
   clone: () => Metadata;
@@ -77,11 +62,12 @@ export type GrpcModule = typeof grpc;
 
 export interface ClientStubOptions {
   protocol?: string;
-  servicePath: string;
-  port: number;
+  servicePath?: string;
+  port?: number;
   // TODO: use sslCreds?: grpc.ChannelCredentials;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sslCreds?: any;
+  [index: string]: string | number | undefined | {};
 }
 
 export class ClientStub extends grpc.Client {
@@ -90,7 +76,6 @@ export class ClientStub extends grpc.Client {
 
 export class GrpcClient {
   auth: GoogleAuth;
-  promise: PromiseConstructor;
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean;
@@ -107,29 +92,26 @@ export class GrpcClient {
    * @param {Object=} options.grpc - When specified, this will be used
    *   for the 'grpc' module in this context. By default, it will load the grpc
    *   module in the standard way.
-   * @param {Function=} options.promise - A constructor for a promise that
-   * implements the ES6 specification of promise. If not provided, native
-   * promises will be used.
    * @constructor
    */
   constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
-    this.promise = options.promise || Promise;
     this.fallback = false;
+
+    const minimumVersion = '10.0.0';
+    if (semver.lt(process.version, minimumVersion)) {
+      const errorMessage =
+        `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit: ` +
+        'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
+      throw new Error(errorMessage);
+    }
 
     if ('grpc' in options) {
       this.grpc = options.grpc!;
       this.grpcVersion = '';
     } else {
-      if (semver.gte(process.version, '8.13.0')) {
-        this.grpc = grpc;
-        this.grpcVersion = require('@grpc/grpc-js/package.json').version;
-      } else {
-        const errorMessage =
-          'To use @grpc/grpc-js you must run your code on Node.js v8.13.0 or newer. Please see README if you need to use an older version. ' +
-          'https://github.com/googleapis/gax-nodejs/blob/master/README.md';
-        throw new Error(errorMessage);
-      }
+      this.grpc = grpc;
+      this.grpcVersion = require('@grpc/grpc-js/package.json').version;
     }
   }
 
@@ -211,7 +193,6 @@ export class GrpcClient {
   metadataBuilder(headers: OutgoingHttpHeaders) {
     const Metadata = this.grpc.Metadata;
     const baseMetadata = new Metadata();
-    // tslint:disable-next-line forin
     for (const key in headers) {
       const value = headers[key];
       if (Array.isArray(value)) {
@@ -229,10 +210,7 @@ export class GrpcClient {
       let metadata = baseMetadata;
       if (moreHeaders) {
         for (const key in moreHeaders) {
-          if (
-            key.toLowerCase() !== 'x-goog-api-client' &&
-            moreHeaders!.hasOwnProperty(key)
-          ) {
+          if (key.toLowerCase() !== 'x-goog-api-client') {
             if (!copied) {
               copied = true;
               metadata = metadata.clone();
@@ -272,8 +250,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       this.grpc.status,
-      {metadataBuilder: this.metadataBuilder(headers)},
-      this.promise
+      {metadataBuilder: this.metadataBuilder(headers)}
     );
   }
 
@@ -289,17 +266,22 @@ export class GrpcClient {
    *   to set up gRPC connection.
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
-  // tslint:disable-next-line variable-name
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
-    const grpcOptions: {[index: string]: string} = {};
+    const grpcOptions: ClientOptions = {};
     Object.keys(options).forEach(key => {
       if (key.startsWith('grpc.')) {
-        grpcOptions[key.replace(/^grpc\./, '')] = options[key];
+        grpcOptions[key.replace(/^grpc\./, '')] = options[key] as
+          | string
+          | number;
       }
     });
-    const stub = new CreateStub(serviceAddress, creds, grpcOptions);
+    const stub = new CreateStub(
+      serviceAddress,
+      creds,
+      grpcOptions as ClientOptions
+    );
     return stub;
   }
 

@@ -1,35 +1,23 @@
 /**
- * Copyright 2019 Google LLC
- * All rights reserved.
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import * as assert from 'assert';
+import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as nodeFetch from 'node-fetch';
@@ -79,7 +67,11 @@ describe('loadProto', () => {
 });
 
 describe('createStub', () => {
-  let gaxGrpc, protos, echoService, stubOptions, stubExtraOptions;
+  let gaxGrpc: GrpcClient,
+    protos,
+    echoService: protobuf.Service,
+    stubOptions: {},
+    stubExtraOptions: {};
 
   beforeEach(() => {
     // @ts-ignore incomplete options
@@ -98,7 +90,7 @@ describe('createStub', () => {
   });
 
   it('should create a stub', async () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(echoService, stubOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
@@ -116,7 +108,7 @@ describe('createStub', () => {
   });
 
   it('should support optional parameters', async () => {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const echoStub: any = await gaxGrpc.createStub(
       echoService,
       stubExtraOptions
@@ -138,9 +130,11 @@ describe('createStub', () => {
 });
 
 describe('grpc-fallback', () => {
-  let gaxGrpc, protos, echoService, stubOptions;
-  const createdAbortControllers = [];
-  // @ts-ignore
+  let gaxGrpc: GrpcClient,
+    protos: protobuf.NamespaceBase,
+    echoService: protobuf.Service,
+    stubOptions: {};
+  const createdAbortControllers: string[] = [];
   const savedAbortController = abortController.AbortController;
 
   before(() => {
@@ -158,7 +152,6 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    //tslint:disable-next-line variable-name
     const AbortController = function() {
       // @ts-ignore
       this.abort = function() {
@@ -231,7 +224,7 @@ describe('grpc-fallback', () => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
-
+    //@ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         ok: true,
@@ -242,7 +235,7 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err, result) => {
+      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
         assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
         done();
@@ -269,7 +262,7 @@ describe('grpc-fallback', () => {
         },
       ],
     };
-
+    //@ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(
       Promise.resolve({
         ok: false,
@@ -280,7 +273,7 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err, result) => {
+      echoStub.echo(requestObject, {}, {}, (err: {message: string}) => {
         assert.strictEqual(err.message, JSON.stringify(expectedError));
         done();
       });
@@ -288,6 +281,7 @@ describe('grpc-fallback', () => {
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
+    // @ts-ignore
     sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
 
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);

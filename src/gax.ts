@@ -1,32 +1,17 @@
 /**
- * Copyright 2019 Google LLC
- * All rights reserved.
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /**
@@ -63,9 +48,6 @@ import {BundleOptions} from './bundlingCalls/bundleExecutor';
  * @property {boolean=} isBundling - If set to false and the call is configured
  *   for bundling, bundling is not performed.
  * @property {BackoffSettings=} longrunning - BackoffSettings used for polling.
- * @property {Function=} promise - A constructor for a promise that implements the ES6
- * specification of promise which will be used to create promises. If not
- * provided, native promises will be used.
  * @example
  * // suppress bundling for bundled method.
  * api.bundlingMethod(
@@ -129,35 +111,6 @@ export interface BackoffSettings {
   rpcTimeoutMultiplier?: number | null;
 }
 
-/**
- * Parameter to configure bundling behavior.
- * @typedef {Object} BundleOptions
- * @property {number} elementCountThreshold -
- *   the bundled request will be sent once the count of outstanding elements
- *   in the repeated field reaches this value.
- * @property {number} elementCountLimit -
- *   represents a hard limit on the number of elements in the repeated field
- *   of the bundle; if adding a request to a bundle would exceed this value,
- *   the bundle is sent and the new request is added to a fresh bundle. It is
- *   invalid for a single request to exceed this limit.
- * @property {number} requestByteThreshold -
- *   the bundled request will be sent once the count of bytes in the request
- *   reaches this value. Note that this value is pessimistically approximated
- *   by summing the bytesizes of the elements in the repeated field, and
- *   therefore may be an under-approximation.
- * @property {number} requestByteLimit -
- *   represents a hard limit on the size of the bundled request; if adding
- *   a request to a bundle would exceed this value, the bundle is sent and
- *   the new request is added to a fresh bundle. It is invalid for a single
- *   request to exceed this limit. Note that this value is pessimistically
- *   approximated by summing the bytesizes of the elements in the repeated
- *   field, with a buffer applied to correspond to the resulting
- *   under-approximation.
- * @property {number} delayThreshold -
- *   the bundled request will be sent this amount of time after the first
- *   element in the bundle was added to it.
- */
-
 export interface CallOptions {
   timeout?: number;
   retry?: RetryOptions | null;
@@ -166,12 +119,11 @@ export interface CallOptions {
   pageSize?: number;
   maxResults?: number;
   maxRetries?: number;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   otherArgs?: {[index: string]: any};
   bundleOptions?: BundleOptions | null;
   isBundling?: boolean;
   longrunning?: BackoffSettings;
-  promise?: PromiseConstructor;
 }
 
 export class CallSettings {
@@ -181,12 +133,11 @@ export class CallSettings {
   pageToken?: string;
   pageSize?: number;
   maxResults?: number;
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   otherArgs: {[index: string]: any};
   bundleOptions?: BundleOptions | null;
   isBundling: boolean;
   longrunning?: BackoffSettings;
-  promise: PromiseConstructor;
 
   /**
    * @param {Object} settings - An object containing parameters of this settings.
@@ -203,9 +154,6 @@ export class CallSettings {
    * in the page streaming request.
    * @param {Object} settings.otherArgs - Additional arguments to be passed to
    *   the API calls.
-   * @param {Function=} settings.promise - A constructor for a promise that
-   * implements the ES6 specification of promise. If not provided, native
-   * promises will be used.
    *
    * @constructor
    */
@@ -222,7 +170,6 @@ export class CallSettings {
     this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
     this.longrunning =
       'longrunning' in settings ? settings.longrunning : undefined;
-    this.promise = 'promise' in settings ? settings.promise! : Promise;
   }
 
   /**
@@ -246,7 +193,6 @@ export class CallSettings {
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
-    let promise = this.promise;
     if ('timeout' in options) {
       timeout = options.timeout!;
     }
@@ -273,11 +219,9 @@ export class CallSettings {
 
     if ('otherArgs' in options) {
       otherArgs = {};
-      // tslint:disable-next-line forin
       for (const key in this.otherArgs) {
         otherArgs[key] = this.otherArgs[key];
       }
-      // tslint:disable-next-line forin
       for (const optionsKey in options.otherArgs!) {
         otherArgs[optionsKey] = options.otherArgs![optionsKey];
       }
@@ -296,10 +240,6 @@ export class CallSettings {
       longrunning = options.longrunning;
     }
 
-    if ('promise' in options) {
-      promise = options.promise!;
-    }
-
     return new CallSettings({
       timeout,
       retry,
@@ -311,7 +251,6 @@ export class CallSettings {
       maxResults,
       otherArgs,
       isBundling,
-      promise,
     });
   }
 }
@@ -439,7 +378,7 @@ export function createMaxRetriesBackoffSettings(
  * @return {BundleOptions} - A new options.
  */
 export function createBundleOptions(options: BundlingConfig): BundleOptions {
-  const params = [
+  const params: Array<keyof BundlingConfig> = [
     'element_count_threshold',
     'element_count_limit',
     'request_byte_threshold',
@@ -494,9 +433,9 @@ export function createBundleOptions(options: BundlingConfig): BundleOptions {
  * @return {?RetryOptions} The new retry options.
  */
 function constructRetry(
-  methodConfig: MethodConfig,
-  retryCodes: {[index: string]: string[]},
-  retryParams: {[index: string]: {}},
+  methodConfig: MethodConfig | null,
+  retryCodes: {[index: string]: string[]} | undefined,
+  retryParams: {[index: string]: {}} | undefined,
   retryNames: {[index: string]: {}}
 ): RetryOptions | null | undefined {
   if (!methodConfig) {
@@ -506,7 +445,7 @@ function constructRetry(
   let codes: number[] | null = null;
   if (retryCodes && 'retry_codes_name' in methodConfig) {
     const retryCodesName = methodConfig['retry_codes_name'];
-    codes = (retryCodes[retryCodesName] || []).map(name => {
+    codes = (retryCodes[retryCodesName!] || []).map(name => {
       return Number(retryNames[name]);
     });
   }
@@ -514,7 +453,7 @@ function constructRetry(
   let backoffSettings: BackoffSettings | null = null;
   if (retryParams && 'retry_params_name' in methodConfig) {
     const params = retryParams[
-      methodConfig.retry_params_name
+      methodConfig.retry_params_name!
     ] as RetryParamsConfig;
     backoffSettings = createBackoffSettings(
       params.initial_retry_delay_millis,
@@ -566,9 +505,9 @@ function mergeRetryOptions(
 }
 
 export interface ServiceConfig {
-  retry_codes: {[index: string]: string[]};
-  retry_params: {[index: string]: RetryParamsConfig};
-  methods: {[index: string]: MethodConfig};
+  retry_codes?: {[index: string]: string[]};
+  retry_params?: {[index: string]: RetryParamsConfig};
+  methods: {[index: string]: MethodConfig | null};
 }
 
 export interface RetryParamsConfig {
@@ -582,19 +521,18 @@ export interface RetryParamsConfig {
 }
 
 export interface MethodConfig {
-  retry_codes_name: string;
-  retry_params_name: string;
-  bundling?: BundlingConfig;
+  retry_codes_name?: string;
+  retry_params_name?: string;
+  bundling?: BundlingConfig | null;
   timeout_millis?: number;
 }
 
 export interface BundlingConfig {
-  [index: string]: number;
   element_count_threshold: number;
   element_count_limit: number;
-  request_byte_threshold: number;
-  request_byte_limit: number;
-  delay_threshold_millis: number;
+  request_byte_threshold?: number;
+  request_byte_limit?: number;
+  delay_threshold_millis?: number;
 }
 
 export interface ClientConfig {
@@ -658,8 +596,6 @@ export interface ClientConfig {
  *   those codes.
  * @param {Object} otherArgs - the non-request arguments to be passed to the API
  *   calls.
- * @param {Function=} promise - A constructor for a promise that implements the
- * ES6 specification of promise. If not provided, native promises will be used.
  * @return {Object} A mapping from method name to CallSettings, or null if the
  *   service is not found in the config.
  */
@@ -668,11 +604,10 @@ export function constructSettings(
   clientConfig: ClientConfig,
   configOverrides: ClientConfig,
   retryNames: {},
-  otherArgs?: {},
-  promise?: PromiseConstructor
+  otherArgs?: {}
 ) {
   otherArgs = otherArgs || {};
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const defaults: any = {};
 
   const serviceConfig = (clientConfig.interfaces || {})[serviceName];
@@ -683,7 +618,6 @@ export function constructSettings(
   const overrides = (configOverrides.interfaces || {})[serviceName] || {};
   const methods = serviceConfig.methods;
   const overridingMethods = overrides.methods || {};
-  // tslint:disable-next-line forin
   for (const methodName in methods) {
     const methodConfig = methods[methodName];
     const jsName = methodName[0].toLowerCase() + methodName.slice(1);
@@ -694,8 +628,8 @@ export function constructSettings(
       serviceConfig.retry_params,
       retryNames
     );
-    let bundlingConfig = methodConfig.bundling;
-    let timeout = methodConfig.timeout_millis;
+    let bundlingConfig = methodConfig!.bundling;
+    let timeout = methodConfig!.timeout_millis;
     if (methodName in overridingMethods) {
       const overridingMethod = overridingMethods[methodName];
       if (overridingMethod) {
@@ -724,7 +658,6 @@ export function constructSettings(
         ? createBundleOptions(bundlingConfig)
         : null,
       otherArgs,
-      promise: promise || Promise,
     });
   }
 

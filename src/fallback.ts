@@ -1,32 +1,17 @@
 /**
- * Copyright 2019 Google LLC
- * All rights reserved.
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import * as protobuf from 'protobufjs';
@@ -66,12 +51,19 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
+interface NodeFetchType {
+  (url: RequestInfo, init?: RequestInit): Promise<Response>;
+}
+
 const CLIENT_VERSION_HEADER = 'x-goog-api-client';
+
+interface FallbackServiceStub {
+  [method: string]: Function;
+}
 
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
-  promise?: PromiseConstructor;
   fallback: boolean;
   grpcVersion: string;
 
@@ -81,8 +73,6 @@ export class GrpcClient {
    *
    * @param {Object=} options.auth - An instance of OAuth2Client to use in browser, or an instance of GoogleAuth from google-auth-library
    *  to use in Node.js. Required for browser, optional for Node.js.
-   * @param {Function=} options.promise - A constructor for a promise that
-   * implements the ES6 specification of promise.
    * @constructor
    */
 
@@ -100,7 +90,6 @@ export class GrpcClient {
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
-    this.promise = 'promise' in options ? options.promise! : Promise;
     this.fallback = true;
     this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
   }
@@ -111,7 +100,7 @@ export class GrpcClient {
    * @param {Object} jsonObject - A JSON version of a protofile created usin protobuf.js
    * @returns {Object} Root namespace of proto JSON
    */
-  loadProto(jsonObject) {
+  loadProto(jsonObject: {}) {
     const rootObject = protobuf.Root.fromJSON(jsonObject);
     return rootObject;
   }
@@ -144,28 +133,30 @@ export class GrpcClient {
     configOverrides: gax.ClientConfig,
     headers: OutgoingHttpHeaders
   ) {
-    function buildMetadata(abTests, moreHeaders) {
-      const metadata = {};
+    function buildMetadata(abTests: {}, moreHeaders: OutgoingHttpHeaders) {
+      const metadata: OutgoingHttpHeaders = {};
       if (!headers) {
         headers = {};
       }
       // Since gRPC expects each header to be an array,
       // we are doing the same for fallback here.
       for (const key in headers) {
-        if (headers.hasOwnProperty(key)) {
-          metadata[key] = Array.isArray(headers[key])
-            ? headers[key]
-            : [headers[key]];
-        }
+        metadata[key] = Array.isArray(headers[key])
+          ? (headers[key] as string[])
+          : ([headers[key]] as string[]);
       }
 
       // gRPC-fallback request must have 'grpc-web/' in 'x-goog-api-client'
       const clientVersions: string[] = [];
       if (
         metadata[CLIENT_VERSION_HEADER] &&
-        metadata[CLIENT_VERSION_HEADER][0]
+        (metadata[CLIENT_VERSION_HEADER] as Array<
+          string | number | string[]
+        >)[0]
       ) {
-        clientVersions.push(...metadata[CLIENT_VERSION_HEADER][0].split(' '));
+        clientVersions.push(
+          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
+        );
       }
       clientVersions.push(`grpc-web/${version}`);
       metadata[CLIENT_VERSION_HEADER] = [clientVersions.join(' ')];
@@ -174,19 +165,24 @@ export class GrpcClient {
         return metadata;
       }
       for (const key in moreHeaders) {
-        if (
-          key.toLowerCase() !== CLIENT_VERSION_HEADER &&
-          moreHeaders.hasOwnProperty(key)
-        ) {
+        if (key.toLowerCase() !== CLIENT_VERSION_HEADER) {
           const value = moreHeaders[key];
           if (Array.isArray(value)) {
             if (metadata[key] === undefined) {
               metadata[key] = value;
             } else {
-              metadata[key].push(...value);
+              if (Array.isArray(metadata[key])) {
+                (metadata[key]! as Array<
+                  string | number | string[] | undefined
+                >).push(...value);
+              } else {
+                throw new Error(
+                  `Can not add value ${value} to the call metadata.`
+                );
+              }
             }
           } else {
-            metadata[key] = [value];
+            metadata[key] = [value] as string[];
           }
         }
       }
@@ -197,8 +193,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       Status,
-      {metadataBuilder: buildMetadata},
-      this.promise
+      {metadataBuilder: buildMetadata}
     );
   }
 
@@ -215,7 +210,16 @@ export class GrpcClient {
    */
   async createStub(service: protobuf.Service, opts: ClientStubOptions) {
     // an RPC function to be passed to protobufjs RPC API
-    function serviceClientImpl(method, requestData, callback) {
+    function serviceClientImpl(
+      method:
+        | protobuf.Method
+        | protobuf.rpc.ServiceMethod<
+            protobuf.Message<{}>,
+            protobuf.Message<{}>
+          >,
+      requestData: Uint8Array,
+      callback: protobuf.RPCImplCallback
+    ) {
       return [method, requestData, callback];
     }
 
@@ -233,18 +237,32 @@ export class GrpcClient {
       throw new Error('No authentication was provided');
     }
     const authHeader = await this.authClient.getRequestHeaders();
-    const serviceStub = service.create(serviceClientImpl, false, false);
+    const serviceStub = (service.create(
+      serviceClientImpl,
+      false,
+      false
+    ) as unknown) as FallbackServiceStub;
     const methods = this.getServiceMethods(service);
 
-    const newServiceStub = service.create(serviceClientImpl, false, false);
+    const newServiceStub = (service.create(
+      serviceClientImpl,
+      false,
+      false
+    ) as unknown) as FallbackServiceStub;
     for (const methodName of methods) {
-      newServiceStub[methodName] = (req, options, metadata, callback) => {
+      newServiceStub[methodName] = (
+        req: {},
+        options: {[name: string]: string},
+        metadata: {},
+        callback: Function
+      ) => {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
         ].apply(serviceStub, [req, callback]);
-
-        let cancelController, cancelSignal;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let cancelController: AbortController, cancelSignal: any;
         if (isBrowser && typeof AbortController !== 'undefined') {
+          // eslint-disable-next-line no-undef
           cancelController = new AbortController();
         } else {
           cancelController = new NodeAbortController();
@@ -262,17 +280,20 @@ export class GrpcClient {
 
         const grpcFallbackProtocol = opts.protocol || 'https';
         let servicePath = opts.servicePath;
+        if (
+          !servicePath &&
+          service.options &&
+          service.options['(google.api.default_host)']
+        ) {
+          servicePath = service.options['(google.api.default_host)'];
+        }
         if (!servicePath) {
-          if (service.options && service.options['(google.api.default_host)']) {
-            servicePath = service.options['(google.api.default_host)'];
-          } else {
-            serviceCallback(new Error('Service path is undefined'));
-            return;
-          }
+          serviceCallback(new Error('Service path is undefined'));
+          return;
         }
 
         let servicePort;
-        const match = servicePath.match(/^(.*):(\d+)$/);
+        const match = servicePath!.match(/^(.*):(\d+)$/);
         if (match) {
           servicePath = match[1];
           servicePort = match[2];
@@ -294,27 +315,30 @@ export class GrpcClient {
 
         const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
 
-        const fetch = isBrowser() ? window.fetch : nodeFetch;
+        const fetch = isBrowser()
+          ? // eslint-disable-next-line no-undef
+            window.fetch
+          : ((nodeFetch as unknown) as NodeFetchType);
         fetch(url, {
           headers,
           method: 'post',
           body: requestData,
           signal: cancelSignal,
         })
-          .then(response => {
+          .then((response: Response | nodeFetch.Response) => {
             return Promise.all([
               Promise.resolve(response.ok),
               response.arrayBuffer(),
             ]);
           })
-          .then(([ok, buffer]) => {
+          .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
             if (!ok) {
               const status = statusDecoder.decodeRpcStatus(buffer);
               throw new Error(JSON.stringify(status));
             }
             serviceCallback(null, new Uint8Array(buffer));
           })
-          .catch(err => {
+          .catch((err: Error) => {
             if (!cancelRequested || err.name !== 'AbortError') {
               serviceCallback(err);
             }
@@ -342,8 +366,6 @@ export class GrpcClient {
  * gRPC-fallback version of lro
  *
  * @param {Object=} options.auth - An instance of google-auth-library.
- * @param {Function=} options.promise - A constructor for a promise that
- * implements the ES6 specification of promise.
  * @return {Object} A OperationsClientBuilder that will return a OperationsClient
  */
 export function lro(options: GrpcClientOptions) {

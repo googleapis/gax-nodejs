@@ -1,37 +1,23 @@
-/* Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {expect} from 'chai';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
-
+import {describe, it} from 'mocha';
 import {LongrunningDescriptor} from '../../src';
 import * as operationProtos from '../../protos/operations';
 import {GaxCallPromise} from '../../src/apitypes';
@@ -41,8 +27,8 @@ import * as longrunning from '../../src/longRunningCalls/longrunning';
 import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
-
-// tslint:disable-next-line no-any
+import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
 const RESPONSE_VAL = 'response';
@@ -89,15 +75,15 @@ const BAD_OP = {
   metadata: METADATA,
   done: true,
 };
-const mockDecoder = val => {
+const mockDecoder = (val: {}) => {
   return val.toString();
 };
 
-function createApiCall(func, client?) {
+function createApiCall(func: Function, client?: OperationsClient) {
   const descriptor = new LongrunningDescriptor(
-    client,
-    mockDecoder,
-    mockDecoder
+    client!,
+    (mockDecoder as unknown) as AnyDecoder,
+    (mockDecoder as unknown) as AnyDecoder
   );
   return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }
@@ -109,16 +95,18 @@ interface SpyableOperationsClient extends OperationsClient {
 }
 
 describe('longrunning', () => {
-  function mockOperationsClient(opts?): SpyableOperationsClient {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function mockOperationsClient(opts?: any): SpyableOperationsClient {
     opts = opts || {};
     let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
     const getOperationSpy = sinon.spy(() => {
-      let resolver;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let resolver: any;
       const promise = new Promise(resolve => {
         resolver = resolve;
       });
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (promise as any).cancel = cancelGetOperationSpy;
 
       if (remainingCalls && remainingCalls > 1) {
@@ -136,13 +124,18 @@ describe('longrunning', () => {
       getOperation: getOperationSpy,
       cancelOperation: cancelOperationSpy,
       cancelGetOperationSpy,
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
   }
 
   describe('createApiCall', () => {
     it('longrunning call resolves to the correct datatypes', done => {
-      const func = (argument, metadata, options, callback) => {
+      const func = (
+        argument: {},
+        metadata: {},
+        options: {},
+        callback: Function
+      ) => {
         callback(null, PENDING_OP);
       };
       const defaultInitialRetryDelayMillis = 100;
@@ -170,10 +163,8 @@ describe('longrunning', () => {
           );
           expect(operation).to.have.property('longrunningDescriptor');
           expect(operation.name).to.deep.eq(OPERATION_NAME);
-          // tslint:disable-next-line no-unused-expression
           expect(operation.done).to.be.false;
           expect(operation.latestResponse).to.deep.eq(PENDING_OP);
-          // tslint:disable-next-line no-unused-expression
           expect(operation.result).to.be.null;
           expect(operation.metadata).to.deep.eq(METADATA_VAL);
           expect(rawResponse).to.deep.eq(PENDING_OP);
@@ -188,8 +179,8 @@ describe('longrunning', () => {
       const client = mockOperationsClient();
       const desc = new LongrunningDescriptor(
         client as OperationsClient,
-        mockDecoder,
-        mockDecoder
+        (mockDecoder as unknown) as AnyDecoder,
+        (mockDecoder as unknown) as AnyDecoder
       );
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
@@ -226,7 +217,6 @@ describe('longrunning', () => {
       );
       expect(operation).to.have.property('longrunningDescriptor');
       expect(operation.name).to.deep.eq(OPERATION_NAME);
-      // tslint:disable-next-line no-unused-expression
       expect(operation.done).to.be.true;
       expect(operation.response).to.deep.eq(RESPONSE);
       expect(operation.result).to.deep.eq(RESPONSE_VAL);
@@ -239,7 +229,12 @@ describe('longrunning', () => {
   describe('Operation', () => {
     describe('getOperation', () => {
       it('does not make an api call if cached op is finished', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient();
@@ -262,7 +257,12 @@ describe('longrunning', () => {
       });
 
       it('makes an api call to get the updated operation', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
@@ -287,7 +287,12 @@ describe('longrunning', () => {
       });
 
       it('does not return a promise when given a callback.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
@@ -306,7 +311,6 @@ describe('longrunning', () => {
                 expect(client.getOperation.callCount).to.eq(1);
                 done();
               })
-              // tslint:disable-next-line no-unused-expression
             ).to.be.undefined;
           })
           .catch(error => {
@@ -315,7 +319,12 @@ describe('longrunning', () => {
       });
 
       it('returns a promise that resolves to the correct data', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient();
@@ -325,7 +334,7 @@ describe('longrunning', () => {
             const operation = responses[0] as longrunning.Operation;
             return operation.getOperation();
           })
-          .then(responses => {
+          .then((responses: {[name: string]: {}}) => {
             const result = responses[0];
             const metadata = responses[1];
             const rawResponse = responses[2];
@@ -342,7 +351,12 @@ describe('longrunning', () => {
       });
 
       it('returns a promise that rejects an operation error.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, ERROR_OP);
         };
         const client = mockOperationsClient();
@@ -360,35 +374,16 @@ describe('longrunning', () => {
             done();
           });
       });
-
-      it('uses provided promise constructor.', done => {
-        const func = (argument, metadata, options, callback) => {
-          callback(null, PENDING_OP);
-        };
-
-        let called = false;
-        function MockPromise(executor) {
-          const promise = new Promise(executor);
-          called = true;
-          return promise;
-        }
-
-        const client = mockOperationsClient();
-        const apiCall = createApiCall(func, client);
-        // @ts-ignore incomplete options
-        apiCall({}, {promise: MockPromise}).then(responses => {
-          const operation = responses[0];
-          operation.getOperation();
-          // tslint:disable-next-line no-unused-expression
-          expect(called).to.be.true;
-          done();
-        });
-      });
     });
 
     describe('promise', () => {
       it('resolves to the correct data', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -414,7 +409,12 @@ describe('longrunning', () => {
       });
 
       it('resolves if operation completes immediately', async () => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, SUCCESSFUL_OP);
         };
         const client = mockOperationsClient({expectedCalls: 0});
@@ -422,7 +422,6 @@ describe('longrunning', () => {
         const [operation] = ((await apiCall({})) as unknown) as [
           longrunning.Operation
         ];
-        // tslint:disable-next-line no-unused-expression
         expect(operation).to.be.not.null;
         const [finalResult] = ((await operation!.promise()) as unknown) as [
           string
@@ -431,7 +430,12 @@ describe('longrunning', () => {
       });
 
       it('resolves error', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -458,7 +462,12 @@ describe('longrunning', () => {
       });
 
       it('does not hang on invalid API response', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({finalOperation: BAD_OP});
@@ -477,52 +486,16 @@ describe('longrunning', () => {
             done();
           });
       });
-
-      it('uses provided promise constructor', done => {
-        const client = mockOperationsClient();
-        const desc = new LongrunningDescriptor(
-          client,
-          mockDecoder,
-          mockDecoder
-        );
-        const initialRetryDelayMillis = 1;
-        const retryDelayMultiplier = 2;
-        const maxRetryDelayMillis = 3;
-        const totalTimeoutMillis = 4;
-        const unusedRpcValue = 0;
-        const backoff = gax.createBackoffSettings(
-          initialRetryDelayMillis,
-          retryDelayMultiplier,
-          maxRetryDelayMillis,
-          unusedRpcValue,
-          unusedRpcValue,
-          unusedRpcValue,
-          totalTimeoutMillis
-        );
-        let called = false;
-        function MockPromise(executor) {
-          const promise = new Promise(executor);
-          called = true;
-          return promise;
-        }
-        const operation = longrunning.operation(
-          (SUCCESSFUL_OP as {}) as operationProtos.google.longrunning.Operation,
-          desc,
-          backoff,
-          {
-            promise: (MockPromise as {}) as PromiseConstructor,
-          }
-        );
-        operation.promise();
-        // tslint:disable-next-line no-unused-expression
-        expect(called).to.be.true;
-        done();
-      });
     });
 
     describe('cancel', () => {
       it('cancels the Operation and the current api call', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({
@@ -535,9 +508,8 @@ describe('longrunning', () => {
             const operation = responses[0] as longrunning.Operation;
             const p = operation.promise();
             operation.cancel().then(() => {
-              // tslint:disable-next-line no-unused-expression
               expect(client.cancelOperation.called).to.be.true;
-              // tslint:disable-next-line no-unused-expression no-any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               expect((client as any).cancelGetOperationSpy.called).to.be.true;
               done();
             });
@@ -554,7 +526,12 @@ describe('longrunning', () => {
 
     describe('polling', () => {
       it('succesful operation emits complete', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -582,7 +559,12 @@ describe('longrunning', () => {
       });
 
       it('operation error emits an error', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const expectedCalls = 3;
@@ -610,7 +592,12 @@ describe('longrunning', () => {
       });
 
       it('emits progress on updated operations.', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const updatedMetadataVal = 'updated';
@@ -658,13 +645,19 @@ describe('longrunning', () => {
       });
 
       it('times out when polling', done => {
-        const func = (argument, metadata, options, callback) => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
           callback(null, PENDING_OP);
         };
         const client = mockOperationsClient({
           finalOperation: PENDING_OP,
         });
         const apiCall = createApiCall(func, client);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore incomplete options
         apiCall(
           {},

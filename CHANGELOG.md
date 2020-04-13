@@ -4,6 +4,161 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.1.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.2...v2.1.0) (2020-04-10)
+
+
+### Features
+
+* support Iam_service in Gax ([#762](https://www.github.com/googleapis/gax-nodejs/issues/762)) ([a4c0dd3](https://www.github.com/googleapis/gax-nodejs/commit/a4c0dd38f2cb8bff27b0bbcaaa5e0643044ea8ac))
+
+
+### Bug Fixes
+
+* apache license URL ([#468](https://www.github.com/googleapis/gax-nodejs/issues/468)) ([#779](https://www.github.com/googleapis/gax-nodejs/issues/779)) ([827a703](https://www.github.com/googleapis/gax-nodejs/commit/827a70397e855e9404a95f795358bf819c200317))
+
+### [2.0.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.1...v2.0.2) (2020-04-02)
+
+
+### Bug Fixes
+
+* make sure generated protos.js have unique root name ([#774](https://www.github.com/googleapis/gax-nodejs/issues/774)) ([886a6f3](https://www.github.com/googleapis/gax-nodejs/commit/886a6f388b683166e7378ad2000990b321397974))
+
+
+
+### [2.0.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.0.0...v2.0.1) (2020-03-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency google-auth-library to v6 ([#763](https://www.github.com/googleapis/gax-nodejs/issues/763)) ([72114db](https://www.github.com/googleapis/gax-nodejs/commit/72114db1b15af3034c51a784e3fc619e2ee281e5))
+* make async iteration work for gRPC-fallback; refactor the code ([#765](https://www.github.com/googleapis/gax-nodejs/issues/765)) ([944c06b](https://www.github.com/googleapis/gax-nodejs/commit/944c06b4225c4dd5cdcf08e4ca2497cfe3a69cde))
+
+## [2.0.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.2...v2.0.0) (2020-03-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* use Node.js v10+
+* throw for versions of Node.js older than v10.0.0 (#748)
+* stop accepting Promise constructor (#737)
+
+### Features
+
+* export bundle descriptor in descriptors interface ([#744](https://www.github.com/googleapis/gax-nodejs/issues/744)) ([b1eccf9](https://www.github.com/googleapis/gax-nodejs/commit/b1eccf96c439d67376d249a54c9d22ffe7ff1839))
+* export ServiceError from @grpc/grpc-js ([#754](https://www.github.com/googleapis/gax-nodejs/issues/754)) ([24a4d60](https://www.github.com/googleapis/gax-nodejs/commit/24a4d600738a9597e9a87d6705eaed3dc2285e3b))
+* stop accepting Promise constructor ([#737](https://www.github.com/googleapis/gax-nodejs/issues/737)) ([816bf9b](https://www.github.com/googleapis/gax-nodejs/commit/816bf9b283217208debd979e893a6daf29f1f739))
+* support async iterator for paging method ([#708](https://www.github.com/googleapis/gax-nodejs/issues/708)) ([3ac5afb](https://www.github.com/googleapis/gax-nodejs/commit/3ac5afb3b1b1b22798f15ee07395f3ca765383b4))
+* throw for versions of Node.js older than v10.0.0 ([#748](https://www.github.com/googleapis/gax-nodejs/issues/748)) ([511fc23](https://www.github.com/googleapis/gax-nodejs/commit/511fc233bd66d537c24743ef460ee8c609cd551f))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ^0.7.0 ([#736](https://www.github.com/googleapis/gax-nodejs/issues/736)) ([01c428c](https://www.github.com/googleapis/gax-nodejs/commit/01c428cb1240320b92778abf1297a5ff72346fd9))
+* **deps:** use @grpc/grpc-js v0.7.2 ([#735](https://www.github.com/googleapis/gax-nodejs/issues/735)) ([836e81b](https://www.github.com/googleapis/gax-nodejs/commit/836e81b64f84d8c118e6aea0580f0645658a8490))
+* **deps:** use protobuf.js v6.8.9 ([#743](https://www.github.com/googleapis/gax-nodejs/issues/743)) ([fab91ce](https://www.github.com/googleapis/gax-nodejs/commit/fab91ce334d76212d7e31b5478331339c5acad76))
+* allow passing numbers as path template parameters ([#756](https://www.github.com/googleapis/gax-nodejs/issues/756)) ([c466d3d](https://www.github.com/googleapis/gax-nodejs/commit/c466d3dc68c8f9050d3ae69dcedd708e3509ae17))
+
+
+### Miscellaneous Chores
+
+* require Node.js v10+ ([#759](https://www.github.com/googleapis/gax-nodejs/issues/759)) ([23ec7f6](https://www.github.com/googleapis/gax-nodejs/commit/23ec7f69c3813f6d06ea8b2a473d072337e1b499))
+
+### [1.14.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.1...v1.14.2) (2020-02-27)
+
+
+### Bug Fixes
+
+* **deps:** update @grpc/grpc-js see: [#728](https://www.github.com/googleapis/gax-nodejs/issues/728) ([#730](https://www.github.com/googleapis/gax-nodejs/issues/730)) ([b08a316](https://www.github.com/googleapis/gax-nodejs/commit/b08a316ec74654c07907d2f350df152fcf612c4a))
+
+### [1.14.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.14.0...v1.14.1) (2020-01-28)
+
+
+### Bug Fixes
+
+* properly parse special field names in compileProtos ([#716](https://www.github.com/googleapis/gax-nodejs/issues/716)) ([e195df7](https://www.github.com/googleapis/gax-nodejs/commit/e195df7a89a5c1de72c41bf84f8c1bcf7a8f17c8))
+
+## [1.14.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.13.0...v1.14.0) (2020-01-27)
+
+
+### Features
+
+* allow strings for enums, bytes, and Long in .d.ts ([#714](https://www.github.com/googleapis/gax-nodejs/issues/714)) ([154d771](https://www.github.com/googleapis/gax-nodejs/commit/154d771c8dcd16572d3862127b1b7863f75eb39a))
+* some basic samples, plus two new exports ([#702](https://www.github.com/googleapis/gax-nodejs/issues/702)) ([1204e2e](https://www.github.com/googleapis/gax-nodejs/commit/1204e2e28d6c24786c38deb57efd859536d168bc))
+
+
+### Bug Fixes
+
+* **deps:** use semver v6, mkdirp v0.5.1 to keep supporting node8 for a while ([#707](https://www.github.com/googleapis/gax-nodejs/issues/707)) ([d257dc9](https://www.github.com/googleapis/gax-nodejs/commit/d257dc98a66ec6fe3850a32efe04c3a0c5bb18a8))
+
+## [1.13.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.12.0...v1.13.0) (2020-01-02)
+
+
+### Features
+
+* export GRPC error code enum ([#693](https://www.github.com/googleapis/gax-nodejs/issues/693)) ([8215535](https://www.github.com/googleapis/gax-nodejs/commit/8215535faf0ed84889f0aac3b898646515a5aeb7))
+* export ServiceConfig ([#695](https://www.github.com/googleapis/gax-nodejs/issues/695)) ([198101a](https://www.github.com/googleapis/gax-nodejs/commit/198101a292c829e31763aa566e9b351a1548d5ed))
+
+
+### Bug Fixes
+
+* fix possible invalid retry variables ([#682](https://www.github.com/googleapis/gax-nodejs/issues/682)) ([2cb343c](https://www.github.com/googleapis/gax-nodejs/commit/2cb343c99735059bc626231cd91b7d0cbb5c0042))
+* **deps:** update dependency semver to v7 ([#683](https://www.github.com/googleapis/gax-nodejs/issues/683)) ([b28e6b1](https://www.github.com/googleapis/gax-nodejs/commit/b28e6b13337cd4033a52bba428e9f67bd64b8ff4))
+* **types:** enable noImplicitAny in tsconfig ([#679](https://www.github.com/googleapis/gax-nodejs/issues/679)) ([6ecdeb7](https://www.github.com/googleapis/gax-nodejs/commit/6ecdeb77c399d04f27a9551933c3b12f5c0c003c))
+
+## [1.12.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.2...v1.12.0) (2019-12-09)
+
+
+### Features
+
+* export OperationsClient ([#677](https://www.github.com/googleapis/gax-nodejs/issues/677)) ([66425fa](https://www.github.com/googleapis/gax-nodejs/commit/66425fa4ff75ae142fd972de21b92a4e22c9a8d7))
+
+
+### Bug Fixes
+
+* servicePath and port may be undefined ([#668](https://www.github.com/googleapis/gax-nodejs/issues/668)) ([10eaaa6](https://www.github.com/googleapis/gax-nodejs/commit/10eaaa695fde3bd272dd9995c6c8c6287ad45929))
+* **deps:** pin TypeScript below 3.7.0 ([70dd3b7](https://www.github.com/googleapis/gax-nodejs/commit/70dd3b7a876f50c3a7bf503ddc6190a5b82e5285))
+
+### [1.11.2](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.1...v1.11.2) (2019-11-22)
+
+
+### Bug Fixes
+
+* **deps:** unpin @grpc/grpc-js, set it to ^0.6.12 ([#665](https://www.github.com/googleapis/gax-nodejs/issues/665)) ([265461e](https://www.github.com/googleapis/gax-nodejs/commit/265461e7573c9bbd650eb0558313c05330691717))
+
+* servicePath and port may be undefined ([#668](https://github.com/googleapis/gax-nodejs/pull/668))
+([54fa7b9](https://www.github.com/googleapis/gax-nodejs/commit/54fa7b96915852255f511bddc575177c3cabb3ac))
+
+### [1.11.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.11.0...v1.11.1) (2019-11-15)
+
+
+### Bug Fixes
+
+* **deps:** use typescript ~3.6.0 ([#662](https://www.github.com/googleapis/gax-nodejs/issues/662)) ([2a4f255](https://www.github.com/googleapis/gax-nodejs/commit/2a4f255b0d0ea58488485465c48f248b153f1cf9))
+
+## [1.11.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.10.0...v1.11.0) (2019-11-14)
+
+
+### Features
+
+* export types for paginated calls ([#657](https://www.github.com/googleapis/gax-nodejs/issues/657)) ([b4007c7](https://www.github.com/googleapis/gax-nodejs/commit/b4007c70550517c90b43698674a57645c73111dc))
+
+
+### Bug Fixes
+
+* add license to protos/protos.js ([#655](https://www.github.com/googleapis/gax-nodejs/issues/655)) ([e7071d1](https://www.github.com/googleapis/gax-nodejs/commit/e7071d198618ebe278cddea0f8d3f02a806ba040))
+
+## [1.10.0](https://www.github.com/googleapis/gax-nodejs/compare/v1.9.1...v1.10.0) (2019-11-12)
+
+
+### Features
+
+* export APICallback type ([#653](https://www.github.com/googleapis/gax-nodejs/issues/653)) ([e814cc1](https://www.github.com/googleapis/gax-nodejs/commit/e814cc194437ef2b283d24fffae99d33f7397547))
+
+
+### Bug Fixes
+
+* **docs:** add jsdoc-region-tag plugin ([#651](https://www.github.com/googleapis/gax-nodejs/issues/651)) ([6a6e7e6](https://www.github.com/googleapis/gax-nodejs/commit/6a6e7e654d57a96433165203d8bf92485eaa9872))
+
 ### [1.9.1](https://www.github.com/googleapis/gax-nodejs/compare/v1.9.0...v1.9.1) (2019-11-11)
 
 

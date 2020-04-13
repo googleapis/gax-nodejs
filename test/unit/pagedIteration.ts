@@ -1,32 +1,20 @@
-/* Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 import {expect} from 'chai';
 import * as pumpify from 'pumpify';
@@ -34,8 +22,12 @@ import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
 import * as through2 from 'through2';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
+import {APICallback, GaxCall} from '../../src/apitypes';
+import {describe, it, beforeEach} from 'mocha';
 
 import * as util from './utils';
+import {Stream} from 'stream';
+import * as gax from '../../src/gax';
 
 describe('paged iteration', () => {
   const pageSize = 3;
@@ -47,7 +39,12 @@ describe('paged iteration', () => {
     descriptor,
   };
 
-  function func(request, metadata, options, callback) {
+  function func(
+    request: {pageToken?: number},
+    metadata: {},
+    options: {},
+    callback: APICallback
+  ) {
     const pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
       callback(null, {nums: []});
@@ -82,7 +79,6 @@ describe('paged iteration', () => {
       expected.push(i);
     }
     apiCall({}, undefined, (err, results) => {
-      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(results).to.deep.equal(expected);
       done();
@@ -127,7 +123,12 @@ describe('paged iteration', () => {
   it('sets additional arguments to the callback', done => {
     let counter = 0;
     const apiCall = util.createApiCall(func, createOptions);
-    function callback(err, resources, next, rawResponse) {
+    function callback(
+      err: {},
+      resources: {},
+      next: {},
+      rawResponse: {nums: {}}
+    ) {
       if (err) {
         done(err);
         return;
@@ -138,18 +139,27 @@ describe('paged iteration', () => {
       expect(rawResponse).to.have.property('nums');
       expect(rawResponse.nums).to.eq(resources);
       if (next) {
-        apiCall(next, {autoPaginate: false}, callback);
+        apiCall(
+          next,
+          {autoPaginate: false},
+          (callback as unknown) as APICallback
+        );
       } else {
         expect(counter).to.eq(pagesToStream + 1);
         done();
       }
     }
-    apiCall({}, {autoPaginate: false}, callback);
+    apiCall({}, {autoPaginate: false}, (callback as unknown) as APICallback);
   });
 
   it('retries on failure', done => {
     let callCount = 0;
-    function failingFunc(request, metadata, options, callback) {
+    function failingFunc(
+      request: {},
+      metadata: {},
+      options: {},
+      callback: APICallback
+    ) {
       callCount++;
       if (callCount % 2 === 0) {
         util.fail(request, metadata, options, callback);
@@ -187,15 +197,52 @@ describe('paged iteration', () => {
     });
   });
 
+  describe('use async iterator', () => {
+    const spy = sinon.spy(func);
+    let apiCall: GaxCall;
+    beforeEach(() => {
+      apiCall = util.createApiCall(spy, createOptions);
+    });
+
+    async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
+      let counter = 0;
+      const resources = [];
+      for await (const resource of iterable) {
+        counter++;
+        resources.push(resource);
+        if (counter === 10) {
+          break;
+        }
+      }
+      return resources;
+    }
+
+    it('returns an iterable, count to 10', async () => {
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      const resources = await iterableChecker(
+        descriptor.asyncIterate(apiCall, {}, settings)
+      );
+      expect(resources.length).to.equal(10);
+    });
+  });
+
   describe('stream conversion', () => {
-    let spy;
-    let apiCall;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let spy: any;
+    let apiCall: GaxCall;
     beforeEach(() => {
       spy = sinon.spy(func);
       apiCall = util.createApiCall(spy, createOptions);
     });
 
-    function streamChecker(stream, onEnd, done, start) {
+    function streamChecker(
+      stream: Stream,
+      onEnd: Function,
+      done: (...args: string[]) => void,
+      start: number
+    ) {
       let counter = start;
       stream
         .on('data', data => {
@@ -304,7 +351,7 @@ describe('paged iteration', () => {
 
     it('cooperates with google-cloud-node usage', done => {
       let stream;
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const output = streamEvents((pumpify as any).obj()) as pumpify;
       output.once('reading', () => {
         // @ts-ignore incomplete options

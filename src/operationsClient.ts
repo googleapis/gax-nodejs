@@ -1,32 +1,17 @@
-/*
- * Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {GoogleAuth, OAuth2Client} from 'google-auth-library';
@@ -39,15 +24,16 @@ import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
+import {APICallback} from './apitypes';
 
-const configData = require('./operations_client_config');
+import configData = require('./operations_client_config.json');
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
 
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
-const PAGE_DESCRIPTORS = {
+const PAGE_DESCRIPTORS: {[method: string]: PageDescriptor} = {
   listOperations: new PageDescriptor(
     'pageToken',
     'nextPageToken',
@@ -92,18 +78,18 @@ export class OperationsClient {
 
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     operationsProtos: any,
     options: OperationsClientOptions
   ) {
-    const opts: OperationsClientOptions & ClientStubOptions = Object.assign(
+    const opts = Object.assign(
       {
         servicePath: SERVICE_ADDRESS,
         port: DEFAULT_SERVICE_PORT,
         clientConfig: {},
       },
       options
-    );
+    ) as OperationsClientOptions & ClientStubOptions;
 
     const googleApiClient = ['gl-node/' + process.versions.node];
     if (opts.libName && opts.libVersion) {
@@ -148,7 +134,8 @@ export class OperationsClient {
     for (const methodName of operationsStubMethods) {
       const innerCallPromise = operationsStub.then(
         stub => (...args: Array<{}>) => {
-          return stub[methodName].apply(stub, args);
+          const func = stub[methodName];
+          return func.apply(stub, args);
         },
         err => () => {
           throw err;
@@ -213,10 +200,13 @@ export class OperationsClient {
    * const [response] = await client.getOperation({name});
    * // doThingsWith(response)
    */
-  getOperation(request: {}, options: {}, callback?) {
+  getOperation(request: {}, options: {}, callback?: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.getOperation(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.getOperation(request, options, callback);
@@ -299,10 +289,13 @@ export class OperationsClient {
    *   }
    * };
    */
-  listOperations(request, options, callback) {
+  listOperations(request: {}, options: {}, callback: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.listOperations(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.listOperations(request, options, callback);
@@ -390,10 +383,13 @@ export class OperationsClient {
    * const client = longrunning.operationsClient();
    * await client.cancelOperation({name: ''});
    */
-  cancelOperation(request, options?, callback?) {
+  cancelOperation(request: {}, options?: {}, callback?: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.cancelOperation(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.cancelOperation(request, options, callback);
@@ -423,10 +419,13 @@ export class OperationsClient {
    * const client = longrunning.operationsClient();
    * await client.deleteOperation({name: ''});
    */
-  deleteOperation(request, options, callback) {
+  deleteOperation(request: {}, options: {}, callback: APICallback) {
     if (options instanceof Function && callback === undefined) {
-      callback = options;
-      options = {};
+      return this._innerApiCalls.deleteOperation(
+        request,
+        {},
+        options as APICallback
+      );
     }
     options = options || {};
     return this._innerApiCalls.deleteOperation(request, options, callback);
@@ -441,9 +440,10 @@ export class OperationsClientBuilder {
    * @param gaxGrpc {GrpcClient}
    */
   constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
-    // tslint:disable-next-line no-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let operationsProtos: any; // loaded protos have any type
     if (gaxGrpc.fallback) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const protoJson = require('../../protos/operations.json');
       operationsProtos = gaxGrpc.loadProto(protoJson);
     } else {

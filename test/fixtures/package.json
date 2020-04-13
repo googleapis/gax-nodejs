@@ -1,0 +1,5 @@
+{
+  "_why?": "This is a fake package.json for compileProtos test.",
+  "name": "@org/fake-package",
+  "version": "42.0.7-prealpha84"
+}

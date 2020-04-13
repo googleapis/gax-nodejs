@@ -1,32 +1,17 @@
-/*
- * Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import {Status} from '../status';
@@ -40,10 +25,8 @@ export interface SubResponseInfo {
   end?: number;
 }
 
-export interface TaskElement {}
-
 export interface TaskData {
-  elements: TaskElement[];
+  elements: {}[];
   bytes: number;
   callback: TaskCallback;
   cancelled?: boolean;
@@ -69,11 +52,11 @@ export interface TaskCallback extends APICallback {
  * @private
  */
 export function deepCopyForResponse(
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: any,
   subresponseInfo: SubResponseInfo | null
 ) {
-  // tslint:disable-next-line no-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let result: any;
   if (obj === null) {
     return null;
@@ -121,7 +104,7 @@ export function deepCopyForResponse(
 
 export class Task {
   _apiCall: SimpleCallbackFunction;
-  _request: {[index: string]: TaskElement[]};
+  _request: {[index: string]: {}[]};
   _bundledField: string;
   _subresponseField?: string | null;
   _data: TaskData[];
@@ -182,13 +165,14 @@ export class Task {
       return [];
     }
     const request = this._request;
-    const elements: TaskElement[] = [];
+    const elements: {}[] = [];
     const ids: string[] = [];
     for (let i = 0; i < this._data.length; ++i) {
-      elements.push.apply(elements, this._data[i].elements);
+      elements.push(...this._data[i].elements);
       ids.push(this._data[i].callback.id!);
     }
     request[this._bundledField] = elements;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     this.callCanceller = this._apiCall(
       request,
@@ -236,7 +220,7 @@ export class Task {
    * @param {number} bytes - the byte size required to encode elements in the API.
    * @param {APICallback} callback - the callback of the method call.
    */
-  extend(elements: TaskElement[], bytes: number, callback: TaskCallback) {
+  extend(elements: {}[], bytes: number, callback: TaskCallback) {
     this._data.push({
       elements,
       bytes,

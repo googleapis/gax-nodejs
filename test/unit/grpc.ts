@@ -1,43 +1,36 @@
-/* Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 import {expect} from 'chai';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
-import * as semver from 'semver';
 import * as sinon from 'sinon';
+import {describe, it, beforeEach} from 'mocha';
 
 import {protobuf} from '../../src/index';
-import {GoogleProtoFilesRoot, GrpcClient} from '../../src/grpc';
+import {
+  GoogleProtoFilesRoot,
+  GrpcClient,
+  GrpcClientOptions,
+  GrpcModule,
+} from '../../src/grpc';
 
-function gaxGrpc(options?) {
+function gaxGrpc(options?: GrpcClientOptions) {
   return new GrpcClient(options);
 }
 
@@ -50,7 +43,7 @@ describe('grpc', () => {
     });
 
     it('returns unknown when grpc module is mocked', () => {
-      const mockGrpc = {};
+      const mockGrpc = ({} as unknown) as GrpcModule;
       expect(gaxGrpc({grpc: mockGrpc}).grpcVersion).to.eq('');
     });
   });
@@ -59,14 +52,13 @@ describe('grpc', () => {
     const grpcClient = gaxGrpc();
 
     it('builds metadata', () => {
-      const headers = {
+      const headers: {[name: string]: string} = {
         'X-Dummy-Header': 'Dummy value',
         'Other-Header': 'Other value',
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
       const builder = grpcClient.metadataBuilder(headers);
       const metadata = builder();
-      // tslint:disable-next-line forin
       for (const key in headers) {
         expect(metadata.get(key)).to.deep.eq([headers[key]]);
       }
@@ -123,11 +115,10 @@ describe('grpc', () => {
   });
 
   describe('createStub', () => {
-    const TEST_PATH = path.resolve(__dirname, '../../test');
     class DummyStub {
-      constructor(public address, public creds, public options) {}
+      constructor(public address: {}, public creds: {}, public options: {}) {}
     }
-    let grpcClient;
+    let grpcClient: GrpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
     const stubAuth = {getClient: sinon.stub()};
     const stubGrpc = {
@@ -155,11 +146,15 @@ describe('grpc', () => {
       stubGrpc.credentials.combineChannelCredentials
         .withArgs(dummySslCreds, dummyGrpcAuth)
         .returns(dummyChannelCreds);
-      grpcClient = gaxGrpc({auth: stubAuth, grpc: stubGrpc});
+      grpcClient = gaxGrpc(({
+        auth: stubAuth,
+        grpc: stubGrpc,
+      } as unknown) as GrpcClientOptions);
     });
 
     it('creates a stub', () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
+      // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
@@ -176,16 +171,17 @@ describe('grpc', () => {
         'grpc.initial_reconnect_backoff_ms': 10000,
         other_dummy_options: 'test',
       };
+      // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).has as any).key([
           'max_send_message_length',
           'initial_reconnect_backoff_ms',
         ]);
-        // tslint:disable-next-line no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).to.not.have as any).key([
           'servicePath',
           'port',
@@ -201,6 +197,7 @@ describe('grpc', () => {
         port: 443,
         sslCreds: customCreds,
       };
+      // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
@@ -228,7 +225,7 @@ describe('grpc', () => {
     it('should load the test file', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
@@ -239,7 +236,7 @@ describe('grpc', () => {
       const fullPath = path.join(TEST_PATH, TEST_FILE);
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(fullPath) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
@@ -251,7 +248,7 @@ describe('grpc', () => {
       const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // tslint:disable-next-line:no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(nonExistentDir, iamService) as any;
       expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
     });
@@ -268,7 +265,7 @@ describe('grpc', () => {
       const protos = grpcClient.loadProto(TEST_PATH, [
         TEST_FILE,
         iamService,
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ]) as any;
       expect(protos.google.example.library.v1.LibraryService).to.be.a(
         'Function'
@@ -416,7 +413,7 @@ describe('grpc', () => {
         const correctPath = path.join('test', 'example', 'import.proto');
         const findIncludePath = proxyquire('../../src/grpc', {
           fs: {
-            existsSync(path) {
+            existsSync(path: string) {
               return path === correctPath;
             },
           },

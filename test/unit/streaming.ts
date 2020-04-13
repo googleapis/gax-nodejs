@@ -1,47 +1,41 @@
-/*
- * Copyright 2019 Google LLC
- * All rights reserved.
+/**
+ * Copyright 2020 Google LLC
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 import {expect} from 'chai';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
+import {describe, it} from 'mocha';
 
-import {GaxCallStream} from '../../src/apitypes';
+import {GaxCallStream, GRPCCall} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
 import * as gax from '../../src/gax';
 import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
+import {APICallback} from '../../src/apitypes';
+import internal = require('stream');
 
-function createApiCallStreaming(func, type) {
+function createApiCallStreaming(
+  func: Promise<GRPCCall> | sinon.SinonSpy<Array<{}>, internal.Transform>,
+  type: streaming.StreamType
+) {
   const settings = new gax.CallSettings();
   return createApiCall(
+    //@ts-ignore
     Promise.resolve(func),
     settings,
     new StreamDescriptor(type)
@@ -74,9 +68,7 @@ describe('streaming', () => {
         expect(data).to.deep.equal({resources: [3, 4, 5]});
       }
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.false;
     s.on('data', callback);
     s.on('end', () => {
@@ -86,7 +78,7 @@ describe('streaming', () => {
   });
 
   it('handles client streaming', done => {
-    function func(metadata, options, callback) {
+    function func(metadata: {}, options: {}, callback: APICallback) {
       expect(arguments.length).to.eq(3);
       const s = through2.obj();
       const written: Array<{}> = [];
@@ -101,18 +93,16 @@ describe('streaming', () => {
     }
 
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.CLIENT_STREAMING
     );
     const s = apiCall({}, undefined, (err, response) => {
-      // tslint:disable-next-line no-unused-expression
       expect(err).to.be.null;
       expect(response).to.deep.eq(['foo', 'bar']);
       done();
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.false;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     s.write('foo');
     s.write('bar');
@@ -130,6 +120,7 @@ describe('streaming', () => {
     }
 
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.BIDI_STREAMING
     );
@@ -143,9 +134,7 @@ describe('streaming', () => {
       expect(callback.callCount).to.eq(2);
       done();
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     s.write(arg);
     s.write(arg);
@@ -172,6 +161,7 @@ describe('streaming', () => {
       return s;
     }
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.BIDI_STREAMING
     );
@@ -194,9 +184,7 @@ describe('streaming', () => {
       expect(receivedResponse).to.deep.eq(expectedResponse);
       done();
     });
-    // tslint:disable-next-line no-unused-expression
     expect(s.readable).to.be.true;
-    // tslint:disable-next-line no-unused-expression
     expect(s.writable).to.be.true;
     setTimeout(() => {
       s.end(s);
@@ -204,7 +192,8 @@ describe('streaming', () => {
   });
 
   it('cancels in the middle', done => {
-    function schedulePush(s, c) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function schedulePush(s: any, c: number) {
       const intervalId = setInterval(() => {
         s.push(c);
         c++;
@@ -217,7 +206,7 @@ describe('streaming', () => {
     function func() {
       const s = through2.obj();
       schedulePush(s, 0);
-      // tslint:disable-next-line no-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (s as any).cancel = () => {
         s.end();
         s.emit('error', cancelError);
@@ -228,6 +217,7 @@ describe('streaming', () => {
       return s;
     }
     const apiCall = createApiCallStreaming(
+      //@ts-ignore
       func,
       streaming.StreamType.SERVER_STREAMING
     );
