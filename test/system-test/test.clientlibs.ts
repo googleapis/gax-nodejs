@@ -84,6 +84,13 @@ async function runSystemTest(packageName: string): Promise<void> {
   });
 }
 
+async function runSamplesTest(packageName: string): Promise<void> {
+  await execa('npm', ['run', 'samples-test'], {
+    cwd: packageName,
+    stdio: 'inherit',
+  });
+}
+
 describe('Run system tests for some libraries', () => {
   before(async () => {
     console.log('Packing google-gax...');
@@ -114,6 +121,16 @@ describe('Run system tests for some libraries', () => {
     });
     it('should pass system tests', async () => {
       await runSystemTest('nodejs-speech');
+    });
+  });
+
+  // KMS api has IAM service injected from gax. All its IAM related test are in samples-test.
+  describe('kms', () => {
+    before(async () => {
+      await preparePackage('nodejs-kms');
+    });
+    it('should pass samples tests', async () => {
+      await runSamplesTest('nodejs-kms');
     });
   });
 });
