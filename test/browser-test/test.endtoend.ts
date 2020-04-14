@@ -45,7 +45,7 @@ describe('Run tests against gRPC server', () => {
   global.isBrowser = true;
   const client = new EchoClient(opts);
 
-  before(async function() {
+  before(async function () {
     this.timeout(40000);
 
     const request = {
@@ -113,7 +113,7 @@ describe('Run tests against gRPC server', () => {
     }).to.throw();
   });
 
-  it('should be able to call long-running calls', async function() {
+  it('should be able to call long-running calls', async function () {
     // LRO is being tested here, which takes at least 5000ms to finish running
     this.timeout(60000);
     const request = {

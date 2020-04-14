@@ -160,9 +160,9 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    const AbortController = function() {
+    const AbortController = function () {
       // @ts-ignore
-      this.abort = function() {
+      this.abort = function () {
         // @ts-ignore
         this.abortCalled = true;
       };
