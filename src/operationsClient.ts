@@ -28,7 +28,7 @@ import {GrpcClient as FallbackGrpcClient} from './fallback';
 import * as protos from '../protos/operations';
 import configData = require('./operations_client_config.json');
 import {Transform} from 'stream';
-import { CancellablePromise } from './call';
+import {CancellablePromise} from './call';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;

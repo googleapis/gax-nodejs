@@ -17,7 +17,7 @@
 import {EventEmitter} from 'events';
 import {Status} from '../status';
 
-import {GaxCallPromise, ResultTuple} from '../apitypes';
+import {ResultTuple} from '../apitypes';
 import {CancellablePromise} from '../call';
 import {BackoffSettings, CallOptions} from '../gax';
 import {GoogleError} from '../googleError';
