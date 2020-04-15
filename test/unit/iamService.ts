@@ -22,7 +22,7 @@ import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {IamClient} from '../../src/iamService';
 import * as protobuf from 'protobufjs';
-import {GrpcClient} from '../../src';
+import {GrpcClient} from '../../src/grpc';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
