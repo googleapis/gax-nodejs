@@ -133,9 +133,9 @@ export class Operation extends EventEmitter {
       this.currentCallPromise_.cancel();
     }
     const operationsClient = this.longrunningDescriptor.operationsClient;
-    return operationsClient.cancelOperation({
-      name: this.latestResponse.name,
-    }) as CancellablePromise<ResultTuple>;
+    const cancelRequest = new operationProtos.google.longrunning.CancelOperationRequest();
+    cancelRequest.name = this.latestResponse.name;
+    return operationsClient.cancelOperation(cancelRequest);
   }
 
   /**
@@ -180,9 +180,10 @@ export class Operation extends EventEmitter {
       this._unpackResponse(this.latestResponse, callback);
       return promisifyResponse() as Promise<{}>;
     }
-
-    this.currentCallPromise_ = (operationsClient.getOperation as GaxCallPromise)(
-      {name: this.latestResponse.name},
+    const request = new operationProtos.google.longrunning.GetOperationRequest();
+    request.name = this.latestResponse.name;
+    this.currentCallPromise_ = operationsClient.getOperation(
+      request,
       this._callOptions!
     );
 
