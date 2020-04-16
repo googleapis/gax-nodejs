@@ -19,7 +19,7 @@ import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as path from 'path';
 import {ClientOptions, Callback} from './clientInterface';
 
-import {GaxCall, ResultTuple} from './apitypes';
+import {GaxCall, ResultTuple, RequestType} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
@@ -388,6 +388,39 @@ export class OperationsClient {
       request,
       callSettings
     );
+  }
+  /**
+   * Equivalent to {@link listOperations}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation collection.
+   * @param {string} request.filter - The standard list filter.
+   * @param {number=} request.pageSize -
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object=} options
+   *   Optional parameters. You can override the default settings for this call,
+   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listOperationsAsync(
+    request: protos.google.longrunning.ListOperationsResponse,
+    options: gax.CallOptions
+  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+    const callSettings = new gax.CallSettings(options);
+    return PAGE_DESCRIPTORS.listOperations.asyncIterate(
+      this._innerApiCalls.listOperations as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.longrunning.ListOperationsResponse>;
   }
 
   /**
