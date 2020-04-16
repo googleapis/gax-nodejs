@@ -35,13 +35,6 @@ const version = require('../../package.json').version;
 
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
-const PAGE_DESCRIPTORS: {[method: string]: PageDescriptor} = {
-  listOperations: new PageDescriptor(
-    'pageToken',
-    'nextPageToken',
-    'operations'
-  ),
-};
 
 /**
  * The scopes needed to make gRPC calls to all of the methods defined in
@@ -69,8 +62,8 @@ export const ALL_SCOPES: string[] = [];
  */
 export class OperationsClient {
   auth?: GoogleAuth | OAuth2Client;
-  private _innerApiCalls: {[name: string]: Function};
-
+  innerApiCalls: {[name: string]: Function};
+  descriptor: {[method: string]: PageDescriptor};
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -109,8 +102,14 @@ export class OperationsClient {
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
-    this._innerApiCalls = {};
-
+    this.innerApiCalls = {};
+    this.descriptor = {
+      listOperations: new PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'operations'
+      ),
+    };
     // Put together the "service stub" for
     // google.longrunning.Operations.
     const operationsStub = gaxGrpc.createStub(
@@ -136,10 +135,10 @@ export class OperationsClient {
           throw err;
         }
       );
-      this._innerApiCalls[methodName] = createApiCall(
+      this.innerApiCalls[methodName] = createApiCall(
         innerCallPromise,
         defaults[methodName],
-        PAGE_DESCRIPTORS[methodName]
+        this.descriptor[methodName]
       );
     }
   }
@@ -197,7 +196,7 @@ export class OperationsClient {
    */
   getOperation(
     request: protos.google.longrunning.GetOperationRequest,
-    optionsOrCallback:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.longrunning.Operation,
@@ -223,7 +222,7 @@ export class OperationsClient {
     }
     request = request || {};
     options = options || {};
-    return this._innerApiCalls.getOperation(request, options, callback);
+    return this.innerApiCalls.getOperation(request, options, callback);
   }
 
   /**
@@ -305,14 +304,14 @@ export class OperationsClient {
    */
   listOperations(
     request: protos.google.longrunning.ListOperationsRequest,
-    optionsOrCallback:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.longrunning.ListOperationsResponse,
           protos.google.longrunning.ListOperationsRequest,
           {} | null | undefined
         >,
-    callback: Callback<
+    callback?: Callback<
       protos.google.longrunning.ListOperationsResponse,
       protos.google.longrunning.ListOperationsRequest,
       {} | null | undefined
@@ -331,7 +330,7 @@ export class OperationsClient {
     }
     request = request || {};
     options = options || {};
-    return this._innerApiCalls.listOperations(request, options, callback);
+    return this.innerApiCalls.listOperations(request, options, callback);
   }
 
   /**
@@ -379,12 +378,12 @@ export class OperationsClient {
    *   });
    */
   listOperationsStream(
-    request: protos.google.longrunning.ListOperationsResponse,
-    options: gax.CallOptions
+    request: protos.google.longrunning.ListOperationsRequest,
+    options?: gax.CallOptions
   ): Transform {
     const callSettings = new gax.CallSettings(options);
-    return PAGE_DESCRIPTORS.listOperations.createStream(
-      this._innerApiCalls.listOperations as GaxCall,
+    return this.descriptor.listOperations.createStream(
+      this.innerApiCalls.listOperations as GaxCall,
       request,
       callSettings
     );
@@ -412,12 +411,14 @@ export class OperationsClient {
    *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
    */
   listOperationsAsync(
-    request: protos.google.longrunning.ListOperationsResponse,
-    options: gax.CallOptions
+    request: protos.google.longrunning.ListOperationsRequest,
+    options?: gax.CallOptions
   ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+    request = request || {};
+    options = options || {};
     const callSettings = new gax.CallSettings(options);
-    return PAGE_DESCRIPTORS.listOperations.asyncIterate(
-      this._innerApiCalls.listOperations as GaxCall,
+    return this.descriptor.listOperations.asyncIterate(
+      this.innerApiCalls.listOperations as GaxCall,
       (request as unknown) as RequestType,
       callSettings
     ) as AsyncIterable<protos.google.longrunning.ListOperationsResponse>;
@@ -481,7 +482,7 @@ export class OperationsClient {
     }
     request = request || {};
     options = options || {};
-    return this._innerApiCalls.cancelOperation(request, options, callback);
+    return this.innerApiCalls.cancelOperation(request, options, callback);
   }
 
   /**
@@ -510,14 +511,14 @@ export class OperationsClient {
    */
   deleteOperation(
     request: protos.google.longrunning.DeleteOperationRequest,
-    optionsOrCallback:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.protobuf.Empty,
           protos.google.longrunning.DeleteOperationRequest,
           {} | null | undefined
         >,
-    callback: Callback<
+    callback?: Callback<
       protos.google.protobuf.Empty,
       protos.google.longrunning.DeleteOperationRequest,
       {} | null | undefined
@@ -536,7 +537,7 @@ export class OperationsClient {
     }
     request = request || {};
     options = options || {};
-    return this._innerApiCalls.deleteOperation(request, options, callback);
+    return this.innerApiCalls.deleteOperation(request, options, callback);
   }
 }
 
