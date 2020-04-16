@@ -443,7 +443,6 @@ describe('operation client', () => {
       const request = generateSampleMessage(
         new protos.google.longrunning.ListOperationsRequest()
       );
-      console.warn('request: ', request);
       const expectedError = new Error('expected');
       client.descriptor.listOperations.asyncIterate = stubAsyncIterationCall(
         undefined,
