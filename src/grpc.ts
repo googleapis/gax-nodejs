@@ -268,11 +268,11 @@ export class GrpcClient {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
     const grpcOptions: ClientOptions = {};
+    // @grpc/grpc-js limits max receive message length starting from v0.8.0
+    grpcOptions['grpc.max_receive_message_length'] = -1;
     Object.keys(options).forEach(key => {
       if (key.startsWith('grpc.')) {
-        grpcOptions[key.replace(/^grpc\./, '')] = options[key] as
-          | string
-          | number;
+        grpcOptions[key] = options[key] as string | number;
       }
     });
     const stub = new CreateStub(
