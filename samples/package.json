@@ -11,7 +11,7 @@
     "test": "c8 mocha system-test"
   },
   "dependencies": {
-    "google-gax": "2.2.1-pre"
+    "google-gax": "2.2.1-pre.3"
   },
   "devDependencies": {
     "c8": "^7.0.0",
