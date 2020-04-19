@@ -19,8 +19,8 @@
 import {expect} from 'chai';
 import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
+import {PassThrough} from 'stream';
 import * as streamEvents from 'stream-events';
-import * as through2 from 'through2';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
 import {APICallback, GaxCall} from '../../src/apitypes';
 import {describe, it, beforeEach} from 'mocha';
@@ -356,7 +356,7 @@ describe('paged iteration', () => {
       output.once('reading', () => {
         // @ts-ignore incomplete options
         stream = descriptor.createStream(apiCall, {}, null);
-        output.setPipeline(stream, through2.obj());
+        output.setPipeline(stream, new PassThrough({objectMode: true}));
       });
       let count = 0;
       output
