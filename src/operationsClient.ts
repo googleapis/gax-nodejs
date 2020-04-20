@@ -17,42 +17,30 @@
 import {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as path from 'path';
+import {ClientOptions, Callback} from './clientInterface';
 
-import {GaxCall} from './apitypes';
+import {GaxCall, ResultTuple, RequestType} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
 import {ClientStubOptions, GrpcClient} from './grpc';
 import {GrpcClient as FallbackGrpcClient} from './fallback';
-import {APICallback} from './apitypes';
-
+import * as protos from '../protos/operations';
 import configData = require('./operations_client_config.json');
+import {Transform} from 'stream';
+import {CancellablePromise} from './call';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
 
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';
-const PAGE_DESCRIPTORS: {[method: string]: PageDescriptor} = {
-  listOperations: new PageDescriptor(
-    'pageToken',
-    'nextPageToken',
-    'operations'
-  ),
-};
 
 /**
  * The scopes needed to make gRPC calls to all of the methods defined in
  * this service.
  */
 export const ALL_SCOPES: string[] = [];
-
-export interface OperationsClientOptions {
-  libName?: string;
-  libVersion?: string;
-  clientConfig?: gax.ClientConfig;
-  fallback?: boolean;
-}
 
 /**
  * Manages long-running operations with an API service.
@@ -74,13 +62,13 @@ export interface OperationsClientOptions {
  */
 export class OperationsClient {
   auth?: GoogleAuth | OAuth2Client;
-  private _innerApiCalls: {[name: string]: GaxCall};
-
+  innerApiCalls: {[name: string]: Function};
+  descriptor: {[method: string]: PageDescriptor};
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     operationsProtos: any,
-    options: OperationsClientOptions
+    options: ClientOptions
   ) {
     const opts = Object.assign(
       {
@@ -89,7 +77,7 @@ export class OperationsClient {
         clientConfig: {},
       },
       options
-    ) as OperationsClientOptions & ClientStubOptions;
+    ) as ClientOptions & ClientStubOptions;
 
     const googleApiClient = ['gl-node/' + process.versions.node];
     if (opts.libName && opts.libVersion) {
@@ -114,8 +102,14 @@ export class OperationsClient {
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
-    this._innerApiCalls = {};
-
+    this.innerApiCalls = {};
+    this.descriptor = {
+      listOperations: new PageDescriptor(
+        'pageToken',
+        'nextPageToken',
+        'operations'
+      ),
+    };
     // Put together the "service stub" for
     // google.longrunning.Operations.
     const operationsStub = gaxGrpc.createStub(
@@ -141,10 +135,10 @@ export class OperationsClient {
           throw err;
         }
       );
-      this._innerApiCalls[methodName] = createApiCall(
+      this.innerApiCalls[methodName] = createApiCall(
         innerCallPromise,
         defaults[methodName],
-        PAGE_DESCRIPTORS[methodName]
+        this.descriptor[methodName]
       );
     }
   }
@@ -200,16 +194,35 @@ export class OperationsClient {
    * const [response] = await client.getOperation({name});
    * // doThingsWith(response)
    */
-  getOperation(request: {}, options: {}, callback?: APICallback) {
-    if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.getOperation(
-        request,
-        {},
-        options as APICallback
-      );
+  getOperation(
+    request: protos.google.longrunning.GetOperationRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.longrunning.Operation,
+          protos.google.longrunning.GetOperationRequest,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.longrunning.Operation,
+      protos.google.longrunning.GetOperationRequest,
+      {} | null | undefined
+    >
+  ): CancellablePromise<ResultTuple> {
+    let options: gax.CallOptions;
+    if (optionsOrCallback instanceof Function && callback === undefined) {
+      callback = (optionsOrCallback as unknown) as Callback<
+        protos.google.longrunning.Operation,
+        protos.google.longrunning.GetOperationRequest,
+        {} | null | undefined
+      >;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
     }
+    request = request || {};
     options = options || {};
-    return this._innerApiCalls.getOperation(request, options, callback);
+    return this.innerApiCalls.getOperation(request, options, callback);
   }
 
   /**
@@ -289,16 +302,35 @@ export class OperationsClient {
    *   }
    * };
    */
-  listOperations(request: {}, options: {}, callback: APICallback) {
-    if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.listOperations(
-        request,
-        {},
-        options as APICallback
-      );
+  listOperations(
+    request: protos.google.longrunning.ListOperationsRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.longrunning.ListOperationsResponse,
+          protos.google.longrunning.ListOperationsRequest,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.longrunning.ListOperationsResponse,
+      protos.google.longrunning.ListOperationsRequest,
+      {} | null | undefined
+    >
+  ): Promise<protos.google.longrunning.ListOperationsResponse> {
+    let options: gax.CallOptions;
+    if (optionsOrCallback instanceof Function && callback === undefined) {
+      callback = (optionsOrCallback as unknown) as Callback<
+        protos.google.longrunning.ListOperationsResponse,
+        protos.google.longrunning.ListOperationsRequest,
+        {} | null | undefined
+      >;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
     }
+    request = request || {};
     options = options || {};
-    return this._innerApiCalls.listOperations(request, options, callback);
+    return this.innerApiCalls.listOperations(request, options, callback);
   }
 
   /**
@@ -345,12 +377,51 @@ export class OperationsClient {
    *     console.error(err);
    *   });
    */
-  listOperationsStream(request: {}, options: gax.CallSettings) {
-    return PAGE_DESCRIPTORS.listOperations.createStream(
-      this._innerApiCalls.listOperations,
+  listOperationsStream(
+    request: protos.google.longrunning.ListOperationsRequest,
+    options?: gax.CallOptions
+  ): Transform {
+    const callSettings = new gax.CallSettings(options);
+    return this.descriptor.listOperations.createStream(
+      this.innerApiCalls.listOperations as GaxCall,
       request,
-      options
+      callSettings
     );
+  }
+  /**
+   * Equivalent to {@link listOperations}, but returns an iterable object.
+   *
+   * for-await-of syntax is used with the iterable to recursively get response element on-demand.
+   *
+   * @param {Object} request - The request object that will be sent.
+   * @param {string} request.name - The name of the operation collection.
+   * @param {string} request.filter - The standard list filter.
+   * @param {number=} request.pageSize -
+   *   The maximum number of resources contained in the underlying API
+   *   response. If page streaming is performed per-resource, this
+   *   parameter does not affect the return value. If page streaming is
+   *   performed per-page, this determines the maximum number of
+   *   resources in a page.
+   * @param {Object=} options
+   *   Optional parameters. You can override the default settings for this call,
+   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   details.
+   * @returns {Object}
+   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   */
+  listOperationsAsync(
+    request: protos.google.longrunning.ListOperationsRequest,
+    options?: gax.CallOptions
+  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+    request = request || {};
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    return this.descriptor.listOperations.asyncIterate(
+      this.innerApiCalls.listOperations as GaxCall,
+      (request as unknown) as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.google.longrunning.ListOperationsResponse>;
   }
 
   /**
@@ -383,16 +454,35 @@ export class OperationsClient {
    * const client = longrunning.operationsClient();
    * await client.cancelOperation({name: ''});
    */
-  cancelOperation(request: {}, options?: {}, callback?: APICallback) {
-    if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.cancelOperation(
-        request,
-        {},
-        options as APICallback
-      );
+  cancelOperation(
+    request: protos.google.longrunning.CancelOperationRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.protobuf.Empty,
+          protos.google.longrunning.CancelOperationRequest,
+          {} | undefined | null
+        >,
+    callback?: Callback<
+      protos.google.longrunning.CancelOperationRequest,
+      protos.google.protobuf.Empty,
+      {} | undefined | null
+    >
+  ): Promise<protos.google.protobuf.Empty> {
+    let options: gax.CallOptions;
+    if (optionsOrCallback instanceof Function && callback === undefined) {
+      callback = (optionsOrCallback as unknown) as Callback<
+        protos.google.longrunning.CancelOperationRequest,
+        protos.google.protobuf.Empty,
+        {} | null | undefined
+      >;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
     }
+    request = request || {};
     options = options || {};
-    return this._innerApiCalls.cancelOperation(request, options, callback);
+    return this.innerApiCalls.cancelOperation(request, options, callback);
   }
 
   /**
@@ -419,21 +509,40 @@ export class OperationsClient {
    * const client = longrunning.operationsClient();
    * await client.deleteOperation({name: ''});
    */
-  deleteOperation(request: {}, options: {}, callback: APICallback) {
-    if (options instanceof Function && callback === undefined) {
-      return this._innerApiCalls.deleteOperation(
-        request,
-        {},
-        options as APICallback
-      );
+  deleteOperation(
+    request: protos.google.longrunning.DeleteOperationRequest,
+    optionsOrCallback?:
+      | gax.CallOptions
+      | Callback<
+          protos.google.protobuf.Empty,
+          protos.google.longrunning.DeleteOperationRequest,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.protobuf.Empty,
+      protos.google.longrunning.DeleteOperationRequest,
+      {} | null | undefined
+    >
+  ): Promise<protos.google.protobuf.Empty> {
+    let options: gax.CallOptions;
+    if (optionsOrCallback instanceof Function && callback === undefined) {
+      callback = (optionsOrCallback as unknown) as Callback<
+        protos.google.protobuf.Empty,
+        protos.google.longrunning.DeleteOperationRequest,
+        {} | null | undefined
+      >;
+      options = {};
+    } else {
+      options = optionsOrCallback as gax.CallOptions;
     }
+    request = request || {};
     options = options || {};
-    return this._innerApiCalls.deleteOperation(request, options, callback);
+    return this.innerApiCalls.deleteOperation(request, options, callback);
   }
 }
 
 export class OperationsClientBuilder {
-  operationsClient: (opts: OperationsClientOptions) => OperationsClient;
+  operationsClient: (opts: ClientOptions) => OperationsClient;
 
   /**
    * Builds a new Operations Client
