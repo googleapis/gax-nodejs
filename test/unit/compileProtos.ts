@@ -50,7 +50,8 @@ describe('compileProtos tool', () => {
     process.chdir(cwd);
   });
 
-  it('compiles protos to JSON, JS, TS', async () => {
+  it('compiles protos to JSON, JS, TS', async function () {
+    this.timeout(20000);
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);

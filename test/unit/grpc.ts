@@ -159,7 +159,9 @@ describe('grpc', () => {
         expect(stub).to.be.an.instanceOf(DummyStub);
         expect(stub.address).to.eq('foo.example.com:443');
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        expect(stub.options).to.deep.eq({});
+        expect(stub.options).to.deep.eq({
+          'grpc.max_receive_message_length': -1,
+        });
       });
     });
 
@@ -178,8 +180,9 @@ describe('grpc', () => {
         expect(stub.creds).to.deep.eq(dummyChannelCreds);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).has as any).key([
-          'max_send_message_length',
-          'initial_reconnect_backoff_ms',
+          'grpc.max_send_message_length',
+          'grpc.initial_reconnect_backoff_ms',
+          'grpc.max_receive_message_length', // added by createStub
         ]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).to.not.have as any).key([
@@ -190,7 +193,47 @@ describe('grpc', () => {
       });
     });
 
-    it('uses the passed grpc channel', () => {
+    it('supports the older grpc options logic for compatibility', () => {
+      const opts = {
+        servicePath: 'foo.example.com',
+        port: 443,
+        'grpc.grpc.max_send_message_length': 10 * 1024 * 1024,
+      };
+      // @ts-ignore
+      return grpcClient.createStub(DummyStub, opts).then(stub => {
+        expect(stub).to.be.an.instanceOf(DummyStub);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (expect(stub.options).has as any).key([
+          'grpc.max_send_message_length',
+          'grpc.max_receive_message_length', // added by createStub
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (expect(stub.options).to.not.have as any).key(['servicePath', 'port']);
+      });
+    });
+
+    it('makes it possible to override grpc.max_receive_message_length', () => {
+      const opts = {
+        servicePath: 'foo.example.com',
+        port: 443,
+        'grpc.max_receive_message_length': 10 * 1024 * 1024,
+      };
+      // @ts-ignore
+      return grpcClient.createStub(DummyStub, opts).then(stub => {
+        expect(stub).to.be.an.instanceOf(DummyStub);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (expect(stub.options).has as any).key([
+          'grpc.max_receive_message_length',
+        ]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (expect(stub.options).to.not.have as any).key(['servicePath', 'port']);
+        expect(stub.options['grpc.max_receive_message_length']).to.equal(
+          10 * 1024 * 1024
+        );
+      });
+    });
+
+    it('uses the passed grpc channel credentials', () => {
       const customCreds = {channelCreds: 'custom'};
       const opts = {
         servicePath: 'foo.example.com',
