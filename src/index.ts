@@ -17,6 +17,7 @@
 import * as grpc from '@grpc/grpc-js';
 import {GrpcClient, GrpcClientOptions} from './grpc';
 import * as IamProtos from '../protos/iam_service';
+import * as operationsProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
 
@@ -69,7 +70,7 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro, IamProtos};
+export {lro, operationsProtos, IamProtos};
 export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;

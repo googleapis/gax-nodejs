@@ -268,11 +268,19 @@ export class GrpcClient {
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
     const grpcOptions: ClientOptions = {};
+    // @grpc/grpc-js limits max receive message length starting from v0.8.0
+    // https://github.com/grpc/grpc-node/releases/tag/%40grpc%2Fgrpc-js%400.8.0
+    // To keep the existing behavior and avoid libraries breakage, we pass -1 there as suggested.
+    grpcOptions['grpc.max_receive_message_length'] = -1;
     Object.keys(options).forEach(key => {
+      // the older versions had a bug which required users to call an option
+      // grpc.grpc.* to make it actually pass to gRPC as grpc.*, let's handle
+      // this here until the next major release
+      if (key.startsWith('grpc.grpc.')) {
+        key = key.replace(/^grpc\./, '');
+      }
       if (key.startsWith('grpc.')) {
-        grpcOptions[key.replace(/^grpc\./, '')] = options[key] as
-          | string
-          | number;
+        grpcOptions[key] = options[key] as string | number;
       }
     });
     const stub = new CreateStub(

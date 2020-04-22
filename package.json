@@ -14,7 +14,7 @@
     "compileProtos": "./build/tools/compileProtos.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^0.7.2",
+    "@grpc/grpc-js": "~1.0.0",
     "@grpc/proto-loader": "^0.5.1",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
@@ -24,7 +24,7 @@
     "lodash.at": "^4.6.0",
     "lodash.has": "^4.5.2",
     "node-fetch": "^2.6.0",
-    "protobufjs": "^6.8.9",
+    "protobufjs": "^6.9.0",
     "retry-request": "^4.0.0",
     "semver": "^6.0.0",
     "walkdir": "^0.4.0"
