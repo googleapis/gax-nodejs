@@ -182,7 +182,7 @@ export class Operation extends EventEmitter {
     }
     const request = new operationProtos.google.longrunning.GetOperationRequest();
     request.name = this.latestResponse.name;
-    this.currentCallPromise_ = operationsClient.getOperation(
+    this.currentCallPromise_ = operationsClient.getOperationInternal(
       request,
       this._callOptions!
     );

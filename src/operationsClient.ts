@@ -162,7 +162,19 @@ export class OperationsClient {
   }
 
   // Service calls
-
+  getOperationInternal(
+    request: protos.google.longrunning.GetOperationRequest,
+    options?: gax.CallOptions,
+    callback?: Callback<
+      protos.google.longrunning.Operation,
+      protos.google.longrunning.GetOperationRequest,
+      {} | null | undefined
+    >
+  ): CancellablePromise<ResultTuple> {
+    request = request || {};
+    options = options || {};
+    return this.innerApiCalls.getOperation(request, options, callback);
+  }
   /**
    * Gets the latest state of a long-running operation.  Clients can use this
    * method to poll the operation result at intervals as recommended by the API
@@ -208,7 +220,7 @@ export class OperationsClient {
       protos.google.longrunning.GetOperationRequest,
       {} | null | undefined
     >
-  ): CancellablePromise<ResultTuple> {
+  ): Promise<protos.google.longrunning.Operation> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
       callback = (optionsOrCallback as unknown) as Callback<
