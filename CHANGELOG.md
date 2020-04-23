@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.3.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.0-beta.0...v2.3.0) (2020-04-23)
+
+
+### Features
+
+* export fallback from fallback (circular) ([#803](https://www.github.com/googleapis/gax-nodejs/issues/803)) ([caefab0](https://www.github.com/googleapis/gax-nodejs/commit/caefab0a03ce4e000e55df0cc9495df92632085c))
+
+
+### Bug Fixes
+
+* add an internal getOperation method in operation client ([#812](https://www.github.com/googleapis/gax-nodejs/issues/812)) ([cc99de0](https://www.github.com/googleapis/gax-nodejs/commit/cc99de0e9d9b29ad622432470d2d293e446ff07b))
+
 ## [2.2.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.1.0...v2.2.0) (2020-04-13)
 
 
