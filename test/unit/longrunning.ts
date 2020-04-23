@@ -121,6 +121,7 @@ describe('longrunning', () => {
       return Promise.resolve();
     });
     return {
+      getOperationInternal: getOperationSpy,
       getOperation: getOperationSpy,
       cancelOperation: cancelOperationSpy,
       cancelGetOperationSpy,

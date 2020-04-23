@@ -24,6 +24,7 @@ import {OperationsClientBuilder} from '../../src/operationsClient';
 import * as protobuf from 'protobufjs';
 import {GrpcClient} from '../../src/grpc';
 import {PassThrough} from 'stream';
+import {ResultTuple} from '../../src/apitypes';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
@@ -201,6 +202,108 @@ describe('operation client', () => {
       );
       await assert.rejects(async () => {
         await client.getOperation(request);
+      }, expectedError);
+      assert(
+        (client.innerApiCalls.getOperation as SinonStub)
+          .getCall(0)
+          .calledWith(request)
+      );
+    });
+  });
+  describe('getOperationInternal ', () => {
+    it('invokes getOperationInternal without error', async () => {
+      const grpcClient = new GrpcClient();
+      const clientOptions = {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      };
+      const client = new OperationsClientBuilder(grpcClient).operationsClient(
+        clientOptions
+      );
+
+      const request = generateSampleMessage(
+        new protos.google.longrunning.GetOperationRequest()
+      );
+      const expectedResponse: ResultTuple = [
+        new protos.google.longrunning.Operation(),
+        null,
+        new protos.google.longrunning.Operation(),
+      ];
+      client.innerApiCalls.getOperation = stubSimpleCall(expectedResponse);
+      const response = await client.getOperationInternal(request);
+      assert.deepStrictEqual(response, [expectedResponse]);
+      assert(
+        (client.innerApiCalls.getOperation as SinonStub)
+          .getCall(0)
+          .calledWith(request)
+      );
+    });
+
+    it('invokes getOperation without error using callback', async () => {
+      const grpcClient = new GrpcClient();
+      const clientOptions = {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      };
+      const client = new OperationsClientBuilder(grpcClient).operationsClient(
+        clientOptions
+      );
+
+      const request = generateSampleMessage(
+        new protos.google.longrunning.GetOperationRequest()
+      );
+      const expectedResponse: ResultTuple = [
+        new protos.google.longrunning.Operation(),
+        null,
+        new protos.google.longrunning.Operation(),
+      ];
+      client.innerApiCalls.getOperation = stubSimpleCallWithCallback(
+        expectedResponse
+      );
+      const promise = new Promise((resolve, reject) => {
+        client.getOperationInternal(
+          request,
+          undefined,
+          (
+            err?: Error | null,
+            result?: protos.google.longrunning.Operation | null
+          ) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+      });
+      const response = await promise;
+      assert.deepStrictEqual(response, expectedResponse);
+      assert(
+        (client.innerApiCalls.getOperation as SinonStub)
+          .getCall(0)
+          .calledWith(request /* callback function above */)
+      );
+    });
+
+    it('invokes getOperationInternal with error', async () => {
+      const grpcClient = new GrpcClient();
+      const clientOptions = {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      };
+      const client = new OperationsClientBuilder(grpcClient).operationsClient(
+        clientOptions
+      );
+      const request = generateSampleMessage(
+        new protos.google.longrunning.GetOperationRequest()
+      );
+      const expectedError = new Error('expected');
+      client.innerApiCalls.getOperation = stubSimpleCall(
+        undefined,
+        expectedError
+      );
+      await assert.rejects(async () => {
+        await client.getOperationInternal(request);
       }, expectedError);
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
