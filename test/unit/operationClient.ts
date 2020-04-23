@@ -230,7 +230,7 @@ describe('operation client', () => {
         new protos.google.longrunning.Operation(),
       ];
       client.innerApiCalls.getOperation = stubSimpleCall(expectedResponse);
-      const response = client.getOperationInternal(request);
+      const response = await client.getOperationInternal(request);
       assert.deepStrictEqual(response, [expectedResponse]);
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
