@@ -413,3 +413,13 @@ export function createApiCall(
 }
 
 export {protobuf};
+
+// Different environments or bundlers may or may not respect "browser" field
+// in package.json (e.g. Electron does not respect it, but if you run the code
+// through webpack first, it will follow the "browser" field).
+// To make it safer and more compatible, let's make sure that if you do
+// const gax = require("google-gax");
+// you can always ask for gax.fallback, regardless of "browser" field being
+// understood or not.
+const fallback = module.exports;
+export {fallback};
