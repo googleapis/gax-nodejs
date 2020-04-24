@@ -265,6 +265,13 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
+    // The following options are understood by grpc-gcp and need a special treatment
+    // (should be passed without a `grpc.` prefix)
+    const grpcGcpOptions = [
+      'grpc.callInvocationTransformer',
+      'grpc.channelFactoryOverride',
+      'grpc.gcpApiConfig',
+    ];
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
     const grpcOptions: ClientOptions = {};
@@ -280,6 +287,9 @@ export class GrpcClient {
         key = key.replace(/^grpc\./, '');
       }
       if (key.startsWith('grpc.')) {
+        if (grpcGcpOptions.includes(key)) {
+          key = key.replace(/^grpc\./, '');
+        }
         grpcOptions[key] = options[key] as string | number;
       }
     });

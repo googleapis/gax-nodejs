@@ -172,6 +172,9 @@ describe('grpc', () => {
         'grpc.max_send_message_length': 10 * 1024 * 1024,
         'grpc.initial_reconnect_backoff_ms': 10000,
         other_dummy_options: 'test',
+        'grpc.callInvocationTransformer': () => {},
+        'grpc.channelFactoryOverride': () => {},
+        'grpc.gcpApiConfig': {},
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -183,6 +186,9 @@ describe('grpc', () => {
           'grpc.max_send_message_length',
           'grpc.initial_reconnect_backoff_ms',
           'grpc.max_receive_message_length', // added by createStub
+          'callInvocationTransformer', // note: no grpc. prefix for grpc-gcp options
+          'channelFactoryOverride',
+          'gcpApiConfig',
         ]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (expect(stub.options).to.not.have as any).key([
