@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.3.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.1-beta.0...v2.3.1) (2020-04-24)
+
+
+### Bug Fixes
+
+* do not pass undefined as option values ([#817](https://www.github.com/googleapis/gax-nodejs/issues/817)) ([dc1cda5](https://www.github.com/googleapis/gax-nodejs/commit/dc1cda560af1debe110203cb88dcccd57e296338))
+* return operation array from getOperation method ([#816](https://www.github.com/googleapis/gax-nodejs/issues/816)) ([483ae8c](https://www.github.com/googleapis/gax-nodejs/commit/483ae8c24d4739dce1a18c6202a87653772e6aa1))
+
 ## [2.3.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.0-beta.0...v2.3.0) (2020-04-23)
 
 
