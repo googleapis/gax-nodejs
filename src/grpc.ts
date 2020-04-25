@@ -265,6 +265,13 @@ export class GrpcClient {
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
   async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
+    // The following options are understood by grpc-gcp and need a special treatment
+    // (should be passed without a `grpc.` prefix)
+    const grpcGcpOptions = [
+      'grpc.callInvocationTransformer',
+      'grpc.channelFactoryOverride',
+      'grpc.gcpApiConfig',
+    ];
     const serviceAddress = options.servicePath + ':' + options.port;
     const creds = await this._getCredentials(options);
     const grpcOptions: ClientOptions = {};
@@ -273,6 +280,7 @@ export class GrpcClient {
     // To keep the existing behavior and avoid libraries breakage, we pass -1 there as suggested.
     grpcOptions['grpc.max_receive_message_length'] = -1;
     Object.keys(options).forEach(key => {
+      const value = options[key];
       // the older versions had a bug which required users to call an option
       // grpc.grpc.* to make it actually pass to gRPC as grpc.*, let's handle
       // this here until the next major release
@@ -280,7 +288,10 @@ export class GrpcClient {
         key = key.replace(/^grpc\./, '');
       }
       if (key.startsWith('grpc.')) {
-        grpcOptions[key] = options[key] as string | number;
+        if (grpcGcpOptions.includes(key)) {
+          key = key.replace(/^grpc\./, '');
+        }
+        grpcOptions[key] = value as string | number;
       }
     });
     const stub = new CreateStub(

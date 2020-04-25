@@ -220,7 +220,7 @@ export class OperationsClient {
       protos.google.longrunning.GetOperationRequest,
       {} | null | undefined
     >
-  ): Promise<protos.google.longrunning.Operation> {
+  ): Promise<[protos.google.longrunning.Operation]> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
       callback = (optionsOrCallback as unknown) as Callback<

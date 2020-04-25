@@ -239,7 +239,7 @@ describe('operation client', () => {
       );
     });
 
-    it('invokes getOperation without error using callback', async () => {
+    it('invokes getOperationInternal without error using callback', async () => {
       const grpcClient = new GrpcClient();
       const clientOptions = {
         credentials: {client_email: 'bogus', private_key: 'bogus'},

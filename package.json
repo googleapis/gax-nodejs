@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -98,7 +98,8 @@
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
     "browser-test": "karma start",
-    "prelint": "cd samples; npm link ../; npm i"
+    "prelint": "cd samples; npm link ../; npm install",
+    "precompile": "gts clean"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
