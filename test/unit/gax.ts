@@ -22,7 +22,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as gax from '../../src/gax';
 
@@ -72,24 +72,30 @@ const RETRY_DICT = {
   code_c: 3,
 };
 
-function expectRetryOptions(obj: {[name: string]: {}}) {
-  expect(obj).to.be.an.instanceOf(Object);
-  expect(obj).to.have.all.keys('retryCodes', 'backoffSettings');
-  expect(obj.retryCodes).to.be.an.instanceOf(Array);
+function expectRetryOptions(obj: gax.RetryOptions) {
+  assert.ok(obj instanceof Object);
+  ['retryCodes', 'backoffSettings'].forEach(k =>
+    // eslint-disable-next-line no-prototype-builtins
+    assert.ok(obj.hasOwnProperty(k))
+  );
+  assert.ok(obj.retryCodes instanceof Array);
   expectBackoffSettings(obj.backoffSettings);
 }
 
-function expectBackoffSettings(obj: {[name: string]: {}}) {
-  expect(obj).to.be.an.instanceOf(Object);
-  expect(obj).to.have.all.keys(
+function expectBackoffSettings(obj: gax.BackoffSettings) {
+  assert.ok(obj instanceof Object);
+  [
     'initialRetryDelayMillis',
     'retryDelayMultiplier',
     'maxRetryDelayMillis',
     'initialRpcTimeoutMillis',
     'rpcTimeoutMultiplier',
     'maxRpcTimeoutMillis',
-    'totalTimeoutMillis'
-  );
+    'totalTimeoutMillis',
+  ].forEach(k => {
+    // eslint-disable-next-line no-prototype-builtins
+    assert.ok(obj.hasOwnProperty(k));
+  });
 }
 
 describe('gax construct settings', () => {
@@ -103,16 +109,16 @@ describe('gax construct settings', () => {
       otherArgs
     );
     let settings = defaults.bundlingMethod;
-    expect(settings.timeout).to.eq(40000);
+    assert.strictEqual(settings.timeout, 40000);
     expectRetryOptions(settings.retry);
-    expect(settings.retry.retryCodes).eql([1, 2]);
-    expect(settings.otherArgs).eql(otherArgs);
+    assert.deepStrictEqual(settings.retry.retryCodes, [1, 2]);
+    assert.strictEqual(settings.otherArgs, otherArgs);
 
     settings = defaults.pageStreamingMethod;
-    expect(settings.timeout).to.eq(30000);
+    assert.strictEqual(settings.timeout, 30000);
     expectRetryOptions(settings.retry);
-    expect(settings.retry.retryCodes).eql([3]);
-    expect(settings.otherArgs).eql(otherArgs);
+    assert.deepStrictEqual(settings.retry.retryCodes, [3]);
+    assert.strictEqual(settings.otherArgs, otherArgs);
   });
 
   it('overrides settings', () => {
@@ -133,11 +139,11 @@ describe('gax construct settings', () => {
       RETRY_DICT
     );
     let settings = defaults.bundlingMethod;
-    expect(settings.timeout).to.eq(40000);
+    assert.strictEqual(settings.timeout, 40000);
 
     settings = defaults.pageStreamingMethod;
-    expect(settings.timeout).to.eq(30000);
-    expect(settings.retry).to.eq(null);
+    assert.strictEqual(settings.timeout, 30000);
+    assert.strictEqual(settings.retry, null);
   });
 
   it('overrides settings more precisely', () => {
@@ -177,18 +183,18 @@ describe('gax construct settings', () => {
 
     let settings = defaults.bundlingMethod;
     let backoff = settings.retry.backoffSettings;
-    expect(backoff.initialRetryDelayMillis).to.eq(1000);
-    expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_a]);
-    expect(settings.timeout).to.eq(50000);
+    assert.strictEqual(backoff.initialRetryDelayMillis, 1000);
+    assert.deepStrictEqual(settings.retry.retryCodes, [RETRY_DICT.code_a]);
+    assert.strictEqual(settings.timeout, 50000);
 
     /* page_streaming_method is unaffected because it's not specified in
      * overrides. 'bar_retry' or 'default' definitions in overrides should
      * not affect the methods which are not in the overrides. */
     settings = defaults.pageStreamingMethod;
     backoff = settings.retry.backoffSettings;
-    expect(backoff.initialRetryDelayMillis).to.eq(100);
-    expect(backoff.retryDelayMultiplier).to.eq(1.2);
-    expect(backoff.maxRetryDelayMillis).to.eq(1000);
-    expect(settings.retry.retryCodes).to.eql([RETRY_DICT.code_c]);
+    assert.strictEqual(backoff.initialRetryDelayMillis, 100);
+    assert.strictEqual(backoff.retryDelayMultiplier, 1.2);
+    assert.strictEqual(backoff.maxRetryDelayMillis, 1000);
+    assert.deepStrictEqual(settings.retry.retryCodes, [RETRY_DICT.code_c]);
   });
 });

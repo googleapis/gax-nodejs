@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import {expect} from 'chai';
+/* eslint-disable no-prototype-builtins */
+
+import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
@@ -148,27 +150,31 @@ describe('longrunning', () => {
         .then(responses => {
           const operation = responses[0] as longrunning.Operation;
           const rawResponse = responses[1];
-          expect(operation).to.be.an('object');
-          expect(operation).to.have.property('backoffSettings');
-          expect(operation.backoffSettings.initialRetryDelayMillis).to.eq(
+          assert(operation instanceof Object);
+          assert(operation.hasOwnProperty('backoffSettings'));
+          assert.strictEqual(
+            operation.backoffSettings.initialRetryDelayMillis,
             defaultInitialRetryDelayMillis
           );
-          expect(operation.backoffSettings.retryDelayMultiplier).to.eq(
+          assert.strictEqual(
+            operation.backoffSettings.retryDelayMultiplier,
             defaultRetryDelayMultiplier
           );
-          expect(operation.backoffSettings.maxRetryDelayMillis).to.eq(
+          assert.strictEqual(
+            operation.backoffSettings.maxRetryDelayMillis,
             defaultMaxRetryDelayMillis
           );
-          expect(operation.backoffSettings.totalTimeoutMillis).to.eq(
+          assert.strictEqual(
+            operation.backoffSettings.totalTimeoutMillis,
             defaultTotalTimeoutMillis
           );
-          expect(operation).to.have.property('longrunningDescriptor');
-          expect(operation.name).to.deep.eq(OPERATION_NAME);
-          expect(operation.done).to.be.false;
-          expect(operation.latestResponse).to.deep.eq(PENDING_OP);
-          expect(operation.result).to.be.null;
-          expect(operation.metadata).to.deep.eq(METADATA_VAL);
-          expect(rawResponse).to.deep.eq(PENDING_OP);
+          assert(operation.hasOwnProperty('longrunningDescriptor'));
+          assert.strictEqual(operation.name, OPERATION_NAME);
+          assert.strictEqual(operation.done, false);
+          assert.deepStrictEqual(operation.latestResponse, PENDING_OP);
+          assert.strictEqual(operation.result, null);
+          assert.strictEqual(operation.metadata, METADATA_VAL);
+          assert.deepStrictEqual(rawResponse, PENDING_OP);
           done();
         })
         .catch(done);
@@ -202,27 +208,31 @@ describe('longrunning', () => {
         desc,
         backoff
       );
-      expect(operation).to.be.an('object');
-      expect(operation).to.have.property('backoffSettings');
-      expect(operation.backoffSettings.initialRetryDelayMillis).to.eq(
+      assert(operation instanceof Object);
+      assert(operation.hasOwnProperty('backoffSettings'));
+      assert.strictEqual(
+        operation.backoffSettings.initialRetryDelayMillis,
         initialRetryDelayMillis
       );
-      expect(operation.backoffSettings.retryDelayMultiplier).to.eq(
+      assert.strictEqual(
+        operation.backoffSettings.retryDelayMultiplier,
         retryDelayMultiplier
       );
-      expect(operation.backoffSettings.maxRetryDelayMillis).to.eq(
+      assert.strictEqual(
+        operation.backoffSettings.maxRetryDelayMillis,
         maxRetryDelayMillis
       );
-      expect(operation.backoffSettings.totalTimeoutMillis).to.eq(
+      assert.strictEqual(
+        operation.backoffSettings.totalTimeoutMillis,
         totalTimeoutMillis
       );
-      expect(operation).to.have.property('longrunningDescriptor');
-      expect(operation.name).to.deep.eq(OPERATION_NAME);
-      expect(operation.done).to.be.true;
-      expect(operation.response).to.deep.eq(RESPONSE);
-      expect(operation.result).to.deep.eq(RESPONSE_VAL);
-      expect(operation.metadata).to.deep.eq(METADATA_VAL);
-      expect(operation.latestResponse).to.deep.eq(SUCCESSFUL_OP);
+      assert(operation.hasOwnProperty('longrunningDescriptor'));
+      assert.strictEqual(operation.name, OPERATION_NAME);
+      assert.strictEqual(operation.done, true);
+      assert.deepStrictEqual(operation.response, RESPONSE);
+      assert.strictEqual(operation.result, RESPONSE_VAL);
+      assert.strictEqual(operation.metadata, METADATA_VAL);
+      assert.deepStrictEqual(operation.latestResponse, SUCCESSFUL_OP);
       done();
     });
   });
@@ -247,10 +257,10 @@ describe('longrunning', () => {
               if (err) {
                 done(err);
               }
-              expect(result).to.deep.eq(RESPONSE_VAL);
-              expect(metadata).to.deep.eq(METADATA_VAL);
-              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect(client.getOperation.callCount).to.eq(0);
+              assert.strictEqual(result, RESPONSE_VAL);
+              assert.strictEqual(metadata, METADATA_VAL);
+              assert.deepStrictEqual(rawResponse, SUCCESSFUL_OP);
+              assert.strictEqual(client.getOperation.callCount, 0);
               done();
             });
           })
@@ -275,10 +285,10 @@ describe('longrunning', () => {
               if (err) {
                 done(err);
               }
-              expect(result).to.deep.eq(RESPONSE_VAL);
-              expect(metadata).to.deep.eq(METADATA_VAL);
-              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect(client.getOperation.callCount).to.eq(1);
+              assert.strictEqual(result, RESPONSE_VAL);
+              assert.strictEqual(metadata, METADATA_VAL);
+              assert.deepStrictEqual(rawResponse, SUCCESSFUL_OP);
+              assert.strictEqual(client.getOperation.callCount, 1);
               done();
             });
           })
@@ -301,18 +311,19 @@ describe('longrunning', () => {
         apiCall({})
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
-            expect(
+            assert.strictEqual(
               operation.getOperation((err, result, metadata, rawResponse) => {
                 if (err) {
                   done(err);
                 }
-                expect(result).to.deep.eq(RESPONSE_VAL);
-                expect(metadata).to.deep.eq(METADATA_VAL);
-                expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-                expect(client.getOperation.callCount).to.eq(1);
+                assert.strictEqual(result, RESPONSE_VAL);
+                assert.strictEqual(metadata, METADATA_VAL);
+                assert.deepStrictEqual(rawResponse, SUCCESSFUL_OP);
+                assert.strictEqual(client.getOperation.callCount, 1);
                 done();
-              })
-            ).to.be.undefined;
+              }),
+              undefined
+            );
           })
           .catch(error => {
             done(error);
@@ -340,10 +351,10 @@ describe('longrunning', () => {
             const metadata = responses[1];
             const rawResponse = responses[2];
 
-            expect(result).to.deep.eq(RESPONSE_VAL);
-            expect(metadata).to.deep.eq(METADATA_VAL);
-            expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-            expect(client.getOperation.callCount).to.eq(1);
+            assert.strictEqual(result, RESPONSE_VAL);
+            assert.strictEqual(metadata, METADATA_VAL);
+            assert.deepStrictEqual(rawResponse, SUCCESSFUL_OP);
+            assert.strictEqual(client.getOperation.callCount, 1);
             done();
           })
           .catch(error => {
@@ -371,7 +382,7 @@ describe('longrunning', () => {
             done(new Error('Should not get here.'));
           })
           .catch(error => {
-            expect(error).to.be.an('error');
+            assert(error instanceof Error);
             done();
           });
       });
@@ -398,10 +409,10 @@ describe('longrunning', () => {
           })
           .then(responses => {
             const [result, metadata, rawResponse] = responses as Array<{}>;
-            expect(result).to.deep.eq(RESPONSE_VAL);
-            expect(metadata).to.deep.eq(METADATA_VAL);
-            expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-            expect(client.getOperation.callCount).to.eq(expectedCalls);
+            assert.strictEqual(result, RESPONSE_VAL);
+            assert.strictEqual(metadata, METADATA_VAL);
+            assert.deepStrictEqual(rawResponse, SUCCESSFUL_OP);
+            assert.strictEqual(client.getOperation.callCount, expectedCalls);
             done();
           })
           .catch(err => {
@@ -423,11 +434,11 @@ describe('longrunning', () => {
         const [operation] = ((await apiCall({})) as unknown) as [
           longrunning.Operation
         ];
-        expect(operation).to.be.not.null;
+        assert.notStrictEqual(operation, null);
         const [finalResult] = ((await operation!.promise()) as unknown) as [
           string
         ];
-        expect(finalResult).to.deep.eq(RESPONSE_VAL);
+        assert.strictEqual(finalResult, RESPONSE_VAL);
       });
 
       it('resolves error', done => {
@@ -455,9 +466,9 @@ describe('longrunning', () => {
             done(new Error('should not get here'));
           })
           .catch(err => {
-            expect(client.getOperation.callCount).to.eq(expectedCalls);
-            expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-            expect(err.message).to.deep.eq('operation error');
+            assert.strictEqual(client.getOperation.callCount, expectedCalls);
+            assert.strictEqual(err.code, FAKE_STATUS_CODE_1);
+            assert.strictEqual(err.message, 'operation error');
             done();
           });
       });
@@ -483,7 +494,7 @@ describe('longrunning', () => {
             done(new Error('Should not get here.'));
           })
           .catch(error => {
-            expect(error).to.be.an('error');
+            assert(error instanceof Error);
             done();
           });
       });
@@ -509,9 +520,8 @@ describe('longrunning', () => {
             const operation = responses[0] as longrunning.Operation;
             const p = operation.promise();
             operation.cancel().then(() => {
-              expect(client.cancelOperation.called).to.be.true;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              expect((client as any).cancelGetOperationSpy.called).to.be.true;
+              assert.strictEqual(client.cancelOperation.called, true);
+              assert.strictEqual(client.cancelGetOperationSpy.called, true);
               done();
             });
             return p;
@@ -544,10 +554,10 @@ describe('longrunning', () => {
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
             operation.on('complete', (result, metadata, rawResponse) => {
-              expect(result).to.deep.eq(RESPONSE_VAL);
-              expect(metadata).to.deep.eq(METADATA_VAL);
-              expect(rawResponse).to.deep.eq(SUCCESSFUL_OP);
-              expect(client.getOperation.callCount).to.eq(expectedCalls);
+              assert.strictEqual(result, RESPONSE_VAL);
+              assert.strictEqual(metadata, METADATA_VAL);
+              assert.deepStrictEqual(rawResponse, SUCCESSFUL_OP);
+              assert.strictEqual(client.getOperation.callCount, expectedCalls);
               done();
             });
             operation.on('error', () => {
@@ -581,9 +591,9 @@ describe('longrunning', () => {
               done(new Error('Should not get here.'));
             });
             operation.on('error', err => {
-              expect(client.getOperation.callCount).to.eq(expectedCalls);
-              expect(err.code).to.eq(FAKE_STATUS_CODE_1);
-              expect(err.message).to.deep.eq('operation error');
+              assert.strictEqual(client.getOperation.callCount, expectedCalls);
+              assert.strictEqual(err.code, FAKE_STATUS_CODE_1);
+              assert.strictEqual(err.message, 'operation error');
               done();
             });
           })
@@ -628,11 +638,11 @@ describe('longrunning', () => {
               done(new Error('Should not get here.'));
             });
             operation.on('progress', (metadata, rawResponse) => {
-              expect(client.getOperation.callCount).to.eq(expectedCalls);
-              expect(metadata).to.deep.eq(updatedMetadataVal);
-              expect(rawResponse).to.deep.eq(updatedOp);
-              expect(operation.metadata).to.deep.eq(metadata);
-              expect(operation.metadata).to.deep.eq(updatedMetadataVal);
+              assert.strictEqual(client.getOperation.callCount, expectedCalls);
+              assert.strictEqual(metadata, updatedMetadataVal);
+              assert.deepStrictEqual(rawResponse, updatedOp);
+              assert.deepStrictEqual(operation.metadata, metadata);
+              assert.strictEqual(operation.metadata, updatedMetadataVal);
               // Shows that progress only happens on updated operations since
               // this will produce a test error if done is called multiple
               // times, and the same pending operation was polled thrice.
@@ -672,9 +682,10 @@ describe('longrunning', () => {
               done(new Error('Should not get here.'));
             });
             operation.on('error', err => {
-              expect(err).to.be.instanceOf(GoogleError);
-              expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
-              expect(err!.message).to.deep.eq(
+              assert(err instanceof GoogleError);
+              assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+              assert.strictEqual(
+                err!.message,
                 'Total timeout exceeded before ' + 'any response was received'
               );
               done();

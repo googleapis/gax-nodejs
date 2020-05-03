@@ -20,7 +20,7 @@ import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
 import {Descriptor} from '../../src/descriptor';
 
-const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
+export const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
 export function fail(
   argument: {},

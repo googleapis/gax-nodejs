@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import {describe, it} from 'mocha';
 
 describe('The PathTemplate parser', () => {
   it('should load the pegjs generated module ok', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const parser = require('../../src/pathTemplateParser');
-    expect(parser).to.not.eql(null);
+    assert.notStrictEqual(parser, null);
   });
 
   describe('function `parse`', () => {
@@ -32,28 +32,28 @@ describe('The PathTemplate parser', () => {
       const shouldPass = () => {
         parser.parse('a/b/**/*/{a=hello/world}');
       };
-      expect(shouldPass).to.not.throw();
+      assert.doesNotThrow(shouldPass);
     });
 
     it('should fail on invalid tokens', () => {
       const shouldFail = () => {
         parser.parse('hello/wor* ld}');
       };
-      expect(shouldFail).to.throw();
+      assert.throws(shouldFail);
     });
 
     it('should fail on unexpected eof', () => {
       const shouldFail = () => {
         parser.parse('a/{hello=world');
       };
-      expect(shouldFail).to.throw();
+      assert.throws(shouldFail);
     });
 
     it('should fail on inner binding', () => {
       const shouldFail = () => {
         parser.parse('buckets/{hello={world}}');
       };
-      expect(shouldFail).to.throw();
+      assert.throws(shouldFail);
     });
   });
 });
