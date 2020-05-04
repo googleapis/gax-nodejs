@@ -16,20 +16,15 @@
 
 'use strict';
 
-/* eslint-disable node/no-unpublished-require */
-
-const path = require('path');
-const {assert} = require('chai');
+const assert = require('assert');
 const {describe, it} = require('mocha');
 const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
-const cwd = path.join(__dirname, '..');
-
 describe('Pagination', () => {
   it('should run pagination sample', async () => {
-    const stdout = execSync('node pagination.js', {cwd});
-    assert.match(stdout, new RegExp("'cat', 'dog', 'snake', 'turtle', 'wolf'"));
+    const stdout = execSync('node pagination.js');
+    assert(new RegExp("'cat', 'dog', 'snake', 'turtle', 'wolf'").test(stdout));
   });
 });

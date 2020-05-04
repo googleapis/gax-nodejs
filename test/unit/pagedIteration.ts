@@ -15,8 +15,9 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable no-prototype-builtins */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
 import * as streamEvents from 'stream-events';
@@ -65,8 +66,8 @@ describe('paged iteration', () => {
     }
     apiCall({}, undefined)
       .then(results => {
-        expect(results).to.be.an('array');
-        expect(results[0]).to.deep.equal(expected);
+        assert.ok(Array.isArray(results));
+        assert.deepStrictEqual(results[0], expected);
         done();
       })
       .catch(done);
@@ -79,8 +80,8 @@ describe('paged iteration', () => {
       expected.push(i);
     }
     apiCall({}, undefined, (err, results) => {
-      expect(err).to.be.null;
-      expect(results).to.deep.equal(expected);
+      assert.strictEqual(err, null);
+      assert.deepStrictEqual(results, expected);
       done();
     });
   });
@@ -91,28 +92,28 @@ describe('paged iteration', () => {
     const req = {};
     apiCall(req, {autoPaginate: false})
       .then(response => {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.be.an('array');
+        assert.ok(Array.isArray(response));
+        assert(Array.isArray(response[0]));
         // @ts-ignore response type
-        expect(response[0].length).to.eq(pageSize);
+        assert.strictEqual(response[0].length, pageSize);
         for (let i = 0; i < pageSize; ++i) {
           // @ts-ignore response type
-          expect(response[0][i]).to.eq(expected);
+          assert.strictEqual(response[0][i], expected);
           expected++;
         }
-        expect(response[1]).to.be.an('object');
-        expect(response[1]).to.have.property('pageToken');
-        expect(response[2]).to.be.an('object');
-        expect(response[2]).to.have.property('nums');
+        assert(response[1] instanceof Object);
+        assert(response[1]!.hasOwnProperty('pageToken'));
+        assert(response[2] instanceof Object);
+        assert(response[2]!.hasOwnProperty('nums'));
         // @ts-ignore response type
         return apiCall(response[1], {autoPaginate: false});
       })
       .then(response => {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.be.an('array');
-        expect(response[0].length).to.eq(pageSize);
+        assert.ok(Array.isArray(response));
+        assert(Array.isArray(response[0]));
+        assert.strictEqual(response[0].length, pageSize);
         for (let i = 0; i < pageSize; ++i) {
-          expect(response[0][i]).to.eq(expected);
+          assert.strictEqual(response[0][i], expected);
           expected++;
         }
         done();
@@ -134,10 +135,11 @@ describe('paged iteration', () => {
         return;
       }
       counter++;
-      expect(resources).to.be.an('array');
-      expect(rawResponse).to.be.an('object');
-      expect(rawResponse).to.have.property('nums');
-      expect(rawResponse.nums).to.eq(resources);
+      assert(Array.isArray(resources));
+      assert(rawResponse instanceof Object);
+      // eslint-disable-next-line no-prototype-builtins
+      assert(rawResponse.hasOwnProperty('nums'));
+      assert.strictEqual(rawResponse.nums, resources);
       if (next) {
         apiCall(
           next,
@@ -145,7 +147,7 @@ describe('paged iteration', () => {
           (callback as unknown) as APICallback
         );
       } else {
-        expect(counter).to.eq(pagesToStream + 1);
+        assert.strictEqual(counter, pagesToStream + 1);
         done();
       }
     }
@@ -170,9 +172,9 @@ describe('paged iteration', () => {
     const apiCall = util.createApiCall(failingFunc, createOptions);
     apiCall({}, undefined)
       .then(resources => {
-        expect(resources).to.be.an('array');
+        assert(Array.isArray(resources));
         // @ts-ignore response type
-        expect(resources[0].length).to.eq(pageSize * pagesToStream);
+        assert.strictEqual(resources[0].length, pageSize * pagesToStream);
         done();
       })
       .catch(done);
@@ -182,18 +184,18 @@ describe('paged iteration', () => {
     const spy = sinon.spy(func);
     const apiCall = util.createApiCall(spy, createOptions);
     return apiCall({}, {maxResults: pageSize * 2 + 2}).then(response => {
-      expect(response).to.be.an('array');
-      expect(response[0]).to.be.an('array');
+      assert.ok(Array.isArray(response));
+      assert(Array.isArray(response[0]));
       // @ts-ignore response type
-      expect(response[0].length).to.eq(pageSize * 2 + 2);
+      assert.strictEqual(response[0].length, pageSize * 2 + 2);
       let expected = 0;
       // @ts-ignore response type
       for (let i = 0; i < response[0].length; ++i) {
         // @ts-ignore response type
-        expect(response[0][i]).to.eq(expected);
+        assert.strictEqual(response[0][i], expected);
         expected++;
       }
-      expect(spy.callCount).to.eq(3);
+      assert.strictEqual(spy.callCount, 3);
     });
   });
 
@@ -224,7 +226,7 @@ describe('paged iteration', () => {
       const resources = await iterableChecker(
         descriptor.asyncIterate(apiCall, {}, settings)
       );
-      expect(resources.length).to.equal(10);
+      assert.strictEqual(resources.length, 10);
     });
   });
 
@@ -246,7 +248,7 @@ describe('paged iteration', () => {
       let counter = start;
       stream
         .on('data', data => {
-          expect(data).to.eq(counter);
+          assert.strictEqual(data, counter);
           counter++;
         })
         .on('end', () => {
@@ -261,7 +263,7 @@ describe('paged iteration', () => {
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, {}),
         () => {
-          expect(spy.callCount).to.eq(pagesToStream + 1);
+          assert.strictEqual(spy.callCount, pagesToStream + 1);
         },
         done,
         0
@@ -279,7 +281,7 @@ describe('paged iteration', () => {
       streamChecker(
         stream,
         () => {
-          expect(spy.callCount).to.eq(2);
+          assert.strictEqual(spy.callCount, 2);
         },
         done,
         0
@@ -295,7 +297,7 @@ describe('paged iteration', () => {
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, options),
         () => {
-          expect(spy.callCount).to.eq(pagesToStream);
+          assert.strictEqual(spy.callCount, pagesToStream);
         },
         done,
         pageSize
@@ -311,8 +313,8 @@ describe('paged iteration', () => {
       streamChecker(
         stream,
         () => {
-          expect(spy.callCount).to.eq(3);
-          expect(onData.callCount).to.eq(pageSize * 2 + 2);
+          assert.strictEqual(spy.callCount, 3);
+          assert.strictEqual(onData.callCount, pageSize * 2 + 2);
         },
         done,
         0
@@ -323,11 +325,11 @@ describe('paged iteration', () => {
       // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       setTimeout(() => {
-        expect(spy.callCount).to.eq(0);
+        assert.strictEqual(spy.callCount, 0);
         streamChecker(
           stream,
           () => {
-            expect(spy.callCount).to.eq(pagesToStream + 1);
+            assert.strictEqual(spy.callCount, pagesToStream + 1);
           },
           done,
           0
@@ -339,7 +341,7 @@ describe('paged iteration', () => {
       // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
       stream.on('end', () => {
-        expect(spy.callCount).to.eq(pagesToStream + 1);
+        assert.strictEqual(spy.callCount, pagesToStream + 1);
         done();
       });
       stream.resume();
@@ -367,8 +369,8 @@ describe('paged iteration', () => {
           }
         })
         .on('end', () => {
-          expect(count).to.eq(pageSize + 1);
-          expect(spy.callCount).to.eq(2);
+          assert.strictEqual(count, pageSize + 1);
+          assert.strictEqual(spy.callCount, 2);
           done();
         })
         .on('error', done);

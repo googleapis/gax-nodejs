@@ -15,8 +15,9 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable no-prototype-builtins */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
@@ -39,12 +40,12 @@ describe('grpc', () => {
     it('holds the proper grpc version', () => {
       const grpcModule = '@grpc/grpc-js';
       const grpcVersion = require(`${grpcModule}/package.json`).version;
-      expect(gaxGrpc().grpcVersion).to.eq(grpcVersion);
+      assert.strictEqual(gaxGrpc().grpcVersion, grpcVersion);
     });
 
     it('returns unknown when grpc module is mocked', () => {
       const mockGrpc = ({} as unknown) as GrpcModule;
-      expect(gaxGrpc({grpc: mockGrpc}).grpcVersion).to.eq('');
+      assert.strictEqual(gaxGrpc({grpc: mockGrpc}).grpcVersion, '');
     });
   });
 
@@ -60,7 +61,7 @@ describe('grpc', () => {
       const builder = grpcClient.metadataBuilder(headers);
       const metadata = builder();
       for (const key in headers) {
-        expect(metadata.get(key)).to.deep.eq([headers[key]]);
+        assert.deepStrictEqual(metadata.get(key), [headers[key]]);
       }
     });
 
@@ -74,7 +75,7 @@ describe('grpc', () => {
       const abTesting = null;
       const moreHeaders = {foo: 'bar'};
       const metadata = builder(abTesting!, moreHeaders);
-      expect(metadata.get('foo')).to.deep.eq(['bar']);
+      assert.deepStrictEqual(metadata.get('foo'), ['bar']);
     });
 
     it('does not override x-goog-api-client', () => {
@@ -87,7 +88,7 @@ describe('grpc', () => {
       const abTesting = null;
       const moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
       const metadata = builder(abTesting!, moreHeaders);
-      expect(metadata.get('x-goog-api-client')).to.deep.eq([
+      assert.deepStrictEqual(metadata.get('x-goog-api-client'), [
         'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       ]);
     });
@@ -98,17 +99,17 @@ describe('grpc', () => {
       };
       const builder = grpcClient.metadataBuilder(headers);
       let metadata = builder({retry: '1'});
-      expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
+      assert.deepStrictEqual(metadata.get('X-Goog-Api-Client'), [
         'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/1',
       ]);
 
       metadata = builder({retry: '2'});
-      expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
+      assert.deepStrictEqual(metadata.get('X-Goog-Api-Client'), [
         'gl-node/nodeVersion gax/gaxVersion gl-abkey1/retry gl-abval1/2',
       ]);
 
       metadata = builder();
-      expect(metadata.get('X-Goog-Api-Client')).to.deep.eq([
+      assert.deepStrictEqual(metadata.get('X-Goog-Api-Client'), [
         'gl-node/nodeVersion gax/gaxVersion',
       ]);
     });
@@ -156,10 +157,10 @@ describe('grpc', () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        expect(stub.address).to.eq('foo.example.com:443');
-        expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        expect(stub.options).to.deep.eq({
+        assert(stub instanceof DummyStub);
+        assert.strictEqual(stub.address, 'foo.example.com:443');
+        assert.deepStrictEqual(stub.creds, dummyChannelCreds);
+        assert.deepStrictEqual(stub.options, {
           'grpc.max_receive_message_length': -1,
         });
       });
@@ -180,29 +181,28 @@ describe('grpc', () => {
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        expect(stub.address).to.eq('foo.example.com:443');
-        expect(stub.creds).to.deep.eq(dummyChannelCreds);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (expect(stub.options).has as any).key([
+        assert(stub instanceof DummyStub);
+        assert.strictEqual(stub.address, 'foo.example.com:443');
+        assert.deepStrictEqual(stub.creds, dummyChannelCreds);
+        [
           'grpc.max_send_message_length',
           'grpc.initial_reconnect_backoff_ms',
           'grpc.max_receive_message_length', // added by createStub
           'callInvocationTransformer', // note: no grpc. prefix for grpc-gcp options
           'channelFactoryOverride',
           'gcpApiConfig',
-        ]);
+        ].forEach(k => {
+          assert(stub.options.hasOwnProperty(k));
+        });
         // check values
-        expect(stub.options['grpc.max_send_message_length']).to.eq(
+        assert.strictEqual(
+          stub.options['grpc.max_send_message_length'],
           10 * 1024 * 1024
         );
-        expect(stub.options['callInvocationTransformer']()).to.eq(42);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (expect(stub.options).to.not.have as any).key([
-          'servicePath',
-          'port',
-          'other_dummy_options',
-        ]);
+        assert.strictEqual(stub.options['callInvocationTransformer'](), 42);
+        ['servicePath', 'port', 'other_dummy_options'].forEach(k => {
+          assert.strictEqual(stub.options.hasOwnProperty(k), false);
+        });
       });
     });
 
@@ -214,14 +214,16 @@ describe('grpc', () => {
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (expect(stub.options).has as any).key([
+        assert(stub instanceof DummyStub);
+        [
           'grpc.max_send_message_length',
           'grpc.max_receive_message_length', // added by createStub
-        ]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (expect(stub.options).to.not.have as any).key(['servicePath', 'port']);
+        ].forEach(k => {
+          assert(stub.options.hasOwnProperty(k));
+        });
+        ['servicePath', 'port'].forEach(k => {
+          assert.strictEqual(stub.options.hasOwnProperty(k), false);
+        });
       });
     });
 
@@ -233,14 +235,14 @@ describe('grpc', () => {
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
-        expect(stub).to.be.an.instanceOf(DummyStub);
+        assert(stub instanceof DummyStub);
+        assert(stub.options.hasOwnProperty('grpc.max_receive_message_length'));
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (expect(stub.options).has as any).key([
-          'grpc.max_receive_message_length',
-        ]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (expect(stub.options).to.not.have as any).key(['servicePath', 'port']);
-        expect(stub.options['grpc.max_receive_message_length']).to.equal(
+        ['servicePath', 'port'].forEach(k => {
+          assert.strictEqual(stub.options.hasOwnProperty(k), false);
+        });
+        assert.strictEqual(
+          stub.options['grpc.max_receive_message_length'],
           10 * 1024 * 1024
         );
       });
@@ -255,14 +257,14 @@ describe('grpc', () => {
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
-        expect(stub).to.be.an.instanceOf(DummyStub);
-        expect(stub.address).to.eq('foo.example.com:443');
-        expect(stub.creds).to.deep.eq(customCreds);
-        expect(stubAuth.getClient.callCount).to.eq(0);
+        assert(stub instanceof DummyStub);
+        assert.strictEqual(stub.address, 'foo.example.com:443');
+        assert.deepStrictEqual(stub.creds, customCreds);
+        assert.strictEqual(stubAuth.getClient.callCount, 0);
         const credentials = stubGrpc.credentials;
-        expect(credentials.createSsl.callCount).to.eq(0);
-        expect(credentials.combineChannelCredentials.callCount).to.eq(0);
-        expect(credentials.createFromGoogleCredential.callCount).to.eq(0);
+        assert.strictEqual(credentials.createSsl.callCount, 0);
+        assert.strictEqual(credentials.combineChannelCredentials.callCount, 0);
+        assert.strictEqual(credentials.createFromGoogleCredential.callCount, 0);
       });
     });
   });
@@ -283,8 +285,9 @@ describe('grpc', () => {
       // test will fail anyway.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
-      expect(protos.google.example.library.v1.LibraryService).to.be.a(
-        'Function'
+      assert.strictEqual(
+        typeof protos.google.example.library.v1.LibraryService,
+        'function'
       );
     });
 
@@ -294,8 +297,9 @@ describe('grpc', () => {
       // test will fail anyway.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(fullPath) as any;
-      expect(protos.google.example.library.v1.LibraryService).to.be.a(
-        'Function'
+      assert.strictEqual(
+        typeof protos.google.example.library.v1.LibraryService,
+        'function'
       );
     });
 
@@ -306,12 +310,12 @@ describe('grpc', () => {
       // test will fail anyway.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(nonExistentDir, iamService) as any;
-      expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
+      assert.strictEqual(typeof protos.google.iam.v1.IAMPolicy, 'function');
     });
 
     it('should be able to load no files', () => {
       const protos = grpcClient.loadProto('.', []);
-      expect(protos).to.deep.equal({});
+      assert.deepStrictEqual(protos, {});
     });
 
     it('should load multiple files', () => {
@@ -323,18 +327,19 @@ describe('grpc', () => {
         iamService,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ]) as any;
-      expect(protos.google.example.library.v1.LibraryService).to.be.a(
-        'Function'
+      assert.strictEqual(
+        typeof protos.google.example.library.v1.LibraryService,
+        'function'
       );
-      expect(protos.google.iam.v1.IAMPolicy).to.be.a('Function');
+      assert.strictEqual(typeof protos.google.iam.v1.IAMPolicy, 'function');
     });
 
     it('should emit an error for not found proto', () => {
       const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       const nonExistentFile = 'nonexistent.proto';
-      expect(
+      assert.throws(
         grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile)
-      ).to.throw();
+      );
     });
   });
 
@@ -375,13 +380,12 @@ describe('grpc', () => {
         protobuf
           .load(TEST_FILE, new GoogleProtoFilesRoot())
           .then(root => {
-            expect(root).to.be.an.instanceOf(protobuf.Root);
-            expect(
-              root.lookup('google.example.library.v1.LibraryService')
-            ).to.be.an.instanceOf(protobuf.Service);
-            expect(root.lookup('test.TestMessage')).to.be.an.instanceOf(
-              protobuf.Type
+            assert(root instanceof protobuf.Root);
+            assert(
+              root.lookup('google.example.library.v1.LibraryService') instanceof
+                protobuf.Service
             );
+            assert(root.lookup('test.TestMessage') instanceof protobuf.Type);
             done();
           })
           .catch(done);
@@ -414,38 +418,37 @@ describe('grpc', () => {
       it('should not be able to load test file using protobufjs directly', () => {
         const root = protobuf.loadSync(TEST_FILE);
         // Common proto that should not have been loaded.
-        expect(root.lookup('google.api.Http')).to.eq(null);
+        assert.strictEqual(root.lookup('google.api.Http'), null);
       });
 
       it('should load a test file that relies on common protos', () => {
         const root = protobuf.loadSync(TEST_FILE, new GoogleProtoFilesRoot());
-        expect(root).to.be.an.instanceOf(protobuf.Root);
-        expect(
-          root.lookup('google.example.library.v1.LibraryService')
-        ).to.be.an.instanceOf(protobuf.Service);
-        expect(root.lookup('test.TestMessage')).to.be.an.instanceOf(
-          protobuf.Type
+        assert(root instanceof protobuf.Root);
+        assert(
+          root.lookup('google.example.library.v1.LibraryService') instanceof
+            protobuf.Service
         );
+        assert(root.lookup('test.TestMessage') instanceof protobuf.Type);
       });
 
       it('should fail trying to load a non existent file.', () => {
-        expect(
+        assert.throws(
           protobuf.loadSync.bind(
             null,
             NON_EXISTENT_FILE,
             new GoogleProtoFilesRoot()
           )
-        ).to.throw();
+        );
       });
 
       it('should fail loading a file with a missing include', () => {
-        expect(
+        assert.throws(
           protobuf.loadSync.bind(
             null,
             MISSING_INCLUDE_FILE,
             new GoogleProtoFilesRoot()
           )
-        ).to.throw();
+        );
       });
     });
 
@@ -461,8 +464,7 @@ describe('grpc', () => {
             },
           },
         }).GoogleProtoFilesRoot._findIncludePath;
-
-        expect(findIncludePath.bind(null, originPath, includePath)).to.throw();
+        assert.throws(findIncludePath.bind(null, originPath, includePath));
       });
 
       it('should return the correct resolved import path', () => {
@@ -474,7 +476,10 @@ describe('grpc', () => {
             },
           },
         }).GoogleProtoFilesRoot._findIncludePath;
-        expect(findIncludePath(originPath, includePath)).to.equal(correctPath);
+        assert.strictEqual(
+          findIncludePath(originPath, includePath),
+          correctPath
+        );
       });
     });
   });

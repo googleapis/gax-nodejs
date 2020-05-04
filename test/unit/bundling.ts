@@ -15,8 +15,9 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable no-prototype-builtins */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 import {describe, it, beforeEach} from 'mocha';
@@ -104,9 +105,10 @@ describe('computeBundleId', () => {
     ];
     testCases.forEach(t => {
       it(t.message, () => {
-        expect(
-          computeBundleId((t.object as unknown) as RequestType, t.fields)
-        ).to.equal(t.want);
+        assert.strictEqual(
+          computeBundleId((t.object as unknown) as RequestType, t.fields),
+          t.want
+        );
       });
     });
   });
@@ -131,7 +133,7 @@ describe('computeBundleId', () => {
     ];
     testCases.forEach(t => {
       it(t.message, () => {
-        expect(computeBundleId(t.object, t.fields)).to.be.undefined;
+        assert.strictEqual(computeBundleId(t.object, t.fields), undefined);
       });
     });
   });
@@ -141,9 +143,9 @@ describe('deepCopyForResponse', () => {
   it('copies deeply', () => {
     const input = {foo: {bar: [1, 2]}};
     const output = deepCopyForResponse(input, null);
-    expect(output).to.deep.equal(input);
-    expect(output.foo).to.not.equal(input.foo);
-    expect(output.foo.bar).to.not.equal(input.foo.bar);
+    assert.deepStrictEqual(output, input);
+    assert.notStrictEqual(output.foo, input.foo);
+    assert.notStrictEqual(output.foo.bar, input.foo.bar);
   });
 
   it('respects subresponseInfo', () => {
@@ -153,16 +155,16 @@ describe('deepCopyForResponse', () => {
       start: 0,
       end: 2,
     });
-    expect(output).to.deep.equal({foo: [1, 2], bar: {foo: [1, 2, 3, 4]}});
-    expect(output.bar).to.not.equal(input.bar);
+    assert.deepStrictEqual(output, {foo: [1, 2], bar: {foo: [1, 2, 3, 4]}});
+    assert.notStrictEqual(output.bar, input.bar);
 
     const output2 = deepCopyForResponse(input, {
       field: 'foo',
       start: 2,
       end: 4,
     });
-    expect(output2).to.deep.equal({foo: [3, 4], bar: {foo: [1, 2, 3, 4]}});
-    expect(output2.bar).to.not.equal(input.bar);
+    assert.deepStrictEqual(output2, {foo: [3, 4], bar: {foo: [1, 2, 3, 4]}});
+    assert.notStrictEqual(output2.bar, input.bar);
   });
 
   it('deep copies special values', () => {
@@ -184,10 +186,10 @@ describe('deepCopyForResponse', () => {
       },
     };
     const output = deepCopyForResponse(input, null);
-    expect(output).to.deep.equal(input);
-    expect(output.copyable).to.not.equal(input.copyable);
-    expect(output.arraybuffer).to.not.equal(input.arraybuffer);
-    expect(output.array).to.not.equal(input.array);
+    assert.deepStrictEqual(output, input);
+    assert.notStrictEqual(output.copyable, input.copyable);
+    assert.notStrictEqual(output.arraybuffer, input.arraybuffer);
+    assert.notStrictEqual(output.array, input.array);
   });
 
   it('ignores erroneous subresponseInfo', () => {
@@ -197,7 +199,7 @@ describe('deepCopyForResponse', () => {
       start: 0,
       end: 2,
     });
-    expect(output).to.deep.equal(input);
+    assert.deepStrictEqual(output, input);
   });
 });
 
@@ -251,7 +253,11 @@ describe('Task', () => {
           const task = testTask();
           const baseCount = task.getElementCount();
           extendElements(task, t.data);
-          expect(task.getElementCount()).to.eq(baseCount! + t.want, t.message);
+          assert.strictEqual(
+            task.getElementCount(),
+            baseCount! + t.want,
+            t.message
+          );
         });
       });
     });
@@ -263,7 +269,8 @@ describe('Task', () => {
           const task = testTask();
           const baseSize = task.getRequestByteSize();
           extendElements(task, t.data);
-          expect(task.getRequestByteSize()).to.eq(
+          assert.strictEqual(
+            task.getRequestByteSize(),
             baseSize! + t.want * sizePerData
           );
         });
@@ -300,7 +307,7 @@ describe('Task', () => {
     ];
     function createApiCall(expected: {}) {
       return function apiCall(req: {field1: {}}, callback: Function) {
-        expect(req.field1).to.deep.equal(expected);
+        assert.deepStrictEqual(req.field1, expected);
         return callback(null, req);
       };
     }
@@ -311,10 +318,10 @@ describe('Task', () => {
           const apiCall = sinon.spy(createApiCall(t.expected!));
           const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
           const callback = sinon.spy((err, data) => {
-            expect(err).to.be.null;
-            expect(data).to.be.an.instanceOf(Object);
+            assert.strictEqual(err, null);
+            assert(data instanceof Object);
             if (callback.callCount === t.data.length) {
-              expect(apiCall.callCount).to.eq(1);
+              assert.strictEqual(apiCall.callCount, 1);
               done();
             }
           });
@@ -324,8 +331,8 @@ describe('Task', () => {
           });
           task!.run();
           if (t.expected === null) {
-            expect(callback.callCount).to.eq(0);
-            expect(apiCall.callCount).to.eq(0);
+            assert.strictEqual(callback.callCount, 0);
+            assert.strictEqual(apiCall.callCount, 0);
             done();
           }
         });
@@ -343,19 +350,19 @@ describe('Task', () => {
           (t as any).data.forEach((d: string[]) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             extendElements(task!, d, (err: any, data: {field1: []}) => {
-              expect(err).to.be.null;
-              expect(data.field1.length).to.be.eq(d.length);
+              assert.strictEqual(err, null);
+              assert.strictEqual(data.field1.length, d.length);
               callbackCount++;
               if (callbackCount === t.data.length) {
-                expect(apiCall.callCount).to.eq(1);
+                assert.strictEqual(apiCall.callCount, 1);
                 done();
               }
             });
           });
           task!.run();
           if (t.expected === null) {
-            expect(callbackCount).to.eq(0);
-            expect(apiCall.callCount).to.eq(0);
+            assert.strictEqual(callbackCount, 0);
+            assert.strictEqual(apiCall.callCount, 0);
             done();
           }
         });
@@ -372,10 +379,10 @@ describe('Task', () => {
           const task = testTask((apiCall as unknown) as SimpleCallbackFunction);
           task!._subresponseField = 'field1';
           const callback = sinon.spy((e, data) => {
-            expect(e).to.equal(err);
-            expect(data).to.be.undefined;
+            assert.strictEqual(e, err);
+            assert.strictEqual(data, undefined);
             if (callback.callCount === t.data.length) {
-              expect(apiCall.callCount).to.eq(1);
+              assert.strictEqual(apiCall.callCount, 1);
               done();
             }
           });
@@ -401,19 +408,17 @@ describe('Task', () => {
       }
     });
     extendElements(task!, [1, 2, 3], (err: {}, resp: {field1: number[]}) => {
-      // @ts-ignore unknown field
-      expect(resp.field1).to.deep.equal([1, 2, 3]);
+      assert.deepStrictEqual(resp.field1, [1, 2, 3]);
       callback();
     });
     extendElements(task!, [4, 5, 6], (err: GoogleError) => {
-      expect(err).to.be.an.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.CANCELLED);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.CANCELLED);
     });
     const cancelId = task!._data[task!._data.length - 1].callback.id;
 
     extendElements(task!, [7, 8, 9], (err: {}, resp: {field1: number[]}) => {
-      // @ts-ignore unknown field
-      expect(resp.field1).to.deep.equal([7, 8, 9]);
+      assert.deepStrictEqual(resp.field1, [7, 8, 9]);
       callback();
     });
 
@@ -441,13 +446,13 @@ describe('Task', () => {
       }
     });
     extendElements(task, [1, 2, 3], (err: GoogleError) => {
-      expect(err).to.be.an.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.CANCELLED);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.CANCELLED);
       callback();
     });
     extendElements(task, [1, 2, 3], (err: GoogleError) => {
-      expect(err).to.be.an.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.CANCELLED);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.CANCELLED);
       callback();
     });
     task.run();
@@ -477,14 +482,13 @@ describe('Task', () => {
       }
     });
     extendElements(task, [1, 2, 3], (err: GoogleError) => {
-      expect(err).to.be.an.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.CANCELLED);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.CANCELLED);
       callback();
     });
     const cancelId = task._data[task._data.length - 1].callback.id;
     extendElements(task, [4, 5, 6], (err: {}, resp: {field1: number[]}) => {
-      // @ts-ignore unknown field
-      expect(resp.field1).to.deep.equal([4, 5, 6]);
+      assert.deepStrictEqual(resp.field1, [4, 5, 6]);
       callback();
     });
     task.run();
@@ -519,19 +523,19 @@ describe('Executor', () => {
     executor.schedule(apiCall, {field1: [4, 5], field2: 'id1'});
     executor.schedule(apiCall, {field1: [6], field2: 'id2'});
 
-    expect(executor._tasks).to.have.property('["id1"]');
-    expect(executor._tasks).to.have.property('["id2"]');
-    expect(Object.keys(executor._tasks).length).to.eq(2);
+    assert(executor._tasks.hasOwnProperty('["id1"]'));
+    assert(executor._tasks.hasOwnProperty('["id2"]'));
+    assert.strictEqual(Object.keys(executor._tasks).length, 2);
 
     let task = executor._tasks['["id1"]'];
-    expect(task._data.length).to.eq(2);
-    expect(task._data[0].elements).to.eql([1, 2]);
-    expect(task._data[1].elements).to.eql([4, 5]);
+    assert.strictEqual(task._data.length, 2);
+    assert.deepStrictEqual(task._data[0].elements, [1, 2]);
+    assert.deepStrictEqual(task._data[1].elements, [4, 5]);
 
     task = executor._tasks['["id2"]'];
-    expect(task._data.length).to.eq(2);
-    expect(task._data[0].elements).to.eql([3]);
-    expect(task._data[1].elements).to.eql([6]);
+    assert.strictEqual(task._data.length, 2);
+    assert.deepStrictEqual(task._data[0].elements, [3]);
+    assert.deepStrictEqual(task._data[1].elements, [6]);
 
     for (const bundleId in executor._timers) {
       clearTimeout(executor._timers[bundleId]);
@@ -541,7 +545,7 @@ describe('Executor', () => {
   it('emits errors when the api call fails', done => {
     const executor = newExecutor({delayThreshold: 10});
     const callback = sinon.spy(err => {
-      expect(err).to.be.an.instanceOf(Error);
+      assert(err instanceof Error);
       if (callback.callCount === 2) {
         done();
       }
@@ -556,13 +560,13 @@ describe('Executor', () => {
     let counter = 0;
     let unbundledCallCounter = 0;
     function onEnd() {
-      expect(spy.callCount).to.eq(3);
+      assert.strictEqual(spy.callCount, 3);
       done();
     }
     executor.schedule(spy, {field1: [1, 2], field2: 'id1'}, (err, resp) => {
       // @ts-ignore unknown field
-      expect(resp.field1).to.deep.eq([1, 2]);
-      expect(unbundledCallCounter).to.eq(2);
+      assert.deepStrictEqual(resp.field1, [1, 2]);
+      assert.strictEqual(unbundledCallCounter, 2);
       counter++;
       if (counter === 4) {
         onEnd();
@@ -570,14 +574,14 @@ describe('Executor', () => {
     });
     executor.schedule(spy, {field1: [3]}, (err, resp) => {
       // @ts-ignore unknown field
-      expect(resp.field1).to.deep.eq([3]);
+      assert.deepStrictEqual(resp.field1, [3]);
       unbundledCallCounter++;
       counter++;
     });
     executor.schedule(spy, {field1: [4], field2: 'id1'}, (err, resp) => {
       // @ts-ignore unknown field
-      expect(resp.field1).to.deep.eq([4]);
-      expect(unbundledCallCounter).to.eq(2);
+      assert.deepStrictEqual(resp.field1, [4]);
+      assert.strictEqual(unbundledCallCounter, 2);
       counter++;
       if (counter === 4) {
         onEnd();
@@ -585,7 +589,7 @@ describe('Executor', () => {
     });
     executor.schedule(spy, {field1: [5, 6]}, (err, resp) => {
       // @ts-ignore unknown field
-      expect(resp.field1).to.deep.eq([5, 6]);
+      assert.deepStrictEqual(resp.field1, [5, 6]);
       unbundledCallCounter++;
       counter++;
     });
@@ -620,23 +624,23 @@ describe('Executor', () => {
         spyApi,
         {field1: [1, 2], field2: 'id'},
         err => {
-          expect(err).to.be.an.instanceOf(GoogleError);
-          expect(err!.code).to.equal(status.CANCELLED);
-          expect(spyApi.callCount).to.eq(0);
+          assert(err instanceof GoogleError);
+          assert.strictEqual(err!.code, status.CANCELLED);
+          assert.strictEqual(spyApi.callCount, 0);
 
           executor.schedule(
             spyApi,
             {field1: [3, 4], field2: 'id'},
             (err, resp) => {
               // @ts-ignore unknown field
-              expect(resp.field1).to.deep.equal([3, 4]);
-              expect(spyApi.callCount).to.eq(1);
+              assert.deepStrictEqual(resp.field1, [3, 4]);
+              assert.strictEqual(spyApi.callCount, 1);
               done();
             }
           );
         }
       );
-      expect(spyApi.callCount).to.eq(0);
+      assert.strictEqual(spyApi.callCount, 0);
       canceller.cancel();
     });
 
@@ -644,11 +648,11 @@ describe('Executor', () => {
       let counter = 0;
       // @ts-ignore cancellation logic is broken here
       executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
-        expect(err).to.be.null;
+        assert.strictEqual(err, null);
         counter++;
         // counter should be 2 because event2 callback should be called
         // earlier (it should be called immediately on cancel).
-        expect(counter).to.eq(2);
+        assert.strictEqual(counter, 2);
         done();
       });
       executor._runNow('id');
@@ -656,8 +660,8 @@ describe('Executor', () => {
       const canceller =
         // @ts-ignore cancellation logic is broken here
         executor.schedule(timedAPI, {field1: [1, 2], field2: 'id'}, err => {
-          expect(err).to.be.an.instanceOf(GoogleError);
-          expect(err!.code).to.equal(status.CANCELLED);
+          assert(err instanceof GoogleError);
+          assert.strictEqual(err!.code, status.CANCELLED);
           counter++;
         });
       canceller.cancel();
@@ -668,7 +672,7 @@ describe('Executor', () => {
     const threshold = 5;
     const executor = newExecutor({elementCountThreshold: threshold});
     const spy = sinon.spy((request, callback) => {
-      expect(request.field1.length).to.eq(threshold);
+      assert.strictEqual(request.field1.length, threshold);
       callback(null, request);
       return {cancel: () => {}};
     });
@@ -676,15 +680,15 @@ describe('Executor', () => {
       executor.schedule(spy, {field1: [1], field2: 'id1'});
       executor.schedule(spy, {field1: [2], field2: 'id2'});
     }
-    expect(spy.callCount).to.eq(0);
+    assert.strictEqual(spy.callCount, 0);
 
     executor.schedule(spy, {field1: [1], field2: 'id1'});
-    expect(spy.callCount).to.eq(1);
+    assert.strictEqual(spy.callCount, 1);
 
     executor.schedule(spy, {field1: [2], field2: 'id2'});
-    expect(spy.callCount).to.eq(2);
+    assert.strictEqual(spy.callCount, 2);
 
-    expect(Object.keys(executor._tasks).length).to.eq(0);
+    assert.strictEqual(Object.keys(executor._tasks).length, 0);
   });
 
   it('respects bytes count', () => {
@@ -694,8 +698,8 @@ describe('Executor', () => {
 
     const executor = newExecutor({requestByteThreshold: threshold});
     const spy = sinon.spy((request, callback) => {
-      expect(request.field1.length).to.eq(count);
-      expect(byteLength(request.field1)).to.be.least(threshold);
+      assert.strictEqual(request.field1.length, count);
+      assert(byteLength(request.field1) >= threshold);
       callback(null, request);
       return {cancel: () => {}};
     });
@@ -703,15 +707,15 @@ describe('Executor', () => {
       executor.schedule(spy, {field1: [1], field2: 'id1'});
       executor.schedule(spy, {field1: [2], field2: 'id2'});
     }
-    expect(spy.callCount).to.eq(0);
+    assert.strictEqual(spy.callCount, 0);
 
     executor.schedule(spy, {field1: [1], field2: 'id1'});
-    expect(spy.callCount).to.eq(1);
+    assert.strictEqual(spy.callCount, 1);
 
     executor.schedule(spy, {field1: [2], field2: 'id2'});
-    expect(spy.callCount).to.eq(2);
+    assert.strictEqual(spy.callCount, 2);
 
-    expect(Object.keys(executor._tasks).length).to.eq(0);
+    assert.strictEqual(Object.keys(executor._tasks).length, 0);
   });
 
   it('respects element limit', done => {
@@ -722,29 +726,29 @@ describe('Executor', () => {
       elementCountLimit: limit,
     });
     const spy = sinon.spy((request, callback) => {
-      expect(request.field1).to.be.an.instanceOf(Array);
+      assert(Array.isArray(request.field1));
       callback(null, request);
       return {cancel: () => {}};
     });
     executor.schedule(spy, {field1: [1, 2], field2: 'id'});
     executor.schedule(spy, {field1: [3, 4], field2: 'id'});
-    expect(spy.callCount).to.eq(0);
-    expect(Object.keys(executor._tasks).length).to.eq(1);
+    assert.strictEqual(spy.callCount, 0);
+    assert.strictEqual(Object.keys(executor._tasks).length, 1);
 
     executor.schedule(spy, {field1: [5, 6, 7], field2: 'id'});
-    expect(spy.callCount).to.eq(1);
-    expect(Object.keys(executor._tasks).length).to.eq(1);
+    assert.strictEqual(spy.callCount, 1);
+    assert.strictEqual(Object.keys(executor._tasks).length, 1);
 
     executor.schedule(spy, {field1: [8, 9, 10, 11, 12], field2: 'id'});
-    expect(spy.callCount).to.eq(3);
-    expect(Object.keys(executor._tasks).length).to.eq(0);
+    assert.strictEqual(spy.callCount, 3);
+    assert.strictEqual(Object.keys(executor._tasks).length, 0);
 
     executor.schedule(
       spy,
       {field1: [1, 2, 3, 4, 5, 6, 7, 8], field2: 'id'},
       err => {
-        expect(err).to.be.an.instanceOf(GoogleError);
-        expect(err!.code).to.equal(status.INVALID_ARGUMENT);
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
         done();
       }
     );
@@ -759,29 +763,29 @@ describe('Executor', () => {
       requestByteLimit: limit * unitSize,
     });
     const spy = sinon.spy((request, callback) => {
-      expect(request.field1).to.be.an.instanceOf(Array);
+      assert(Array.isArray(request.field1));
       callback(null, request);
       return {cancel: () => {}};
     });
     executor.schedule(spy, {field1: [1, 2], field2: 'id'});
     executor.schedule(spy, {field1: [3, 4], field2: 'id'});
-    expect(spy.callCount).to.eq(0);
-    expect(Object.keys(executor._tasks).length).to.eq(1);
+    assert.strictEqual(spy.callCount, 0);
+    assert.strictEqual(Object.keys(executor._tasks).length, 1);
 
     executor.schedule(spy, {field1: [5, 6, 7], field2: 'id'});
-    expect(spy.callCount).to.eq(1);
-    expect(Object.keys(executor._tasks).length).to.eq(1);
+    assert.strictEqual(spy.callCount, 1);
+    assert.strictEqual(Object.keys(executor._tasks).length, 1);
 
     executor.schedule(spy, {field1: [8, 9, 0, 1, 2], field2: 'id'});
-    expect(spy.callCount).to.eq(3);
-    expect(Object.keys(executor._tasks).length).to.eq(0);
+    assert.strictEqual(spy.callCount, 3);
+    assert.strictEqual(Object.keys(executor._tasks).length, 0);
 
     executor.schedule(
       spy,
       {field1: [1, 2, 3, 4, 5, 6, 7], field2: 'id'},
       err => {
-        expect(err).to.be.an.instanceOf(GoogleError);
-        expect(err!.code).to.equal(status.INVALID_ARGUMENT);
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
         done();
       }
     );
@@ -795,15 +799,15 @@ describe('Executor', () => {
     });
     executor._runNow = sinon.spy(executor._runNow.bind(executor));
     const spy = sinon.spy((request, callback) => {
-      expect(request.field1.length).to.eq(threshold);
+      assert.strictEqual(request.field1.length, threshold);
       callback(null, request);
       return {cancel: () => {}};
     });
     executor.schedule(spy, {field1: [1, 2], field2: 'id1'});
     setTimeout(() => {
-      expect(spy.callCount).to.eq(1);
+      assert.strictEqual(spy.callCount, 1);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((executor._runNow as any).callCount).to.eq(1);
+      assert.strictEqual((executor._runNow as any).callCount, 1);
       done();
     }, 20);
   });
@@ -814,9 +818,9 @@ describe('Executor', () => {
       const spy = sinon.spy(apiCall);
       const start = new Date().getTime();
       function onEnd() {
-        expect(spy.callCount).to.eq(1);
+        assert.strictEqual(spy.callCount, 1);
         const now = new Date().getTime();
-        expect(now - start).to.be.least(49);
+        assert(now - start >= 49);
         done();
       }
       const tasks = 5;
@@ -835,14 +839,13 @@ describe('Executor', () => {
       const spy = sinon.spy(apiCall);
       const start = new Date().getTime();
       executor.schedule(spy, {field1: [0], field2: 'id'}, () => {
-        expect(spy.callCount).to.eq(1);
+        assert.strictEqual(spy.callCount, 1);
         const firstEnded = new Date().getTime();
-        expect(firstEnded - start).to.be.least(49);
-
+        assert(firstEnded - start >= 49);
         executor.schedule(spy, {field1: [1], field2: 'id'}, () => {
-          expect(spy.callCount).to.eq(2);
+          assert.strictEqual(spy.callCount, 2);
           const secondEnded = new Date().getTime();
-          expect(secondEnded - firstEnded).to.be.least(49);
+          assert(secondEnded - firstEnded >= 49);
           done();
         });
       });
@@ -869,10 +872,10 @@ describe('bundleable', () => {
   it('bundles requests', done => {
     const spy = sinon.spy(func);
     const callback = sinon.spy(obj => {
-      expect(obj).to.be.an('array');
-      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+      assert(Array.isArray(obj));
+      assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
       if (callback.callCount === 2) {
-        expect(spy.callCount).to.eq(1);
+        assert.strictEqual(spy.callCount, 1);
         done();
       }
     });
@@ -893,11 +896,11 @@ describe('bundleable', () => {
     const spy = sinon.spy(func);
     const warnStub = sinon.stub(process, 'emitWarning');
     const callback = sinon.spy(obj => {
-      expect(obj).to.be.an('array');
-      expect(obj[0].field1).to.be.an('undefined');
+      assert(Array.isArray(obj));
+      assert.strictEqual(obj[0].field1, undefined);
       if (callback.callCount === 2) {
-        expect(spy.callCount).to.eq(2);
-        expect(warnStub.callCount).to.eq(1);
+        assert.strictEqual(spy.callCount, 2);
+        assert.strictEqual(warnStub.callCount, 1);
         warnStub.restore();
         done();
       }
@@ -916,19 +919,19 @@ describe('bundleable', () => {
     const spy = sinon.spy(func);
     let callbackCount = 0;
     function bundledCallback(obj: Array<{field1: number[]}>) {
-      expect(obj).to.be.an('array');
+      assert(Array.isArray(obj));
       callbackCount++;
-      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+      assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
       if (callbackCount === 3) {
-        expect(spy.callCount).to.eq(2);
+        assert.strictEqual(spy.callCount, 2);
         done();
       }
     }
     function unbundledCallback(obj: Array<{field1: number[]}>) {
-      expect(obj).to.be.an('array');
+      assert(Array.isArray(obj));
       callbackCount++;
-      expect(callbackCount).to.eq(1);
-      expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+      assert.strictEqual(callbackCount, 1);
+      assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
     }
     const apiCall = createApiCall(spy, settings);
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
@@ -951,9 +954,9 @@ describe('bundleable', () => {
     let expectedFailure = false;
     apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
       .then(obj => {
-        expect(obj).to.be.an('array');
+        assert(Array.isArray(obj));
         // @ts-ignore response type
-        expect(obj[0].field1).to.deep.equal([1, 2, 3]);
+        assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
         expectedSuccess = true;
         if (expectedSuccess && expectedFailure) {
           done();
@@ -964,8 +967,8 @@ describe('bundleable', () => {
     p.then(() => {
       done(new Error('should not succeed'));
     }).catch(err => {
-      expect(err).to.be.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.CANCELLED);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.CANCELLED);
 
       expectedFailure = true;
       if (expectedSuccess && expectedFailure) {

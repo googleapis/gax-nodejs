@@ -16,7 +16,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import * as sinon from 'sinon';
 import * as through2 from 'through2';
 import {describe, it} from 'mocha';
@@ -45,7 +45,7 @@ function createApiCallStreaming(
 describe('streaming', () => {
   it('handles server streaming', done => {
     const spy = sinon.spy((...args: Array<{}>) => {
-      expect(args.length).to.eq(3);
+      assert.strictEqual(args.length, 3);
       const s = through2.obj();
       s.push({resources: [1, 2]});
       s.push({resources: [3, 4, 5]});
@@ -63,23 +63,23 @@ describe('streaming', () => {
     const s = apiCall({}, undefined);
     const callback = sinon.spy(data => {
       if (callback.callCount === 1) {
-        expect(data).to.deep.equal({resources: [1, 2]});
+        assert.deepStrictEqual(data, {resources: [1, 2]});
       } else {
-        expect(data).to.deep.equal({resources: [3, 4, 5]});
+        assert.deepStrictEqual(data, {resources: [3, 4, 5]});
       }
     });
-    expect(s.readable).to.be.true;
-    expect(s.writable).to.be.false;
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
     s.on('data', callback);
     s.on('end', () => {
-      expect(callback.callCount).to.eq(2);
+      assert.strictEqual(callback.callCount, 2);
       done();
     });
   });
 
   it('handles client streaming', done => {
     function func(metadata: {}, options: {}, callback: APICallback) {
-      expect(arguments.length).to.eq(3);
+      assert.strictEqual(arguments.length, 3);
       const s = through2.obj();
       const written: Array<{}> = [];
       s.on('end', () => {
@@ -98,12 +98,12 @@ describe('streaming', () => {
       streaming.StreamType.CLIENT_STREAMING
     );
     const s = apiCall({}, undefined, (err, response) => {
-      expect(err).to.be.null;
-      expect(response).to.deep.eq(['foo', 'bar']);
+      assert.strictEqual(err, null);
+      assert.deepStrictEqual(response, ['foo', 'bar']);
       done();
     });
-    expect(s.readable).to.be.false;
-    expect(s.writable).to.be.true;
+    assert.strictEqual(s.readable, false);
+    assert.strictEqual(s.writable, true);
     s.write('foo');
     s.write('bar');
     s.end();
@@ -111,7 +111,7 @@ describe('streaming', () => {
 
   it('handles bidi streaming', done => {
     function func() {
-      expect(arguments.length).to.eq(2);
+      assert.strictEqual(arguments.length, 2);
       const s = through2.obj();
       setImmediate(() => {
         s.emit('metadata');
@@ -127,15 +127,15 @@ describe('streaming', () => {
     const s = apiCall({}, undefined);
     const arg = {foo: 'bar'};
     const callback = sinon.spy(data => {
-      expect(data).to.eq(arg);
+      assert.strictEqual(data, arg);
     });
     s.on('data', callback);
     s.on('end', () => {
-      expect(callback.callCount).to.eq(2);
+      assert.strictEqual(callback.callCount, 2);
       done();
     });
-    expect(s.readable).to.be.true;
-    expect(s.writable).to.be.true;
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, true);
     s.write(arg);
     s.write(arg);
     s.end();
@@ -179,13 +179,13 @@ describe('streaming', () => {
       receivedResponse = data;
     });
     s.on('finish', () => {
-      expect(receivedMetadata).to.deep.eq(responseMetadata);
-      expect(receivedStatus).to.deep.eq(status);
-      expect(receivedResponse).to.deep.eq(expectedResponse);
+      assert.deepStrictEqual(receivedMetadata, responseMetadata);
+      assert.deepStrictEqual(receivedStatus, status);
+      assert.deepStrictEqual(receivedResponse, expectedResponse);
       done();
     });
-    expect(s.readable).to.be.true;
-    expect(s.writable).to.be.true;
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, true);
     setTimeout(() => {
       s.end(s);
     }, 50);
@@ -225,7 +225,7 @@ describe('streaming', () => {
     let counter = 0;
     const expectedCount = 5;
     s.on('data', data => {
-      expect(data).to.eq(counter);
+      assert.strictEqual(data, counter);
       counter++;
       if (counter === expectedCount) {
         s.cancel();
@@ -234,7 +234,7 @@ describe('streaming', () => {
       }
     });
     s.on('error', err => {
-      expect(err).to.eq(cancelError);
+      assert.strictEqual(err, cancelError);
       done();
     });
   });

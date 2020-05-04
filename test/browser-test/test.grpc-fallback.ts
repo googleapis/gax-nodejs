@@ -22,7 +22,6 @@ import * as protobuf from 'protobufjs';
 import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
-import {expect} from 'chai';
 //@ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
@@ -91,9 +90,9 @@ describe('createStub', () => {
     assert(echoStub instanceof protobuf.rpc.Service);
 
     // The stub should consist of service methods
-    expect(echoStub.echo).to.be.a('Function');
-    expect(echoStub.pagedExpand).to.be.a('Function');
-    expect(echoStub.wait).to.be.a('Function');
+    assert(echoStub.echo instanceof Function);
+    assert(echoStub.pagedExpand instanceof Function);
+    assert(echoStub.wait instanceof Function);
 
     // There should be 6 methods for the echo service (and 4 other methods in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);
@@ -112,9 +111,9 @@ describe('createStub', () => {
     assert(echoStub instanceof protobuf.rpc.Service);
 
     // The stub should consist of methods
-    expect(echoStub.echo).to.be.a('Function');
-    expect(echoStub.collect).to.be.a('Function');
-    expect(echoStub.chat).to.be.a('Function');
+    assert(echoStub.echo instanceof Function);
+    assert(echoStub.collect instanceof Function);
+    assert(echoStub.chat instanceof Function);
 
     // There should be 6 methods for the echo service (and 4 other members in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);

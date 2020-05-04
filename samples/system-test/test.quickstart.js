@@ -16,10 +16,8 @@
 
 'use strict';
 
-/* eslint-disable node/no-unpublished-require */
-
 const path = require('path');
-const {assert} = require('chai');
+const assert = require('assert');
 const {describe, it} = require('mocha');
 const cp = require('child_process');
 
@@ -30,8 +28,8 @@ const cwd = path.join(__dirname, '..');
 describe('Quickstart', () => {
   it('should run quickstart sample', async () => {
     const stdout = execSync('node quickstart.js', {cwd});
-    assert.match(stdout, new RegExp('This call failed'));
-    assert.match(stdout, new RegExp('This call succeeded'));
-    assert.match(stdout, new RegExp("response: 'ok'"));
+    assert(/This call failed/.test(stdout));
+    assert(/This call succeeded/.test(stdout));
+    assert(/response: 'ok'/.test(stdout));
   });
 });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {assert} from 'chai';
+import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
 
