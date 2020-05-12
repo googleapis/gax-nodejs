@@ -115,8 +115,6 @@ export interface CallOptions {
   timeout?: number;
   retry?: RetryOptions | null;
   autoPaginate?: boolean;
-  pageToken?: string;
-  pageSize?: number;
   maxResults?: number;
   maxRetries?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,7 +161,6 @@ export class CallSettings {
     this.retry = settings.retry;
     this.autoPaginate =
       'autoPaginate' in settings ? settings.autoPaginate : true;
-    this.pageToken = settings.pageToken;
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
     this.bundleOptions = settings.bundleOptions;
@@ -187,8 +184,6 @@ export class CallSettings {
     let timeout = this.timeout;
     let retry = this.retry;
     let autoPaginate = this.autoPaginate;
-    let pageToken = this.pageToken;
-    let pageSize = this.pageSize;
     let maxResults = this.maxResults;
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
@@ -202,15 +197,6 @@ export class CallSettings {
 
     if ('autoPaginate' in options && !options.autoPaginate) {
       autoPaginate = false;
-    }
-
-    if ('pageToken' in options) {
-      autoPaginate = false;
-      pageToken = options.pageToken;
-    }
-
-    if ('pageSize' in options) {
-      pageSize = options.pageSize;
     }
 
     if ('maxResults' in options) {
@@ -246,8 +232,6 @@ export class CallSettings {
       bundleOptions: this.bundleOptions,
       longrunning,
       autoPaginate,
-      pageToken,
-      pageSize,
       maxResults,
       otherArgs,
       isBundling,
