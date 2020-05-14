@@ -46,9 +46,7 @@ export class PathTemplate {
    * @throws {TypeError} if path can't be matched to this template
    */
   match(path: string): Bindings {
-    console.warn('segments: ', this.segments);
     let pathSegments = path.split('/');
-    console.warn('pathSegments:', pathSegments);
 
     const bindings: Bindings = {};
     if (pathSegments.length !== this.segments.length) {
@@ -68,10 +66,6 @@ export class PathTemplate {
       index < this.segments.length && pathSegments.length > 0;
       index++
     ) {
-      console.warn('index: ', index);
-      console.warn(this.segments[index]);
-      console.warn(pathSegments[0]);
-
       if (this.segments[index] !== pathSegments[0]) {
         if (!this.segments[index].includes('*')) {
           throw new TypeError(
@@ -84,18 +78,13 @@ export class PathTemplate {
           if (this.segments[index].includes('**')) {
             bindings[variable![0]] = pathSegments[0] + '/' + pathSegments[1];
             pathSegments = pathSegments.slice(2);
-            console.warn('put:/ ', bindings[variable![0]]);
-            console.warn(pathSegments);
           } else {
             bindings[variable![0]] = pathSegments[0];
             pathSegments.shift();
-            console.warn('put: ', bindings[variable![0]]);
-            console.warn(pathSegments);
           }
         }
       } else {
         pathSegments.shift();
-        console.warn(pathSegments);
       }
     }
     return bindings;
