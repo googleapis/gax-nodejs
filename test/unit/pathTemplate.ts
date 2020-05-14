@@ -22,8 +22,8 @@ describe('PathTemplate', () => {
   describe('constructor', () => {
     it('should parse and obtain the correct number of segments', () => {
       const t = new PathTemplate('a/b/**/*/{a=hello/world}');
-      assert.strictEqual(t.segments.length, 12);
-      assert.strictEqual(t.size, 6);
+      assert.strictEqual(t.segments.length, 5);
+      assert.strictEqual(t.size, 5);
     });
 
     it('should fail on multiple path wildcards', () => {
