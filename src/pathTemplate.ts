@@ -133,7 +133,12 @@ export class PathTemplate {
   inspect(): string {
     return this.segments.join('/');
   }
-
+  /**
+   * Parse the path template.
+   *
+   * @return {string[]} return segments of the input path.
+   * For example: 'buckets/{hello}'' will give back ['buckets', {hello=*}]
+   */
   private parsePathTemplate(data: string): string[] {
     const pathSegments = splitPathTemplate(data);
     let index = 0;
@@ -189,6 +194,12 @@ export class PathTemplate {
   }
 }
 
+/**
+ * Split the path template by `/`.
+ * It can not be simply splitted by `/` because there might be `/` in the segments.
+ * For example: 'a/b/{a=hello/world}' we do not want to break the brackets pair
+ * so above path will be splitted as ['a', 'b', '{a=hello/world}']
+ */
 function splitPathTemplate(data: string): string[] {
   let left = 0;
   let right = 0;
