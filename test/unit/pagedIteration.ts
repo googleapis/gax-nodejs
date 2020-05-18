@@ -111,9 +111,9 @@ describe('paged iteration', () => {
       .then(response => {
         assert.ok(Array.isArray(response));
         assert(Array.isArray(response[0]));
-        assert.strictEqual(response[0].length, pageSize);
+        assert.strictEqual((response[0] as Array<{}>).length, pageSize);
         for (let i = 0; i < pageSize; ++i) {
-          assert.strictEqual(response[0][i], expected);
+          assert.strictEqual((response[0] as Array<{}>)[i], expected);
           expected++;
         }
         done();
