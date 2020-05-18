@@ -68,7 +68,6 @@
     "mocha": "^7.0.0",
     "ncp": "^2.0.0",
     "null-loader": "^4.0.0",
-    "pegjs": "~0.10.0",
     "proxyquire": "^2.0.1",
     "pumpify": "^2.0.0",
     "puppeteer": "^2.0.0",
