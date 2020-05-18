@@ -53,11 +53,11 @@ export class PathTemplate {
       // if the path contains a wildcard, then the length may differ by 1.
       if (!this.data.includes('**')) {
         throw new TypeError(
-          `This path ${path} does not match, the parameter number is not same.`
+          `This path ${path} does not match path template ${this.data}, the number of parameters is not same.`
         );
       } else if (pathSegments.length !== this.segments.length + 1) {
         throw new TypeError(
-          `This path ${path} does not match with a wildcard, the parameter number is not same.`
+          `This path ${path} does not match path template ${this.data}, the number of parameters is not same with one wildcard.`
         );
       }
     }
@@ -100,7 +100,13 @@ export class PathTemplate {
    */
   render(bindings: Bindings): string {
     if (Object.keys(bindings).length !== Object.keys(this.bindings).length) {
-      throw new TypeError('The number of variables does not match');
+      throw new TypeError(
+        `The number of variables ${
+          Object.keys(bindings).length
+        } does not match the number of needed variables ${
+          Object.keys(this.bindings).length
+        }`
+      );
     }
     let path = this.inspect();
     for (const key of Object.keys(bindings)) {
