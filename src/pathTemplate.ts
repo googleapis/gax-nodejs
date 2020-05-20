@@ -71,10 +71,9 @@ export class PathTemplate {
           throw new TypeError(
             `segment does not match, ${this.segments[index]} and  ${pathSegments[index]}.`
           );
-        } else if (this.segments[index].includes('*')) {
+        } else {
           const segment = this.segments[index];
-          const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*})/g);
-          // non-slash resource matches two variables
+          const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*?})/g);
           if (this.segments[index].includes('**')) {
             bindings[variable![0]] = pathSegments[0] + '/' + pathSegments[1];
             pathSegments = pathSegments.slice(2);
