@@ -84,8 +84,7 @@ describe('createStub', () => {
   });
 
   it('should create a stub', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const echoStub: any = await gaxGrpc.createStub(echoService, stubOptions);
+    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
 
@@ -102,11 +101,7 @@ describe('createStub', () => {
   });
 
   it('should support optional parameters', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const echoStub: any = await gaxGrpc.createStub(
-      echoService,
-      stubExtraOptions
-    );
+    const echoStub = await gaxGrpc.createStub(echoService, stubExtraOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
 
