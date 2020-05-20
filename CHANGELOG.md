@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.3.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.1...v2.3.2) (2020-05-20)
+
+
+### Bug Fixes
+
+* new typescript, strict types ([#824](https://www.github.com/googleapis/gax-nodejs/issues/824)) ([90034ce](https://www.github.com/googleapis/gax-nodejs/commit/90034ce6a8c9b635942fedb23345105264979416))
+* typescript 3.9.3 compilation ([#831](https://www.github.com/googleapis/gax-nodejs/issues/831)) ([d53e169](https://www.github.com/googleapis/gax-nodejs/commit/d53e16988aa0fa260c91f84e6fc0ceae2fdecc26))
+
 ### [2.3.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.1-beta.0...v2.3.1) (2020-04-24)
 
 
