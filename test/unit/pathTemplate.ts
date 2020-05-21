@@ -109,24 +109,27 @@ describe('PathTemplate', () => {
 
     it('should match template with non-slash resource patterns', () => {
       const template = new PathTemplate(
-        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+        'user/{user_id}/blurbs/legacy/{blurb_a}-{blurb_b}~{legacy_user}'
       );
-      const want = {$user_id: 'foo', $blurb_id: 'bar', $legacy_user: 'user2'};
+      const want = {
+        user_id: 'foo',
+        blurb_a: 'bara',
+        blurb_b: 'barb',
+        legacy_user: 'user',
+      };
       assert.deepStrictEqual(
-        template.match('user/foo/blurbs/legacy/bar.user2'),
+        template.match('user/foo/blurbs/legacy/bara-barb~user'),
         want
       );
     });
 
-    it('should fail template with malformed non-slash resource patterns', () => {
+    it('should not match template with malformed non-slash resource patterns', () => {
       const template = new PathTemplate(
         'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
       );
-      const want = {$user_id: 'foo', $blurb_id: 'bar', $legacy_user: 'user2'};
-      assert.deepStrictEqual(
-        template.match('user/foo/blurbs/legacy/bar~user2'),
-        want
-      );
+      assert.throws(() => {
+        template.match('user/foo/blurbs/legacy/bar~user2');
+      }, TypeError);
     });
   });
 
@@ -179,10 +182,15 @@ describe('PathTemplate', () => {
 
     it('should render non-slash resource', () => {
       const template = new PathTemplate(
-        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}/project/{project}'
       );
-      const params = {$user_id: 'foo', $blurb_id: 'bar', $legacy_user: 'user2'};
-      const want = 'user/foo/blurbs/legacy/bar.user2';
+      const params = {
+        user_id: 'foo',
+        blurb_id: 'bar',
+        legacy_user: 'user2',
+        project: 'pp',
+      };
+      const want = 'user/foo/blurbs/legacy/bar.user2/project/pp';
       assert.strictEqual(template.render(params), want);
     });
   });
