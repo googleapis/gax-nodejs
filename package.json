@@ -55,7 +55,7 @@
     "gts": "^2.0.0",
     "is-docker": "^2.0.0",
     "json-loader": "^0.5.7",
-    "karma": "^4.1.0",
+    "karma": "^5.0.0",
     "karma-child-process": "^1.0.3",
     "karma-chrome-launcher": "^3.0.0",
     "karma-coverage": "^2.0.0",
