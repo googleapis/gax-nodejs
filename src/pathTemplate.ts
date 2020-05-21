@@ -18,44 +18,24 @@
  * Path template utility.
  */
 
-import has = require('lodash.has');
-import * as util from 'util';
-import * as extras from './parserExtras';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const parser = require('./pathTemplateParser');
-
-export interface ParseResult {
-  size: number;
-  segments: Segment[];
-}
-
-export interface Segment {
-  kind: number;
-  literal: string;
-}
-
 export interface Bindings {
   [index: string]: string | number;
 }
 
 export class PathTemplate {
-  private readonly parseResult: ParseResult;
-
-  get size(): number {
-    return this.parseResult.size;
-  }
-
-  get segments(): Segment[] {
-    return this.parseResult.segments;
-  }
-
+  private data: string;
+  private bindings: Bindings = {};
+  segments: string[];
+  size: number;
   /**
    * @param {String} data the of the template
    *
    * @constructor
    */
   constructor(data: string) {
-    this.parseResult = extras.finishParse(parser.parse(data));
+    this.data = data;
+    this.segments = this.parsePathTemplate(data);
+    this.size = this.segments.length;
   }
 
   /**
@@ -66,45 +46,45 @@ export class PathTemplate {
    * @throws {TypeError} if path can't be matched to this template
    */
   match(path: string): Bindings {
-    const pathSegments = path.split('/');
+    let pathSegments = path.split('/');
+
     const bindings: Bindings = {};
-    let segmentCount = this.size;
-    let current: string;
-    let index = 0;
-    this.segments.forEach(segment => {
-      if (index > pathSegments.length) {
-        return;
+    if (pathSegments.length !== this.segments.length) {
+      // if the path contains a wildcard, then the length may differ by 1.
+      if (!this.data.includes('**')) {
+        throw new TypeError(
+          `This path ${path} does not match path template ${this.data}, the number of parameters is not same.`
+        );
+      } else if (pathSegments.length !== this.segments.length + 1) {
+        throw new TypeError(
+          `This path ${path} does not match path template ${this.data}, the number of parameters is not same with one wildcard.`
+        );
       }
-      if (segment.kind === extras.BINDING) {
-        current = segment.literal;
-      } else if (segment.kind === extras.TERMINAL) {
-        if (segment.literal === '*') {
-          bindings[current] = pathSegments[index];
-          index += 1;
-        } else if (segment.literal === '**') {
-          const size = pathSegments.length - segmentCount + 1;
-          segmentCount += size - 1;
-          bindings[current] = pathSegments.slice(index, index + size).join('/');
-          index += size;
-        } else if (segment.literal === pathSegments[index]) {
-          index += 1;
-        } else {
-          const msg = util.format(
-            "mismatched literal (index=%d): '%s' != '%s'",
-            index,
-            segment.literal,
-            pathSegments[index]
+    }
+    for (
+      let index = 0;
+      index < this.segments.length && pathSegments.length > 0;
+      index++
+    ) {
+      if (this.segments[index] !== pathSegments[0]) {
+        if (!this.segments[index].includes('*')) {
+          throw new TypeError(
+            `segment does not match, ${this.segments[index]} and  ${pathSegments[index]}.`
           );
-          throw new TypeError(msg);
+        } else {
+          const segment = this.segments[index];
+          const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*?})/g);
+          if (this.segments[index].includes('**')) {
+            bindings[variable![0]] = pathSegments[0] + '/' + pathSegments[1];
+            pathSegments = pathSegments.slice(2);
+          } else {
+            bindings[variable![0]] = pathSegments[0];
+            pathSegments.shift();
+          }
         }
+      } else {
+        pathSegments.shift();
       }
-    });
-    if (index !== pathSegments.length || index !== segmentCount) {
-      const msg = util.format(
-        'match error: could not instantiate a path template from %s',
-        path
-      );
-      throw new TypeError(msg);
     }
     return bindings;
   }
@@ -118,33 +98,36 @@ export class PathTemplate {
    *   parsed
    */
   render(bindings: Bindings): string {
-    const out: Segment[] = [];
-    let inABinding = false;
-    this.segments.forEach(segment => {
-      if (segment.kind === extras.BINDING) {
-        if (!has(bindings, segment.literal)) {
-          const msg = util.format(
-            'Value for key %s is not provided in %s',
-            segment.literal,
-            bindings
-          );
-          throw new TypeError(msg);
-        }
-        const tmp = new PathTemplate(bindings[segment.literal].toString());
-        Array.prototype.push.apply(out, tmp.segments);
-        inABinding = true;
-      } else if (segment.kind === extras.END_BINDING) {
-        inABinding = false;
-      } else if (inABinding) {
-        return;
-      } else {
-        out.push(segment);
+    if (Object.keys(bindings).length !== Object.keys(this.bindings).length) {
+      throw new TypeError(
+        `The number of variables ${
+          Object.keys(bindings).length
+        } does not match the number of needed variables ${
+          Object.keys(this.bindings).length
+        }`
+      );
+    }
+    let path = this.inspect();
+    for (const key of Object.keys(bindings)) {
+      const b = bindings[key].toString();
+      if (!this.bindings[key]) {
+        throw new TypeError(`render fails for not matching ${bindings[key]}`);
       }
-    });
+      const variable = this.bindings[key];
 
-    const result = formatSegments(out);
-    this.match(result);
-    return result;
+      if (variable === '*') {
+        if (!b.match(/[^/{}]+/)) {
+          throw new TypeError(`render fails for not matching ${b}`);
+        }
+        path = path.replace(`{${key}=*}`, `${b}`);
+      } else if (variable === '**') {
+        if (!b.match(/[^{}]+/)) {
+          throw new TypeError(`render fails for not matching ${b}`);
+        }
+        path = path.replace(`{${key}=**}`, `${b}`);
+      }
+    }
+    return path;
   }
 
   /**
@@ -152,35 +135,103 @@ export class PathTemplate {
    *
    * @return {string} contains const names matched to binding values
    */
-  inspect() {
-    return formatSegments(this.segments);
+  inspect(): string {
+    return this.segments.join('/');
+  }
+  /**
+   * Parse the path template.
+   *
+   * @return {string[]} return segments of the input path.
+   * For example: 'buckets/{hello}'' will give back ['buckets', {hello=*}]
+   */
+  private parsePathTemplate(data: string): string[] {
+    const pathSegments = splitPathTemplate(data);
+    let index = 0;
+    let wildCardCount = 0;
+    const segments: string[] = [];
+    pathSegments.forEach(segment => {
+      // * or ** -> segments.push('{$0=*}');
+      //         -> bindings['$0'] = '*'
+      if (segment === '*' || segment === '**') {
+        this.bindings[`$${index}`] = segment;
+        segments.push(`{$${index}=${segment}}`);
+        index = index + 1;
+        if (segment === '**') {
+          wildCardCount = wildCardCount + 1;
+          if (wildCardCount > 1) {
+            throw new TypeError('Can not have more than one wildcard.');
+          }
+        }
+      }
+      // {project} / {project=*} -> segments.push('{project=*}');
+      //           -> bindings['project'] = '*'
+      else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+(=\*)?(?=})/)) {
+        const variable = segment.match(/(?<={)[0-9a-zA-Z-.~_]+(=\*)?(?=})/);
+        this.bindings[variable![0]] = '*';
+        segments.push(`{${variable![0]}=*}`);
+      }
+      // {hello=/what} -> segments.push('{hello=/what}');
+      //              -> no binding in this case
+      else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+=[^*]+(?=})/)) {
+        segments.push(segment);
+      }
+      // helloazAZ09-.~_what -> segments.push('helloazAZ09-.~_what');
+      //              -> no binding in this case
+      else if (segment.match(/[0-9a-zA-Z-.~_]+/)) {
+        segments.push(segment);
+      }
+      // {project}~{location} -> {project=*}~{location=*}
+      else if (
+        segment.match(
+          /(?<={)[0-9a-zA-Z-.~_]+(?:}[-._~]?{)[0-9a-zA-Z-.~_]+(?=})/
+        )
+      ) {
+        // [project, location]
+        const variable = segment.match(/(?<=\{).*?(?=(?:=.*?)?\})/g);
+        variable?.forEach(v => {
+          this.bindings[v] = '*';
+          segment.replace(v, v + '=*');
+        });
+        segments.push(segment);
+      }
+    });
+    return segments;
   }
 }
 
 /**
- * Creates the string representattion for the segments.
- * @param {Object[]} segments - The array of segments.
- * @return {string} - A string representing segments in the path template
- *   format.
+ * Split the path template by `/`.
+ * It can not be simply splitted by `/` because there might be `/` in the segments.
+ * For example: 'a/b/{a=hello/world}' we do not want to break the brackets pair
+ * so above path will be splitted as ['a', 'b', '{a=hello/world}']
  */
-function formatSegments(segments: Segment[]): string {
-  let out = '';
-  let slash = true;
-  segments.forEach(segment => {
-    if (segment.kind === extras.TERMINAL) {
-      if (slash) {
-        out += '/';
+function splitPathTemplate(data: string): string[] {
+  let left = 0;
+  let right = 0;
+  let bracketCount = 0;
+  const segments: string[] = [];
+  while (right >= left && right < data.length) {
+    if (data.charAt(right) === '{') {
+      bracketCount = bracketCount + 1;
+    } else if (data.charAt(right) === '}') {
+      bracketCount = bracketCount - 1;
+    } else if (data.charAt(right) === '/') {
+      if (right === data.length - 1) {
+        throw new TypeError('Invalid path, it can not be ended by /');
       }
-      out += segment.literal;
-      return;
+      if (bracketCount === 0) {
+        // complete bracket, to avoid the case a/b/**/*/{a=hello/world}
+        segments.push(data.substring(left, right));
+        left = right + 1;
+      }
     }
-    slash = true;
-    if (segment.kind === extras.BINDING) {
-      out += '/{' + segment.literal + '=';
-      slash = false;
-    } else {
-      out += segment.literal + '}';
+    if (right === data.length - 1) {
+      if (bracketCount !== 0) {
+        throw new TypeError('Brackets are invalid.');
+      }
+      segments.push(data.substring(left));
     }
-  });
-  return out.substring(1);
+    right = right + 1;
+  }
+  return segments;
 }
