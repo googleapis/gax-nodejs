@@ -19,7 +19,7 @@
 
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
-import * as through2 from 'through2';
+import {Transform} from 'stream';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
@@ -395,16 +395,19 @@ function mockSimpleGrpcMethod(
 function mockServerStreamingGrpcMethod(
   expectedRequest: {},
   response: {} | null,
-  error?: {}
+  error?: Error
 ) {
   return (actualRequest: Function) => {
     assert.deepStrictEqual(actualRequest, expectedRequest);
-    const mockStream = through2.obj((chunk, enc, callback) => {
-      if (error) {
-        callback(error);
-      } else {
-        callback(null, response);
-      }
+    const mockStream = new Transform({
+      objectMode: true,
+      transform: (chunk, enc, callback) => {
+        if (error) {
+          callback(error);
+        } else {
+          callback(undefined, response);
+        }
+      },
     });
     return mockStream;
   };
@@ -413,16 +416,19 @@ function mockServerStreamingGrpcMethod(
 function mockBidiStreamingGrpcMethod(
   expectedRequest: {},
   response: {} | null,
-  error?: {}
+  error?: Error
 ) {
   return () => {
-    const mockStream = through2.obj((chunk, enc, callback) => {
-      assert.deepStrictEqual(chunk, expectedRequest);
-      if (error) {
-        callback(error);
-      } else {
-        callback(null, response);
-      }
+    const mockStream = new Transform({
+      objectMode: true,
+      transform: (chunk, enc, callback) => {
+        assert.deepStrictEqual(chunk, expectedRequest);
+        if (error) {
+          callback(error);
+        } else {
+          callback(undefined, response);
+        }
+      },
     });
     return mockStream;
   };

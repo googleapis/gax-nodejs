@@ -18,8 +18,8 @@
 
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import * as through2 from 'through2';
 import {describe, it} from 'mocha';
+import {PassThrough} from 'stream';
 
 import {GaxCallStream, GRPCCall} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
@@ -46,7 +46,9 @@ describe('streaming', () => {
   it('handles server streaming', done => {
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
-      const s = through2.obj();
+      const s = new PassThrough({
+        objectMode: true,
+      });
       s.push({resources: [1, 2]});
       s.push({resources: [3, 4, 5]});
       s.push(null);
@@ -80,7 +82,9 @@ describe('streaming', () => {
   it('handles client streaming', done => {
     function func(metadata: {}, options: {}, callback: APICallback) {
       assert.strictEqual(arguments.length, 3);
-      const s = through2.obj();
+      const s = new PassThrough({
+        objectMode: true,
+      });
       const written: Array<{}> = [];
       s.on('end', () => {
         callback(null, written);
@@ -112,7 +116,9 @@ describe('streaming', () => {
   it('handles bidi streaming', done => {
     function func() {
       assert.strictEqual(arguments.length, 2);
-      const s = through2.obj();
+      const s = new PassThrough({
+        objectMode: true,
+      });
       setImmediate(() => {
         s.emit('metadata');
       });
@@ -151,7 +157,9 @@ describe('streaming', () => {
       metadata: responseMetadata,
     };
     function func() {
-      const s = through2.obj();
+      const s = new PassThrough({
+        objectMode: true,
+      });
       setTimeout(() => {
         s.emit('metadata', responseMetadata);
       }, 10);
@@ -204,7 +212,9 @@ describe('streaming', () => {
     }
     const cancelError = new Error('cancelled');
     function func() {
-      const s = through2.obj();
+      const s = new PassThrough({
+        objectMode: true,
+      });
       schedulePush(s, 0);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (s as any).cancel = () => {

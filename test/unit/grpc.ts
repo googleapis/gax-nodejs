@@ -72,7 +72,7 @@ describe('grpc', () => {
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
       const builder = grpcClient.metadataBuilder(headers);
-      const abTesting = null;
+      const abTesting: {} | null = null;
       const moreHeaders = {foo: 'bar'};
       const metadata = builder(abTesting!, moreHeaders);
       assert.deepStrictEqual(metadata.get('foo'), ['bar']);
@@ -85,7 +85,7 @@ describe('grpc', () => {
         'X-Goog-Api-Client': 'gl-node/6.6.0 gccl/0.7.0 gax/0.11.0 grpc/1.1.0',
       };
       const builder = grpcClient.metadataBuilder(headers);
-      const abTesting = null;
+      const abTesting: {} | null = null;
       const moreHeaders = {'x-GOOG-api-CLIENT': 'something else'};
       const metadata = builder(abTesting!, moreHeaders);
       assert.deepStrictEqual(metadata.get('x-goog-api-client'), [
@@ -117,7 +117,11 @@ describe('grpc', () => {
 
   describe('createStub', () => {
     class DummyStub {
-      constructor(public address: {}, public creds: {}, public options: {}) {}
+      constructor(
+        public address: {},
+        public creds: {},
+        public options: {[index: string]: string | number | Function}
+      ) {}
     }
     let grpcClient: GrpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
@@ -195,11 +199,15 @@ describe('grpc', () => {
           assert(stub.options.hasOwnProperty(k));
         });
         // check values
+        const dummyStub = (stub as unknown) as DummyStub;
         assert.strictEqual(
-          stub.options['grpc.max_send_message_length'],
+          dummyStub.options['grpc.max_send_message_length'],
           10 * 1024 * 1024
         );
-        assert.strictEqual(stub.options['callInvocationTransformer'](), 42);
+        assert.strictEqual(
+          (dummyStub.options['callInvocationTransformer'] as Function)(),
+          42
+        );
         ['servicePath', 'port', 'other_dummy_options'].forEach(k => {
           assert.strictEqual(stub.options.hasOwnProperty(k), false);
         });
@@ -241,8 +249,9 @@ describe('grpc', () => {
         ['servicePath', 'port'].forEach(k => {
           assert.strictEqual(stub.options.hasOwnProperty(k), false);
         });
+        const dummyStub = (stub as unknown) as DummyStub;
         assert.strictEqual(
-          stub.options['grpc.max_receive_message_length'],
+          dummyStub.options['grpc.max_receive_message_length'],
           10 * 1024 * 1024
         );
       });
