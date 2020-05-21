@@ -47,7 +47,6 @@ export class PathTemplate {
    */
   match(path: string): Bindings {
     let pathSegments = path.split('/');
-
     const bindings: Bindings = {};
     if (pathSegments.length !== this.segments.length) {
       // if the path contains a wildcard, then the length may differ by 1.
@@ -72,13 +71,32 @@ export class PathTemplate {
             `segment does not match, ${this.segments[index]} and  ${pathSegments[index]}.`
           );
         } else {
-          const segment = this.segments[index];
-          const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*?})/g);
+          let segment = this.segments[index];
+          const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*})/g) || [];
           if (this.segments[index].includes('**')) {
-            bindings[variable![0]] = pathSegments[0] + '/' + pathSegments[1];
+            bindings[variable[0]] = pathSegments[0] + '/' + pathSegments[1];
             pathSegments = pathSegments.slice(2);
           } else {
-            bindings[variable![0]] = pathSegments[0];
+            // segment: {blurb_id=*}.{legacy_user=*} to match pathSegments: ['bar.user2']
+            // split the match pathSegments[0] -> value: ['bar', 'user2']
+            // compare the length of two arrays, and compare array items
+            const value = pathSegments[0].split(/[-_.~]/);
+            if (value.length !== variable!.length) {
+              throw new Error(
+                `segment ${segment} does not match ${pathSegments[0]}`
+              );
+            }
+            for (const v of variable) {
+              bindings[v] = value[0];
+              segment = segment.replace(`{${v}=*}`, `${value[0]}`);
+              value.shift();
+            }
+            // segment: {blurb_id=*}.{legacy_user=*} matching pathSegments: ['bar~user2'] should fail
+            if (variable.length > 1 && segment !== pathSegments[0]) {
+              throw new TypeError(
+                `non slash resource pattern ${this.segments[index]} and ${pathSegments[0]} should have same separator`
+              );
+            }
             pathSegments.shift();
           }
         }
@@ -163,6 +181,20 @@ export class PathTemplate {
           }
         }
       }
+      // {project}~{location} -> {project=*}~{location=*}
+      else if (
+        segment.match(
+          /(?<={)[0-9a-zA-Z-.~_]+(?:}[-._~]?{)[0-9a-zA-Z-.~_]+(?=})/
+        )
+      ) {
+        // [project, location]
+        const variable = segment.match(/(?<=\{).*?(?=(?:=.*?)?\})/g) || [];
+        for (const v of variable) {
+          this.bindings[v] = '*';
+          segment = segment.replace(v, v + '=*');
+        }
+        segments.push(segment);
+      }
       // {project} / {project=*} -> segments.push('{project=*}');
       //           -> bindings['project'] = '*'
       else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+(=\*)?(?=})/)) {
@@ -178,20 +210,6 @@ export class PathTemplate {
       // helloazAZ09-.~_what -> segments.push('helloazAZ09-.~_what');
       //              -> no binding in this case
       else if (segment.match(/[0-9a-zA-Z-.~_]+/)) {
-        segments.push(segment);
-      }
-      // {project}~{location} -> {project=*}~{location=*}
-      else if (
-        segment.match(
-          /(?<={)[0-9a-zA-Z-.~_]+(?:}[-._~]?{)[0-9a-zA-Z-.~_]+(?=})/
-        )
-      ) {
-        // [project, location]
-        const variable = segment.match(/(?<=\{).*?(?=(?:=.*?)?\})/g);
-        variable?.forEach(v => {
-          this.bindings[v] = '*';
-          segment.replace(v, v + '=*');
-        });
         segments.push(segment);
       }
     });
