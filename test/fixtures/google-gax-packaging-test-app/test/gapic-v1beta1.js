@@ -18,7 +18,7 @@
 
 const assert = require('assert');
 const {describe, it} = require('mocha');
-import {Transform} from 'stream';
+const {Transform} = require('stream');
 
 const showcaseModule = require('../src');
 
