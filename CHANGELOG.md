@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.4.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.1...v2.4.0) (2020-05-21)
+
+
+### Features
+
+* parse path template using regexes ([#823](https://www.github.com/googleapis/gax-nodejs/issues/823)) ([392a392](https://www.github.com/googleapis/gax-nodejs/commit/392a3920df6d78981ac43741f15048c84102b046))
+* support non-slash resource in path template ([#833](https://www.github.com/googleapis/gax-nodejs/issues/833)) ([76696fc](https://www.github.com/googleapis/gax-nodejs/commit/76696fc48c8a5e21c3c1cde56822b7a37585e41c))
+
+
+### Bug Fixes
+
+* new typescript, strict types ([#824](https://www.github.com/googleapis/gax-nodejs/issues/824)) ([90034ce](https://www.github.com/googleapis/gax-nodejs/commit/90034ce6a8c9b635942fedb23345105264979416))
+* typescript 3.9.3 compilation ([#831](https://www.github.com/googleapis/gax-nodejs/issues/831)) ([d53e169](https://www.github.com/googleapis/gax-nodejs/commit/d53e16988aa0fa260c91f84e6fc0ceae2fdecc26))
+
 ### [2.3.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.1-beta.0...v2.3.1) (2020-04-24)
 
 
