@@ -370,7 +370,7 @@ describe('paged iteration', () => {
         })
         .on('end', () => {
           assert.strictEqual(count, pageSize * 2);
-          assert(spy.callCount == 2 || spy.callCount == 3);
+          assert(spy.callCount === 2 || spy.callCount === 3);
           done();
         })
         .on('error', done);
