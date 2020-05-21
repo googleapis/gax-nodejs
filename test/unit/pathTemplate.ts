@@ -106,6 +106,28 @@ describe('PathTemplate', () => {
       const want = {$0: 'foo/foo', $1: 'bar'};
       assert.deepStrictEqual(template.match('bar/foo/foo/foo/bar'), want);
     });
+
+    it('should match template with non-slash resource patterns', () => {
+      const template = new PathTemplate(
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+      );
+      const want = {$user_id: 'foo', $blurb_id: 'bar', $legacy_user: 'user2'};
+      assert.deepStrictEqual(
+        template.match('user/foo/blurbs/legacy/bar.user2'),
+        want
+      );
+    });
+
+    it('should fail template with malformed non-slash resource patterns', () => {
+      const template = new PathTemplate(
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+      );
+      const want = {$user_id: 'foo', $blurb_id: 'bar', $legacy_user: 'user2'};
+      assert.deepStrictEqual(
+        template.match('user/foo/blurbs/legacy/bar~user2'),
+        want
+      );
+    });
   });
 
   describe('method `render`', () => {
@@ -154,6 +176,15 @@ describe('PathTemplate', () => {
       const want = 'projects/testProject/sessions/123';
       assert.strictEqual(template.render(params), want);
     });
+
+    it('should render non-slash resource', () => {
+      const template = new PathTemplate(
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+      );
+      const params = {$user_id: 'foo', $blurb_id: 'bar', $legacy_user: 'user2'};
+      const want = 'user/foo/blurbs/legacy/bar.user2';
+      assert.strictEqual(template.render(params), want);
+    });
   });
 
   describe('method `inspect`', () => {
@@ -163,6 +194,8 @@ describe('PathTemplate', () => {
       '/buckets/{hello}': 'buckets/{hello=*}',
       '/buckets/{hello=what}/{world}': 'buckets/{hello=what}/{world=*}',
       '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
+      'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}':
+        'user/{user_id=*}/blurbs/legacy/{blurb_id=*}.{legacy_user=*}',
     };
 
     Object.keys(tests).forEach(template => {
