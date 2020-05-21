@@ -34,7 +34,7 @@
     "@types/download": "^6.2.4",
     "@types/lodash.at": "^4.6.4",
     "@types/lodash.has": "^4.5.4",
-    "@types/fs-extra": "^8.0.1",
+    "@types/fs-extra": "^9.0.0",
     "@types/mocha": "^7.0.0",
     "@types/ncp": "^2.0.1",
     "@types/node": "^10.3.2",
