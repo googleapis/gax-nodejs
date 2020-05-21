@@ -73,7 +73,6 @@ export class PathTemplate {
         } else {
           let segment = this.segments[index];
           const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*})/g) || [];
-          console.warn('variable: ', variable);
           if (this.segments[index].includes('**')) {
             bindings[variable[0]] = pathSegments[0] + '/' + pathSegments[1];
             pathSegments = pathSegments.slice(2);
@@ -87,11 +86,9 @@ export class PathTemplate {
                 `segment ${segment} does not match ${pathSegments[0]}`
               );
             }
-            console.warn('pathsegments: ', pathSegments);
             for (const v of variable) {
               bindings[v] = value[0];
               segment = segment.replace(`{${v}=*}`, `${value[0]}`);
-              console.warn('segmenet vhange: ', segment);
               value.shift();
             }
             // segment: {blurb_id=*}.{legacy_user=*} matching pathSegments: ['bar~user2'] should fail
