@@ -25,7 +25,6 @@ import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
-import {expect} from 'chai';
 import {GrpcClient} from '../../src/fallback';
 
 const authClient = {
@@ -90,15 +89,14 @@ describe('createStub', () => {
   });
 
   it('should create a stub', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const echoStub: any = await gaxGrpc.createStub(echoService, stubOptions);
+    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
 
     // The stub should consist of service methods
-    expect(echoStub.echo).to.be.a('Function');
-    expect(echoStub.pagedExpand).to.be.a('Function');
-    expect(echoStub.wait).to.be.a('Function');
+    assert.strict(typeof echoStub.echo, 'function');
+    assert.strict(typeof echoStub.pagedExpand, 'function');
+    assert.strict(typeof echoStub.wait, 'function');
 
     // There should be 6 methods for the echo service (and 4 other methods in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);
@@ -108,18 +106,14 @@ describe('createStub', () => {
   });
 
   it('should support optional parameters', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const echoStub: any = await gaxGrpc.createStub(
-      echoService,
-      stubExtraOptions
-    );
+    const echoStub = await gaxGrpc.createStub(echoService, stubExtraOptions);
 
     assert(echoStub instanceof protobuf.rpc.Service);
 
     // The stub should consist of methods
-    expect(echoStub.echo).to.be.a('Function');
-    expect(echoStub.collect).to.be.a('Function');
-    expect(echoStub.chat).to.be.a('Function');
+    assert.strictEqual(typeof echoStub.echo, 'function');
+    assert.strictEqual(typeof echoStub.collect, 'function');
+    assert.strictEqual(typeof echoStub.chat, 'function');
 
     // There should be 6 methods for the echo service (and 4 other members in the object)
     assert.strictEqual(Object.keys(echoStub).length, 10);

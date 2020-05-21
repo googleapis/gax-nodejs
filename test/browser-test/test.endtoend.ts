@@ -16,7 +16,6 @@
 
 import * as assert from 'assert';
 import {describe, it, before} from 'mocha';
-import {expect} from 'chai';
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
 import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
@@ -84,10 +83,7 @@ describe('Run tests against gRPC server', () => {
     const request = {
       content: words.join(' '),
     };
-
-    expect(() => {
-      client.expand(request);
-    }).to.throw();
+    assert.throws(() => client.expand(request));
   });
 
   it('should be able to call paging calls', async () => {
@@ -102,15 +98,11 @@ describe('Run tests against gRPC server', () => {
   });
 
   it('should throw an error when calling client-side streaming calls', async () => {
-    expect(() => {
-      client.collect();
-    }).to.throw();
+    assert.throws(() => client.collect());
   });
 
   it('should throw an error when calling bi-direction streaming calls', async () => {
-    expect(() => {
-      client.chat();
-    }).to.throw();
+    assert.throws(() => client.chat());
   });
 
   it('should be able to call long-running calls', async function () {

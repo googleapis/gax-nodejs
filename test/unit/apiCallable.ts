@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import {describe, it} from 'mocha';
 import * as sinon from 'sinon';
 
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
-
 import * as utils from './utils';
 
 const fail = utils.fail;
 const createApiCall = utils.createApiCall;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FAKE_STATUS_CODE_2 = (utils as any).FAKE_STATUS_CODE_1 + 1;
+const FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
+const FAKE_STATUS_CODE_2 = utils.FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
   it('calls api call', done => {
@@ -45,8 +42,8 @@ describe('createApiCall', () => {
     }
     const apiCall = createApiCall(func);
     apiCall(42, undefined, (err, resp) => {
-      expect(resp).to.eq(42);
-      expect(deadlineArg).to.be.ok;
+      assert.strictEqual(resp, 42);
+      assert.ok(deadlineArg);
       done();
     });
   });
@@ -65,8 +62,8 @@ describe('createApiCall', () => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
-      expect(resp).above(originalDeadline);
-      expect(resp).most(expectedDeadline);
+      assert(resp! > originalDeadline);
+      assert(resp! <= expectedDeadline);
       done();
     });
   });
@@ -99,8 +96,8 @@ describe('createApiCall', () => {
       // The verifying value is slightly bigger than the expected number
       // 2000 / 30000, because sometimes runtime can consume some time before
       // the call starts.
-      expect(Number(resp) - start).above(2100);
-      expect(Number(resp) - start).most(30100);
+      assert(Number(resp) - start > 2100);
+      assert(Number(resp) - start <= 30100);
       done();
     });
   });
@@ -122,24 +119,17 @@ describe('Promise', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (apiCall as any)(null)
       .then((response: number[]) => {
-        expect(response).to.be.an('array');
-        expect(response[0]).to.eq(42);
-        expect(deadlineArg).to.be.ok;
+        assert.ok(Array.isArray(response));
+        assert.strictEqual(response[0], 42);
+        assert.ok(deadlineArg);
         done();
       })
       .catch(done);
   });
 
-  it('emits error on failure', done => {
+  it('emits error on failure', async () => {
     const apiCall = createApiCall(fail);
-    apiCall({}, undefined)
-      .then(() => {
-        done(new Error('should not reach'));
-      })
-      .catch(err => {
-        expect(err).to.be.an.instanceOf(Error);
-        done();
-      });
+    await assert.rejects(apiCall({}, undefined));
   });
 
   it('has cancel method', done => {
@@ -156,8 +146,8 @@ describe('Promise', () => {
         done(new Error('should not reach'));
       })
       .catch((err: {code: number}) => {
-        expect(err).to.be.an.instanceOf(GoogleError);
-        expect(err.code).to.equal(status.CANCELLED);
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err.code, status.CANCELLED);
         done();
       });
     promise.cancel();
@@ -196,7 +186,7 @@ describe('Promise', () => {
         done(new Error('should not reach'));
       })
       .catch(() => {
-        expect(callCount).to.be.below(4);
+        assert(callCount < 4);
         done();
       })
       .catch(done);
@@ -210,13 +200,14 @@ describe('Promise', () => {
       callback(null, 42);
     }
     const apiCall = createApiCall(func);
-    expect(
+    assert.strictEqual(
       apiCall({}, undefined, (err, response) => {
-        expect(err).to.be.null;
-        expect(response).to.eq(42);
+        assert.strictEqual(err, null);
+        assert.strictEqual(response, 42);
         done();
-      })
-    ).to.be.undefined;
+      }),
+      undefined
+    );
   });
 });
 
@@ -243,9 +234,9 @@ describe('retryable', () => {
     }
     const apiCall = createApiCall(func, settings);
     apiCall({}, undefined, (err, resp) => {
-      expect(resp).to.eq(1729);
-      expect(toAttempt).to.eq(0);
-      expect(deadlineArg).to.be.ok;
+      assert.strictEqual(resp, 1729);
+      assert.strictEqual(toAttempt, 0);
+      assert(deadlineArg);
       done();
     });
   });
@@ -270,10 +261,10 @@ describe('retryable', () => {
     const apiCall = createApiCall(func, settings);
     apiCall({}, undefined)
       .then(resp => {
-        expect(resp).to.be.an('array');
-        expect(resp[0]).to.eq(1729);
-        expect(toAttempt).to.eq(0);
-        expect(deadlineArg).to.be.ok;
+        assert.ok(Array.isArray(resp));
+        assert.strictEqual(resp[0], 1729);
+        assert.strictEqual(toAttempt, 0);
+        assert.ok(deadlineArg);
         done();
       })
       .catch(done);
@@ -302,7 +293,7 @@ describe('retryable', () => {
         done(new Error('should not reach'));
       })
       .catch((err: Error) => {
-        expect(err).to.be.an.instanceOf(Error);
+        assert(err instanceof Error);
         done();
       });
   });
@@ -316,10 +307,10 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
     apiCall({}, undefined, err => {
-      expect(err).to.be.an('error');
-      expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err!.note).to.be.undefined;
-      expect(spy.callCount).to.eq(1);
+      assert.ok(err instanceof Error);
+      assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
+      assert.strictEqual(err!.note, undefined);
+      assert.strictEqual(spy.callCount, 1);
       done();
     });
   });
@@ -327,8 +318,8 @@ describe('retryable', () => {
   it('aborts retries', done => {
     const apiCall = createApiCall(fail, settings);
     apiCall({}, undefined, err => {
-      expect(err).to.be.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       done();
     });
   });
@@ -338,10 +329,10 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
     apiCall({}, undefined, err => {
-      expect(err).to.be.an('error');
-      expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err!.note).to.be.ok;
-      expect(spy.callCount).to.eq(toAttempt);
+      assert(err instanceof Error);
+      assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
+      assert(err!.note);
+      assert.strictEqual(spy.callCount, toAttempt);
       done();
     });
   });
@@ -366,9 +357,9 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
     apiCall({}, undefined, err => {
-      expect(err).to.be.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.DEADLINE_EXCEEDED);
-      expect(spy.callCount).to.eq(toAttempt);
+      assert.ok(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+      assert.strictEqual(spy.callCount, toAttempt);
       done();
     });
   });
@@ -393,9 +384,9 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
     apiCall({}, undefined, err => {
-      expect(err).to.be.instanceOf(GoogleError);
-      expect(err!.code).to.equal(status.INVALID_ARGUMENT);
-      expect(spy.callCount).to.eq(0);
+      assert(err instanceof GoogleError);
+      assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
+      assert.strictEqual(spy.callCount, 0);
       done();
     });
   });
@@ -409,10 +400,10 @@ describe('retryable', () => {
     const spy = sinon.spy(func);
     const apiCall = createApiCall(spy, settings);
     apiCall({}, undefined, err => {
-      expect(err).to.be.an('error');
-      expect(err!.code).to.eq(FAKE_STATUS_CODE_2);
-      expect(err!.note).to.be.ok;
-      expect(spy.callCount).to.eq(1);
+      assert(err instanceof Error);
+      assert.strictEqual(err!.code, FAKE_STATUS_CODE_2);
+      assert(err!.note);
+      assert.strictEqual(spy.callCount, 1);
       done();
     });
   });
@@ -423,8 +414,8 @@ describe('retryable', () => {
     }
     const apiCall = createApiCall(func, settings);
     apiCall({}, undefined, (err, resp) => {
-      expect(err).to.be.null;
-      expect(resp).to.be.null;
+      assert.strictEqual(err, null);
+      assert.strictEqual(resp, null);
       done();
     });
   });
@@ -440,20 +431,20 @@ describe('retryable', () => {
     });
 
     apiCall({}, undefined, err => {
-      expect(err).to.be.an('error');
-      expect(err!.code).to.eq(FAKE_STATUS_CODE_1);
-      expect(err!.note).to.be.ok;
+      assert(err instanceof Error);
+      assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
+      assert(err!.note);
       const now = new Date();
-      expect(now.getTime() - startTime.getTime()).to.be.at.least(
-        backoff.totalTimeoutMillis!
+      assert(
+        now.getTime() - startTime.getTime() >= backoff.totalTimeoutMillis!
       );
       const callsLowerBound =
         backoff.totalTimeoutMillis! /
         (backoff.maxRetryDelayMillis + backoff.maxRpcTimeoutMillis!);
       const callsUpperBound =
         backoff.totalTimeoutMillis! / backoff.initialRetryDelayMillis;
-      expect(spy.callCount).to.be.above(callsLowerBound);
-      expect(spy.callCount).to.be.below(callsUpperBound);
+      assert(spy.callCount > callsLowerBound);
+      assert(spy.callCount < callsUpperBound);
       done();
     });
   });
@@ -522,8 +513,8 @@ describe('retryable', () => {
       h2: 'val2',
     };
     apiCall({}, {otherArgs: {headers}}).then(() => {
-      expect(gotHeaders.h1).to.deep.equal('val1');
-      expect(gotHeaders.h2).to.deep.equal('val2');
+      assert.strictEqual(gotHeaders.h1, 'val1');
+      assert.strictEqual(gotHeaders.h2, 'val2');
       done();
     });
   });

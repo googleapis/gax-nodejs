@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {expect} from 'chai';
+import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {PathTemplate} from '../../src/pathTemplate';
 
@@ -22,15 +22,15 @@ describe('PathTemplate', () => {
   describe('constructor', () => {
     it('should parse and obtain the correct number of segments', () => {
       const t = new PathTemplate('a/b/**/*/{a=hello/world}');
-      expect(t.segments.length).to.eql(12);
-      expect(t.size).to.eql(6);
+      assert.strictEqual(t.segments.length, 5);
+      assert.strictEqual(t.size, 5);
     });
 
     it('should fail on multiple path wildcards', () => {
       const shouldFail = () => {
         return new PathTemplate('buckets/*/**/**/objects/*');
       };
-      expect(shouldFail).to.throw(TypeError);
+      assert.throws(shouldFail, TypeError);
     });
   });
 
@@ -39,9 +39,7 @@ describe('PathTemplate', () => {
       const t = new PathTemplate('hello/world');
       const mismatches = ['hello', 'hello/world/fail'];
       mismatches.forEach(m => {
-        expect(() => {
-          t.match(m);
-        }).to.throw(TypeError);
+        assert.throws(() => t.match(m), TypeError);
       });
     });
 
@@ -49,9 +47,7 @@ describe('PathTemplate', () => {
       const t = new PathTemplate('hello/world');
       const mismatches = ['hello/world2', 'hello/world3'];
       mismatches.forEach(m => {
-        expect(() => {
-          t.match(m);
-        }).to.throw(TypeError);
+        assert.throws(() => t.match(m), TypeError);
       });
     });
 
@@ -83,26 +79,57 @@ describe('PathTemplate', () => {
       ];
       tests.forEach(t => {
         const template = new PathTemplate(t.template);
-        expect(template.match(t.path)).to.eql(t.want);
+        assert.deepStrictEqual(template.match(t.path), t.want);
       });
     });
 
     it('should match escaped chars', () => {
       const template = new PathTemplate('buckets/*/objects');
       const want = {$0: 'hello%2F%2Bworld'};
-      expect(template.match('buckets/hello%2F%2Bworld/objects')).to.eql(want);
+      assert.deepStrictEqual(
+        template.match('buckets/hello%2F%2Bworld/objects'),
+        want
+      );
     });
 
     it('should match template with unbounded wildcard', () => {
       const template = new PathTemplate('buckets/*/objects/**');
       const want = {$0: 'foo', $1: 'bar/baz'};
-      expect(template.match('buckets/foo/objects/bar/baz')).to.eql(want);
+      assert.deepStrictEqual(
+        template.match('buckets/foo/objects/bar/baz'),
+        want
+      );
     });
 
     it('should match template with unbound in the middle', () => {
       const template = new PathTemplate('bar/**/foo/*');
       const want = {$0: 'foo/foo', $1: 'bar'};
-      expect(template.match('bar/foo/foo/foo/bar')).to.eql(want);
+      assert.deepStrictEqual(template.match('bar/foo/foo/foo/bar'), want);
+    });
+
+    it('should match template with non-slash resource patterns', () => {
+      const template = new PathTemplate(
+        'user/{user_id}/blurbs/legacy/{blurb_a}-{blurb_b}~{legacy_user}'
+      );
+      const want = {
+        user_id: 'foo',
+        blurb_a: 'bara',
+        blurb_b: 'barb',
+        legacy_user: 'user',
+      };
+      assert.deepStrictEqual(
+        template.match('user/foo/blurbs/legacy/bara-barb~user'),
+        want
+      );
+    });
+
+    it('should not match template with malformed non-slash resource patterns', () => {
+      const template = new PathTemplate(
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+      );
+      assert.throws(() => {
+        template.match('user/foo/blurbs/legacy/bar~user2');
+      }, TypeError);
     });
   });
 
@@ -116,7 +143,7 @@ describe('PathTemplate', () => {
         $3: 'google.com:a-b',
       };
       const want = 'buckets/f/o/o/objects/google.com:a-b';
-      expect(template.render(params)).to.eql(want);
+      assert.strictEqual(template.render(params), want);
     });
 
     it('should fail when there are too few variables', () => {
@@ -126,9 +153,9 @@ describe('PathTemplate', () => {
         $1: 'o',
         $2: 'o',
       };
-      expect(() => {
+      assert.throws(() => {
         template.render(params);
-      }).to.throw(TypeError);
+      }, TypeError);
     });
 
     it('should succeed with an unbound in the middle', () => {
@@ -138,7 +165,7 @@ describe('PathTemplate', () => {
         $1: '3',
       };
       const want = 'bar/1/2/foo/3';
-      expect(template.render(params)).to.eql(want);
+      assert.strictEqual(template.render(params), want);
     });
 
     it('should accept both strings and numbers as values', () => {
@@ -150,7 +177,21 @@ describe('PathTemplate', () => {
         session: 123,
       };
       const want = 'projects/testProject/sessions/123';
-      expect(template.render(params)).to.eql(want);
+      assert.strictEqual(template.render(params), want);
+    });
+
+    it('should render non-slash resource', () => {
+      const template = new PathTemplate(
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}/project/{project}'
+      );
+      const params = {
+        user_id: 'foo',
+        blurb_id: 'bar',
+        legacy_user: 'user2',
+        project: 'pp',
+      };
+      const want = 'user/foo/blurbs/legacy/bar.user2/project/pp';
+      assert.strictEqual(template.render(params), want);
     });
   });
 
@@ -161,13 +202,15 @@ describe('PathTemplate', () => {
       '/buckets/{hello}': 'buckets/{hello=*}',
       '/buckets/{hello=what}/{world}': 'buckets/{hello=what}/{world=*}',
       '/buckets/helloazAZ09-.~_what': 'buckets/helloazAZ09-.~_what',
+      'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}':
+        'user/{user_id=*}/blurbs/legacy/{blurb_id=*}.{legacy_user=*}',
     };
 
     Object.keys(tests).forEach(template => {
       const want = tests[template];
       it(`should render template ${template} ok`, () => {
         const t = new PathTemplate(template);
-        expect(t.inspect()).to.eql(want);
+        assert.strictEqual(t.inspect(), want);
       });
     });
   });
