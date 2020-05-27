@@ -351,7 +351,7 @@ describe('paged iteration', () => {
       });
     });
 
-    it.only('cooperates with google-cloud-node usage', done => {
+    it('cooperates with google-cloud-node usage', done => {
       let stream;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const output = streamEvents((pumpify as any).obj()) as pumpify;
