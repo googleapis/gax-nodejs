@@ -35,8 +35,6 @@ export class PathTemplate {
   constructor(data: string) {
     this.data = data;
     this.segments = this.parsePathTemplate(data);
-    console.warn('this.bindings: ', this.bindings);
-    console.warn('this.segments: ', this.segments);
     this.size = this.segments.length;
   }
 
@@ -75,7 +73,6 @@ export class PathTemplate {
         } else {
           let segment = this.segments[index];
           const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*})/g) || [];
-          console.warn(variable);
           if (segment.includes('**')) {
             bindings[variable[0]] = pathSegments[0] + '/' + pathSegments[1];
             pathSegments = pathSegments.slice(2);
