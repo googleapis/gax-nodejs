@@ -76,6 +76,13 @@ describe('PathTemplate', () => {
             hello: 'world',
           },
         },
+        {
+          path: 'buckets/long-door-651',
+          template: 'buckets/{project}',
+          want: {
+            project: 'long-door-651',
+          },
+        },
       ];
       tests.forEach(t => {
         const template = new PathTemplate(t.template);
@@ -143,6 +150,14 @@ describe('PathTemplate', () => {
         $3: 'google.com:a-b',
       };
       const want = 'buckets/f/o/o/objects/google.com:a-b';
+      assert.strictEqual(template.render(params), want);
+    });
+    it('should render atomic resource', () => {
+      const template = new PathTemplate('buckets/{project=*}');
+      const params = {
+        project: 'long-project-name',
+      };
+      const want = 'buckets/long-project-name';
       assert.strictEqual(template.render(params), want);
     });
 
