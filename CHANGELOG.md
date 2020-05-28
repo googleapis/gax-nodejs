@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.4.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.4.0...v2.4.1) (2020-05-28)
+
+
+### Bug Fixes
+
+* fix match logic for path template ([#834](https://www.github.com/googleapis/gax-nodejs/issues/834)) ([d0d5782](https://www.github.com/googleapis/gax-nodejs/commit/d0d5782dd6172786cd9f4826034ca573a5642a9a))
+
 ## [2.4.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.3.1...v2.4.0) (2020-05-21)
 
 
