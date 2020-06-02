@@ -69,9 +69,8 @@ export function retryable(
     let timeoutId: ReturnType<typeof setTimeout> | null;
     let now = new Date();
     let deadline: number;
-    const startTime = now.getTime();
     if (retry.backoffSettings.totalTimeoutMillis) {
-      deadline = startTime + retry.backoffSettings.totalTimeoutMillis;
+      deadline = now.getTime() + retry.backoffSettings.totalTimeoutMillis;
     }
     let retries = 0;
     const maxRetries = retry.backoffSettings.maxRetries!;
@@ -81,9 +80,8 @@ export function retryable(
     function repeat() {
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
-        const timeCost = now.getTime() - startTime;
         const error = new GoogleError(
-          `Function takes ${timeCost} milliseconds which exceeds retry total timeout ${retry.backoffSettings.totalTimeoutMillis} milliseconds before any response was received.`
+          `Retry total timeout exceeded ${retry.backoffSettings.totalTimeoutMillis} milliseconds before any response was received.`
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
