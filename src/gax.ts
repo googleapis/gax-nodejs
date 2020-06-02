@@ -658,7 +658,7 @@ export function constructSettings(
         )!
       );
     }
-
+    const apiName = serviceName;
     defaults[jsName] = new CallSettings({
       timeout,
       retry,
@@ -666,6 +666,7 @@ export function constructSettings(
         ? createBundleOptions(bundlingConfig)
         : null,
       otherArgs,
+      apiName,
     });
   }
 
