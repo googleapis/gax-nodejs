@@ -110,6 +110,7 @@ describe('gax construct settings', () => {
     );
     let settings = defaults.bundlingMethod;
     assert.strictEqual(settings.timeout, 40000);
+    assert.strictEqual(settings.apiName, SERVICE_NAME);
     expectRetryOptions(settings.retry);
     assert.deepStrictEqual(settings.retry.retryCodes, [1, 2]);
     assert.strictEqual(settings.otherArgs, otherArgs);

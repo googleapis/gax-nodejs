@@ -88,7 +88,8 @@ export function createApiCall(
           return retryable(
             func,
             thisSettings.retry!,
-            thisSettings.otherArgs as GRPCCallOtherArgs
+            thisSettings.otherArgs as GRPCCallOtherArgs,
+            thisSettings.apiName
           );
         }
         return addTimeoutArg(
