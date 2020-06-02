@@ -371,7 +371,7 @@ describe('retryable', () => {
       assert.ok(err instanceof GoogleError);
       assert.strictEqual(
         err.message,
-        'Function  takes 100 milliseconds which exceeds retry total timeout 100 milliseconds before any response was received. The retry settings is {"initialRetryDelayMillis":0,"retryDelayMultiplier":0,"maxRetryDelayMillis":0,"initialRpcTimeoutMillis":0,"rpcTimeoutMultiplier":0,"maxRpcTimeoutMillis":0,"totalTimeoutMillis":100}.'
+        'Function takes 100 milliseconds which exceeds retry total timeout 100 milliseconds before any response was received.'
       );
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       done();
