@@ -213,7 +213,9 @@ describe('Promise', () => {
 
 describe('retryable', () => {
   const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
-  const settings = {settings: {timeout: 0, retry: retryOptions, apiName: 'TestApi'}};
+  const settings = {
+    settings: {timeout: 0, retry: retryOptions, apiName: 'TestApi'},
+  };
 
   it('retries the API call', done => {
     let toAttempt = 3;

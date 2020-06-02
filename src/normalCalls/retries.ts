@@ -46,7 +46,7 @@ export function retryable(
   func: GRPCCall,
   retry: RetryOptions,
   otherArgs: GRPCCallOtherArgs,
-  apiName?: string,
+  apiName?: string
 ): SimpleCallbackFunction {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
