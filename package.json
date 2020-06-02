@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -50,7 +50,7 @@
     "execa": "^4.0.0",
     "file-loader": "^6.0.0",
     "fs-extra": "^9.0.0",
-    "google-proto-files": "^2.0.0",
+    "google-proto-files": "^2.1.0",
     "gts": "^2.0.0",
     "is-docker": "^2.0.0",
     "json-loader": "^0.5.7",
