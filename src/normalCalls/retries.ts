@@ -45,7 +45,8 @@ import {addTimeoutArg} from './timeout';
 export function retryable(
   func: GRPCCall,
   retry: RetryOptions,
-  otherArgs: GRPCCallOtherArgs
+  otherArgs: GRPCCallOtherArgs,
+  apiName?: string
 ): SimpleCallbackFunction {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
@@ -81,7 +82,7 @@ export function retryable(
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         const error = new GoogleError(
-          'Retry total timeout exceeded before any response was received'
+          `Total timeout of API ${apiName} exceeded ${retry.backoffSettings.totalTimeoutMillis} milliseconds before any response was received.`
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
