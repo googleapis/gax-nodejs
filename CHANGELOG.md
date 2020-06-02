@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.5.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.4.1...v2.5.0) (2020-06-02)
+
+
+### Features
+
+* support proto3 optional fields in exported protos ([#841](https://www.github.com/googleapis/gax-nodejs/issues/841)) ([1e43774](https://www.github.com/googleapis/gax-nodejs/commit/1e43774869525e9195a94627231bd81da0859e4a))
+
 ### [2.4.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.4.0...v2.4.1) (2020-05-28)
 
 
