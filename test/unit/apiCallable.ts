@@ -364,6 +364,20 @@ describe('retryable', () => {
     });
   });
 
+  it('retry fails for exceeding total timeout', done => {
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, settings);
+    apiCall({}, undefined, err => {
+      assert.ok(err instanceof GoogleError);
+      assert.strictEqual(
+        err.message,
+        'Function  takes 100 milliseconds which exceeds retry total timeout 100 milliseconds before any response was received. The retry settings is {"initialRetryDelayMillis":0,"retryDelayMultiplier":0,"maxRetryDelayMillis":0,"initialRpcTimeoutMillis":0,"rpcTimeoutMultiplier":0,"maxRpcTimeoutMillis":0,"totalTimeoutMillis":100}.'
+      );
+      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+      done();
+    });
+  });
+
   // maxRetries is unsupported, and intended for internal use only.
   it('errors when totalTimeoutMillis and maxRetries set', done => {
     const maxRetries = 5;

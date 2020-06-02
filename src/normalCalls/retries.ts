@@ -84,7 +84,11 @@ export function retryable(
         const timeCost = now.getTime() - startTime;
         const funcName = func.name;
         const error = new GoogleError(
-          `${funcName} takes ${timeCost} milliseconds which exceeds retry total timeout ${retry.backoffSettings.totalTimeoutMillis} milliseconds before any response was received. The retry settings is ${retry.backoffSettings}.`
+          `Function ${funcName} takes ${timeCost} milliseconds which exceeds retry total timeout ${
+            retry.backoffSettings.totalTimeoutMillis
+          } milliseconds before any response was received. The retry settings is ${JSON.stringify(
+            retry.backoffSettings
+          )}.`
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
