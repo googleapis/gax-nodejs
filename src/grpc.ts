@@ -280,7 +280,7 @@ export class GrpcClient {
     // To keep the existing behavior and avoid libraries breakage, we pass -1 there as suggested.
     grpcOptions['grpc.max_receive_message_length'] = -1;
     grpcOptions['grpc.max_send_message_length'] = -1;
-    grpcOptions['grpc.initial_reconnect_backoff_ms'] = 60000;
+    grpcOptions['grpc.initial_reconnect_backoff_ms'] = 1000;
     Object.keys(options).forEach(key => {
       const value = options[key];
       // the older versions had a bug which required users to call an option

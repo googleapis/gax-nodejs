@@ -129,7 +129,7 @@ describe('Run system tests for some libraries', () => {
     before(async () => {
       await preparePackage('nodejs-kms');
     });
-    it('should pass samples tests', async () => {
+    it.only('should pass samples tests', async () => {
       await runSamplesTest('nodejs-kms');
     });
   });
