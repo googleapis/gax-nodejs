@@ -167,7 +167,7 @@ describe('grpc', () => {
         assert.deepStrictEqual(stub.options, {
           'grpc.max_receive_message_length': -1,
           'grpc.max_send_message_length': -1,
-          'grpc.initial_reconnect_backoff_ms': 5000,
+          // 'grpc.initial_reconnect_backoff_ms': 5000,
         });
       });
     });
