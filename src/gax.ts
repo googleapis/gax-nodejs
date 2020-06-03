@@ -124,6 +124,7 @@ export interface CallOptions {
   bundleOptions?: BundleOptions | null;
   isBundling?: boolean;
   longrunning?: BackoffSettings;
+  apiName?: string;
 }
 
 export class CallSettings {
@@ -138,6 +139,7 @@ export class CallSettings {
   bundleOptions?: BundleOptions | null;
   isBundling: boolean;
   longrunning?: BackoffSettings;
+  apiName?: string;
 
   /**
    * @param {Object} settings - An object containing parameters of this settings.
@@ -170,6 +172,7 @@ export class CallSettings {
     this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
     this.longrunning =
       'longrunning' in settings ? settings.longrunning : undefined;
+    this.apiName = settings.apiName ?? undefined;
   }
 
   /**
@@ -193,6 +196,7 @@ export class CallSettings {
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
+    let apiName = this.apiName;
     if ('timeout' in options) {
       timeout = options.timeout!;
     }
@@ -239,6 +243,9 @@ export class CallSettings {
     if ('longrunning' in options) {
       longrunning = options.longrunning;
     }
+    if ('apiName' in options) {
+      apiName = options.apiName;
+    }
 
     return new CallSettings({
       timeout,
@@ -251,6 +258,7 @@ export class CallSettings {
       maxResults,
       otherArgs,
       isBundling,
+      apiName,
     });
   }
 }
@@ -650,7 +658,7 @@ export function constructSettings(
         )!
       );
     }
-
+    const apiName = serviceName;
     defaults[jsName] = new CallSettings({
       timeout,
       retry,
@@ -658,6 +666,7 @@ export function constructSettings(
         ? createBundleOptions(bundlingConfig)
         : null,
       otherArgs,
+      apiName,
     });
   }
 

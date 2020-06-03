@@ -213,7 +213,9 @@ describe('Promise', () => {
 
 describe('retryable', () => {
   const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
-  const settings = {settings: {timeout: 0, retry: retryOptions}};
+  const settings = {
+    settings: {timeout: 0, retry: retryOptions, apiName: 'TestApi'},
+  };
 
   it('retries the API call', done => {
     let toAttempt = 3;
@@ -360,6 +362,20 @@ describe('retryable', () => {
       assert.ok(err instanceof GoogleError);
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       assert.strictEqual(spy.callCount, toAttempt);
+      done();
+    });
+  });
+
+  it('retry fails for exceeding total timeout', done => {
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, settings);
+    apiCall({}, undefined, err => {
+      assert.ok(err instanceof GoogleError);
+      assert.strictEqual(
+        err.message,
+        'Total timeout of API TestApi exceeded 100 milliseconds before any response was received.'
+      );
+      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       done();
     });
   });
