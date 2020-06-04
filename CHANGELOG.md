@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.6.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.5.0...v2.6.0) (2020-06-04)
+
+
+### Features
+
+* more information for exceed timeout error ([#839](https://www.github.com/googleapis/gax-nodejs/issues/839)) ([c401b80](https://www.github.com/googleapis/gax-nodejs/commit/c401b80bf83752cf1c9755e6e8ce5eea70f698d0))
+
+
+### Bug Fixes
+
+* remove version from protobuf unique root name ([#846](https://www.github.com/googleapis/gax-nodejs/issues/846)) ([9a73bf9](https://www.github.com/googleapis/gax-nodejs/commit/9a73bf933c64df03d74e6799134d3645f8345682))
+* set default values for gRPC parameters ([#840](https://www.github.com/googleapis/gax-nodejs/issues/840)) ([f7ebfb6](https://www.github.com/googleapis/gax-nodejs/commit/f7ebfb6fb3f7f1707debc7274f0af57382107ebc))
+
 ## [2.5.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.4.1...v2.5.0) (2020-06-02)
 
 
