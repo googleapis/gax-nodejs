@@ -267,18 +267,15 @@ export async function generateRootName(directories: string[]): Promise<string> {
   // We need to provide `-r root` option to `pbjs -t static-module`, otherwise
   // we'll have big problems if two different libraries are used together.
   // It's OK to play some guessing game here: if we locate `package.json`
-  // with a package name and version, we'll use it; otherwise, we'll fallback
-  // to 'default'.
+  // with a package name, we'll use it; otherwise, we'll fallback to 'default'.
   for (const directory of directories) {
     const packageJson = path.resolve(directory, '..', 'package.json');
     if (fs.existsSync(packageJson)) {
       const json = JSON.parse((await readFile(packageJson)).toString()) as {
         name: string;
-        version: string;
       };
       const name = json.name.replace(/[^\w\d]/g, '_');
-      const version = json.version.replace(/[^\w\d]/g, '_');
-      const hopefullyUniqueName = `${name}_${version}_protos`;
+      const hopefullyUniqueName = `${name}_protos`;
       return hopefullyUniqueName;
     }
   }
