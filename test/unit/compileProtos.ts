@@ -72,11 +72,7 @@ describe('compileProtos tool', () => {
     );
 
     // check that it uses proper root object; it's taken from fixtures/package.json
-    assert(
-      js
-        .toString()
-        .includes('$protobuf.roots._org_fake_package_42_0_7_prealpha84')
-    );
+    assert(js.toString().includes('$protobuf.roots._org_fake_package'));
 
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
@@ -151,7 +147,7 @@ describe('compileProtos tool', () => {
     const rootName = await compileProtos.generateRootName([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
     ]);
-    assert.strictEqual(rootName, '_org_fake_package_42_0_7_prealpha84_protos');
+    assert.strictEqual(rootName, '_org_fake_package_protos');
   });
 
   it('falls back to the default name for protobuf root if unable to guess', async () => {
