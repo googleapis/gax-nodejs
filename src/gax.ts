@@ -622,6 +622,12 @@ export function constructSettings(
   if (!serviceConfig) {
     return null;
   }
+  // users can override the config from client side, like bundling options.
+  // The detailed structure of the clientConfig can be found here: https://github.com/googleapis/gax-nodejs/blob/master/src/gax.ts#L546
+  // The way to override bundling options:
+  //
+  // const customConfig = {"interfaces": {"service": {"methods": {"methodName": {"bundling": {..}}}}}}
+  // const client = new Client({ projectId, customConfig });
 
   const overrides = (configOverrides.interfaces || {})[serviceName] || {};
   const methods = serviceConfig.methods;
