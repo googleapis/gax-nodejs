@@ -122,8 +122,6 @@ export class PathTemplate {
    *   parsed
    */
   render(bindings: Bindings): string {
-    console.warn('bindings: ', bindings);
-    console.warn('this.binding: ', this.bindings);
     if (Object.keys(bindings).length !== Object.keys(this.bindings).length) {
       throw new TypeError(
         `The number of variables ${
@@ -172,13 +170,10 @@ export class PathTemplate {
    */
   private parsePathTemplate(data: string): string[] {
     const pathSegments = splitPathTemplate(data);
-    console.warn('===> split pathSegments: ', pathSegments);
     let index = 0;
     let wildCardCount = 0;
     const segments: string[] = [];
     pathSegments.forEach(segment => {
-      console.warn('===> segment: ', segment);
-
       // * or ** -> segments.push('{$0=*}');
       //         -> bindings['$0'] = '*'
       if (segment === '*' || segment === '**') {
@@ -232,7 +227,6 @@ export class PathTemplate {
         throw new TypeError('Can not have more than one wildcard.');
       }
     });
-    console.warn('segments: ', segments);
     return segments;
   }
 }
