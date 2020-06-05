@@ -122,6 +122,8 @@ export class PathTemplate {
    *   parsed
    */
   render(bindings: Bindings): string {
+    console.warn('bindings: ', bindings);
+    console.warn('this.binding: ', this.bindings);
     if (Object.keys(bindings).length !== Object.keys(this.bindings).length) {
       throw new TypeError(
         `The number of variables ${
@@ -170,10 +172,13 @@ export class PathTemplate {
    */
   private parsePathTemplate(data: string): string[] {
     const pathSegments = splitPathTemplate(data);
+    console.warn('===> split pathSegments: ', pathSegments);
     let index = 0;
     let wildCardCount = 0;
     const segments: string[] = [];
     pathSegments.forEach(segment => {
+      console.warn('===> segment: ', segment);
+
       // * or ** -> segments.push('{$0=*}');
       //         -> bindings['$0'] = '*'
       if (segment === '*' || segment === '**') {
@@ -182,9 +187,6 @@ export class PathTemplate {
         index = index + 1;
         if (segment === '**') {
           wildCardCount = wildCardCount + 1;
-          if (wildCardCount > 1) {
-            throw new TypeError('Can not have more than one wildcard.');
-          }
         }
       }
       // {project}~{location} -> {project=*}~{location=*}
@@ -208,6 +210,14 @@ export class PathTemplate {
         this.bindings[variable![0]] = '*';
         segments.push(`{${variable![0]}=*}`);
       }
+      // {project=**} -> segments.push('{project=**}');
+      //           -> bindings['project'] = '**'
+      else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+(?=(=\*\*)})/)) {
+        const variable = segment.match(/(?<={)[0-9a-zA-Z-.~_]+(?=(=\*\*)})/);
+        this.bindings[variable![0]] = '**';
+        segments.push(`{${variable![0]}=**}`);
+        wildCardCount = wildCardCount + 1;
+      }
       // {hello=/what} -> segments.push('{hello=/what}');
       //              -> no binding in this case
       else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+=[^*]+(?=})/)) {
@@ -218,7 +228,11 @@ export class PathTemplate {
       else if (segment.match(/[0-9a-zA-Z-.~_]+/)) {
         segments.push(segment);
       }
+      if (wildCardCount > 1) {
+        throw new TypeError('Can not have more than one wildcard.');
+      }
     });
+    console.warn('segments: ', segments);
     return segments;
   }
 }

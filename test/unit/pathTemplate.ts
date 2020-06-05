@@ -32,6 +32,13 @@ describe('PathTemplate', () => {
       };
       assert.throws(shouldFail, TypeError);
     });
+
+    it('should fail on multiple path wildcards', () => {
+      const shouldFail = () => {
+        return new PathTemplate('buckets/*/**/{project=**}/objects/*');
+      };
+      assert.throws(shouldFail, TypeError);
+    });
   });
 
   describe('method `match`', () => {
@@ -150,6 +157,17 @@ describe('PathTemplate', () => {
         $3: 'google.com:a-b',
       };
       const want = 'buckets/f/o/o/objects/google.com:a-b';
+      assert.strictEqual(template.render(params), want);
+    });
+    it('should render atomic resource', () => {
+      const template = new PathTemplate(
+        'projects/{project}/metricDescriptors/{metric_descriptor=**}'
+      );
+      const params = {
+        project: 'project-name',
+        metric_descriptor: 'descriptor',
+      };
+      const want = 'projects/project-name/metricDescriptors/descriptor';
       assert.strictEqual(template.render(params), want);
     });
     it('should render atomic resource', () => {
