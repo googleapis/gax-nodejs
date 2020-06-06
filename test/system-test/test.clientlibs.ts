@@ -83,7 +83,7 @@ async function runSystemTest(packageName: string): Promise<void> {
     stdio: 'inherit',
   });
 }
-
+// nodejs-kms does not have system test.
 async function runSamplesTest(packageName: string): Promise<void> {
   await execa('npm', ['run', 'samples-test'], {
     cwd: packageName,
