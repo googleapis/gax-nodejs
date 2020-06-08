@@ -182,9 +182,6 @@ export class PathTemplate {
         index = index + 1;
         if (segment === '**') {
           wildCardCount = wildCardCount + 1;
-          if (wildCardCount > 1) {
-            throw new TypeError('Can not have more than one wildcard.');
-          }
         }
       }
       // {project}~{location} -> {project=*}~{location=*}
@@ -208,6 +205,14 @@ export class PathTemplate {
         this.bindings[variable![0]] = '*';
         segments.push(`{${variable![0]}=*}`);
       }
+      // {project=**} -> segments.push('{project=**}');
+      //           -> bindings['project'] = '**'
+      else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+(?=(=\*\*)})/)) {
+        const variable = segment.match(/(?<={)[0-9a-zA-Z-.~_]+(?=(=\*\*)})/);
+        this.bindings[variable![0]] = '**';
+        segments.push(`{${variable![0]}=**}`);
+        wildCardCount = wildCardCount + 1;
+      }
       // {hello=/what} -> segments.push('{hello=/what}');
       //              -> no binding in this case
       else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+=[^*]+(?=})/)) {
@@ -217,6 +222,9 @@ export class PathTemplate {
       //              -> no binding in this case
       else if (segment.match(/[0-9a-zA-Z-.~_]+/)) {
         segments.push(segment);
+      }
+      if (wildCardCount > 1) {
+        throw new TypeError('Can not have more than one wildcard.');
       }
     });
     return segments;
