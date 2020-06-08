@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.6.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.6.0...v2.6.1) (2020-06-08)
+
+
+### Bug Fixes
+
+* segment in path template can contain wildcard ([#849](https://www.github.com/googleapis/gax-nodejs/issues/849)) ([225be6e](https://www.github.com/googleapis/gax-nodejs/commit/225be6e8832c89f7bcb6156e6d2bf2e0e20a9f81))
+
 ## [2.6.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.5.0...v2.6.0) (2020-06-04)
 
 
