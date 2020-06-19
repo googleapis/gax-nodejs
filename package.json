@@ -14,7 +14,7 @@
     "compileProtos": "./build/tools/compileProtos.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "~1.0.0",
+    "@grpc/grpc-js": "~1.1.1",
     "@grpc/proto-loader": "^0.5.1",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
