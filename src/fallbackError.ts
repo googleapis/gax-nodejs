@@ -17,6 +17,14 @@
 import * as protobuf from 'protobufjs';
 import {Status} from './status';
 
+// A copy of gRPC ServiceError but with no metadata
+export type FallbackServiceError = FallbackStatusObject & Error;
+interface FallbackStatusObject {
+  code: Status;
+  message: string;
+  details: Array<{}>;
+}
+
 interface ProtobufAny {
   type_url: string;
   value: Uint8Array;
@@ -26,12 +34,6 @@ interface RpcStatus {
   code: number;
   message: string;
   details: ProtobufAny[];
-}
-
-interface DecodedRpcStatus {
-  code: number;
-  message: string;
-  details: Array<{}>;
 }
 
 export class FallbackErrorDecoder {
@@ -63,7 +65,7 @@ export class FallbackErrorDecoder {
   }
 
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
-  decodeRpcStatus(buffer: Buffer | ArrayBuffer): DecodedRpcStatus {
+  decodeRpcStatus(buffer: Buffer | ArrayBuffer): FallbackStatusObject {
     const uint8array = new Uint8Array(buffer);
     const status = (this.statusType.decode(uint8array) as unknown) as RpcStatus;
 
@@ -79,10 +81,9 @@ export class FallbackErrorDecoder {
 
   // Construct an Error from a StatusObject.
   // Adapted from https://github.com/grpc/grpc-node/blob/master/packages/grpc-js/src/call.ts#L79
-  callErrorFromStatus(status: DecodedRpcStatus): Error {
-    const message = `${status.code} ${Status[status.code]}: ${status.message}`;
-    delete status.message;
-    return Object.assign(new Error(message), status);
+  callErrorFromStatus(status: FallbackStatusObject): FallbackServiceError {
+    status.message = `${status.code} ${Status[status.code]}: ${status.message}`;
+    return Object.assign(new Error(status.message), status);
   }
 
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status,
