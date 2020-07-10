@@ -15,6 +15,7 @@
  */
 
 import * as protobuf from 'protobufjs';
+import {Status} from './status';
 
 interface ProtobufAny {
   type_url: string;
@@ -74,5 +75,19 @@ export class FallbackErrorDecoder {
       details: status.details.map(detail => this.decodeProtobufAny(detail)),
     };
     return result;
+  }
+
+  // Construct an Error from a StatusObject.
+  // Adapted from https://github.com/grpc/grpc-node/blob/master/packages/grpc-js/src/call.ts#L79
+  callErrorFromStatus(status: DecodedRpcStatus): Error {
+    const message = `${status.code} ${Status[status.code]}: ${status.message}`;
+    delete status.message;
+    return Object.assign(new Error(message), status);
+  }
+
+  // Decodes gRPC-fallback error which is an instance of google.rpc.Status,
+  // and puts it into the object similar to gRPC ServiceError object.
+  decodeErrorFromBuffer(buffer: Buffer | ArrayBuffer): Error {
+    return this.callErrorFromStatus(this.decodeRpcStatus(buffer));
   }
 }

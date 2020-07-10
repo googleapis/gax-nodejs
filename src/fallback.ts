@@ -333,8 +333,8 @@ export class GrpcClient {
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
             if (!ok) {
-              const status = statusDecoder.decodeRpcStatus(buffer);
-              throw new Error(JSON.stringify(status));
+              const error = statusDecoder.decodeErrorFromBuffer(buffer);
+              throw error;
             }
             serviceCallback(null, new Uint8Array(buffer));
           })
