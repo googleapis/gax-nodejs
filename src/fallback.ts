@@ -35,8 +35,8 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 import {isBrowser} from './isbrowser';
-import {FallbackErrorDecoder} from './fallbackError';
-
+import {FallbackErrorDecoder, FallbackServiceError} from './fallbackError';
+export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
 export {CallSettings, constructSettings, RetryOptions} from './gax';
@@ -333,8 +333,8 @@ export class GrpcClient {
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
             if (!ok) {
-              const status = statusDecoder.decodeRpcStatus(buffer);
-              throw new Error(JSON.stringify(status));
+              const error = statusDecoder.decodeErrorFromBuffer(buffer);
+              throw error;
             }
             serviceCallback(null, new Uint8Array(buffer));
           })

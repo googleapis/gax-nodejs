@@ -252,11 +252,10 @@ describe('grpc-fallback', () => {
   it('should handle an error', done => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Language API
-    const expectedError = {
+    const expectedError = Object.assign(new Error('Error message'), {
       code: 3,
-      message: 'Error message',
       details: [],
-    };
+    });
 
     const fakeFetch = sinon.fake.resolves({
       ok: false,
@@ -272,7 +271,9 @@ describe('grpc-fallback', () => {
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err: Error) => {
-        assert.strictEqual(err.message, JSON.stringify(expectedError));
+        assert(err instanceof Error);
+        assert.strictEqual(err.message, '3 INVALID_ARGUMENT: Error message');
+        assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
         done();
       });
     });

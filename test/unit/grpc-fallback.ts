@@ -242,9 +242,10 @@ describe('grpc-fallback', () => {
     // example of an actual google.rpc.Status error message returned by Language API
     const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
     const errorBin = fs.readFileSync(fixtureName);
+    const expectedMessage =
+      '3 INVALID_ARGUMENT: One of content, or gcs_content_uri must be set.';
     const expectedError = {
       code: 3,
-      message: 'One of content, or gcs_content_uri must be set.',
       details: [
         {
           fieldViolations: [
@@ -267,8 +268,10 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: {message: string}) => {
-        assert.strictEqual(err.message, JSON.stringify(expectedError));
+      echoStub.echo(requestObject, {}, {}, (err: Error) => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.message, expectedMessage);
+        assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
         done();
       });
     });
