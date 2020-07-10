@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.6.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.6.2...v2.6.3) (2020-07-09)
+
+
+### Bug Fixes
+
+* typeo in nodejs .gitattribute ([#864](https://www.github.com/googleapis/gax-nodejs/issues/864)) ([6ae74a9](https://www.github.com/googleapis/gax-nodejs/commit/6ae74a94a6e5b6726459e436783e64bcdd287469))
+
 ### [2.6.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.6.1...v2.6.2) (2020-07-06)
 
 
