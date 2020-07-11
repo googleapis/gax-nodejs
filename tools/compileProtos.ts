@@ -156,6 +156,19 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
   return result.join('\n');
 }
 
+function fixJsFile(js: string): string {
+  // 1. fix protobufjs require: we don't want the libraries to
+  // depend on protobufjs, so we re-export it from google-gax
+  js = js.replace(
+    'require("protobufjs/minimal")',
+    'require("google-gax").protobufMinimal'
+  );
+
+  // 2. add Apache license to the generated .js file
+  js = apacheLicense + js;
+  return js;
+}
+
 function fixDtsFile(dts: string): string {
   // 1. fix for pbts output: the corresponding protobufjs PR
   // https://github.com/protobufjs/protobuf.js/pull/1166
@@ -164,10 +177,17 @@ function fixDtsFile(dts: string): string {
     dts = 'import * as Long from "long";\n' + dts;
   }
 
-  // 2. add Apache license to the generated .d.ts file
+  // 2. fix protobufjs import: we don't want the libraries to
+  // depend on protobufjs, so we re-export it from google-gax
+  dts = dts.replace(
+    'import * as $protobuf from "protobufjs"',
+    'import {protobuf as $protobuf} from "google-gax"'
+  );
+
+  // 3. add Apache license to the generated .d.ts file
   dts = apacheLicense + dts;
 
-  // 3. major hack: update types to allow passing strings
+  // 4. major hack: update types to allow passing strings
   // where enums, longs, or bytes are expected
   const enums = getAllEnums(dts);
   dts = updateDtsTypes(dts, enums);
@@ -243,8 +263,7 @@ async function compileProtos(
   await pbjsMain(pbjsArgs4js);
 
   let jsResult = (await readFile(jsOutput)).toString();
-  // add Apache license to the generated .js file
-  jsResult = apacheLicense + jsResult;
+  jsResult = fixJsFile(jsResult);
   await writeFile(jsOutput, jsResult);
 
   // generate protos/protos.d.ts

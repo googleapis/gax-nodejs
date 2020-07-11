@@ -70,6 +70,8 @@ describe('compileProtos tool', () => {
     assert(
       js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
+    assert(js.toString().includes('require("google-gax").protobufMinimal'));
+    assert(!js.toString().includes('require("protobufjs/minimal")'));
 
     // check that it uses proper root object; it's taken from fixtures/package.json
     assert(js.toString().includes('$protobuf.roots._org_fake_package'));
@@ -81,6 +83,10 @@ describe('compileProtos tool', () => {
     assert(
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
+    assert(
+      ts.toString().includes('import {protobuf as $protobuf} from "google-gax"')
+    );
+    assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
 
   it('writes an empty object if no protos are given', async () => {
