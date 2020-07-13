@@ -78,8 +78,7 @@ export const version = require('../../package.json').version;
 
 import * as protobuf from 'protobufjs';
 export {protobuf};
-import * as protobufMinimal from 'protobufjs/minimal';
-export {protobufMinimal};
+export * as protobufMinimal from 'protobufjs/minimal';
 
 import * as fallback from './fallback';
 export {fallback};
