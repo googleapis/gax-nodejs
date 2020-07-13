@@ -413,6 +413,7 @@ export function createApiCall(
 }
 
 export {protobuf};
+export * as protobufMinimal from 'protobufjs/minimal';
 
 // Different environments or bundlers may or may not respect "browser" field
 // in package.json (e.g. Electron does not respect it, but if you run the code
