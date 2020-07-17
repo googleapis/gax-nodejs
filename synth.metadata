@@ -4,7 +4,7 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/gax-nodejs.git",
-        "sha": "d0b7680bc67d484bb8389808ddff238ef6598c69"
+        "sha": "a2e1c4ac2dd5512bf821ed5db8975afbdf276797"
       }
     },
     {
