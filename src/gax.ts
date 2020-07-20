@@ -77,6 +77,16 @@ export class RetryOptions {
   }
 }
 
+export interface RetryRequestOptions {
+  objectMode?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  request?: any;
+  retries?: number;
+  noResponseRetries?: number;
+  currentRetryAttempt?: number;
+  shouldRetryFn?: () => boolean;
+}
+
 /**
  * Parameters to the exponential backoff algorithm for retrying.
  * @typedef {Object} BackoffSettings
@@ -125,6 +135,7 @@ export interface CallOptions {
   isBundling?: boolean;
   longrunning?: BackoffSettings;
   apiName?: string;
+  retryRequestOptions?: RetryRequestOptions;
 }
 
 export class CallSettings {
@@ -140,6 +151,7 @@ export class CallSettings {
   isBundling: boolean;
   longrunning?: BackoffSettings;
   apiName?: string;
+  retryRequestOptions?: RetryRequestOptions;
 
   /**
    * @param {Object} settings - An object containing parameters of this settings.
@@ -173,6 +185,7 @@ export class CallSettings {
     this.longrunning =
       'longrunning' in settings ? settings.longrunning : undefined;
     this.apiName = settings.apiName ?? undefined;
+    this.retryRequestOptions = settings.retryRequestOptions;
   }
 
   /**
@@ -197,6 +210,7 @@ export class CallSettings {
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
     let apiName = this.apiName;
+    let retryRequestOptions = this.retryRequestOptions;
     if ('timeout' in options) {
       timeout = options.timeout!;
     }
@@ -246,6 +260,9 @@ export class CallSettings {
     if ('apiName' in options) {
       apiName = options.apiName;
     }
+    if ('retryRequestOptions' in options) {
+      retryRequestOptions = options.retryRequestOptions;
+    }
 
     return new CallSettings({
       timeout,
@@ -259,6 +276,7 @@ export class CallSettings {
       otherArgs,
       isBundling,
       apiName,
+      retryRequestOptions,
     });
   }
 }
