@@ -28,6 +28,7 @@ import {warn} from '../warnings';
 
 import {StreamDescriptor} from './streamDescriptor';
 import {StreamProxy, StreamType} from './streaming';
+import {CallSettings} from '../gax';
 
 export class StreamingApiCaller implements APICaller {
   descriptor: StreamDescriptor;
@@ -77,10 +78,10 @@ export class StreamingApiCaller implements APICaller {
   call(
     apiCall: SimpleCallbackFunction,
     argument: {},
-    settings: {},
+    settings: CallSettings,
     stream: StreamProxy
   ) {
-    stream.setStream(apiCall, argument);
+    stream.setStream(apiCall, argument, settings.retryRequestOptions);
   }
 
   fail(stream: CancellableStream, err: Error) {

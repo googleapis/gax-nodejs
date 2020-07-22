@@ -76,7 +76,9 @@
     "ts-loader": "^8.0.0",
     "typescript": "^3.8.3",
     "webpack": "^4.34.0",
-    "webpack-cli": "^3.3.4"
+    "webpack-cli": "^3.3.4",
+    "@microsoft/api-documenter": "^7.8.10",
+    "@microsoft/api-extractor": "^7.8.10"
   },
   "scripts": {
     "docs": "compodoc src/",
@@ -96,7 +98,9 @@
     "predocs-test": "npm run docs",
     "browser-test": "karma start",
     "prelint": "cd samples; npm link ../; npm install",
-    "precompile": "gts clean"
+    "precompile": "gts clean",
+    "api-extractor": "api-extractor run --local",
+    "api-documenter": "api-documenter yaml --input-folder=temp"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [

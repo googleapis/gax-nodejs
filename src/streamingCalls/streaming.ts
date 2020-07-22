@@ -24,6 +24,7 @@ import {
   GRPCCallResult,
   SimpleCallbackFunction,
 } from '../apitypes';
+import {RetryRequestOptions} from '../gax';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -141,7 +142,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {ApiCall} apiCall - the API function to be called.
    * @param {Object} argument - the argument to be passed to the apiCall.
    */
-  setStream(apiCall: SimpleCallbackFunction, argument: {}) {
+  setStream(
+    apiCall: SimpleCallbackFunction,
+    argument: {},
+    retryRequestOptions: RetryRequestOptions = {}
+  ) {
     if (this.type === StreamType.SERVER_STREAMING) {
       const retryStream = retryRequest(null, {
         objectMode: true,
@@ -157,6 +162,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           this.forwardEvents(stream);
           return stream;
         },
+        retries: retryRequestOptions!.retries,
+        currentRetryAttempt: retryRequestOptions!.currentRetryAttempt,
+        noResponseRetries: retryRequestOptions!.noResponseRetries,
+        shouldRetryFn: retryRequestOptions!.shouldRetryFn,
       });
       this.setReadable(retryStream);
       return;
