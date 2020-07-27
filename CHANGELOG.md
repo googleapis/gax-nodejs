@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.7.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.6.3...v2.7.0) (2020-07-24)
+
+
+### Features
+
+* add retryRequestOptions to call settings ([#879](https://www.github.com/googleapis/gax-nodejs/issues/879)) ([aa5487b](https://www.github.com/googleapis/gax-nodejs/commit/aa5487b97f0346d0e4c3e67f0c1aedea2f128de5))
+* no protobuf dependency in generated js, d.ts ([#868](https://www.github.com/googleapis/gax-nodejs/issues/868)) ([d0b7680](https://www.github.com/googleapis/gax-nodejs/commit/d0b7680bc67d484bb8389808ddff238ef6598c69))
+* properly decode error in fallback scenario, export FallbackServiceError type ([#866](https://www.github.com/googleapis/gax-nodejs/issues/866)) ([af15e53](https://www.github.com/googleapis/gax-nodejs/commit/af15e5367211a9c4df9584158fd91f8efab562ee))
+
 ### [2.6.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.6.2...v2.6.3) (2020-07-09)
 
 
