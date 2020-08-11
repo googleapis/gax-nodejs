@@ -243,7 +243,8 @@ describe('paged iteration', () => {
       stream: Stream,
       onEnd: Function,
       done: (...args: string[]) => void,
-      start: number
+      start: number,
+      onError: (error: Error) => void = () => {}
     ) {
       let counter = start;
       stream
@@ -255,7 +256,10 @@ describe('paged iteration', () => {
           onEnd();
           done();
         })
-        .on('error', done);
+        .on('error', error => {
+          onError(error);
+          done();
+        });
     }
 
     it('returns a stream', done => {
@@ -374,6 +378,76 @@ describe('paged iteration', () => {
           done();
         })
         .on('error', done);
+    });
+
+    describe('failed locations', () => {
+      const locations = [
+        ['location1', 'location3'],
+        ['location5', 'location7'],
+      ];
+      let locationsIndex = 0;
+      function sendFailedLocations(
+        request: {pageToken?: number},
+        metadata: {},
+        options: {},
+        callback: APICallback
+      ) {
+        const pageToken = request.pageToken || 0;
+        if (pageToken >= pageSize * pagesToStream) {
+          callback(null, {nums: []});
+        } else {
+          const nums = new Array(pageSize);
+          for (let i = 0; i < pageSize; i++) {
+            nums[i] = pageToken + i;
+          }
+          callback(null, {
+            nums,
+            nextPageToken: pageToken + pageSize,
+            failedLocations: locations[locationsIndex++],
+          });
+        }
+      }
+
+      it('should error with combined failed locations info after streaming all results', done => {
+        let callCount = 0;
+        function failedLocationsFunc(
+          request: {},
+          metadata: {},
+          options: {},
+          callback: APICallback
+        ) {
+          callCount++;
+          if (callCount % 2 === 0) {
+            sendFailedLocations(request, metadata, options, callback);
+          } else {
+            func(request, metadata, options, callback);
+          }
+        }
+        const spy = sinon.spy(failedLocationsFunc);
+        const apiCall = util.createApiCall(spy, createOptions);
+        const onData = sinon.spy();
+        // @ts-ignore incomplete options
+        const stream = descriptor.createStream(apiCall, {}, null);
+        stream.on('data', onData);
+        streamChecker(
+          stream,
+          () => assert.ifError('should not have emited an end'),
+          done,
+          0,
+          err => {
+            assert.strictEqual(onData.callCount, pagesToStream * pageSize);
+            assert.deepStrictEqual(
+              err,
+              new Error(
+                `Resources from the following locations are currently not available\n${JSON.stringify(
+                  [...locations[0], ...locations[1]]
+                )}`
+              )
+            );
+            assert.strictEqual(spy.callCount, pagesToStream + 1);
+          }
+        );
+      });
     });
   });
 });
