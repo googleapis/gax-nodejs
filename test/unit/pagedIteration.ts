@@ -243,8 +243,7 @@ describe('paged iteration', () => {
       stream: Stream,
       onEnd: Function,
       done: (...args: string[]) => void,
-      start: number,
-      onError: (error: Error) => void = () => {}
+      start: number
     ) {
       let counter = start;
       stream
@@ -256,10 +255,7 @@ describe('paged iteration', () => {
           onEnd();
           done();
         })
-        .on('error', error => {
-          onError(error);
-          done();
-        });
+        .on('error', done);
     }
 
     it('returns a stream', done => {
@@ -269,6 +265,19 @@ describe('paged iteration', () => {
         () => {
           assert.strictEqual(spy.callCount, pagesToStream + 1);
         },
+        done,
+        0
+      );
+    });
+
+    it('emits response event with apiCall', done => {
+      const onRespone = sinon.spy();
+      // @ts-ignore incomplete optio
+      const stream = descriptor.createStream(apiCall, {}, null);
+      stream.on('response', onRespone);
+      streamChecker(
+        stream,
+        () => assert.strictEqual(onRespone.callCount, pagesToStream + 1),
         done,
         0
       );
@@ -310,15 +319,17 @@ describe('paged iteration', () => {
 
     it('caps the elements by maxResults', done => {
       const onData = sinon.spy();
+      const onResponse = sinon.spy();
       const stream =
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, {maxResults: pageSize * 2 + 2});
-      stream.on('data', onData);
+      stream.on('data', onData).on('response', onResponse);
       streamChecker(
         stream,
         () => {
           assert.strictEqual(spy.callCount, 3);
           assert.strictEqual(onData.callCount, pageSize * 2 + 2);
+          assert.strictEqual(onResponse.callCount, spy.callCount);
         },
         done,
         0
@@ -380,13 +391,10 @@ describe('paged iteration', () => {
         .on('error', done);
     });
 
-    describe('failed locations', () => {
-      const locations = [
-        ['location1', 'location3'],
-        ['location5', 'location7'],
-      ];
-      let locationsIndex = 0;
-      function sendFailedLocations(
+    describe('response', () => {
+      let nums: number[] = [];
+      let nextPageToken: number | undefined = undefined;
+      function sendResponse(
         request: {pageToken?: number},
         metadata: {},
         options: {},
@@ -394,58 +402,35 @@ describe('paged iteration', () => {
       ) {
         const pageToken = request.pageToken || 0;
         if (pageToken >= pageSize * pagesToStream) {
-          callback(null, {nums: []});
+          nums = [];
+          nextPageToken = undefined;
         } else {
-          const nums = new Array(pageSize);
+          nums = new Array(pageSize);
           for (let i = 0; i < pageSize; i++) {
             nums[i] = pageToken + i;
           }
-          callback(null, {
-            nums,
-            nextPageToken: pageToken + pageSize,
-            failedLocations: locations[locationsIndex++],
-          });
+          nextPageToken = pageToken + pageSize;
         }
+        callback(null, {nums, nextPageToken});
       }
 
-      it('should error with combined failed locations info after streaming all results', done => {
-        let callCount = 0;
-        function failedLocationsFunc(
-          request: {},
-          metadata: {},
-          options: {},
-          callback: APICallback
-        ) {
-          callCount++;
-          if (callCount % 2 === 0) {
-            sendFailedLocations(request, metadata, options, callback);
-          } else {
-            func(request, metadata, options, callback);
-          }
-        }
-        const spy = sinon.spy(failedLocationsFunc);
+      it('should emit response object', done => {
+        const spy = sinon.spy(sendResponse);
         const apiCall = util.createApiCall(spy, createOptions);
-        const onData = sinon.spy();
+        function onResponse(response: {}) {
+          assert.deepStrictEqual(response, {nums, nextPageToken});
+        }
+        const onResponseSpy = sinon.spy(onResponse);
         // @ts-ignore incomplete options
         const stream = descriptor.createStream(apiCall, {}, null);
-        stream.on('data', onData);
+        stream.on('response', onResponseSpy);
         streamChecker(
           stream,
-          () => assert.ifError('should not have emited an end'),
+          () => {
+            assert.strictEqual(onResponseSpy.callCount, spy.callCount);
+          },
           done,
-          0,
-          err => {
-            assert.strictEqual(onData.callCount, pagesToStream * pageSize);
-            assert.deepStrictEqual(
-              err,
-              new Error(
-                `Resources from the following locations are currently not available\n${JSON.stringify(
-                  [...locations[0], ...locations[1]]
-                )}`
-              )
-            );
-            assert.strictEqual(spy.callCount, pagesToStream + 1);
-          }
+          0
         );
       });
     });

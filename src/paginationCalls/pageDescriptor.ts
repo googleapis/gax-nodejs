@@ -60,20 +60,18 @@ export class PageDescriptor implements Descriptor {
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
-    let failedLocations: string[] = [];
     function callback(
       err: Error | null,
       resources: Array<{}>,
       next: {},
-      apiResp: {failedLocations: string[]}
+      apiResp: {}
     ) {
       if (err) {
         stream.emit('error', err);
         return;
       }
-      if (apiResp.failedLocations) {
-        failedLocations = failedLocations.concat(apiResp.failedLocations);
-      }
+      // emit full api response with every page.
+      stream.emit('response', apiResp);
       for (let i = 0; i < resources.length; ++i) {
         if (ended(stream)) {
           return;
@@ -84,37 +82,14 @@ export class PageDescriptor implements Descriptor {
         stream.push(resources[i]);
         pushCount++;
         if (pushCount === maxResults) {
-          if (failedLocations.length > 0) {
-            stream.emit(
-              'error',
-              new Error(
-                `Resources from the following locations are currently not available\n${JSON.stringify(
-                  failedLocations
-                )}`
-              )
-            );
-            return;
-          } else {
-            stream.end();
-          }
+          stream.end();
         }
       }
       if (ended(stream)) {
         return;
       }
       if (!next) {
-        if (failedLocations.length > 0) {
-          stream.emit(
-            'error',
-            new Error(
-              `Resources from the following locations are currently not available\n${JSON.stringify(
-                failedLocations
-              )}`
-            )
-          );
-        } else {
-          stream.end();
-        }
+        stream.end();
         return;
       }
       // When pageToken is specified in the original options, it will overwrite
