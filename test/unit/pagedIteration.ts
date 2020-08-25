@@ -271,13 +271,13 @@ describe('paged iteration', () => {
     });
 
     it('emits response event with apiCall', done => {
-      const onRespone = sinon.spy();
-      // @ts-ignore incomplete optio
+      const onResponse = sinon.spy();
+      // @ts-ignore incomplete option
       const stream = descriptor.createStream(apiCall, {}, null);
-      stream.on('response', onRespone);
+      stream.on('response', onResponse);
       streamChecker(
         stream,
-        () => assert.strictEqual(onRespone.callCount, pagesToStream + 1),
+        () => assert.strictEqual(onResponse.callCount, pagesToStream + 1),
         done,
         0
       );
