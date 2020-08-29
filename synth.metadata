@@ -4,15 +4,65 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/gax-nodejs.git",
-        "sha": "3c30c052f473a807594355315adc4e10947fb730"
+        "sha": "eb7aa446dabf420d65831cd151b8b3076e087c71"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "89d431fb2975fc4e0ed24995a6e6dfc8ff4c24fa"
+        "sha": "94421c47802f56a44c320257b2b4c190dc7d6b68"
       }
     }
+  ],
+  "generatedFiles": [
+    ".eslintignore",
+    ".eslintrc.json",
+    ".gitattributes",
+    ".github/ISSUE_TEMPLATE/bug_report.md",
+    ".github/ISSUE_TEMPLATE/feature_request.md",
+    ".github/ISSUE_TEMPLATE/support_request.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/publish.yml",
+    ".github/release-please.yml",
+    ".github/workflows/ci.yaml",
+    ".kokoro/.gitattributes",
+    ".kokoro/common.cfg",
+    ".kokoro/continuous/node10/common.cfg",
+    ".kokoro/continuous/node10/docs.cfg",
+    ".kokoro/continuous/node10/lint.cfg",
+    ".kokoro/continuous/node10/samples-test.cfg",
+    ".kokoro/continuous/node10/system-test.cfg",
+    ".kokoro/continuous/node10/test.cfg",
+    ".kokoro/continuous/node12/common.cfg",
+    ".kokoro/continuous/node12/test.cfg",
+    ".kokoro/docs.sh",
+    ".kokoro/lint.sh",
+    ".kokoro/populate-secrets.sh",
+    ".kokoro/presubmit/node10/common.cfg",
+    ".kokoro/presubmit/node10/samples-test.cfg",
+    ".kokoro/presubmit/node10/system-test.cfg",
+    ".kokoro/presubmit/node12/common.cfg",
+    ".kokoro/presubmit/node12/test.cfg",
+    ".kokoro/publish.sh",
+    ".kokoro/release/docs-devsite.cfg",
+    ".kokoro/release/docs-devsite.sh",
+    ".kokoro/release/docs.cfg",
+    ".kokoro/release/docs.sh",
+    ".kokoro/release/publish.cfg",
+    ".kokoro/samples-test.sh",
+    ".kokoro/system-test.sh",
+    ".kokoro/test.bat",
+    ".kokoro/test.sh",
+    ".kokoro/trampoline.sh",
+    ".mocharc.js",
+    ".nycrc",
+    ".prettierignore",
+    ".prettierrc.js",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "api-extractor.json",
+    "renovate.json",
+    "samples/README.md"
   ]
 }
