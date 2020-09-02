@@ -17,6 +17,17 @@
 
 set -eo pipefail
 
+## Make Chrome work: install missing things - to be moved to Docker image
+DIRNAME=`pwd`
+mkdir -p ~/libxss1
+cd ~/libxss1
+wget http://http.us.debian.org/debian/pool/main/libx/libxss/libxss1_1.2.3-1_amd64.deb
+ar x libxss1_1.2.3-1_amd64.deb
+tar xJf data.tar.xz
+export LD_LIBRARY_PATH=`pwd`/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+cd $DIRNAME
+## End of Chrome fix
+
 export NPM_CONFIG_PREFIX=/home/node/.npm-global
 
 # Setup service account credentials.
