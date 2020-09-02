@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.8.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.7.0...v2.8.0) (2020-09-02)
+
+
+### Features
+
+* emit 'response' with every page ([#887](https://www.github.com/googleapis/gax-nodejs/issues/887)) ([9c7f983](https://www.github.com/googleapis/gax-nodejs/commit/9c7f98336edd75b6b5ce954b093d449d40def290)), closes [/github.com/googleapis/googleapis/blob/94fe3637559a257634d7b47a15bb8d976daff788/google/bigtable/admin/v2/bigtable_instance_admin.proto#L541](https://www.github.com/googleapis//github.com/googleapis/googleapis/blob/94fe3637559a257634d7b47a15bb8d976daff788/google/bigtable/admin/v2/bigtable_instance_admin.proto/issues/L541) [/github.com/googleapis/gax-nodejs/blob/eb7aa446dabf420d65831cd151b8b3076e087c71/src/paginationCalls/pageDescriptor.ts#L63](https://www.github.com/googleapis//github.com/googleapis/gax-nodejs/blob/eb7aa446dabf420d65831cd151b8b3076e087c71/src/paginationCalls/pageDescriptor.ts/issues/L63)
+
 ## [2.7.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.6.3...v2.7.0) (2020-07-24)
 
 
