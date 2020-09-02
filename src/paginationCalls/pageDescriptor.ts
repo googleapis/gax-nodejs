@@ -60,11 +60,18 @@ export class PageDescriptor implements Descriptor {
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
     let pushCount = 0;
     let started = false;
-    function callback(err: Error | null, resources: Array<{}>, next: {}) {
+    function callback(
+      err: Error | null,
+      resources: Array<{}>,
+      next: {},
+      apiResp: {}
+    ) {
       if (err) {
         stream.emit('error', err);
         return;
       }
+      // emit full api response with every page.
+      stream.emit('response', apiResp);
       for (let i = 0; i < resources.length; ++i) {
         if (ended(stream)) {
           return;

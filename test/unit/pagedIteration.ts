@@ -270,6 +270,19 @@ describe('paged iteration', () => {
       );
     });
 
+    it('emits response event with apiCall', done => {
+      const onResponse = sinon.spy();
+      // @ts-ignore incomplete option
+      const stream = descriptor.createStream(apiCall, {}, null);
+      stream.on('response', onResponse);
+      streamChecker(
+        stream,
+        () => assert.strictEqual(onResponse.callCount, pagesToStream + 1),
+        done,
+        0
+      );
+    });
+
     it('stops in the middle', done => {
       // @ts-ignore incomplete options
       const stream = descriptor.createStream(apiCall, {}, null);
@@ -306,15 +319,17 @@ describe('paged iteration', () => {
 
     it('caps the elements by maxResults', done => {
       const onData = sinon.spy();
+      const onResponse = sinon.spy();
       const stream =
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, {maxResults: pageSize * 2 + 2});
-      stream.on('data', onData);
+      stream.on('data', onData).on('response', onResponse);
       streamChecker(
         stream,
         () => {
           assert.strictEqual(spy.callCount, 3);
           assert.strictEqual(onData.callCount, pageSize * 2 + 2);
+          assert.strictEqual(onResponse.callCount, spy.callCount);
         },
         done,
         0
@@ -374,6 +389,50 @@ describe('paged iteration', () => {
           done();
         })
         .on('error', done);
+    });
+
+    describe('response', () => {
+      let nums: number[] = [];
+      let nextPageToken: number | undefined = undefined;
+      function sendResponse(
+        request: {pageToken?: number},
+        metadata: {},
+        options: {},
+        callback: APICallback
+      ) {
+        const pageToken = request.pageToken || 0;
+        if (pageToken >= pageSize * pagesToStream) {
+          nums = [];
+          nextPageToken = undefined;
+        } else {
+          nums = new Array(pageSize);
+          for (let i = 0; i < pageSize; i++) {
+            nums[i] = pageToken + i;
+          }
+          nextPageToken = pageToken + pageSize;
+        }
+        callback(null, {nums, nextPageToken});
+      }
+
+      it('should emit response object', done => {
+        const spy = sinon.spy(sendResponse);
+        const apiCall = util.createApiCall(spy, createOptions);
+        function onResponse(response: {}) {
+          assert.deepStrictEqual(response, {nums, nextPageToken});
+        }
+        const onResponseSpy = sinon.spy(onResponse);
+        // @ts-ignore incomplete options
+        const stream = descriptor.createStream(apiCall, {}, null);
+        stream.on('response', onResponseSpy);
+        streamChecker(
+          stream,
+          () => {
+            assert.strictEqual(onResponseSpy.callCount, spy.callCount);
+          },
+          done,
+          0
+        );
+      });
     });
   });
 });
