@@ -51,7 +51,7 @@
     "file-loader": "^6.0.0",
     "fs-extra": "^9.0.0",
     "google-proto-files": "^2.1.0",
-    "gts": "^2.0.0",
+    "gts": "^3.0.0-alpha.1",
     "is-docker": "^2.0.0",
     "json-loader": "^0.5.7",
     "karma": "^5.0.0",
