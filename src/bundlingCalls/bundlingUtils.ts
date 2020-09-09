@@ -18,7 +18,7 @@
  * Provides behavior that supports request bundling.
  */
 
-import at = require('lodash.at');
+import dlv = require('dlv');
 import {RequestType} from '../apitypes';
 
 /**
@@ -39,7 +39,7 @@ export function computeBundleId(
   const ids: unknown[] = [];
   let hasIds = false;
   for (let i = 0; i < discriminatorFields.length; ++i) {
-    const id = at(obj, discriminatorFields[i])[0];
+    const id = dlv(obj, discriminatorFields[i]);
     if (id === undefined) {
       ids.push(null);
     } else {
