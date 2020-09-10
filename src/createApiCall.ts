@@ -85,6 +85,9 @@ export function createApiCall(
         func = currentApiCaller.wrap(func);
         const retry = thisSettings.retry;
         if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
+          retry.backoffSettings.initialRpcTimeoutMillis =
+            retry.backoffSettings.initialRpcTimeoutMillis ||
+            thisSettings.timeout;
           return retryable(
             func,
             thisSettings.retry!,
