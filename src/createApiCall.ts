@@ -31,6 +31,7 @@ import {Descriptor} from './descriptor';
 import {CallOptions, CallSettings} from './gax';
 import {retryable} from './normalCalls/retries';
 import {addTimeoutArg} from './normalCalls/timeout';
+import {StreamingApiCaller} from './streamingCalls/streamingApiCaller';
 
 /**
  * Converts an rpc call into an API call governed by the settings.
@@ -83,8 +84,16 @@ export function createApiCall(
       .then((func: GRPCCall) => {
         // Initially, the function is just what gRPC server stub contains.
         func = currentApiCaller.wrap(func);
+
+        const streaming = (currentApiCaller as StreamingApiCaller).descriptor
+          ?.streaming;
         const retry = thisSettings.retry;
-        if (retry && retry.retryCodes && retry.retryCodes.length > 0) {
+        if (
+          !streaming &&
+          retry &&
+          retry.retryCodes &&
+          retry.retryCodes.length > 0
+        ) {
           retry.backoffSettings.initialRpcTimeoutMillis =
             retry.backoffSettings.initialRpcTimeoutMillis ||
             thisSettings.timeout;
