@@ -101,6 +101,40 @@ describe('createApiCall', () => {
       done();
     });
   });
+
+  it('default to `timeout` for idempotent API calls', done => {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: {getTime: Function}},
+      callback: Function
+    ) {
+      callback(null, options.deadline.getTime());
+    }
+
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions([1], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      },
+    });
+
+    const start = new Date().getTime();
+    apiCall({}, undefined, (err, resp) => {
+      // The verifying value is slightly bigger than the expected number
+      // 2000 / 30000, because sometimes runtime can consume some time before
+      // the call starts.
+      assert(Number(resp) - start > 2100);
+      assert(Number(resp) - start <= 30100);
+      done();
+    });
+  });
 });
 
 describe('Promise', () => {
