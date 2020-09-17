@@ -21,7 +21,7 @@
     "duplexify": "^3.6.0",
     "google-auth-library": "^6.0.0",
     "is-stream-ended": "^0.1.4",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "protobufjs": "^6.9.0",
     "retry-request": "^4.0.0",
     "semver": "^6.0.0",
