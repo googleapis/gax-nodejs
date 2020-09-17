@@ -42,7 +42,7 @@ export function computeBundleId(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let currentObj: any = obj;
     for (const pathPart of pathParts) {
-      currentObj = currentObj[pathPart];
+      currentObj = currentObj?.[pathPart];
     }
     const id = currentObj;
     if (id === undefined) {
