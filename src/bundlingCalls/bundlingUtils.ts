@@ -18,7 +18,6 @@
  * Provides behavior that supports request bundling.
  */
 
-import at = require('lodash.at');
 import {RequestType} from '../apitypes';
 
 /**
@@ -38,8 +37,14 @@ export function computeBundleId(
 ) {
   const ids: unknown[] = [];
   let hasIds = false;
-  for (let i = 0; i < discriminatorFields.length; ++i) {
-    const id = at(obj, discriminatorFields[i])[0];
+  for (const field of discriminatorFields) {
+    const pathParts = field.split('.');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let currentObj: any = obj;
+    for (const pathPart of pathParts) {
+      currentObj = currentObj[pathPart];
+    }
+    const id = currentObj;
     if (id === undefined) {
       ids.push(null);
     } else {
