@@ -18,7 +18,6 @@
  * Provides behavior that supports request bundling.
  */
 
-import at = require('lodash.at');
 import {RequestType} from '../apitypes';
 
 /**
@@ -38,8 +37,8 @@ export function computeBundleId(
 ) {
   const ids: unknown[] = [];
   let hasIds = false;
-  for (let i = 0; i < discriminatorFields.length; ++i) {
-    const id = at(obj, discriminatorFields[i])[0];
+  for (const field of discriminatorFields) {
+    const id = at(obj, field);
     if (id === undefined) {
       ids.push(null);
     } else {
@@ -51,4 +50,29 @@ export function computeBundleId(
     return undefined;
   }
   return JSON.stringify(ids);
+}
+
+/**
+ * Given an object field path that may contain dots, dig into the obj and find
+ * the value at the given path.
+ * @example
+ * const obj = {
+ *   a: {
+ *     b: 5
+ *   }
+ * }
+ * const id = at(obj, 'a.b');
+ * // id = 5
+ * @param field Path to the property with `.` notation
+ * @param obj The object to traverse
+ * @returns the value at the given path
+ */
+function at(obj: {}, field: string) {
+  const pathParts = field.split('.');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let currentObj: any = obj;
+  for (const pathPart of pathParts) {
+    currentObj = currentObj?.[pathPart];
+  }
+  return currentObj;
 }
