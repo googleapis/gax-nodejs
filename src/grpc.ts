@@ -22,7 +22,6 @@ import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as semver from 'semver';
-import * as walk from 'walkdir';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -35,10 +34,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
-const COMMON_PROTO_FILES = walk
-  .sync(googleProtoFilesDir)
-  .filter(f => path.extname(f) === '.proto')
-  .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
+import * as COMMON_PROTO_FILES from './protosList.json';
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;

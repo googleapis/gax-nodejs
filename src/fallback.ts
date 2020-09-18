@@ -318,7 +318,9 @@ export class GrpcClient {
         const fetch = isBrowser()
           ? // eslint-disable-next-line no-undef
             window.fetch
-          : ((nodeFetch as unknown) as NodeFetchType);
+          : typeof nodeFetch === 'function'
+          ? ((nodeFetch as unknown) as NodeFetchType)
+          : ((nodeFetch.default as unknown) as NodeFetchType); // Webpack is weird
         fetch(url, {
           headers,
           method: 'post',

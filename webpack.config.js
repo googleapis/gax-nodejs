@@ -17,10 +17,12 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/fallback.ts',
+  target: 'node',
+  entry: './src/index.ts',
   output: {
-    library: 'Gax',
-    filename: './gax.js',
+    filename: './gax-bundled.js',
+    path: path.resolve(__dirname, 'build/src'),
+    libraryTarget: 'commonjs',
   },
   resolve: {
     extensions: ['.ts', '.js', '.json'],
@@ -28,12 +30,15 @@ module.exports = {
       '../../package.json': path.resolve(__dirname, 'package.json'),
       '../../protos/operations.json': path.resolve(
         __dirname,
-        'protos/operations.json'
+        './protos/operations.json'
       ),
-      '../../protos/status.json': path.resolve(__dirname, 'protos/status.json'),
+      '../../protos/status.json': path.resolve(
+        __dirname,
+        './protos/status.json'
+      ),
       '../../protos/iam_service.json': path.resolve(
         __dirname,
-        'protos/iam_service.json'
+        './protos/iam_service.json'
       ),
     },
   },
@@ -44,18 +49,10 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
-      {
-        test: /node_modules[\\/]retry-request[\\/]/,
-        use: 'null-loader',
-      },
-      {
-        test: /node_modules[\\/]google-auth-library/,
-        use: 'null-loader',
-      },
     ],
   },
-  node: {
-    fs: 'empty',
-  },
   mode: 'production',
+  node: {
+    __dirname: false,
+  },
 };

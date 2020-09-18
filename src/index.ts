@@ -14,23 +14,51 @@
  * limitations under the License.
  */
 
+const startTime = new Date().getTime();
+
+import * as protobuf from 'protobufjs';
+console.log('imported protobufjs', new Date().getTime() - startTime);
+
+export {protobuf};
+export * as protobufMinimal from 'protobufjs/minimal';
+console.log('imported protobufjs minimal', new Date().getTime() - startTime);
+
 import * as grpc from '@grpc/grpc-js';
-import {GrpcClient, GrpcClientOptions} from './grpc';
-import * as IamProtos from '../protos/iam_service';
-import * as operationsProtos from '../protos/operations';
-import * as operationsClient from './operationsClient';
-import * as routingHeader from './routingHeader';
+export {grpc};
+console.log('imported @grpc/grpc-js', new Date().getTime() - startTime);
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {grpc};
+console.log('imported google-auth-library', new Date().getTime() - startTime);
+
+import {GrpcClient, GrpcClientOptions} from './grpc';
+console.log('imported grpc.ts', new Date().getTime() - startTime);
+
+import * as IamProtos from '../protos/iam_service';
+console.log('imported iam protos', new Date().getTime() - startTime);
+
+import * as operationsProtos from '../protos/operations';
+console.log('imported operations protos', new Date().getTime() - startTime);
+
+import * as operationsClient from './operationsClient';
+console.log('imported operations client', new Date().getTime() - startTime);
+
+import * as routingHeader from './routingHeader';
+console.log('imported routing header', new Date().getTime() - startTime);
+
 export {CancellablePromise, OngoingCall} from './call';
+console.log('imported call.ts', new Date().getTime() - startTime);
+
 export {createApiCall} from './createApiCall';
+console.log('imported createApiCall.ts', new Date().getTime() - startTime);
+
 export {
   BundleDescriptor,
   LongrunningDescriptor,
   PageDescriptor,
   StreamDescriptor,
 } from './descriptor';
+console.log('imported descriptor.ts', new Date().getTime() - startTime);
+
 export {
   CallOptions,
   CallSettings,
@@ -44,7 +72,11 @@ export {
   createDefaultBackoffSettings,
   createMaxRetriesBackoffSettings,
 } from './gax';
+console.log('imported gax.ts', new Date().getTime() - startTime);
+
 export {GoogleError} from './googleError';
+console.log('imported googleError.ts', new Date().getTime() - startTime);
+
 export {
   ClientStub,
   ClientStubOptions,
@@ -55,10 +87,20 @@ export {
   Metadata,
   MetadataValue,
 } from './grpc';
+console.log('imported grpc.ts', new Date().getTime() - startTime);
+
 export {Operation, operation} from './longRunningCalls/longrunning';
+console.log('imported longrunning.ts', new Date().getTime() - startTime);
+
 export {PathTemplate} from './pathTemplate';
+console.log('imported pathTemplate.ts', new Date().getTime() - startTime);
+
 export {Status} from './status';
+console.log('imported status.ts', new Date().getTime() - startTime);
+
 export {StreamType} from './streamingCalls/streaming';
+console.log('imported streamingCalls.ts', new Date().getTime() - startTime);
+
 export {routingHeader};
 
 function lro(options: GrpcClientOptions) {
@@ -72,15 +114,17 @@ lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
 export {lro, operationsProtos, IamProtos};
 export {OperationsClient} from './operationsClient';
+console.log('imported operationsClient.ts', new Date().getTime() - startTime);
+
 export {IamClient} from './iamService';
+console.log('imported iamService.ts', new Date().getTime() - startTime);
+
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
-
-import * as protobuf from 'protobufjs';
-export {protobuf};
-export * as protobufMinimal from 'protobufjs/minimal';
+console.log('imported package.json', new Date().getTime() - startTime);
 
 import * as fallback from './fallback';
+console.log('imported fallback.ts', new Date().getTime() - startTime);
 export {fallback};
 
 export {
@@ -94,6 +138,7 @@ export {
   GaxCall,
   CancellableStream,
 } from './apitypes';
+console.log('imported apitypes.ts', new Date().getTime() - startTime);
 
 export {
   ClientOptions,
@@ -103,5 +148,10 @@ export {
   PaginationCallback,
   PaginationResponse,
 } from './clientInterface';
+console.log('imported clientInterface.ts', new Date().getTime() - startTime);
 
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
+console.log(
+  'imported @grpc/grpc-js (again!)',
+  new Date().getTime() - startTime
+);
