@@ -24,8 +24,7 @@
     "node-fetch": "^2.6.1",
     "protobufjs": "^6.9.0",
     "retry-request": "^4.0.0",
-    "semver": "^6.0.0",
-    "walkdir": "^0.4.0"
+    "semver": "^6.0.0"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.7",
@@ -71,6 +70,7 @@
     "stream-events": "^1.0.4",
     "ts-loader": "^8.0.0",
     "typescript": "^3.8.3",
+    "walkdir": "^0.4.0",
     "webpack": "^4.34.0",
     "webpack-cli": "^3.3.4",
     "@microsoft/api-documenter": "^7.8.10",
@@ -78,7 +78,6 @@
   },
   "scripts": {
     "docs": "compodoc src/",
-    "gen-parser": "pegjs src/pathTemplateParser.pegjs",
     "pretest": "npm run prepare",
     "test": "c8 mocha build/test/unit",
     "lint": "gts check",
@@ -96,7 +95,8 @@
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
     "api-extractor": "api-extractor run --local",
-    "api-documenter": "api-documenter yaml --input-folder=temp"
+    "api-documenter": "api-documenter yaml --input-folder=temp",
+    "update-protos": "node ./build/tools/listProtos.js"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
