@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
+import * as protobuf from 'protobufjs';
+export {protobuf};
+export * as protobufMinimal from 'protobufjs/minimal';
 import * as grpc from '@grpc/grpc-js';
+export {grpc};
+export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import {GrpcClient, GrpcClientOptions} from './grpc';
 import * as IamProtos from '../protos/iam_service';
 import * as operationsProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
-
-export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
-export {grpc};
 export {CancellablePromise, OngoingCall} from './call';
 export {createApiCall} from './createApiCall';
 export {
@@ -75,14 +77,8 @@ export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
-
-import * as protobuf from 'protobufjs';
-export {protobuf};
-export * as protobufMinimal from 'protobufjs/minimal';
-
 import * as fallback from './fallback';
 export {fallback};
-
 export {
   APICallback,
   GRPCCallResult,
@@ -94,7 +90,6 @@ export {
   GaxCall,
   CancellableStream,
 } from './apitypes';
-
 export {
   ClientOptions,
   Descriptors,
@@ -103,5 +98,4 @@ export {
   PaginationCallback,
   PaginationResponse,
 } from './clientInterface';
-
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';

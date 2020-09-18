@@ -21,7 +21,6 @@ import * as grpc from '@grpc/grpc-js';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
 
