@@ -21,7 +21,6 @@ import * as grpc from '@grpc/grpc-js';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import * as semver from 'semver';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -96,10 +95,11 @@ export class GrpcClient {
     this.auth = options.auth || new GoogleAuth(options);
     this.fallback = false;
 
-    const minimumVersion = '10.0.0';
-    if (semver.lt(process.version, minimumVersion)) {
+    const minimumVersion = 10;
+    const major = Number(process.version.match(/^v(\d+)/)?.[1]);
+    if (Number.isNaN(major) || major < minimumVersion) {
       const errorMessage =
-        `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit: ` +
+        `Node.js v${minimumVersion}.0.0 is a minimum requirement. To learn about legacy version support visit: ` +
         'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
       throw new Error(errorMessage);
     }
