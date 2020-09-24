@@ -28,7 +28,7 @@
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.7",
     "@types/download": "^6.2.4",
-    "@types/fs-extra": "^8.0.1",
+    "@types/fs-extra": "^9.0.0",
     "@types/mocha": "^8.0.0",
     "@types/ncp": "^2.0.1",
     "@types/node": "^10.3.2",
