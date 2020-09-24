@@ -4,6 +4,23 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.9.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.8.0...v2.9.0) (2020-09-24)
+
+
+### Features
+
+* use timeout for idempotent API calls ([#912](https://www.github.com/googleapis/gax-nodejs/issues/912)) ([414e9ad](https://www.github.com/googleapis/gax-nodejs/commit/414e9ad10dcecfef09f88315553d80792d6d75c0)), closes [#896](https://www.github.com/googleapis/gax-nodejs/issues/896)
+
+
+### Bug Fixes
+
+* allow callOptions.retry settings with grpc streaming calls ([#901](https://www.github.com/googleapis/gax-nodejs/issues/901)) ([533de29](https://www.github.com/googleapis/gax-nodejs/commit/533de2990b6f84edb83b6168e6ea4c8afefd65ab)), closes [/github.com/googleapis/gax-nodejs/blob/73b9d0d06fc24fdd11e5a408a396c082df57d177/src/streamingCalls/streaming.ts#L119](https://www.github.com/googleapis//github.com/googleapis/gax-nodejs/blob/73b9d0d06fc24fdd11e5a408a396c082df57d177/src/streamingCalls/streaming.ts/issues/L119) [/github.com/googleapis/gax-nodejs/blob/master/src/createApiCall.ts#L88](https://www.github.com/googleapis//github.com/googleapis/gax-nodejs/blob/master/src/createApiCall.ts/issues/L88)
+* **deps:** bump node-fetch ([#900](https://www.github.com/googleapis/gax-nodejs/issues/900)) ([eacd382](https://www.github.com/googleapis/gax-nodejs/commit/eacd3821cece6bf354f069a78c6439b8b417b813))
+* **deps:** drop semver dependency ([#907](https://www.github.com/googleapis/gax-nodejs/issues/907)) ([527b85a](https://www.github.com/googleapis/gax-nodejs/commit/527b85af73b822298e4d74849ab5dead3a15bf1a))
+* **deps:** update dependency duplexify to v4 ([#910](https://www.github.com/googleapis/gax-nodejs/issues/910)) ([4c6b862](https://www.github.com/googleapis/gax-nodejs/commit/4c6b862fc18079e9741012eef2335fc5902739f9))
+* drop dependencies on lodash ([#903](https://www.github.com/googleapis/gax-nodejs/issues/903)) ([96bf499](https://www.github.com/googleapis/gax-nodejs/commit/96bf499f86c3f873912739caa0fd8612800c5287))
+* use timeout for idempotent API calls ([#896](https://www.github.com/googleapis/gax-nodejs/issues/896)) ([9e57fd9](https://www.github.com/googleapis/gax-nodejs/commit/9e57fd9a2124a5b37611c0b87895ad147ff047d6))
+
 ## [2.8.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.7.0...v2.8.0) (2020-09-02)
 
 
