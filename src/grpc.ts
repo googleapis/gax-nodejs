@@ -21,8 +21,6 @@ import * as grpc from '@grpc/grpc-js';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import * as semver from 'semver';
-import * as walk from 'walkdir';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -35,10 +33,11 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
-const COMMON_PROTO_FILES = walk
-  .sync(googleProtoFilesDir)
-  .filter(f => path.extname(f) === '.proto')
-  .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
+import * as commonProtoFiles from './protosList.json';
+// use the correct path separator for the OS we are running on
+const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
+  file.replace(/[/\\]/g, path.sep)
+);
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;
@@ -96,10 +95,11 @@ export class GrpcClient {
     this.auth = options.auth || new GoogleAuth(options);
     this.fallback = false;
 
-    const minimumVersion = '10.0.0';
-    if (semver.lt(process.version, minimumVersion)) {
+    const minimumVersion = 10;
+    const major = Number(process.version.match(/^v(\d+)/)?.[1]);
+    if (Number.isNaN(major) || major < minimumVersion) {
       const errorMessage =
-        `Node.js v${minimumVersion} is a minimum requirement. To learn about legacy version support visit: ` +
+        `Node.js v${minimumVersion}.0.0 is a minimum requirement. To learn about legacy version support visit: ` +
         'https://github.com/googleapis/google-cloud-node#supported-nodejs-versions';
       throw new Error(errorMessage);
     }
