@@ -18,7 +18,7 @@
 
 import * as assert from 'assert';
 import * as sinon from 'sinon';
-import {describe, it} from 'mocha';
+import {afterEach, describe, it} from 'mocha';
 import {PassThrough} from 'stream';
 
 import {GaxCallStream, GRPCCall} from '../../src/apitypes';
@@ -43,6 +43,10 @@ function createApiCallStreaming(
 }
 
 describe('streaming', () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it('handles server streaming', done => {
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
@@ -145,6 +149,41 @@ describe('streaming', () => {
     s.write(arg);
     s.write(arg);
     s.end();
+  });
+
+  it('allows custome CallOptions.retry settings', done => {
+    sinon
+      .stub(streaming.StreamProxy.prototype, 'forwardEvents')
+      .callsFake(stream => {
+        assert(stream instanceof internal.Stream);
+        done();
+      });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      return s;
+    });
+
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+
+    apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions([1], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      }
+    );
   });
 
   it('forwards metadata and status', done => {
