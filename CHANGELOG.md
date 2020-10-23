@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.9.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.9.0...v2.9.1) (2020-10-23)
+
+
+### Bug Fixes
+
+* properly bundle requests with snake_case ([#921](https://www.github.com/googleapis/gax-nodejs/issues/921)) ([279fb36](https://www.github.com/googleapis/gax-nodejs/commit/279fb369447eca178df39f115f34f69544746ec0))
+
 ## [2.9.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.8.0...v2.9.0) (2020-09-24)
 
 
