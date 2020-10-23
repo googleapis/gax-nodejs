@@ -977,4 +977,53 @@ describe('bundleable', () => {
     });
     p.cancel();
   });
+
+  it('properly processes camel case fields', done => {
+    const descriptor = new BundleDescriptor(
+      'data',
+      ['log_name'],
+      'data',
+      byteLength
+    );
+    const settings = {
+      settings: {bundleOptions},
+      descriptor,
+    };
+    const spy = sinon.spy(func);
+    const callback = sinon.spy(() => {
+      if (callback.callCount === 4) {
+        assert.strictEqual(spy.callCount, 2); // we expect two requests, each has two items
+        done();
+      }
+    });
+    const apiCall = createApiCall(spy, settings);
+    apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
+      if (err) {
+        done(err);
+      } else {
+        callback();
+      }
+    });
+    apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
+      if (err) {
+        done(err);
+      } else {
+        callback();
+      }
+    });
+    apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
+      if (err) {
+        done(err);
+      } else {
+        callback();
+      }
+    });
+    apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
+      if (err) {
+        done(err);
+      } else {
+        callback();
+      }
+    });
+  });
 });
