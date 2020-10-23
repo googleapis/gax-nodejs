@@ -22,6 +22,32 @@ import {BundleApiCaller} from './bundleApiCaller';
 import {BundleExecutor} from './bundleExecutor';
 
 /**
+ * Capitalizes the first character of the given string.
+ */
+function capitalize(str: string) {
+  if (str.length === 0) {
+    return str;
+  }
+  return str[0].toUpperCase() + str.slice(1);
+}
+
+/**
+ * Converts a given string from snake_case (normally used in proto definitions) to
+ * camelCase (used by protobuf.js)
+ */
+function toCamelCase(str: string) {
+  // split on spaces, non-alphanumeric, or capital letters
+  const splitted = str
+    .split(/(?=[A-Z])|[\s\W_]+/)
+    .filter(w => w.length > 0)
+    .map(word => word.toLowerCase());
+  if (splitted.length === 0) {
+    return str;
+  }
+  return [splitted[0], ...splitted.slice(1).map(capitalize)].join('');
+}
+
+/**
  * A descriptor for calls that can be bundled into one call.
  */
 export class BundleDescriptor implements Descriptor {
@@ -68,7 +94,9 @@ export class BundleDescriptor implements Descriptor {
       subresponseField = null;
     }
     this.bundledField = bundledField;
-    this.requestDiscriminatorFields = requestDiscriminatorFields;
+    this.requestDiscriminatorFields = requestDiscriminatorFields.map(
+      toCamelCase
+    );
     this.subresponseField = subresponseField;
     this.byteLengthFunction = byteLengthFunction;
   }
