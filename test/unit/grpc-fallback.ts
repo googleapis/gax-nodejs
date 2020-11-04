@@ -15,6 +15,7 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable no-undef */
 
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
@@ -26,6 +27,9 @@ import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
+
+// @ts-ignore
+const hasAbortController = typeof AbortController !== 'undefined';
 
 const authClient = {
   getRequestHeaders() {
@@ -129,7 +133,10 @@ describe('grpc-fallback', () => {
     echoService: protobuf.Service,
     stubOptions: {};
   const createdAbortControllers: string[] = [];
-  const savedAbortController = abortController.AbortController;
+  // @ts-ignore
+  const savedAbortController = hasAbortController
+    ? AbortController
+    : abortController.AbortController;
 
   before(() => {
     stubOptions = {
@@ -146,7 +153,7 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    const AbortController = function () {
+    const FakeAbortController = function () {
       // @ts-ignore
       this.abort = function () {
         // @ts-ignore
@@ -156,8 +163,13 @@ describe('grpc-fallback', () => {
       createdAbortControllers.push(this);
     };
 
-    // @ts-ignore
-    abortController.AbortController = AbortController;
+    if (hasAbortController) {
+      // @ts-ignore
+      AbortController = FakeAbortController;
+    } else {
+      // @ts-ignore
+      abortController.AbortController = FakeAbortController;
+    }
   });
 
   beforeEach(() => {
@@ -169,8 +181,13 @@ describe('grpc-fallback', () => {
   });
 
   after(() => {
-    // @ts-ignore
-    abortController.AbortController = savedAbortController;
+    if (hasAbortController) {
+      // @ts-ignore
+      AbortController = savedAbortController;
+    } else {
+      // @ts-ignore
+      abortController.AbortController = savedAbortController;
+    }
   });
 
   it('should send grpc-web version in the header', () => {
