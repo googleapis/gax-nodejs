@@ -15,6 +15,7 @@
  */
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable no-undef */
 
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
@@ -28,7 +29,7 @@ import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
 
 // @ts-ignore
-const hasAbortController = typeof AbortController !== "undefined";
+const hasAbortController = typeof AbortController !== 'undefined';
 
 const authClient = {
   getRequestHeaders() {
@@ -133,7 +134,9 @@ describe('grpc-fallback', () => {
     stubOptions: {};
   const createdAbortControllers: string[] = [];
   // @ts-ignore
-  const savedAbortController = hasAbortController? AbortController : abortController.AbortController;
+  const savedAbortController = hasAbortController
+    ? AbortController
+    : abortController.AbortController;
 
   before(() => {
     stubOptions = {
@@ -159,7 +162,6 @@ describe('grpc-fallback', () => {
       // @ts-ignore
       createdAbortControllers.push(this);
     };
-
 
     if (hasAbortController) {
       // @ts-ignore
