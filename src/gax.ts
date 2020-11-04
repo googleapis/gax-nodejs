@@ -215,7 +215,7 @@ export class CallSettings {
       timeout = options.timeout!;
     }
     if ('retry' in options) {
-      retry = mergeRetryOptions(retry!, options.retry!);
+      retry = mergeRetryOptions(retry || ({} as RetryOptions), options.retry!);
     }
 
     if ('autoPaginate' in options && !options.autoPaginate) {
@@ -519,17 +519,17 @@ function mergeRetryOptions(
     return retry;
   }
 
-  const codes = overrides.retryCodes
-    ? overrides.retryCodes
-    : retry
-    ? retry.retryCodes
-    : null;
+  const codes = overrides.retryCodes ? overrides.retryCodes : retry.retryCodes;
+  // : retry
+  // ? retry.retryCodes
+  // : null;
 
   const backoffSettings = overrides.backoffSettings
     ? overrides.backoffSettings
-    : retry
-    ? retry.backoffSettings
-    : null;
+    : retry.backoffSettings;
+  // : retry
+  // ? retry.backoffSettings
+  // : null;
   return createRetryOptions(codes!, backoffSettings!);
 }
 
