@@ -216,20 +216,39 @@ describe('streaming', () => {
     let receivedMetadata: {};
     let receivedStatus: {};
     let receivedResponse: {};
+    let finished = false;
+
+    function check() {
+      if (
+        typeof receivedMetadata !== 'undefined' &&
+        typeof receivedStatus !== 'undefined' &&
+        typeof receivedResponse !== 'undefined' &&
+        finished
+      ) {
+        assert.deepStrictEqual(receivedMetadata, responseMetadata);
+        assert.deepStrictEqual(receivedStatus, status);
+        assert.deepStrictEqual(receivedResponse, expectedResponse);
+        done();
+      }
+    }
+
+    // Note: in Node v15 the order of events has changed: 'status' comes after 'finish'.
+    // It might be a Node bug; we'll just make sure the code works.
     s.on('metadata', data => {
       receivedMetadata = data;
+      check();
     });
     s.on('status', data => {
       receivedStatus = data;
+      check();
     });
     s.on('response', data => {
       receivedResponse = data;
+      check();
     });
     s.on('finish', () => {
-      assert.deepStrictEqual(receivedMetadata, responseMetadata);
-      assert.deepStrictEqual(receivedStatus, status);
-      assert.deepStrictEqual(receivedResponse, expectedResponse);
-      done();
+      finished = true;
+      check();
     });
     assert.strictEqual(s.readable, true);
     assert.strictEqual(s.writable, true);
