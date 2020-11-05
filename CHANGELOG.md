@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.9.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.9.1...v2.9.2) (2020-11-05)
+
+
+### Bug Fixes
+
+* **deps:** use google-auth-library with defaultScopes ([#931](https://www.github.com/googleapis/gax-nodejs/issues/931)) ([912b399](https://www.github.com/googleapis/gax-nodejs/commit/912b3997ead0ee048612b25101eee1d0976f62d2))
+
 ### [2.9.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.9.0...v2.9.1) (2020-10-23)
 
 
