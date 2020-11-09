@@ -520,16 +520,10 @@ function mergeRetryOptions(
   }
 
   const codes = overrides.retryCodes ? overrides.retryCodes : retry.retryCodes;
-  // : retry
-  // ? retry.retryCodes
-  // : null;
 
   const backoffSettings = overrides.backoffSettings
     ? overrides.backoffSettings
     : retry.backoffSettings;
-  // : retry
-  // ? retry.backoffSettings
-  // : null;
   return createRetryOptions(codes!, backoffSettings!);
 }
 
