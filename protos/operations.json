@@ -19,35 +19,83 @@
               "extend": "google.protobuf.MethodOptions"
             },
             "Operations": {
+              "options": {
+                "(google.api.default_host)": "longrunning.googleapis.com"
+              },
               "methods": {
                 "ListOperations": {
                   "requestType": "ListOperationsRequest",
                   "responseType": "ListOperationsResponse",
                   "options": {
-                    "(google.api.http).get": "/v1/{name=operations}"
-                  }
+                    "(google.api.http).get": "/v1/{name=operations}",
+                    "(google.api.method_signature)": "name,filter"
+                  },
+                  "parsedOptions": [
+                    {
+                      "(google.api.http)": {
+                        "get": "/v1/{name=operations}"
+                      }
+                    },
+                    {
+                      "(google.api.method_signature)": "name,filter"
+                    }
+                  ]
                 },
                 "GetOperation": {
                   "requestType": "GetOperationRequest",
                   "responseType": "Operation",
                   "options": {
-                    "(google.api.http).get": "/v1/{name=operations/**}"
-                  }
+                    "(google.api.http).get": "/v1/operations/{name}",
+                    "(google.api.method_signature)": "name"
+                  },
+                  "parsedOptions": [
+                    {
+                      "(google.api.http)": {
+                        "get": "/v1/operations/{name}"
+                      }
+                    },
+                    {
+                      "(google.api.method_signature)": "name"
+                    }
+                  ]
                 },
                 "DeleteOperation": {
                   "requestType": "DeleteOperationRequest",
                   "responseType": "google.protobuf.Empty",
                   "options": {
-                    "(google.api.http).delete": "/v1/{name=operations/**}"
-                  }
+                    "(google.api.http).delete": "/v1/{name=operations/**}",
+                    "(google.api.method_signature)": "name"
+                  },
+                  "parsedOptions": [
+                    {
+                      "(google.api.http)": {
+                        "delete": "/v1/{name=operations/**}"
+                      }
+                    },
+                    {
+                      "(google.api.method_signature)": "name"
+                    }
+                  ]
                 },
                 "CancelOperation": {
                   "requestType": "CancelOperationRequest",
                   "responseType": "google.protobuf.Empty",
                   "options": {
                     "(google.api.http).post": "/v1/{name=operations/**}:cancel",
-                    "(google.api.http).body": "*"
-                  }
+                    "(google.api.http).body": "*",
+                    "(google.api.method_signature)": "name"
+                  },
+                  "parsedOptions": [
+                    {
+                      "(google.api.http)": {
+                        "post": "/v1/{name=operations/**}:cancel",
+                        "body": "*"
+                      }
+                    },
+                    {
+                      "(google.api.method_signature)": "name"
+                    }
+                  ]
                 },
                 "WaitOperation": {
                   "requestType": "WaitOperationRequest",
@@ -174,7 +222,7 @@
           "options": {
             "go_package": "google.golang.org/genproto/googleapis/api/annotations;annotations",
             "java_multiple_files": true,
-            "java_outer_classname": "HttpProto",
+            "java_outer_classname": "ClientProto",
             "java_package": "com.google.api",
             "objc_class_prefix": "GAPI",
             "cc_enable_arenas": true
@@ -266,6 +314,22 @@
                   "id": 2
                 }
               }
+            },
+            "methodSignature": {
+              "rule": "repeated",
+              "type": "string",
+              "id": 1051,
+              "extend": "google.protobuf.MethodOptions"
+            },
+            "defaultHost": {
+              "type": "string",
+              "id": 1049,
+              "extend": "google.protobuf.ServiceOptions"
+            },
+            "oauthScopes": {
+              "type": "string",
+              "id": 1050,
+              "extend": "google.protobuf.ServiceOptions"
             }
           }
         },
@@ -492,6 +556,10 @@
                 "options": {
                   "type": "FieldOptions",
                   "id": 8
+                },
+                "proto3Optional": {
+                  "type": "bool",
+                  "id": 17
                 }
               },
               "nested": {
@@ -727,7 +795,7 @@
                   "type": "bool",
                   "id": 31,
                   "options": {
-                    "default": false
+                    "default": true
                   }
                 },
                 "objcClassPrefix": {
@@ -1191,6 +1259,7 @@
         },
         "rpc": {
           "options": {
+            "cc_enable_arenas": true,
             "go_package": "google.golang.org/genproto/googleapis/rpc/status;status",
             "java_multiple_files": true,
             "java_outer_classname": "StatusProto",

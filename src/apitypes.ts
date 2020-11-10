@@ -34,7 +34,11 @@ export interface GRPCCallResult {
 // object, the third parameter stores raw (unprocessed) response object in cases
 // when it might be useful for users.
 export interface RequestType {
-  [index: string]: string | number | {};
+  [index: string]:
+    | string
+    | number
+    | RequestType
+    | Array<string | number | RequestType>;
 }
 export type ResponseType = {} | null;
 export type NextPageRequestType = {

@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
+// Not all browsers support `TextEncoder`. The following `require` will
+// provide a fast UTF8-only replacement for those browsers that don't support
+// text encoding natively.
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
+if (typeof process === 'undefined' && typeof TextEncoder === 'undefined') {
+  require('fast-text-encoding');
+}
+
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as nodeFetch from 'node-fetch';
@@ -36,6 +44,7 @@ import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 import {isBrowser} from './isbrowser';
 import {FallbackErrorDecoder, FallbackServiceError} from './fallbackError';
+import {transcode} from './transcoding';
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
@@ -64,7 +73,7 @@ interface FallbackServiceStub {
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
-  fallback: boolean;
+  fallback: boolean | 'json' | 'proto';
   grpcVersion: string;
 
   /**
@@ -76,7 +85,11 @@ export class GrpcClient {
    * @constructor
    */
 
-  constructor(options: GrpcClientOptions | {auth: OAuth2Client} = {}) {
+  constructor(
+    options: (GrpcClientOptions | {auth: OAuth2Client}) & {
+      fallback?: boolean | 'json' | 'proto';
+    } = {}
+  ) {
     if (isBrowser()) {
       if (!options.auth) {
         throw new Error(
@@ -90,7 +103,7 @@ export class GrpcClient {
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
-    this.fallback = true;
+    this.fallback = options.fallback !== 'json' ? 'proto' : 'json';
     this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
   }
 
@@ -273,7 +286,6 @@ export class GrpcClient {
         let cancelRequested = false;
 
         const headers = Object.assign({}, authHeader);
-        headers['Content-Type'] = 'application/x-protobuf';
         for (const key of Object.keys(options)) {
           headers[key] = options[key][0];
         }
@@ -313,18 +325,58 @@ export class GrpcClient {
         const protoServiceName = protoNamespaces.join('.');
         const rpcName = method.name;
 
-        const url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
+        let url: string;
+        let data: string;
+        let httpMethod: string;
+
+        if (this.fallback === 'json') {
+          // REGAPIC: JSON over HTTP/1 with gRPC trancoding
+          headers['Content-Type'] = 'application/json';
+          const decodedRequest = method.resolvedRequestType.decode(requestData);
+          const requestJSON = method.resolvedRequestType.toObject(
+            // TODO: use toJSON instead of toObject
+            decodedRequest
+          );
+          const transcoded = transcode(requestJSON, method.parsedOptions);
+          if (!transcoded) {
+            throw new Error(
+              `Cannot build HTTP request for ${JSON.stringify(
+                requestJSON
+              )}, method: ${method.name}`
+            );
+          }
+          httpMethod = transcoded.httpMethod;
+          data = JSON.stringify(transcoded.data);
+          url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/${transcoded.url.replace(
+            /^\//,
+            ''
+          )}?${transcoded.queryString}`;
+        } else {
+          // gRPC-fallback: proto over HTTP/1
+          headers['Content-Type'] = 'application/x-protobuf';
+          httpMethod = 'post';
+          data = requestData;
+          url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
+        }
 
         const fetch = isBrowser()
           ? // eslint-disable-next-line no-undef
             window.fetch
           : ((nodeFetch as unknown) as NodeFetchType);
-        fetch(url, {
+        const fetchRequest = {
           headers,
-          method: 'post',
-          body: requestData,
+          body: data,
+          method: httpMethod,
           signal: cancelSignal,
-        })
+        };
+        if (
+          httpMethod === 'get' ||
+          httpMethod === 'delete' ||
+          httpMethod === 'head'
+        ) {
+          delete fetchRequest['body'];
+        }
+        fetch(url, fetchRequest)
           .then((response: Response | nodeFetch.Response) => {
             return Promise.all([
               Promise.resolve(response.ok),
@@ -332,11 +384,31 @@ export class GrpcClient {
             ]);
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
-            if (!ok) {
-              const error = statusDecoder.decodeErrorFromBuffer(buffer);
-              throw error;
+            if (this.fallback === 'json') {
+              // REGAPIC: JSON over HTTP/1
+              // eslint-disable-next-line node/no-unsupported-features/node-builtins
+              const decodedString = new TextDecoder().decode(buffer);
+              const response = JSON.parse(decodedString);
+              if (!ok) {
+                const error = Object.assign(
+                  new Error(response['error']['message']),
+                  response.error
+                );
+                throw error;
+              }
+              const message = method.resolvedResponseType.fromObject(response);
+              const encoded = method.resolvedResponseType
+                .encode(message)
+                .finish();
+              serviceCallback(null, encoded);
+            } else {
+              // gRPC-fallback: proto over HTTP/1
+              if (!ok) {
+                const error = statusDecoder.decodeErrorFromBuffer(buffer);
+                throw error;
+              }
+              serviceCallback(null, new Uint8Array(buffer));
             }
-            serviceCallback(null, new Uint8Array(buffer));
           })
           .catch((err: Error) => {
             if (!cancelRequested || err.name !== 'AbortError') {
