@@ -73,7 +73,7 @@ interface FallbackServiceStub {
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
-  fallback: boolean | 'json' | 'proto';
+  fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
 
   /**
@@ -87,7 +87,7 @@ export class GrpcClient {
 
   constructor(
     options: (GrpcClientOptions | {auth: OAuth2Client}) & {
-      fallback?: boolean | 'json' | 'proto';
+      fallback?: boolean | 'rest' | 'proto';
     } = {}
   ) {
     if (isBrowser()) {
@@ -103,7 +103,7 @@ export class GrpcClient {
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
-    this.fallback = options.fallback !== 'json' ? 'proto' : 'json';
+    this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
     this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
   }
 
@@ -329,7 +329,9 @@ export class GrpcClient {
         let data: string;
         let httpMethod: string;
 
-        if (this.fallback === 'json') {
+        // TODO(@alexander-fenster): refactor this into separate function that prepares
+        // request object for `fetch`.
+        if (this.fallback === 'rest') {
           // REGAPIC: JSON over HTTP/1 with gRPC trancoding
           headers['Content-Type'] = 'application/json';
           const decodedRequest = method.resolvedRequestType.decode(requestData);
@@ -384,7 +386,9 @@ export class GrpcClient {
             ]);
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
-            if (this.fallback === 'json') {
+            // TODO(@alexander-fenster): response processing to be moved
+            // to a separate function.
+            if (this.fallback === 'rest') {
               // REGAPIC: JSON over HTTP/1
               // eslint-disable-next-line node/no-unsupported-features/node-builtins
               const decodedString = new TextDecoder().decode(buffer);

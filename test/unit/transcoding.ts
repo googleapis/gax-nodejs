@@ -28,9 +28,10 @@ import {
   deepCopy,
   match,
   buildQueryStringComponents,
-  requestCamelToSnakeCase,
+  requestChangeCase,
 } from '../../src/transcoding';
 import * as assert from 'assert';
+import {camelToSnakeCase, snakeToCamelCase} from '../../src/util';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
@@ -55,6 +56,14 @@ describe('gRPC to HTTP transcoding', () => {
           {
             get:
               '/v3/{parent=projects/*}/{field=fields/*}/{path=**}/supportedLanguages',
+          },
+          {
+            post: '/v3/a/{snake_case_first=*}',
+            body: 'snake_case_body',
+          },
+          {
+            post: '/v3/b/{snake_case_second=*}',
+            body: '*',
           },
         ],
       },
@@ -130,6 +139,38 @@ describe('gRPC to HTTP transcoding', () => {
         queryString: 'a=42',
         data: '',
       }
+    );
+
+    // Checking camel-snake-case conversions
+    assert.deepEqual(
+      transcode(
+        {snakeCaseFirst: 'first', snakeCaseBody: {snakeCaseField: 42}},
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        url: '/v3/a/first',
+        queryString: '',
+        data: {snakeCaseField: 42},
+      }
+    );
+
+    assert.deepEqual(
+      transcode(
+        {snakeCaseSecond: 'second', snakeCaseBody: {snakeCaseField: 42}},
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        url: '/v3/b/second',
+        queryString: '',
+        data: {snakeCaseBody: {snakeCaseField: 42}},
+      }
+    );
+
+    assert.strictEqual(
+      transcode({unknownField: 'project'}, parsedOptions),
+      undefined
     );
   });
 
@@ -384,7 +425,7 @@ describe('gRPC to HTTP transcoding', () => {
     );
   });
 
-  it('requestCamelToSnakeCase', () => {
+  it('requestChangeCase', () => {
     const request: RequestType = {
       field: 'value',
       listField: [
@@ -423,6 +464,13 @@ describe('gRPC to HTTP transcoding', () => {
         list_field: [1, 2, 3],
       },
     };
-    assert.deepEqual(requestCamelToSnakeCase(request), expectedSnakeCase);
+    assert.deepEqual(
+      requestChangeCase(request, camelToSnakeCase),
+      expectedSnakeCase
+    );
+    assert.deepEqual(
+      requestChangeCase(expectedSnakeCase, snakeToCamelCase),
+      request
+    );
   });
 });

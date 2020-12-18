@@ -19,6 +19,7 @@
 
 import {google} from '../protos/http';
 import {RequestType} from './apitypes';
+import {camelToSnakeCase, snakeToCamelCase} from './util';
 
 export interface TranscodedRequest {
   httpMethod: string;
@@ -32,6 +33,7 @@ const httpOptionName = '(google.api.http)';
 // The following type is here only to make tests type safe
 type allowedOptions = '(google.api.method_signature)';
 
+// List of methods as defined in google/api/http.proto (see HttpRule)
 const supportedHttpMethods = ['get', 'post', 'put', 'patch', 'delete'];
 
 export type ParsedOptionsType = Array<
@@ -226,25 +228,25 @@ export function flattenObject(request: RequestType): RequestType {
   return result;
 }
 
-function camelToSnakeCase(str: string) {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-}
-
-export function requestCamelToSnakeCase(request: RequestType) {
+export function requestChangeCase(
+  request: RequestType,
+  caseChangeFunc: (key: string) => string
+) {
   if (!request || typeof request !== 'object') {
     return request;
   }
   const convertedRequest: RequestType = {};
   for (const field in request) {
-    const convertedField = camelToSnakeCase(field);
+    const convertedField = caseChangeFunc(field);
     const value = request[field];
     if (Array.isArray(value)) {
       convertedRequest[convertedField] = value.map(v =>
-        requestCamelToSnakeCase(v as RequestType)
+        requestChangeCase(v as RequestType, caseChangeFunc)
       );
     } else {
-      convertedRequest[convertedField] = requestCamelToSnakeCase(
-        value as RequestType
+      convertedRequest[convertedField] = requestChangeCase(
+        value as RequestType,
+        caseChangeFunc
       );
     }
   }
@@ -255,7 +257,8 @@ export function transcode(
   request: RequestType,
   parsedOptions: ParsedOptionsType
 ): TranscodedRequest | undefined {
-  const snakeRequest = requestCamelToSnakeCase(request);
+  // request is supposed to have keys in camelCase.
+  const snakeRequest = requestChangeCase(request, camelToSnakeCase);
   const httpRules = [];
   for (const option of parsedOptions) {
     if (!(httpOptionName in option)) {
@@ -293,7 +296,9 @@ export function transcode(
         for (const field of matchedFields) {
           deleteField(data, field);
         }
-        return {httpMethod, url, queryString: '', data};
+        // HTTP endpoint expects camelCase but we have snake_case at this point
+        const camelCaseData = requestChangeCase(data, snakeToCamelCase);
+        return {httpMethod, url, queryString: '', data: camelCaseData};
       }
 
       // one field possibly goes to request data, others go to query string
@@ -311,7 +316,13 @@ export function transcode(
         queryStringObject
       );
       const queryString = queryStringComponents.join('&');
-      return {httpMethod, url, queryString, data};
+      let camelCaseData: string | RequestType;
+      if (typeof data === 'string') {
+        camelCaseData = data;
+      } else {
+        camelCaseData = requestChangeCase(data, snakeToCamelCase);
+      }
+      return {httpMethod, url, queryString, data: camelCaseData};
     }
   }
   return undefined;
