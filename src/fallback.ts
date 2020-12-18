@@ -17,8 +17,11 @@
 // Not all browsers support `TextEncoder`. The following `require` will
 // provide a fast UTF8-only replacement for those browsers that don't support
 // text encoding natively.
-// eslint-disable-next-line node/no-unsupported-features/node-builtins
-if (typeof process === 'undefined' && typeof TextEncoder === 'undefined') {
+if (
+  typeof process === 'undefined' &&
+  // eslint-disable-next-line node/no-unsupported-features/node-builtins
+  (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined')
+) {
   require('fast-text-encoding');
 }
 
