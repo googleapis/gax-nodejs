@@ -11,7 +11,7 @@
     "build/protos/"
   ],
   "bin": {
-    "compileProtos": "./build/tools/compileProtos.js"
+    "compileProtos": "build/tools/compileProtos.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "~1.2.0",
@@ -19,14 +19,17 @@
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
+    "fast-text-encoding": "^1.0.3",
     "google-auth-library": "^6.1.3",
     "is-stream-ended": "^0.1.4",
     "node-fetch": "^2.6.1",
-    "protobufjs": "^6.9.0",
+    "protobufjs": "^6.10.2",
     "retry-request": "^4.0.0"
   },
   "devDependencies": {
     "@compodoc/compodoc": "^1.1.7",
+    "@microsoft/api-documenter": "^7.8.10",
+    "@microsoft/api-extractor": "^7.8.10",
     "@types/download": "^6.2.4",
     "@types/fs-extra": "^8.0.1",
     "@types/mocha": "^8.0.0",
@@ -70,9 +73,7 @@
     "typescript": "^3.8.3",
     "walkdir": "^0.4.0",
     "webpack": "^4.34.0",
-    "webpack-cli": "^4.0.0",
-    "@microsoft/api-documenter": "^7.8.10",
-    "@microsoft/api-extractor": "^7.8.10"
+    "webpack-cli": "^4.0.0"
   },
   "scripts": {
     "docs": "compodoc src/",
@@ -80,9 +81,11 @@
     "test": "c8 mocha build/test/unit",
     "lint": "gts check",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp src/*.json build/src && cp -r test/fixtures build/test",
-    "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t json google/rpc/status.proto google/rpc/error_details.proto google/protobuf/any.proto -p ./protos > protos/status.json && pbjs -t static-module google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
-    "compile-iam-protos": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -o protos/iam_service.d.ts",
+    "compile": "tsc -p . && cp src/*.json build/src && cp -r test/fixtures build/test && cp -r protos build/",
+    "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
+    "compile-iam-protos": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module -r iam_protos google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -o protos/iam_service.d.ts",
+    "compile-status-protos": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
+    "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
     "fix": "gts fix",
     "prepare": "npm run compile && node ./build/tools/prepublish.js && mkdirp build/protos && cp -r protos/* build/protos/",
     "system-test": "c8 mocha build/test/system-test --timeout 600000",

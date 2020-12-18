@@ -1,0 +1,49 @@
+/**
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * Converts a given string from camelCase (used by protobuf.js and in JSON)
+ * to snake_case (normally used in proto definitions).
+ */
+export function camelToSnakeCase(str: string) {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+/**
+ * Capitalizes the first character of the given string.
+ */
+function capitalize(str: string) {
+  if (str.length === 0) {
+    return str;
+  }
+  return str[0].toUpperCase() + str.slice(1);
+}
+
+/**
+ * Converts a given string from snake_case (normally used in proto definitions) to
+ * camelCase (used by protobuf.js)
+ */
+export function snakeToCamelCase(str: string) {
+  // split on spaces, non-alphanumeric, or capital letters
+  const splitted = str
+    .split(/(?=[A-Z])|[\s\W_]+/)
+    .filter(w => w.length > 0)
+    .map(word => word.toLowerCase());
+  if (splitted.length === 0) {
+    return str;
+  }
+  return [splitted[0], ...splitted.slice(1).map(capitalize)].join('');
+}
