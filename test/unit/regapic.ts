@@ -75,6 +75,10 @@ describe('regapic', () => {
 
   it('should make a request', done => {
     const requestObject = {content: 'test-content'};
+    console.log(nodeFetch);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    console.log(nodeFetch.Promise);
     // incomplete types for nodeFetch, so...
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(nodeFetch, 'Promise' as any).returns(
