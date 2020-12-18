@@ -85,9 +85,7 @@ describe('regapic', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      console.log('stub created:', echoStub);
       echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
-        console.log('callback called with', err, result);
         assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
         done();

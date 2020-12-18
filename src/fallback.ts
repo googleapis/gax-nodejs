@@ -17,6 +17,7 @@
 // Not all browsers support `TextEncoder`. The following `require` will
 // provide a fast UTF8-only replacement for those browsers that don't support
 // text encoding natively.
+// Also - fun thing! - Node v10 does not have TextDecoder in global scope.
 // eslint-disable-next-line node/no-unsupported-features/node-builtins
 if (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined') {
   require('fast-text-encoding');
@@ -378,17 +379,14 @@ export class GrpcClient {
         ) {
           delete fetchRequest['body'];
         }
-        console.log('about to fetch', url, fetchRequest);
         fetch(url, fetchRequest)
           .then((response: Response | nodeFetch.Response) => {
-            console.log('got response', response);
             return Promise.all([
               Promise.resolve(response.ok),
               response.arrayBuffer(),
             ]);
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
-            console.log('got resolved', ok, buffer);
             // TODO(@alexander-fenster): response processing to be moved
             // to a separate function.
             if (this.fallback === 'rest') {
@@ -418,7 +416,6 @@ export class GrpcClient {
             }
           })
           .catch((err: Error) => {
-            console.log('got error', err);
             if (!cancelRequested || err.name !== 'AbortError') {
               serviceCallback(err);
             }
