@@ -1,0 +1,97 @@
+/**
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* xslint-disable @typescript-eslint/ban-ts-ignore */
+/* xslint-disable no-undef */
+
+import * as assert from 'assert';
+import {describe, it, afterEach, before} from 'mocha';
+import * as path from 'path';
+import * as fs from 'fs';
+import * as nodeFetch from 'node-fetch';
+import * as protobuf from 'protobufjs';
+import * as sinon from 'sinon';
+import {echoProtoJson} from '../fixtures/echoProtoJson';
+import {GrpcClient} from '../../src/fallback';
+import {OAuth2Client} from 'google-auth-library';
+import {GrpcClientOptions} from '../../src';
+
+const authClient = {
+  getRequestHeaders() {
+    return {Authorization: 'Bearer SOME_TOKEN'};
+  },
+};
+
+const authStub = {
+  getClient() {
+    return Promise.resolve(authClient);
+  },
+};
+
+const opts = ({
+  auth: authStub,
+  fallback: 'rest', // enabling REGAPIC
+} as unknown) as (GrpcClientOptions | {auth: OAuth2Client}) & {
+  fallback?: boolean | 'rest' | 'proto';
+};
+
+describe('regapic', () => {
+  let gaxGrpc: GrpcClient,
+    protos: protobuf.NamespaceBase,
+    echoService: protobuf.Service,
+    stubOptions: {};
+
+  before(() => {
+    stubOptions = {
+      servicePath: 'foo.example.com',
+      port: 443,
+    };
+
+    gaxGrpc = new GrpcClient(opts);
+    protos = gaxGrpc.loadProto(echoProtoJson);
+    echoService = protos.lookupService('Echo');
+    stubOptions = {
+      servicePath: 'foo.example.com',
+      port: 443,
+    };
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it('should make a request', done => {
+    const requestObject = {content: 'test-content'};
+    // incomplete types for nodeFetch, so...
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(nodeFetch, 'Promise' as any).returns(
+      Promise.resolve({
+        ok: true,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(JSON.stringify(requestObject)));
+        },
+      })
+    );
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
+        assert.strictEqual(err, null);
+        assert.strictEqual(requestObject.content, result.content);
+        done();
+      });
+    });
+  });
+});
