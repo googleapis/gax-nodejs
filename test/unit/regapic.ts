@@ -19,8 +19,6 @@
 
 import * as assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
-import * as path from 'path';
-import * as fs from 'fs';
 import * as nodeFetch from 'node-fetch';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
@@ -75,10 +73,6 @@ describe('regapic', () => {
 
   it('should make a request', done => {
     const requestObject = {content: 'test-content'};
-    console.log(nodeFetch);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-    // @ts-ignore
-    console.log(nodeFetch.Promise);
     // incomplete types for nodeFetch, so...
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(nodeFetch, 'Promise' as any).returns(
@@ -91,7 +85,9 @@ describe('regapic', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      console.log('stub created:', echoStub);
       echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
+        console.log('callback called with', err, result);
         assert.strictEqual(err, null);
         assert.strictEqual(requestObject.content, result.content);
         done();

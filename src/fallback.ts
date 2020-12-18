@@ -378,14 +378,17 @@ export class GrpcClient {
         ) {
           delete fetchRequest['body'];
         }
+        console.log('about to fetch', url, fetchRequest);
         fetch(url, fetchRequest)
           .then((response: Response | nodeFetch.Response) => {
+            console.log('got response', response);
             return Promise.all([
               Promise.resolve(response.ok),
               response.arrayBuffer(),
             ]);
           })
           .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
+            console.log('got resolved', ok, buffer);
             // TODO(@alexander-fenster): response processing to be moved
             // to a separate function.
             if (this.fallback === 'rest') {
@@ -415,6 +418,7 @@ export class GrpcClient {
             }
           })
           .catch((err: Error) => {
+            console.log('got error', err);
             if (!cancelRequested || err.name !== 'AbortError') {
               serviceCallback(err);
             }
