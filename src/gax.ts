@@ -123,7 +123,7 @@ export interface BackoffSettings {
 
 export interface CallOptions {
   timeout?: number;
-  retry?: RetryOptions | null;
+  retry?: Partial<RetryOptions> | null;
   autoPaginate?: boolean;
   pageToken?: string;
   pageSize?: number;
@@ -174,7 +174,7 @@ export class CallSettings {
   constructor(settings?: CallOptions) {
     settings = settings || {};
     this.timeout = settings.timeout || 30 * 1000;
-    this.retry = settings.retry;
+    this.retry = settings.retry as RetryOptions;
     this.autoPaginate =
       'autoPaginate' in settings ? settings.autoPaginate : true;
     this.pageToken = settings.pageToken;
@@ -215,7 +215,7 @@ export class CallSettings {
       timeout = options.timeout!;
     }
     if ('retry' in options) {
-      retry = options.retry;
+      retry = mergeRetryOptions(retry || ({} as RetryOptions), options.retry!);
     }
 
     if ('autoPaginate' in options && !options.autoPaginate) {
@@ -509,7 +509,7 @@ function constructRetry(
  */
 function mergeRetryOptions(
   retry: RetryOptions,
-  overrides: RetryOptions
+  overrides: Partial<RetryOptions>
 ): RetryOptions | null {
   if (!overrides) {
     return null;
@@ -519,15 +519,12 @@ function mergeRetryOptions(
     return retry;
   }
 
-  let codes = retry.retryCodes;
-  if (overrides.retryCodes) {
-    codes = overrides.retryCodes;
-  }
-  let backoffSettings = retry.backoffSettings;
-  if (overrides.backoffSettings) {
-    backoffSettings = overrides.backoffSettings;
-  }
-  return createRetryOptions(codes, backoffSettings);
+  const codes = overrides.retryCodes ? overrides.retryCodes : retry.retryCodes;
+
+  const backoffSettings = overrides.backoffSettings
+    ? overrides.backoffSettings
+    : retry.backoffSettings;
+  return createRetryOptions(codes!, backoffSettings!);
 }
 
 export interface ServiceConfig {
