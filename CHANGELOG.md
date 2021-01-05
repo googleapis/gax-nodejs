@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.10.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.9.2...v2.10.0) (2021-01-05)
+
+
+### Features
+
+* REGAPIC: JSON over HTTP/1 ([#939](https://www.github.com/googleapis/gax-nodejs/issues/939)) ([fc3099b](https://www.github.com/googleapis/gax-nodejs/commit/fc3099b9e6e4b53c762e9eb998a695e8f39331ca))
+* set callOptions.retry properties separately ([#929](https://www.github.com/googleapis/gax-nodejs/issues/929)) ([bd0e8d2](https://www.github.com/googleapis/gax-nodejs/commit/bd0e8d246abe22cb0b3ce87fe54c3ea067e7b1eb))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.2.0 ([#934](https://www.github.com/googleapis/gax-nodejs/issues/934)) ([1bda824](https://www.github.com/googleapis/gax-nodejs/commit/1bda8240d634907d67c4e9d318576f2296cb5ca9))
+
 ### [2.9.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.9.1...v2.9.2) (2020-11-05)
 
 
