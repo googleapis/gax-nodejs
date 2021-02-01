@@ -17,9 +17,26 @@
 // Not all browsers support `TextEncoder`. The following `require` will
 // provide a fast UTF8-only replacement for those browsers that don't support
 // text encoding natively.
-// Also - fun thing! - Node v10 does not have TextDecoder in global scope.
-// eslint-disable-next-line node/no-unsupported-features/node-builtins
-if (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined') {
+import {isBrowser} from './isbrowser';
+let needTextEncoderPolyfill = false;
+
+if (
+  isBrowser() &&
+  // eslint-disable-next-line node/no-unsupported-features/node-builtins
+  (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined')
+) {
+  needTextEncoderPolyfill = true;
+}
+if (
+  typeof process !== 'undefined' &&
+  process?.versions?.node &&
+  process?.versions?.node.match(/^10\./)
+) {
+  // Node.js 10 does not have global TextDecoder
+  // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
+  needTextEncoderPolyfill = true;
+}
+if (needTextEncoderPolyfill) {
   require('fast-text-encoding');
 }
 
@@ -43,7 +60,6 @@ import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
-import {isBrowser} from './isbrowser';
 import {FallbackErrorDecoder, FallbackServiceError} from './fallbackError';
 import {transcode} from './transcoding';
 export {FallbackServiceError};
