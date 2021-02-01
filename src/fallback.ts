@@ -17,7 +17,6 @@
 // Not all browsers support `TextEncoder`. The following `require` will
 // provide a fast UTF8-only replacement for those browsers that don't support
 // text encoding natively.
-// Also - fun thing! - Node v10 does not have TextDecoder in global scope.
 import {isBrowser} from './isbrowser';
 let needTextEncoderPolyfill = false;
 
@@ -34,7 +33,7 @@ if (
   process?.versions?.node.match(/^10\./)
 ) {
   // Node.js 10 does not have global TextDecoder
-  // This logic will be removed after Node.js 10 is EOL.
+  // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
   needTextEncoderPolyfill = true;
 }
 if (needTextEncoderPolyfill) {
