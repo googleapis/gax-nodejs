@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.10.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.0...v2.10.1) (2021-02-01)
+
+
+### Bug Fixes
+
+* require fast-text-encoding only in browser ([#951](https://www.github.com/googleapis/gax-nodejs/issues/951)) ([33f02e9](https://www.github.com/googleapis/gax-nodejs/commit/33f02e913e13b48070cb9ce027878cd159392501))
+
 ## [2.10.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.9.2...v2.10.0) (2021-01-05)
 
 
