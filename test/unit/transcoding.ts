@@ -144,27 +144,35 @@ describe('gRPC to HTTP transcoding', () => {
     // Checking camel-snake-case conversions
     assert.deepEqual(
       transcode(
-        {snakeCaseFirst: 'first', snakeCaseBody: {snakeCaseField: 42}},
+        {
+          snakeCaseFirst: 'first',
+          snakeCaseBody: {snakeCaseField: 42},
+          fieldName: 'value',
+        },
         parsedOptions
       ),
       {
         httpMethod: 'post',
         url: '/v3/a/first',
-        queryString: '',
+        queryString: 'fieldName=value',
         data: {snakeCaseField: 42},
       }
     );
 
     assert.deepEqual(
       transcode(
-        {snakeCaseSecond: 'second', snakeCaseBody: {snakeCaseField: 42}},
+        {
+          snakeCaseSecond: 'second',
+          snakeCaseBody: {snakeCaseField: 42},
+          fieldName: 'value',
+        },
         parsedOptions
       ),
       {
         httpMethod: 'post',
         url: '/v3/b/second',
         queryString: '',
-        data: {snakeCaseBody: {snakeCaseField: 42}},
+        data: {snakeCaseBody: {snakeCaseField: 42}, fieldName: 'value'},
       }
     );
 
