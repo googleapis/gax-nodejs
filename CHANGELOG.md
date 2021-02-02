@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.10.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.1...v2.10.2) (2021-02-02)
+
+
+### Bug Fixes
+
+* query string parameters must be camelCased ([#953](https://www.github.com/googleapis/gax-nodejs/issues/953)) ([1ee2404](https://www.github.com/googleapis/gax-nodejs/commit/1ee2404b89c76416a518e1218214e7529b6859d0))
+
 ### [2.10.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.0...v2.10.1) (2021-02-01)
 
 
