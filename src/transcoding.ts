@@ -304,13 +304,13 @@ export function transcode(
       // one field possibly goes to request data, others go to query string
       const body = httpRule.body;
       let data: string | RequestType = '';
-      const queryStringObject = deepCopy(snakeRequest);
+      const queryStringObject = deepCopy(request); // use camel case for query string
       if (body) {
-        deleteField(queryStringObject, body);
+        deleteField(queryStringObject, snakeToCamelCase(body));
         data = snakeRequest[body] as RequestType;
       }
       for (const field of matchedFields) {
-        deleteField(queryStringObject, field);
+        deleteField(queryStringObject, snakeToCamelCase(field));
       }
       const queryStringComponents = buildQueryStringComponents(
         queryStringObject
