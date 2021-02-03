@@ -56,6 +56,7 @@ module.exports = {
   },
   node: {
     fs: 'empty',
+    util: 'empty',
   },
   mode: 'production',
 };
