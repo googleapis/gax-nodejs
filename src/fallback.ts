@@ -59,6 +59,7 @@ import {
   JWT,
   UserRefreshClient,
   GoogleAuthOptions,
+  BaseExternalAccountClient,
 } from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
@@ -94,7 +95,12 @@ interface FallbackServiceStub {
 
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
-  authClient?: OAuth2Client | Compute | JWT | UserRefreshClient;
+  authClient?:
+    | OAuth2Client
+    | Compute
+    | JWT
+    | UserRefreshClient
+    | BaseExternalAccountClient;
   fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
 
