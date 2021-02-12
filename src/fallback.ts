@@ -34,7 +34,12 @@ if (
 ) {
   // Node.js 10 does not have global TextDecoder
   // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
-  needTextEncoderPolyfill = true;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const util = require('util');
+  Object.assign(global, {
+    TextDecoder: util.TextDecoder,
+    TextEncoder: util.TextEncoder,
+  });
 }
 if (needTextEncoderPolyfill) {
   require('fast-text-encoding');
