@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.10.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.2...v2.10.3) (2021-02-12)
+
+
+### Bug Fixes
+
+* update google-auth-library to v7.0.2 ([#960](https://www.github.com/googleapis/gax-nodejs/issues/960)) ([f6c6c33](https://www.github.com/googleapis/gax-nodejs/commit/f6c6c33d8055e0b1ff19f0ab7a3955ef7202ec3a))
+* use util.TextEncoder, util.TextDecoder for Node 10 ([#957](https://www.github.com/googleapis/gax-nodejs/issues/957)) ([883f7b6](https://www.github.com/googleapis/gax-nodejs/commit/883f7b6bc71b401a4a9f166469a2675f8ea5c48b))
+
 ### [2.10.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.1...v2.10.2) (2021-02-02)
 
 
