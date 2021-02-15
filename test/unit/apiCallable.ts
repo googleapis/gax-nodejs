@@ -627,7 +627,7 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
 
     const backoff = gax.createBackoffSettings(3, 2, 24, 5, 2, 80, 2500);
-    const retryOptions = new gax.RetryOptions([FAKE_STATUS_CODE_1], backoff);
+    const retryOptions = gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
     const apiCall = createApiCall(spy, {
       settings: {timeout: 0, retry: retryOptions},
     });

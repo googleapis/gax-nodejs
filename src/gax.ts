@@ -78,19 +78,10 @@ export type ShouldRetryFnType = (
  * @property {ShouldRetryFnType} shouldRetryFn - predicate function that would check if
  *   given error should be retried.
  */
-export class RetryOptions {
+export interface RetryOptions {
   retryCodes: number[];
   backoffSettings: BackoffSettings;
   shouldRetryFn?: ShouldRetryFnType;
-  constructor(
-    retryCodes: number[],
-    backoffSettings: BackoffSettings,
-    shouldRetryFn?: ShouldRetryFnType
-  ) {
-    this.retryCodes = retryCodes;
-    this.backoffSettings = backoffSettings;
-    this.shouldRetryFn = shouldRetryFn;
-  }
 }
 
 export interface RetryRequestOptions {
