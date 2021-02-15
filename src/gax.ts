@@ -18,7 +18,9 @@
  * Google API Extensions
  */
 
+import {RawResponseType, ResponseType} from './apitypes';
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
+import {GoogleError} from './googleError';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -62,18 +64,32 @@ import {BundleOptions} from './bundlingCalls/bundleExecutor';
  * });
  */
 
+export type ShouldRetryFnType = (
+  err: GoogleError,
+  response?: ResponseType,
+  rawResponse?: RawResponseType
+) => boolean;
+
 /**
  * Per-call configurable settings for retrying upon transient failure.
  * @typedef {Object} RetryOptions
  * @property {String[]} retryCodes
  * @property {BackoffSettings} backoffSettings
+ * @property {ShouldRetryFnType} shouldRetryFn - predicate function that would check if
+ *   given error should be retried.
  */
 export class RetryOptions {
   retryCodes: number[];
   backoffSettings: BackoffSettings;
-  constructor(retryCodes: number[], backoffSettings: BackoffSettings) {
+  shouldRetryFn?: ShouldRetryFnType;
+  constructor(
+    retryCodes: number[],
+    backoffSettings: BackoffSettings,
+    shouldRetryFn?: ShouldRetryFnType
+  ) {
     this.retryCodes = retryCodes;
     this.backoffSettings = backoffSettings;
+    this.shouldRetryFn = shouldRetryFn;
   }
 }
 
@@ -288,16 +304,20 @@ export class CallSettings {
  *   upon which a retry should be attempted.
  * @param {BackoffSettings} backoffSettings - configures the retry
  *   exponential backoff algorithm.
+ * @param {ShouldRetryFnType} souldRetryFn - predicate function that would check if
+ *   given error should be retried.
  * @return {RetryOptions} A new RetryOptions object.
  *
  */
 export function createRetryOptions(
   retryCodes: number[],
-  backoffSettings: BackoffSettings
+  backoffSettings: BackoffSettings,
+  shouldRetryFn?: ShouldRetryFnType
 ): RetryOptions {
   return {
     retryCodes,
     backoffSettings,
+    shouldRetryFn,
   };
 }
 
@@ -515,7 +535,11 @@ function mergeRetryOptions(
     return null;
   }
 
-  if (!overrides.retryCodes && !overrides.backoffSettings) {
+  if (
+    !overrides.retryCodes &&
+    !overrides.backoffSettings &&
+    !overrides.shouldRetryFn
+  ) {
     return retry;
   }
 
@@ -524,7 +548,10 @@ function mergeRetryOptions(
   const backoffSettings = overrides.backoffSettings
     ? overrides.backoffSettings
     : retry.backoffSettings;
-  return createRetryOptions(codes!, backoffSettings!);
+  const shouldRetryFn = overrides.shouldRetryFn
+    ? overrides.shouldRetryFn
+    : retry.shouldRetryFn;
+  return createRetryOptions(codes!, backoffSettings!, shouldRetryFn);
 }
 
 export interface ServiceConfig {

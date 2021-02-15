@@ -212,6 +212,40 @@ describe('createApiCall', () => {
       }
     );
   });
+  it('override just custom retry.shouldRetryFn', done => {
+    const shouldRetryFn = () => false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
+      assert.strictEqual(retry.shouldRetryFn, shouldRetryFn);
+      return func;
+    });
+
+    function func() {
+      done();
+    }
+
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions([1], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      },
+    });
+
+    apiCall(
+      {},
+      {
+        retry: {
+          shouldRetryFn,
+        },
+      }
+    );
+  });
 });
 
 describe('Promise', () => {
@@ -350,6 +384,47 @@ describe('retryable', () => {
       assert.strictEqual(resp, 1729);
       assert.strictEqual(toAttempt, 0);
       assert(deadlineArg);
+      done();
+    });
+  });
+
+  it('retries the API call based on error message', done => {
+    let toAttempt = 3;
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: string},
+      callback: Function
+    ) {
+      toAttempt--;
+      if (toAttempt > 0) {
+        const error = new GoogleError('can retry');
+        error.code = FAKE_STATUS_CODE_1;
+        callback(error);
+        return;
+      }
+      const error = new GoogleError('stop retry');
+      error.code = FAKE_STATUS_CODE_1;
+      callback(error);
+    }
+    const retryOptions = gax.createRetryOptions(
+      [],
+      {
+        initialRetryDelayMillis: 100,
+        retryDelayMultiplier: 1.2,
+        maxRetryDelayMillis: 1000,
+        rpcTimeoutMultiplier: 1.5,
+        maxRpcTimeoutMillis: 3000,
+        totalTimeoutMillis: 4500,
+      },
+      (err: GoogleError) => err && err.message === 'can retry'
+    );
+    const apiCall = createApiCall(func, {
+      settings: {timeout: 0, retry: retryOptions},
+    });
+    apiCall({}, undefined, err => {
+      assert.strictEqual(err!.message, 'stop retry');
+      assert.strictEqual(toAttempt, 0);
       done();
     });
   });
