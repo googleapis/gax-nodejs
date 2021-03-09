@@ -178,7 +178,9 @@ export class GrpcClient {
     ignoreCache = false
   ) {
     const cacheKey = GrpcClient.protoCacheKey(filename, options);
-    let grpcPackage = cacheKey ? GrpcClient.protoCache.get(cacheKey) : undefined;
+    let grpcPackage = cacheKey
+      ? GrpcClient.protoCache.get(cacheKey)
+      : undefined;
     if (ignoreCache || !grpcPackage) {
       const packageDef = grpcProtoLoader.loadSync(filename, options);
       grpcPackage = this.grpc.loadPackageDefinition(packageDef);
