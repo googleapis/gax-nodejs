@@ -352,6 +352,40 @@ describe('grpc', () => {
         grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile)
       );
     });
+
+    it('should cache the loaded proto', () => {
+      const proto1 = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      const proto2 = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      assert.strictEqual(proto1, proto2);
+    });
+
+    it('should not take proto from cache if parameters differ', () => {
+      const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
+      const proto1 = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      const proto2 = grpcClient.loadProto(TEST_PATH, iamService);
+      assert.notStrictEqual(proto1, proto2);
+    });
+
+    it('should ignore cache if asked', () => {
+      const proto1 = grpcClient.loadProto(
+        TEST_PATH,
+        TEST_FILE,
+        /*ignoreCache:*/ true
+      );
+      const proto2 = grpcClient.loadProto(
+        TEST_PATH,
+        TEST_FILE,
+        /*ignoreCache:*/ true
+      );
+      assert.notStrictEqual(proto1, proto2);
+    });
+
+    it('should clear the proto cache if asked', () => {
+      const proto1 = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      GrpcClient.clearProtoCache();
+      const proto2 = grpcClient.loadProto(TEST_PATH, TEST_FILE);
+      assert.notStrictEqual(proto1, proto2);
+    });
   });
 
   describe('GoogleProtoFilesRoot', () => {

@@ -76,6 +76,25 @@ export class GrpcClient {
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean;
+  private static protoCache = new Map<string, grpc.GrpcObject>();
+
+  /**
+   * Key for proto cache map
+   */
+  private static protoCacheKey(
+    filename: string | string[],
+    options: grpcProtoLoader.Options
+  ) {
+    return JSON.stringify(filename) + ' ' + JSON.stringify(options);
+  }
+
+  /**
+   * In rare cases users might need to deallocate all memory consumed by loaded protos.
+   * This method will delete the proto cache content.
+   */
+  static clearProtoCache() {
+    GrpcClient.protoCache.clear();
+  }
 
   /**
    * A class which keeps the context of gRPC and auth for the gRPC.
@@ -141,9 +160,19 @@ export class GrpcClient {
    * @param filename The path to the proto file(s).
    * @param options Options for loading the proto file.
    */
-  loadFromProto(filename: string | string[], options: grpcProtoLoader.Options) {
-    const packageDef = grpcProtoLoader.loadSync(filename, options);
-    return this.grpc.loadPackageDefinition(packageDef);
+  loadFromProto(
+    filename: string | string[],
+    options: grpcProtoLoader.Options,
+    ignoreCache = false
+  ) {
+    const cacheKey = GrpcClient.protoCacheKey(filename, options);
+    let grpcPackage = GrpcClient.protoCache.get(cacheKey);
+    if (ignoreCache || !grpcPackage) {
+      const packageDef = grpcProtoLoader.loadSync(filename, options);
+      grpcPackage = this.grpc.loadPackageDefinition(packageDef);
+      GrpcClient.protoCache.set(cacheKey, grpcPackage);
+    }
+    return grpcPackage;
   }
 
   /**
@@ -155,7 +184,11 @@ export class GrpcClient {
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-  loadProto(protoPath: string, filename?: string | string[]) {
+  loadProto(
+    protoPath: string,
+    filename?: string | string[],
+    ignoreCache = false
+  ) {
     if (!filename) {
       filename = path.basename(protoPath);
       protoPath = path.dirname(protoPath);
@@ -176,7 +209,7 @@ export class GrpcClient {
       oneofs: true,
       includeDirs,
     };
-    return this.loadFromProto(filename, options);
+    return this.loadFromProto(filename, options, ignoreCache);
   }
 
   static _resolveFile(protoPath: string, filename: string) {
