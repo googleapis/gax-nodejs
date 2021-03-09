@@ -85,6 +85,9 @@ export class GrpcClient {
     filename: string | string[],
     options: grpcProtoLoader.Options
   ) {
+    if (!filename) {
+      return undefined;
+    }
     return JSON.stringify(filename) + ' ' + JSON.stringify(options);
   }
 
@@ -166,11 +169,13 @@ export class GrpcClient {
     ignoreCache = false
   ) {
     const cacheKey = GrpcClient.protoCacheKey(filename, options);
-    let grpcPackage = GrpcClient.protoCache.get(cacheKey);
+    let grpcPackage = cacheKey ? GrpcClient.protoCache.get(cacheKey) : undefined;
     if (ignoreCache || !grpcPackage) {
       const packageDef = grpcProtoLoader.loadSync(filename, options);
       grpcPackage = this.grpc.loadPackageDefinition(packageDef);
-      GrpcClient.protoCache.set(cacheKey, grpcPackage);
+      if (cacheKey) {
+        GrpcClient.protoCache.set(cacheKey, grpcPackage);
+      }
     }
     return grpcPackage;
   }
