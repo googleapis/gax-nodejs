@@ -79,7 +79,12 @@ export class GrpcClient {
   private static protoCache = new Map<string, grpc.GrpcObject>();
 
   /**
-   * Key for proto cache map
+   * Key for proto cache map. We are doing our best to make sure we respect
+   * the options, so if the same proto file is loaded with different set of
+   * options, the cache won't be used.  Since some of the options are
+   * Functions (e.g. `enums: String` - see below in `loadProto()`),
+   * they will be omitted from the cache key.  If the cache breaks anything
+   * for you, use the `ignoreCache` parameter of `loadProto()` to disable it.
    */
   private static protoCacheKey(
     filename: string | string[],
@@ -159,9 +164,13 @@ export class GrpcClient {
 
   /**
    * Loads the gRPC service from the proto file(s) at the given path and with the
-   * given options.
+   * given options. Caches the loaded protos so the subsequent loads don't do
+   * any disk reads.
    * @param filename The path to the proto file(s).
    * @param options Options for loading the proto file.
+   * @param ignoreCache Defaults to `false`. Set it to `true` if the caching logic
+   *   incorrectly decides that the options object is the same, or if you want to
+   *   re-read the protos from disk for any other reason.
    */
   loadFromProto(
     filename: string | string[],
@@ -181,11 +190,15 @@ export class GrpcClient {
   }
 
   /**
-   * Load grpc proto service from a filename hooking in googleapis common protos
-   * when necessary.
+   * Load gRPC proto service from a filename looking in googleapis common protos
+   * when necessary. Caches the loaded protos so the subsequent loads don't do
+   * any disk reads.
    * @param {String} protoPath - The directory to search for the protofile.
    * @param {String|String[]} filename - The filename(s) of the proto(s) to be loaded.
    *   If omitted, protoPath will be treated as a file path to load.
+   * @param ignoreCache Defaults to `false`. Set it to `true` if the caching logic
+   *   incorrectly decides that the options object is the same, or if you want to
+   *   re-read the protos from disk for any other reason.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
