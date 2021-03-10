@@ -76,6 +76,36 @@ export class GrpcClient {
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean;
+  private static protoCache = new Map<string, grpc.GrpcObject>();
+
+  /**
+   * Key for proto cache map. We are doing our best to make sure we respect
+   * the options, so if the same proto file is loaded with different set of
+   * options, the cache won't be used.  Since some of the options are
+   * Functions (e.g. `enums: String` - see below in `loadProto()`),
+   * they will be omitted from the cache key.  If the cache breaks anything
+   * for you, use the `ignoreCache` parameter of `loadProto()` to disable it.
+   */
+  private static protoCacheKey(
+    filename: string | string[],
+    options: grpcProtoLoader.Options
+  ) {
+    if (
+      !filename ||
+      (Array.isArray(filename) && (filename.length === 0 || !filename[0]))
+    ) {
+      return undefined;
+    }
+    return JSON.stringify(filename) + ' ' + JSON.stringify(options);
+  }
+
+  /**
+   * In rare cases users might need to deallocate all memory consumed by loaded protos.
+   * This method will delete the proto cache content.
+   */
+  static clearProtoCache() {
+    GrpcClient.protoCache.clear();
+  }
 
   /**
    * A class which keeps the context of gRPC and auth for the gRPC.
@@ -137,25 +167,51 @@ export class GrpcClient {
 
   /**
    * Loads the gRPC service from the proto file(s) at the given path and with the
-   * given options.
+   * given options. Caches the loaded protos so the subsequent loads don't do
+   * any disk reads.
    * @param filename The path to the proto file(s).
    * @param options Options for loading the proto file.
+   * @param ignoreCache Defaults to `false`. Set it to `true` if the caching logic
+   *   incorrectly decides that the options object is the same, or if you want to
+   *   re-read the protos from disk for any other reason.
    */
-  loadFromProto(filename: string | string[], options: grpcProtoLoader.Options) {
-    const packageDef = grpcProtoLoader.loadSync(filename, options);
-    return this.grpc.loadPackageDefinition(packageDef);
+  loadFromProto(
+    filename: string | string[],
+    options: grpcProtoLoader.Options,
+    ignoreCache = false
+  ) {
+    const cacheKey = GrpcClient.protoCacheKey(filename, options);
+    let grpcPackage = cacheKey
+      ? GrpcClient.protoCache.get(cacheKey)
+      : undefined;
+    if (ignoreCache || !grpcPackage) {
+      const packageDef = grpcProtoLoader.loadSync(filename, options);
+      grpcPackage = this.grpc.loadPackageDefinition(packageDef);
+      if (cacheKey) {
+        GrpcClient.protoCache.set(cacheKey, grpcPackage);
+      }
+    }
+    return grpcPackage;
   }
 
   /**
-   * Load grpc proto service from a filename hooking in googleapis common protos
-   * when necessary.
+   * Load gRPC proto service from a filename looking in googleapis common protos
+   * when necessary. Caches the loaded protos so the subsequent loads don't do
+   * any disk reads.
    * @param {String} protoPath - The directory to search for the protofile.
    * @param {String|String[]} filename - The filename(s) of the proto(s) to be loaded.
    *   If omitted, protoPath will be treated as a file path to load.
+   * @param ignoreCache Defaults to `false`. Set it to `true` if the caching logic
+   *   incorrectly decides that the options object is the same, or if you want to
+   *   re-read the protos from disk for any other reason.
    * @return {Object<string, *>} The gRPC loaded result (the toplevel namespace
    *   object).
    */
-  loadProto(protoPath: string, filename?: string | string[]) {
+  loadProto(
+    protoPath: string,
+    filename?: string | string[],
+    ignoreCache = false
+  ) {
     if (!filename) {
       filename = path.basename(protoPath);
       protoPath = path.dirname(protoPath);
@@ -176,7 +232,7 @@ export class GrpcClient {
       oneofs: true,
       includeDirs,
     };
-    return this.loadFromProto(filename, options);
+    return this.loadFromProto(filename, options, ignoreCache);
   }
 
   static _resolveFile(protoPath: string, filename: string) {
