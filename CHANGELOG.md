@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.11.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.11.0...v2.11.1) (2021-03-10)
+
+
+### Bug Fixes
+
+* import long in the proto .d.ts files ([#968](https://www.github.com/googleapis/gax-nodejs/issues/968)) ([09d7b13](https://www.github.com/googleapis/gax-nodejs/commit/09d7b13653638a67b43feabace8dbcd1e781ab67))
+
 ## [2.11.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.3...v2.11.0) (2021-03-10)
 
 
