@@ -90,7 +90,10 @@ export class GrpcClient {
     filename: string | string[],
     options: grpcProtoLoader.Options
   ) {
-    if (!filename) {
+    if (
+      !filename ||
+      (Array.isArray(filename) && (filename.length === 0 || !filename[0]))
+    ) {
       return undefined;
     }
     return JSON.stringify(filename) + ' ' + JSON.stringify(options);
