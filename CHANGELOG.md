@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.11.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.3...v2.11.0) (2021-03-10)
+
+
+### Features
+
+* cache loaded protos ([#966](https://www.github.com/googleapis/gax-nodejs/issues/966)) ([528f975](https://www.github.com/googleapis/gax-nodejs/commit/528f9754d6845eab9b53516cec086dd3b4fa57b6))
+
 ### [2.10.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.10.2...v2.10.3) (2021-02-12)
 
 
