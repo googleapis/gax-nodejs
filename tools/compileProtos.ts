@@ -236,9 +236,9 @@ async function compileProtos(
     '--target',
     'json',
     '-p',
-    path.join(__dirname, '..', '..', 'protos'),
-    '-p',
     'protos',
+    '-p',
+    path.join(__dirname, '..', '..', 'protos'),
     '-o',
     jsonOutput,
   ];
@@ -253,9 +253,9 @@ async function compileProtos(
     '--target',
     'static-module',
     '-p',
-    path.join(__dirname, '..', '..', 'protos'),
-    '-p',
     'protos',
+    '-p',
+    path.join(__dirname, '..', '..', 'protos'),
     '-o',
     jsOutput,
   ];
