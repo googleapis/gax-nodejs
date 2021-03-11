@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.11.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.11.1...v2.11.2) (2021-03-11)
+
+
+### Bug Fixes
+
+* **compileProtos:** mention library protos before common protos ([#970](https://www.github.com/googleapis/gax-nodejs/issues/970)) ([bf4c9f0](https://www.github.com/googleapis/gax-nodejs/commit/bf4c9f0bd0284542acc2f5e65b88809562763d40))
+
 ### [2.11.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.11.0...v2.11.1) (2021-03-10)
 
 
