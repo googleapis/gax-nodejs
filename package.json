@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "2.11.2",
+  "version": "2.11.3-pre",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -23,7 +23,7 @@
     "google-auth-library": "^7.0.2",
     "is-stream-ended": "^0.1.4",
     "node-fetch": "^2.6.1",
-    "protobufjs": "^6.10.2",
+    "protobufjs": "6.11.0-pre",
     "retry-request": "^4.0.0"
   },
   "devDependencies": {
