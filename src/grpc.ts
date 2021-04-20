@@ -75,7 +75,7 @@ export class GrpcClient {
   auth: GoogleAuth;
   grpc: GrpcModule;
   grpcVersion: string;
-  fallback: boolean;
+  fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
 
   /**
