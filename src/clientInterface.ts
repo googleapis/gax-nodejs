@@ -35,7 +35,7 @@ export interface ClientOptions
   libName?: string;
   libVersion?: string;
   clientConfig?: gax.ClientConfig;
-  fallback?: boolean;
+  fallback?: boolean | 'rest' | 'proto';
   apiEndpoint?: string;
 }
 
