@@ -100,18 +100,7 @@ class EchoClient {
     // For Node.js, pass the path to JSON proto file.
     // For browsers, pass the JSON content.
 
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'protos.json'
-    );
-    const protos = gaxGrpc.loadProto(
-      global.isBrowser || opts.fallback
-        ? require('../../protos/protos.json')
-        : nodejsProtoPath
-    );
+    const protos = gaxGrpc.loadProtoJSON(require('../../protos/protos.json'));
 
     // Some of the methods on this service return "paged" results,
     // (e.g. 50 results at a time, with tokens to get subsequent
@@ -136,10 +125,7 @@ class EchoClient {
       chat: new gaxModule.StreamDescriptor(gaxModule.StreamType.BIDI_STREAMING),
     };
 
-    const protoFilesRoot =
-      global.isBrowser || opts.fallback
-        ? gaxModule.protobuf.Root.fromJSON(require('../../protos/protos.json'))
-        : gaxModule.protobuf.loadSync(nodejsProtoPath);
+    const protoFilesRoot = gaxModule.protobuf.Root.fromJSON(require('../../protos/protos.json'));
 
     // This API contains "long-running operations", which return a
     // an Operation object that allows for tracking of the operation,

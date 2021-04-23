@@ -58,6 +58,34 @@ describe('loadProto', () => {
     assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
   });
 
+  it('should create a root object using loadProtoJSON', () => {
+    // @ts-ignore incomplete options
+    const gaxGrpc = new GrpcClient(opts);
+    const protos = gaxGrpc.loadProtoJSON(echoProtoJson);
+
+    assert(protos instanceof protobuf.Root);
+    assert(protos.lookupService('Echo') instanceof protobuf.Service);
+    assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
+  });
+
+  it('should cache root object using loadProtoJSON', () => {
+    // @ts-ignore incomplete options
+    const gaxGrpc = new GrpcClient(opts);
+    const protos1 = gaxGrpc.loadProtoJSON(echoProtoJson);
+    const protos2 = gaxGrpc.loadProtoJSON(echoProtoJson);
+
+    assert.strictEqual(protos1, protos2);
+  });
+
+  it('should not cache root object using loadProtoJSON when asked', () => {
+    // @ts-ignore incomplete options
+    const gaxGrpc = new GrpcClient(opts);
+    const protos1 = gaxGrpc.loadProtoJSON(echoProtoJson, /*ignoreCache:*/ true);
+    const protos2 = gaxGrpc.loadProtoJSON(echoProtoJson, /*ignoreCache:*/ true);
+
+    assert.notStrictEqual(protos1, protos2);
+  });
+
   it('should be able to load no files', () => {
     // @ts-ignore incomplete options
     const gaxGrpc = new GrpcClient(opts);
