@@ -69,7 +69,7 @@
     "rimraf": "^3.0.0",
     "sinon": "^10.0.0",
     "stream-events": "^1.0.4",
-    "ts-loader": "^8.0.0",
+    "ts-loader": "^9.0.0",
     "typescript": "^3.8.3",
     "walkdir": "^0.4.0",
     "webpack": "^4.34.0",
