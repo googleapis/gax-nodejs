@@ -4,14 +4,14 @@
       "git": {
         "name": ".",
         "remote": "https://github.com/googleapis/gax-nodejs.git",
-        "sha": "1e15e2786b482630988cdd09705726f342e626d8"
+        "sha": "d4e495af46176b8dd74595108f25a6df99ee042d"
       }
     },
     {
       "git": {
         "name": "synthtool",
         "remote": "https://github.com/googleapis/synthtool.git",
-        "sha": "c6706ee5d693e9ae5967614170732646590d8374"
+        "sha": "04573fd73f56791c659832aa84d35a4ec860d6f7"
       }
     }
   ]
