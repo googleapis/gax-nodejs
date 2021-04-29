@@ -26,7 +26,6 @@ import * as routingHeader from './routingHeader';
 import * as gapicConfig from './iam_policy_service_client_config.json';
 import * as protos from '../protos/iam_service';
 import * as fallback from './fallback';
-import * as path from 'path';
 import {Descriptors, ClientOptions, Callback} from './clientInterface';
 let version = require('../../package.json').version;
 import jsonProtos = require('../protos/iam_service.json');
