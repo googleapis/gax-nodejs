@@ -62,6 +62,7 @@ import {
   GoogleAuthOptions,
   BaseExternalAccountClient,
 } from 'google-auth-library';
+import * as objectHash from 'object-hash';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -104,6 +105,15 @@ export class GrpcClient {
     | BaseExternalAccountClient;
   fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
+  private static protoCache = new Map<string, protobuf.Root>();
+
+  /**
+   * In rare cases users might need to deallocate all memory consumed by loaded protos.
+   * This method will delete the proto cache content.
+   */
+  static clearProtoCache() {
+    GrpcClient.protoCache.clear();
+  }
 
   /**
    * gRPC-fallback version of GrpcClient
@@ -145,6 +155,17 @@ export class GrpcClient {
   loadProto(jsonObject: {}) {
     const rootObject = protobuf.Root.fromJSON(jsonObject);
     return rootObject;
+  }
+
+  loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
+    const hash = objectHash(json);
+    const cached = GrpcClient.protoCache.get(hash);
+    if (cached && !ignoreCache) {
+      return cached;
+    }
+    const root = protobuf.Root.fromJSON(json);
+    GrpcClient.protoCache.set(hash, root);
+    return root;
   }
 
   private getServiceMethods(service: protobuf.Service) {
@@ -303,7 +324,7 @@ export class GrpcClient {
         ].apply(serviceStub, [req, callback]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cancelController: AbortController, cancelSignal: any;
-        if (isBrowser && typeof AbortController !== 'undefined') {
+        if (isBrowser() || typeof AbortController !== 'undefined') {
           // eslint-disable-next-line no-undef
           cancelController = new AbortController();
         } else {
@@ -396,7 +417,7 @@ export class GrpcClient {
           : ((nodeFetch as unknown) as NodeFetchType);
         const fetchRequest = {
           headers,
-          body: data,
+          body: data as string | undefined,
           method: httpMethod,
           signal: cancelSignal,
         };
