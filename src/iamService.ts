@@ -26,9 +26,9 @@ import * as routingHeader from './routingHeader';
 import * as gapicConfig from './iam_policy_service_client_config.json';
 import * as protos from '../protos/iam_service';
 import * as fallback from './fallback';
-import * as path from 'path';
 import {Descriptors, ClientOptions, Callback} from './clientInterface';
 let version = require('../../package.json').version;
+import jsonProtos = require('../protos/iam_service.json');
 
 /**
  *  Google Cloud IAM Client.
@@ -88,22 +88,7 @@ export class IamClient {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
     // Load the applicable protos.
-    // For Node.js, pass the path to JSON proto file.
-    // For browsers, pass the JSON content.
-
-    const nodejsProtoPath = path.join(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'iam_service.json'
-    );
-    this._protos = this._gaxGrpc.loadProto(
-      opts.fallback
-        ? // eslint-disable-next-line @typescript-eslint/no-var-requires
-          require('../../protos/iam_service.json')
-        : nodejsProtoPath
-    );
+    this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
     // Put together the default options sent with requests.
     this._defaults = gaxGrpc.constructSettings(
       'google.iam.v1.IAMPolicy',

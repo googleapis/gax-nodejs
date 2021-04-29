@@ -16,6 +16,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 /* eslint-disable no-prototype-builtins */
+/* eslint-disable @typescript-eslint/no-var-requires */
 
 import * as assert from 'assert';
 import * as path from 'path';
@@ -289,13 +290,32 @@ describe('grpc', () => {
       'v1',
       'library.proto'
     );
-    const TEST_PATH = path.resolve(__dirname, '../../test/fixtures');
+    const TEST_PATH = path.resolve(__dirname, '..', '..', 'test', 'fixtures');
+    const TEST_JSON = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'test',
+      'fixtures',
+      'library.json'
+    );
 
     it('should load the test file', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
+      assert.strictEqual(
+        typeof protos.google.example.library.v1.LibraryService,
+        'function'
+      );
+    });
+
+    it('should load the test file as JSON', () => {
+      // no-any disabled because if the accessed fields are non-existent, this
+      // test will fail anyway.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const protos = grpcClient.loadProtoJSON(require(TEST_JSON)) as any;
       assert.strictEqual(
         typeof protos.google.example.library.v1.LibraryService,
         'function'
@@ -359,6 +379,12 @@ describe('grpc', () => {
       assert.strictEqual(proto1, proto2);
     });
 
+    it('should cache the loaded JSON proto', () => {
+      const proto1 = grpcClient.loadProtoJSON(require(TEST_JSON));
+      const proto2 = grpcClient.loadProtoJSON(require(TEST_JSON));
+      assert.strictEqual(proto1, proto2);
+    });
+
     it('should not take proto from cache if parameters differ', () => {
       const iamService = path.join('google', 'iam', 'v1', 'iam_policy.proto');
       const proto1 = grpcClient.loadProto(TEST_PATH, TEST_FILE);
@@ -375,6 +401,18 @@ describe('grpc', () => {
       const proto2 = grpcClient.loadProto(
         TEST_PATH,
         TEST_FILE,
+        /*ignoreCache:*/ true
+      );
+      assert.notStrictEqual(proto1, proto2);
+    });
+
+    it('should ignore cache if asked for JSON protos', () => {
+      const proto1 = grpcClient.loadProtoJSON(
+        require(TEST_JSON),
+        /*ignoreCache:*/ true
+      );
+      const proto2 = grpcClient.loadProtoJSON(
+        require(TEST_JSON),
         /*ignoreCache:*/ true
       );
       assert.notStrictEqual(proto1, proto2);

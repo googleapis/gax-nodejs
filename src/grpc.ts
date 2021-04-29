@@ -21,6 +21,7 @@ import * as grpc from '@grpc/grpc-js';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
+import * as objectHash from 'object-hash';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -165,6 +166,21 @@ export class GrpcClient {
     return credentials;
   }
 
+  private static defaultOptions() {
+    // This set of @grpc/proto-loader options
+    // 'closely approximates the existing behavior of grpc.load'
+    const includeDirs = INCLUDE_DIRS.slice();
+    const options = {
+      keepCase: false,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+      includeDirs,
+    };
+    return options;
+  }
+
   /**
    * Loads the gRPC service from the proto file(s) at the given path and with the
    * given options. Caches the loaded protos so the subsequent loads don't do
@@ -220,18 +236,8 @@ export class GrpcClient {
     if (Array.isArray(filename) && filename.length === 0) {
       return {};
     }
-    // This set of @grpc/proto-loader options
-    // 'closely approximates the existing behavior of grpc.load'
-    const includeDirs = INCLUDE_DIRS.slice();
-    includeDirs.unshift(protoPath);
-    const options = {
-      keepCase: false,
-      longs: String,
-      enums: String,
-      defaults: true,
-      oneofs: true,
-      includeDirs,
-    };
+    const options = GrpcClient.defaultOptions();
+    options.includeDirs.unshift(protoPath);
     return this.loadFromProto(filename, options, ignoreCache);
   }
 
@@ -242,6 +248,19 @@ export class GrpcClient {
       return path.join(googleProtoFilesDir, filename);
     }
     throw new Error(filename + ' could not be found in ' + protoPath);
+  }
+
+  loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
+    const hash = objectHash(json);
+    const cached = GrpcClient.protoCache.get(hash);
+    if (cached && !ignoreCache) {
+      return cached;
+    }
+    const options = GrpcClient.defaultOptions();
+    const packageDefinition = grpcProtoLoader.fromJSON(json, options);
+    const grpcPackage = this.grpc.loadPackageDefinition(packageDefinition);
+    GrpcClient.protoCache.set(hash, grpcPackage);
+    return grpcPackage;
   }
 
   metadataBuilder(headers: OutgoingHttpHeaders) {
