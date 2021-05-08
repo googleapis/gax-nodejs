@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
+
 import {describe, it} from 'mocha';
 import {RequestType} from '../../src/apitypes';
 import {
@@ -28,7 +30,7 @@ import {
   deepCopy,
   match,
   buildQueryStringComponents,
-  requestChangeCase,
+  requestChangeCaseAndCleanup,
 } from '../../src/transcoding';
 import * as assert from 'assert';
 import {camelToSnakeCase, snakeToCamelCase} from '../../src/util';
@@ -180,6 +182,28 @@ describe('gRPC to HTTP transcoding', () => {
       transcode({unknownField: 'project'}, parsedOptions),
       undefined
     );
+  });
+
+  it('transcode should ignore inherited properties', () => {
+    // In this test we emulate protobuf object that has inherited circular
+    // references in the prototype. This is supposed to be a pure JS code
+    // so some ts-ignores are expected.
+    const Request = function () {
+      // @ts-ignore
+      this.parent = 'projects/a/locations/b';
+      // @ts-ignore
+      return this;
+    };
+    Request.prototype.circular = {};
+    Request.prototype.circular.field = Request.prototype.circular;
+    // @ts-ignore
+    const request = new Request();
+    assert.deepStrictEqual(transcode(request, parsedOptions), {
+      httpMethod: 'get',
+      url: '/v3/projects/a/locations/b/supportedLanguages',
+      queryString: '',
+      data: '',
+    });
   });
 
   // Tests for helper functions
@@ -433,7 +457,7 @@ describe('gRPC to HTTP transcoding', () => {
     );
   });
 
-  it('requestChangeCase', () => {
+  it('requestChangeCaseAndCleanup', () => {
     const request: RequestType = {
       field: 'value',
       listField: [
@@ -473,11 +497,11 @@ describe('gRPC to HTTP transcoding', () => {
       },
     };
     assert.deepEqual(
-      requestChangeCase(request, camelToSnakeCase),
+      requestChangeCaseAndCleanup(request, camelToSnakeCase),
       expectedSnakeCase
     );
     assert.deepEqual(
-      requestChangeCase(expectedSnakeCase, snakeToCamelCase),
+      requestChangeCaseAndCleanup(expectedSnakeCase, snakeToCamelCase),
       request
     );
   });
