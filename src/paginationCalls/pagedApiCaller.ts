@@ -61,8 +61,8 @@ export class PagedApiCaller implements APICaller {
     callback: APICallback
   ): APICallback {
     const resourceFieldName = this.pageDescriptor.resourceField;
-    const responsePageTokenFieldName = this.pageDescriptor
-      .responsePageTokenField;
+    const responsePageTokenFieldName =
+      this.pageDescriptor.responsePageTokenField;
     const requestPageTokenFieldName = this.pageDescriptor.requestPageTokenField;
     return (err: Error | null, response: NextPageRequestType | undefined) => {
       if (err) {

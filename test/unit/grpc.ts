@@ -45,7 +45,7 @@ describe('grpc', () => {
     });
 
     it('returns unknown when grpc module is mocked', () => {
-      const mockGrpc = ({} as unknown) as GrpcModule;
+      const mockGrpc = {} as unknown as GrpcModule;
       assert.strictEqual(gaxGrpc({grpc: mockGrpc}).grpcVersion, '');
     });
   });
@@ -152,10 +152,10 @@ describe('grpc', () => {
       stubGrpc.credentials.combineChannelCredentials
         .withArgs(dummySslCreds, dummyGrpcAuth)
         .returns(dummyChannelCreds);
-      grpcClient = gaxGrpc(({
+      grpcClient = gaxGrpc({
         auth: stubAuth,
         grpc: stubGrpc,
-      } as unknown) as GrpcClientOptions);
+      } as unknown as GrpcClientOptions);
     });
 
     it('creates a stub', () => {
@@ -202,7 +202,7 @@ describe('grpc', () => {
           assert(stub.options.hasOwnProperty(k));
         });
         // check values
-        const dummyStub = (stub as unknown) as DummyStub;
+        const dummyStub = stub as unknown as DummyStub;
         assert.strictEqual(
           dummyStub.options['grpc.max_send_message_length'],
           10 * 1024 * 1024
@@ -252,7 +252,7 @@ describe('grpc', () => {
         ['servicePath', 'port'].forEach(k => {
           assert.strictEqual(stub.options.hasOwnProperty(k), false);
         });
-        const dummyStub = (stub as unknown) as DummyStub;
+        const dummyStub = stub as unknown as DummyStub;
         assert.strictEqual(
           dummyStub.options['grpc.max_receive_message_length'],
           10 * 1024 * 1024

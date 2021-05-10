@@ -107,7 +107,7 @@ export class PageDescriptor implements Descriptor {
     stream.on('resume', () => {
       if (!started) {
         started = true;
-        apiCall(request, options, (callback as unknown) as APICallback);
+        apiCall(request, options, callback as unknown as APICallback);
       }
     });
     return stream;
