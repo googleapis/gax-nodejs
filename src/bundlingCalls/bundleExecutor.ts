@@ -217,10 +217,10 @@ export class BundleExecutor {
     }
 
     if (!(bundleId in this._timers) && this._options.delayThreshold! > 0) {
-      this._timers[bundleId] = (setTimeout(() => {
+      this._timers[bundleId] = setTimeout(() => {
         delete this._timers[bundleId];
         this._runNow(bundleId);
-      }, this._options.delayThreshold) as unknown) as NodeJS.Timeout;
+      }, this._options.delayThreshold) as unknown as NodeJS.Timeout;
     }
 
     return ret;

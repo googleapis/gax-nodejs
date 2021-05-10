@@ -83,7 +83,7 @@ export class Operation extends EventEmitter {
     this.latestResponse = grpcOp;
     this.name = this.latestResponse.name;
     this.done = this.latestResponse.done;
-    this.error = (this.latestResponse.error as unknown) as GoogleError;
+    this.error = this.latestResponse.error as unknown as GoogleError;
     this.longrunningDescriptor = longrunningDescriptor;
     this.result = null;
     this.metadata = null;
@@ -133,7 +133,8 @@ export class Operation extends EventEmitter {
       this.currentCallPromise_.cancel();
     }
     const operationsClient = this.longrunningDescriptor.operationsClient;
-    const cancelRequest = new operationProtos.google.longrunning.CancelOperationRequest();
+    const cancelRequest =
+      new operationProtos.google.longrunning.CancelOperationRequest();
     cancelRequest.name = this.latestResponse.name;
     return operationsClient.cancelOperation(cancelRequest);
   }
@@ -180,7 +181,8 @@ export class Operation extends EventEmitter {
       this._unpackResponse(this.latestResponse, callback);
       return promisifyResponse() as Promise<{}>;
     }
-    const request = new operationProtos.google.longrunning.GetOperationRequest();
+    const request =
+      new operationProtos.google.longrunning.GetOperationRequest();
     request.name = this.latestResponse.name;
     this.currentCallPromise_ = operationsClient.getOperationInternal(
       request,
@@ -224,7 +226,7 @@ export class Operation extends EventEmitter {
     }
 
     if (metadataDecoder && op.metadata) {
-      metadata = (metadataDecoder(op.metadata.value!) as unknown) as Metadata;
+      metadata = metadataDecoder(op.metadata.value!) as unknown as Metadata;
       this.metadata = metadata;
     }
     if (callback) {

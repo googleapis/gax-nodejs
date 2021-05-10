@@ -144,14 +144,14 @@ describe('paged iteration', () => {
         apiCall(
           next,
           {autoPaginate: false},
-          (callback as unknown) as APICallback
+          callback as unknown as APICallback
         );
       } else {
         assert.strictEqual(counter, pagesToStream + 1);
         done();
       }
     }
-    apiCall({}, {autoPaginate: false}, (callback as unknown) as APICallback);
+    apiCall({}, {autoPaginate: false}, callback as unknown as APICallback);
   });
 
   it('retries on failure', done => {
