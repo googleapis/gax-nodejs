@@ -84,8 +84,8 @@ const mockDecoder = (val: {}) => {
 function createApiCall(func: Function, client?: OperationsClient) {
   const descriptor = new LongrunningDescriptor(
     client!,
-    (mockDecoder as unknown) as AnyDecoder,
-    (mockDecoder as unknown) as AnyDecoder
+    mockDecoder as unknown as AnyDecoder,
+    mockDecoder as unknown as AnyDecoder
   );
   return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }
@@ -186,8 +186,8 @@ describe('longrunning', () => {
       const client = mockOperationsClient();
       const desc = new LongrunningDescriptor(
         client as OperationsClient,
-        (mockDecoder as unknown) as AnyDecoder,
-        (mockDecoder as unknown) as AnyDecoder
+        mockDecoder as unknown as AnyDecoder,
+        mockDecoder as unknown as AnyDecoder
       );
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
@@ -204,7 +204,7 @@ describe('longrunning', () => {
         totalTimeoutMillis
       );
       const operation = longrunning.operation(
-        (SUCCESSFUL_OP as {}) as operationProtos.google.longrunning.Operation,
+        SUCCESSFUL_OP as {} as operationProtos.google.longrunning.Operation,
         desc,
         backoff
       );
@@ -431,11 +431,11 @@ describe('longrunning', () => {
         };
         const client = mockOperationsClient({expectedCalls: 0});
         const apiCall = createApiCall(func, client);
-        const [operation] = ((await apiCall({})) as unknown) as [
+        const [operation] = (await apiCall({})) as unknown as [
           longrunning.Operation
         ];
         assert.notStrictEqual(operation, null);
-        const [finalResult] = ((await operation!.promise()) as unknown) as [
+        const [finalResult] = (await operation!.promise()) as unknown as [
           string
         ];
         assert.strictEqual(finalResult, RESPONSE_VAL);

@@ -67,7 +67,7 @@ export class FallbackErrorDecoder {
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
   decodeRpcStatus(buffer: Buffer | ArrayBuffer): FallbackStatusObject {
     const uint8array = new Uint8Array(buffer);
-    const status = (this.statusType.decode(uint8array) as unknown) as RpcStatus;
+    const status = this.statusType.decode(uint8array) as unknown as RpcStatus;
 
     // google.rpc.Status contains an array of google.protobuf.Any
     // which need a special treatment

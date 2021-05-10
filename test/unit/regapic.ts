@@ -39,10 +39,10 @@ const authStub = {
   },
 };
 
-const opts = ({
+const opts = {
   auth: authStub,
   fallback: 'rest', // enabling REGAPIC
-} as unknown) as (GrpcClientOptions | {auth: OAuth2Client}) & {
+} as unknown as (GrpcClientOptions | {auth: OAuth2Client}) & {
   fallback?: boolean | 'rest' | 'proto';
 };
 

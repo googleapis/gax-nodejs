@@ -213,9 +213,9 @@ export class GrpcClient {
       const clientVersions: string[] = [];
       if (
         metadata[CLIENT_VERSION_HEADER] &&
-        (metadata[CLIENT_VERSION_HEADER] as Array<
-          string | number | string[]
-        >)[0]
+        (
+          metadata[CLIENT_VERSION_HEADER] as Array<string | number | string[]>
+        )[0]
       ) {
         clientVersions.push(
           ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
@@ -235,9 +235,11 @@ export class GrpcClient {
               metadata[key] = value;
             } else {
               if (Array.isArray(metadata[key])) {
-                (metadata[key]! as Array<
-                  string | number | string[] | undefined
-                >).push(...value);
+                (
+                  metadata[key]! as Array<
+                    string | number | string[] | undefined
+                  >
+                ).push(...value);
               } else {
                 throw new Error(
                   `Can not add value ${value} to the call metadata.`
@@ -300,18 +302,18 @@ export class GrpcClient {
       throw new Error('No authentication was provided');
     }
     const authHeader = await this.authClient.getRequestHeaders();
-    const serviceStub = (service.create(
+    const serviceStub = service.create(
       serviceClientImpl,
       false,
       false
-    ) as unknown) as FallbackServiceStub;
+    ) as unknown as FallbackServiceStub;
     const methods = this.getServiceMethods(service);
 
-    const newServiceStub = (service.create(
+    const newServiceStub = service.create(
       serviceClientImpl,
       false,
       false
-    ) as unknown) as FallbackServiceStub;
+    ) as unknown as FallbackServiceStub;
     for (const methodName of methods) {
       newServiceStub[methodName] = (
         req: {},
@@ -414,7 +416,7 @@ export class GrpcClient {
         const fetch = isBrowser()
           ? // eslint-disable-next-line no-undef
             window.fetch
-          : ((nodeFetch as unknown) as NodeFetchType);
+          : (nodeFetch as unknown as NodeFetchType);
         const fetchRequest = {
           headers,
           body: data as string | undefined,

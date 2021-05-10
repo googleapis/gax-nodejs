@@ -27,10 +27,9 @@ import {PassThrough} from 'stream';
 import {ResultTuple} from '../../src/apitypes';
 
 function generateSampleMessage<T extends object>(instance: T) {
-  const filledObject = (instance.constructor as typeof protobuf.Message).toObject(
-    instance as protobuf.Message<T>,
-    {defaults: true}
-  );
+  const filledObject = (
+    instance.constructor as typeof protobuf.Message
+  ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
     filledObject
   ) as T;
@@ -155,9 +154,8 @@ describe('operation client', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.Operation()
       );
-      client.innerApiCalls.getOperation = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.getOperation =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.getOperation(
           request,
@@ -257,9 +255,8 @@ describe('operation client', () => {
         null,
         new protos.google.longrunning.Operation(),
       ];
-      client.innerApiCalls.getOperation = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.getOperation =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.getOperationInternal(
           request,
@@ -355,9 +352,8 @@ describe('operation client', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.longrunning.ListOperationsResponse()
       );
-      client.innerApiCalls.listOperations = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.listOperations =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.listOperations(
           request,
@@ -428,9 +424,8 @@ describe('operation client', () => {
         generateSampleMessage(new protos.google.longrunning.Operation()),
         generateSampleMessage(new protos.google.longrunning.Operation()),
       ];
-      client.descriptor.listOperations.createStream = stubPageStreamingCall(
-        expectedResponse
-      );
+      client.descriptor.listOperations.createStream =
+        stubPageStreamingCall(expectedResponse);
       const stream = client.listOperationsStream(request);
       const promise = new Promise((resolve, reject) => {
         const responses: protos.google.longrunning.Operation[] = [];
@@ -518,9 +513,8 @@ describe('operation client', () => {
           new protos.google.longrunning.ListOperationsResponse()
         ),
       ];
-      client.descriptor.listOperations.asyncIterate = stubAsyncIterationCall(
-        expectedResponse
-      );
+      client.descriptor.listOperations.asyncIterate =
+        stubAsyncIterationCall(expectedResponse);
       const responses: protos.google.longrunning.ListOperationsResponse[] = [];
       const iterable = client.listOperationsAsync(request);
       for await (const resource of iterable) {
@@ -553,7 +547,8 @@ describe('operation client', () => {
       );
       const iterable = client.listOperationsAsync(request);
       await assert.rejects(async () => {
-        const responses: protos.google.longrunning.ListOperationsResponse[] = [];
+        const responses: protos.google.longrunning.ListOperationsResponse[] =
+          [];
         for await (const resource of iterable) {
           responses.push(resource!);
         }
@@ -607,9 +602,8 @@ describe('operation client', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
-      client.innerApiCalls.cancelOperation = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.cancelOperation =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.cancelOperation(
           request,
@@ -705,9 +699,8 @@ describe('operation client', () => {
       const expectedResponse = generateSampleMessage(
         new protos.google.protobuf.Empty()
       );
-      client.innerApiCalls.deleteOperation = stubSimpleCallWithCallback(
-        expectedResponse
-      );
+      client.innerApiCalls.deleteOperation =
+        stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
         client.deleteOperation(
           request,

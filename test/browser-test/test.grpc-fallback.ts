@@ -222,11 +222,10 @@ describe('grpc-fallback', () => {
     const options: any = {};
     options.otherArgs = {};
     options.otherArgs.headers = {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = fallback.routingHeader.fromParams({
-      abc: 'def',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      fallback.routingHeader.fromParams({
+        abc: 'def',
+      });
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject);
     // eslint-disable-next-line no-undef
