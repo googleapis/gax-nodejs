@@ -1,0 +1,36 @@
+{
+  "nested": {
+    "TestMessage": {
+      "oneofs": {
+        "_optioanlValue": {
+          "oneof": [
+            "optioanlValue"
+          ]
+        }
+      },
+      "fields": {
+        "content": {
+          "type": "string",
+          "id": 1,
+          "options": {
+            "(google.api.field_behavior)": "REQUIRED"
+          }
+        },
+        "projectId": {
+          "type": "string",
+          "id": 2,
+          "options": {
+            "(google.api.field_behavior)": "REQUIRED"
+          }
+        },
+        "optioanlValue": {
+          "type": "string",
+          "id": 3,
+          "options": {
+            "proto3_optional": true
+          }
+        }
+      }
+    }
+  }
+}

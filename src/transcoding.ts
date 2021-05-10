@@ -17,6 +17,7 @@
 // This file implements gRPC to HTTP transcoding, as described in
 // https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#grpc-transcoding
 
+import {Field} from 'protobufjs';
 import {google} from '../protos/http';
 import {RequestType} from './apitypes';
 import {camelToSnakeCase, snakeToCamelCase} from './util';
@@ -29,6 +30,8 @@ export interface TranscodedRequest {
 }
 
 const httpOptionName = '(google.api.http)';
+const fieldBehaviorOptionName = '(google.api.field_behavior)';
+const proto3OptionalName = 'proto3_optional';
 
 // The following type is here only to make tests type safe
 type allowedOptions = '(google.api.method_signature)';
@@ -257,9 +260,33 @@ export function requestChangeCaseAndCleanup(
   return convertedRequest;
 }
 
+export function getRequiredAndSnakeFields(
+  fields: {[k: string]: Field} | undefined
+) {
+  const requiredFields = [];
+  for (const fieldName in fields) {
+    if (
+      fields[fieldName] &&
+      fields[fieldName].options![fieldBehaviorOptionName] === 'REQUIRED'
+    ) {
+      requiredFields.push(camelToSnakeCase(fieldName));
+    }
+  }
+  return requiredFields;
+}
+
+export function isProto3OptionalField(field: Field) {
+  return field && field.options![proto3OptionalName];
+}
+
+export function isUnsetField(fieldName: string, request: RequestType): boolean {
+  return request[fieldName] === null || request[fieldName] === 'undefined';
+}
+
 export function transcode(
   request: RequestType,
-  parsedOptions: ParsedOptionsType
+  parsedOptions: ParsedOptionsType,
+  requestFields?: {[k: string]: Field}
 ): TranscodedRequest | undefined {
   // request is supposed to have keys in camelCase.
   const snakeRequest = requestChangeCaseAndCleanup(request, camelToSnakeCase);
@@ -300,6 +327,28 @@ export function transcode(
         for (const field of matchedFields) {
           deleteField(data, field);
         }
+        // Validate that all fields annotated as REQUIRED MUST be emitted in the body.
+        const requiredFields = getRequiredAndSnakeFields(requestFields);
+        for (const requiredField of requiredFields) {
+          if (!(data[requiredField] || matchedFields.includes(requiredField))) {
+            throw new Error(
+              `${requiredField} annotated as REQUIRED MUST be emitted in the JSON request body`
+            );
+          }
+        }
+        // Validate that unset proto3 optional field has NOT been emitted in the body.
+        for (const key in data) {
+          const camelKey = snakeToCamelCase(key);
+          if (
+            requestFields &&
+            isProto3OptionalField(requestFields[camelKey]) &&
+            isUnsetField(camelKey, request)
+          ) {
+            throw new Error(
+              `Unset proto3 optional field ${requestFields[key]} MUST NOT be emitted in the JSON request body`
+            );
+          }
+        }
         // HTTP endpoint expects camelCase but we have snake_case at this point
         const camelCaseData = requestChangeCaseAndCleanup(
           data,
@@ -318,6 +367,18 @@ export function transcode(
       }
       for (const field of matchedFields) {
         deleteField(queryStringObject, snakeToCamelCase(field));
+      }
+      // Validate unset proto3 optional field does not appear in the query params.
+      for (const key in queryStringObject) {
+        if (
+          requestFields &&
+          isProto3OptionalField(requestFields[key]) &&
+          isUnsetField(key, request)
+        ) {
+          throw new Error(
+            `The unset optional field ${requestFields[key]} MUST NOT appear in the query params.`
+          );
+        }
       }
       const queryStringComponents =
         buildQueryStringComponents(queryStringObject);

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/api/field_behavior.proto";
+
+message TestMessage {
+    string content = 1 [(google.api.field_behavior) = REQUIRED];
+
+    string project_id = 2 [(google.api.field_behavior) = REQUIRED];
+
+    optional string optioanl_value = 3;
+}
