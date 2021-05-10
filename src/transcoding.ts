@@ -228,7 +228,7 @@ export function flattenObject(request: RequestType): RequestType {
   return result;
 }
 
-export function requestChangeCase(
+export function requestChangeCaseAndCleanup(
   request: RequestType,
   caseChangeFunc: (key: string) => string
 ) {
@@ -237,14 +237,18 @@ export function requestChangeCase(
   }
   const convertedRequest: RequestType = {};
   for (const field in request) {
+    // cleaning up inherited properties
+    if (!Object.prototype.hasOwnProperty.call(request, field)) {
+      continue;
+    }
     const convertedField = caseChangeFunc(field);
     const value = request[field];
     if (Array.isArray(value)) {
       convertedRequest[convertedField] = value.map(v =>
-        requestChangeCase(v as RequestType, caseChangeFunc)
+        requestChangeCaseAndCleanup(v as RequestType, caseChangeFunc)
       );
     } else {
-      convertedRequest[convertedField] = requestChangeCase(
+      convertedRequest[convertedField] = requestChangeCaseAndCleanup(
         value as RequestType,
         caseChangeFunc
       );
@@ -258,7 +262,7 @@ export function transcode(
   parsedOptions: ParsedOptionsType
 ): TranscodedRequest | undefined {
   // request is supposed to have keys in camelCase.
-  const snakeRequest = requestChangeCase(request, camelToSnakeCase);
+  const snakeRequest = requestChangeCaseAndCleanup(request, camelToSnakeCase);
   const httpRules = [];
   for (const option of parsedOptions) {
     if (!(httpOptionName in option)) {
@@ -297,7 +301,10 @@ export function transcode(
           deleteField(data, field);
         }
         // HTTP endpoint expects camelCase but we have snake_case at this point
-        const camelCaseData = requestChangeCase(data, snakeToCamelCase);
+        const camelCaseData = requestChangeCaseAndCleanup(
+          data,
+          snakeToCamelCase
+        );
         return {httpMethod, url, queryString: '', data: camelCaseData};
       }
 
@@ -319,7 +326,7 @@ export function transcode(
       if (typeof data === 'string') {
         camelCaseData = data;
       } else {
-        camelCaseData = requestChangeCase(data, snakeToCamelCase);
+        camelCaseData = requestChangeCaseAndCleanup(data, snakeToCamelCase);
       }
       return {httpMethod, url, queryString, data: camelCaseData};
     }
