@@ -69,9 +69,8 @@ export class BundleDescriptor implements Descriptor {
       subresponseField = null;
     }
     this.bundledField = bundledField;
-    this.requestDiscriminatorFields = requestDiscriminatorFields.map(
-      snakeToCamelCase
-    );
+    this.requestDiscriminatorFields =
+      requestDiscriminatorFields.map(snakeToCamelCase);
     this.subresponseField = subresponseField;
     this.byteLengthFunction = byteLengthFunction;
   }

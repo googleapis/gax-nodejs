@@ -312,9 +312,8 @@ export function transcode(
       for (const field of matchedFields) {
         deleteField(queryStringObject, snakeToCamelCase(field));
       }
-      const queryStringComponents = buildQueryStringComponents(
-        queryStringObject
-      );
+      const queryStringComponents =
+        buildQueryStringComponents(queryStringObject);
       const queryString = queryStringComponents.join('&');
       let camelCaseData: string | RequestType;
       if (typeof data === 'string') {
