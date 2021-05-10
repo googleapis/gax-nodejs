@@ -133,13 +133,14 @@ export class IamClient {
 
     for (const methodName of iamPolicyStubMethods) {
       const innerCallPromise = this.iamPolicyStub.then(
-        stub => (...args: Array<{}>) => {
-          if (this._terminated) {
-            return Promise.reject('The client has already been closed.');
-          }
-          const func = stub[methodName];
-          return func.apply(stub, args);
-        },
+        stub =>
+          (...args: Array<{}>) => {
+            if (this._terminated) {
+              return Promise.reject('The client has already been closed.');
+            }
+            const func = stub[methodName];
+            return func.apply(stub, args);
+          },
         (err: Error | null | undefined) => () => {
           throw err;
         }
@@ -241,7 +242,7 @@ export class IamClient {
   ): Promise<protos.google.iam.v1.Policy> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
-      callback = (optionsOrCallback as unknown) as Callback<
+      callback = optionsOrCallback as unknown as Callback<
         protos.google.iam.v1.Policy,
         protos.google.iam.v1.GetIamPolicyRequest | null | undefined,
         {} | null | undefined
@@ -254,11 +255,10 @@ export class IamClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      routingHeader.fromParams({
+        resource: request.resource,
+      });
     this.initialize();
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
@@ -301,7 +301,7 @@ export class IamClient {
   ): Promise<protos.google.iam.v1.Policy> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
-      callback = (optionsOrCallback as unknown) as Callback<
+      callback = optionsOrCallback as unknown as Callback<
         protos.google.iam.v1.Policy,
         protos.google.iam.v1.SetIamPolicyRequest | null | undefined,
         {} | null | undefined
@@ -314,11 +314,10 @@ export class IamClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      routingHeader.fromParams({
+        resource: request.resource,
+      });
     this.initialize();
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
@@ -360,7 +359,7 @@ export class IamClient {
   ): Promise<protos.google.iam.v1.TestIamPermissionsResponse> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
-      callback = (optionsOrCallback as unknown) as Callback<
+      callback = optionsOrCallback as unknown as Callback<
         protos.google.iam.v1.TestIamPermissionsResponse,
         protos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
         {} | null | undefined
@@ -373,11 +372,10 @@ export class IamClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = routingHeader.fromParams({
-      resource: request.resource,
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      routingHeader.fromParams({
+        resource: request.resource,
+      });
     this.initialize();
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }

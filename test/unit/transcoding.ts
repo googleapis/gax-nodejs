@@ -56,8 +56,7 @@ describe('gRPC to HTTP transcoding', () => {
             get: '/v3/{parent=get/*}/{field=*}/supportedLanguages',
           },
           {
-            get:
-              '/v3/{parent=projects/*}/{field=fields/*}/{path=**}/supportedLanguages',
+            get: '/v3/{parent=projects/*}/{field=fields/*}/{path=**}/supportedLanguages',
           },
           {
             post: '/v3/a/{snake_case_first=*}',
