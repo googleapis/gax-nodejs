@@ -275,15 +275,15 @@ export function isRequiredField(field: Field) {
 export function getFieldNameOnBehavior(
   fields: {[k: string]: Field} | undefined
 ) {
-  const requiredFields = [];
-  const optionalFields = [];
+  const requiredFields = new Set<string>();
+  const optionalFields = new Set<string>();
   for (const fieldName in fields) {
     const field = fields[fieldName];
     if (isRequiredField(field)) {
-      requiredFields.push(fieldName);
+      requiredFields.add(fieldName);
     }
     if (isProto3OptionalField(field)) {
-      optionalFields.push(fieldName);
+      optionalFields.add(fieldName);
     }
   }
   return {requiredFields, optionalFields};
@@ -346,7 +346,7 @@ export function transcode(
         // Remove unset proto3 optional field from the request body.
         for (const key in data) {
           if (
-            optionalFields.includes(snakeToCamelCase(key)) &&
+            optionalFields.has(snakeToCamelCase(key)) &&
             (!(key in snakeRequest) || snakeRequest[key] === 'undefined')
           ) {
             delete data[key];
@@ -368,7 +368,7 @@ export function transcode(
         deleteField(queryStringObject, snakeToCamelCase(body));
         // Unset optional field should not add in body request.
         data =
-          optionalFields.includes(body) && snakeRequest[body] === 'undefined'
+          optionalFields.has(body) && snakeRequest[body] === 'undefined'
             ? ''
             : (snakeRequest[body] as RequestType);
       }
@@ -377,7 +377,7 @@ export function transcode(
       }
       // Unset proto3 optional field does not appear in the query params.
       for (const key in queryStringObject) {
-        if (optionalFields.includes(key) && request[key] === 'undefined') {
+        if (optionalFields.has(key) && request[key] === 'undefined') {
           delete queryStringObject[key];
         }
       }
