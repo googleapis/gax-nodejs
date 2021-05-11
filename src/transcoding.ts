@@ -296,6 +296,14 @@ export function transcode(
 ): TranscodedRequest | undefined {
   const {requiredFields, optionalFields} =
     getFieldNameOnBehavior(requestFields);
+  // all fields annotated as REQUIRED MUST be emitted in the body.
+  for (const requiredField of requiredFields) {
+    if (!(requiredField in request) || request[requiredField] === 'undefined') {
+      throw new Error(
+        `Required field ${requiredField} is not present in the request.`
+      );
+    }
+  }
   // request is supposed to have keys in camelCase.
   const snakeRequest = requestChangeCaseAndCleanup(request, camelToSnakeCase);
   const httpRules = [];
@@ -335,18 +343,7 @@ export function transcode(
         for (const field of matchedFields) {
           deleteField(data, field);
         }
-        // all fields annotated as REQUIRED MUST be emitted in the body.
-        for (const requiredField of requiredFields) {
-          if (
-            !(requiredField in request) ||
-            request[requiredField] === 'undefined'
-          ) {
-            throw new Error(
-              `Required field ${requiredField} is not present in the request.`
-            );
-          }
-        }
-        // Validate that unset proto3 optional field has NOT been emitted in the body.
+        // Remove unset proto3 optional field from the request body.
         for (const key in data) {
           if (
             optionalFields.includes(snakeToCamelCase(key)) &&
