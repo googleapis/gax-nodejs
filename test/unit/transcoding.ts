@@ -508,11 +508,13 @@ describe('gRPC to HTTP transcoding', () => {
   });
 });
 
-describe('validate proto3 field for body="*"', () => {
+describe('validate proto3 field with default value', () => {
   const root = protobuf.Root.fromJSON(testMessageJson);
   const testMessageFields = root.lookupType('TestMessage').fields;
 
-  it('all required fields emitted path template', () => {
+  // should we throw error?
+  it('should required field if a field has both require annotation and optional', () => {
+    const badTestMessageFields = root.lookupType('TestMessage').fields;
     const request: RequestType = {
       projectId: 'test-project',
       content: 'test-content',
@@ -528,163 +530,98 @@ describe('validate proto3 field for body="*"', () => {
         '(google.api.method_signature)': 'project_id, content',
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.doesNotThrow(() =>
-      transcode(request, parsedOptions, testMessageFields)
-    );
-    assert.deepStrictEqual(transcoded?.data, {});
-    assert.deepStrictEqual(transcoded?.httpMethod, 'post');
-    assert.deepStrictEqual(transcoded?.queryString, '');
-  });
-  it('all require fields emitted either path template or body', () => {
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: '*',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.doesNotThrow(() =>
-      transcode(request, parsedOptions, testMessageFields)
-    );
-    assert.deepStrictEqual(transcoded?.data, {content: 'test-content'});
-    assert.deepStrictEqual(transcoded?.httpMethod, 'post');
-    assert.deepStrictEqual(transcoded?.queryString, '');
-    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
-  });
-  it('throw error required field not set', () => {
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: '*',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id',
-      },
-    ];
-    const request: RequestType = {
-      projectId: 'test-project',
-    };
-    assert.throws(
-      () => transcode(request, parsedOptions, testMessageFields),
-      Error
-    );
-  });
-  it('all requierd fields MUST be emitted in body', () => {
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: '',
-          body: '*',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id',
-      },
-    ];
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(transcoded?.data, {
-      projectId: 'test-project',
-      content: 'test-content',
-    });
-    assert.doesNotThrow(() =>
-      transcode(request, parsedOptions, testMessageFields)
-    );
-  });
-  it('setted optional field should in body', () => {
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}/contents/{content}',
-          body: '*',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-      optioanlValue: 'test-optional-value',
-    };
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(transcoded?.data, {
-      optioanlValue: 'test-optional-value',
-    });
-    assert.doesNotThrow(() =>
-      transcode(request, parsedOptions, testMessageFields)
-    );
-  });
-  it('unset optional field should not in body', () => {
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}/contents/{content}',
-          body: '*',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-      optioanlValue: 'undefined',
-    };
-    assert.throws(
-      () => transcode(request, parsedOptions, testMessageFields),
-      Error
-    );
-  });
-});
-
-describe('validate proto3 optional field for query params', () => {
-  const root = protobuf.Root.fromJSON(testMessageJson);
-  const testMessageFields = root.lookupType('TestMessage').fields;
-  it('set optional field add in the query param', () => {
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: 'content',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-      optioanlValue: 'test-option-value',
-    };
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    const transcoded = transcode(request, parsedOptions, badTestMessageFields);
     assert.deepStrictEqual(
-      transcoded?.queryString,
-      'optioanlValue=test-option-value'
-    );
-    assert.doesNotThrow(() =>
-      transcode(request, parsedOptions, testMessageFields)
+      transcoded?.url,
+      'projects/test-project/contents/test-content'
     );
   });
-  it('set optional field add in the query param', () => {
+  it('should throw error if required field has not been setted', () => {
+    const requests: RequestType[] = [
+      {
+        projectId: 'test-project',
+        content: 'undefined',
+      },
+      {
+        projectId: 'test-project',
+      },
+    ];
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'projects/{project_id}',
+          body: '*',
+        },
+      },
+      {
+        '(google.api.method_signature)': 'project_id, content',
+      },
+    ];
+    for (const request of requests) {
+      assert.throws(
+        () => transcode(request, parsedOptions, testMessageFields),
+        Error
+      );
+    }
+  });
+  it('when body="*", all required field should emitted in body', () => {
+    const request: RequestType = {
+      projectId: 'test-project',
+      content: 'test-content',
+    };
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'projects/{project_id}',
+          body: '*',
+        },
+      },
+    ];
+    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
+    assert.deepStrictEqual(transcoded?.data, {content: 'test-content'});
+  });
+  it('when body="*", unset optional field should remove from body', () => {
+    const requests: RequestType[] = [
+      {
+        projectId: 'test-project',
+        content: 'test-content',
+        optionalValue: 'undefined',
+      },
+      {
+        projectId: 'test-project',
+        content: 'test-content',
+      },
+    ];
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'projects/{project_id}/contents/{content}',
+          body: '*',
+        },
+      },
+    ];
+    for (const request of requests) {
+      const transcoded = transcode(request, parsedOptions, testMessageFields);
+      assert.deepStrictEqual(
+        transcoded?.url,
+        'projects/test-project/contents/test-content'
+      );
+      assert.deepStrictEqual(transcoded?.data, {});
+    }
+  });
+  it('unset optional fields should not appear in query params', () => {
+    const requests: RequestType[] = [
+      {
+        projectId: 'test-project',
+        content: 'test-content',
+        optionalValue: 'undefined',
+      },
+      {
+        projectId: 'test-project',
+        content: 'test-content',
+      },
+    ];
     const parsedOptions: ParsedOptionsType = [
       {
         '(google.api.http)': {
@@ -696,11 +633,209 @@ describe('validate proto3 optional field for query params', () => {
         '(google.api.method_signature)': 'project_id, content',
       },
     ];
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-      optioanlValue: 'undefined',
-    };
-    assert.throws(() => transcode(request, parsedOptions, testMessageFields));
+    for (const request of requests) {
+      const transcoded = transcode(request, parsedOptions, testMessageFields);
+      assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
+      assert.deepStrictEqual(transcoded?.data, 'test-content');
+      assert.deepStrictEqual(transcoded.queryString, '');
+    }
   });
 });
+
+// describe('validate proto3 field for body="*"', () => {
+//   const root = protobuf.Root.fromJSON(testMessageJson);
+//   const testMessageFields = root.lookupType('TestMessage').fields;
+
+//   it('all required fields emitted path template', () => {
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//     };
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}/contents/{content}',
+//           body: '*',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id, content',
+//       },
+//     ];
+//     const transcoded = transcode(request, parsedOptions, testMessageFields);
+//     assert.doesNotThrow(() =>
+//       transcode(request, parsedOptions, testMessageFields)
+//     );
+//     assert.deepStrictEqual(transcoded?.data, {});
+//     assert.deepStrictEqual(transcoded?.httpMethod, 'post');
+//     assert.deepStrictEqual(transcoded?.queryString, '');
+//   });
+//   it('all require fields emitted either path template or body', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}',
+//           body: '*',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id, content',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//     };
+//     const transcoded = transcode(request, parsedOptions, testMessageFields);
+//     assert.doesNotThrow(() =>
+//       transcode(request, parsedOptions, testMessageFields)
+//     );
+//     assert.deepStrictEqual(transcoded?.data, {content: 'test-content'});
+//     assert.deepStrictEqual(transcoded?.httpMethod, 'post');
+//     assert.deepStrictEqual(transcoded?.queryString, '');
+//     assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
+//   });
+//   it('throw error required field not set', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}',
+//           body: '*',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//     };
+//     assert.throws(
+//       () => transcode(request, parsedOptions, testMessageFields),
+//       Error
+//     );
+//   });
+//   it('all requierd fields MUST be emitted in body', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: '',
+//           body: '*',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//     };
+//     const transcoded = transcode(request, parsedOptions, testMessageFields);
+//     assert.deepStrictEqual(transcoded?.data, {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//     });
+//     assert.doesNotThrow(() =>
+//       transcode(request, parsedOptions, testMessageFields)
+//     );
+//   });
+//   it('setted optional field should in body', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}/contents/{content}',
+//           body: '*',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id, content',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//       optioanlValue: 'test-optional-value',
+//     };
+//     const transcoded = transcode(request, parsedOptions, testMessageFields);
+//     assert.deepStrictEqual(transcoded?.data, {
+//       optioanlValue: 'test-optional-value',
+//     });
+//     assert.doesNotThrow(() =>
+//       transcode(request, parsedOptions, testMessageFields)
+//     );
+//   });
+//   it('unset optional field should not in body', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}/contents/{content}',
+//           body: '*',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id, content',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//       optioanlValue: 'undefined',
+//     };
+//     transcode(request, parsedOptions, testMessageFields);
+//     assert.throws(
+//       () => transcode(request, parsedOptions, testMessageFields),
+//       Error
+//     );
+//   });
+// });
+
+// describe('validate proto3 optional field for query params', () => {
+//   const root = protobuf.Root.fromJSON(testMessageJson);
+//   const testMessageFields = root.lookupType('TestMessage').fields;
+//   it('set optional field add in the query param', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}',
+//           body: 'content',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id, content',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//       optioanlValue: 'test-option-value',
+//     };
+//     const transcoded = transcode(request, parsedOptions, testMessageFields);
+//     assert.deepStrictEqual(
+//       transcoded?.queryString,
+//       'optioanlValue=test-option-value'
+//     );
+//     assert.doesNotThrow(() =>
+//       transcode(request, parsedOptions, testMessageFields)
+//     );
+//   });
+//   it('set optional field add in the query param', () => {
+//     const parsedOptions: ParsedOptionsType = [
+//       {
+//         '(google.api.http)': {
+//           post: 'projects/{project_id}',
+//           body: 'content',
+//         },
+//       },
+//       {
+//         '(google.api.method_signature)': 'project_id, content',
+//       },
+//     ];
+//     const request: RequestType = {
+//       projectId: 'test-project',
+//       content: 'test-content',
+//       optioanlValue: 'undefined',
+//     };
+//     assert.throws(() => transcode(request, parsedOptions, testMessageFields));
+//   });
+// });

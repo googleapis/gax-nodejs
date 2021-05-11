@@ -21,5 +21,13 @@ message TestMessage {
 
     string project_id = 2 [(google.api.field_behavior) = REQUIRED];
 
-    optional string optioanl_value = 3;
+    optional string optional_value = 3;
+}
+
+message BadTestMessage {
+  string content = 1 [(google.api.field_behavior) = REQUIRED];
+
+  optional string project_id = 2 [(google.api.field_behavior) = REQUIRED];
+
+  optional string optional_value = 3;
 }

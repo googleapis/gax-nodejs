@@ -391,7 +391,11 @@ export class GrpcClient {
             // TODO: use toJSON instead of toObject
             decodedRequest
           );
-          const transcoded = transcode(requestJSON, method.parsedOptions);
+          const transcoded = transcode(
+            requestJSON,
+            method.parsedOptions,
+            method.resolvedRequestType.fields
+          );
           if (!transcoded) {
             throw new Error(
               `Cannot build HTTP request for ${JSON.stringify(

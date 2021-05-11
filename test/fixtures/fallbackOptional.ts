@@ -13,6 +13,6 @@
 // limitations under the License.
 
 // Manually created JSON object using the command:
-// npx pbjs -t json -o test-default-value.json ./fallback-default-value/test_optional.proto
+// cd test/fixtures/ && npx pbjs -t json -o test-default-value.json ./fallback-default-value/test_optional.proto
 import testMessageJson = require('./test-default-value.json')
 export {testMessageJson}
