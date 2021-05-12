@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.13.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.12.0...v2.13.0) (2021-05-12)
+
+
+### Features
+
+* add validation for proto3 optional default value ([#997](https://www.github.com/googleapis/gax-nodejs/issues/997)) ([c59c153](https://www.github.com/googleapis/gax-nodejs/commit/c59c153f012460d03d69eae4f84700bedbef74a0))
+
+
+### Bug Fixes
+
+* do not consider inherited properties for transcoding ([#995](https://www.github.com/googleapis/gax-nodejs/issues/995)) ([e0984a1](https://www.github.com/googleapis/gax-nodejs/commit/e0984a1a0f8d31f1aeac308a14b7694f25338531))
+* load LRO proto JSON using require ([#1004](https://www.github.com/googleapis/gax-nodejs/issues/1004)) ([62c8055](https://www.github.com/googleapis/gax-nodejs/commit/62c8055f5d0f7b017156444035967e5ac143241b))
+* prettier rules change ([#998](https://www.github.com/googleapis/gax-nodejs/issues/998)) ([f75d2b5](https://www.github.com/googleapis/gax-nodejs/commit/f75d2b52b3d5d08cbe593f7269876429a7fd1bc7))
+
 ## [2.12.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.11.3...v2.12.0) (2021-04-29)
 
 
