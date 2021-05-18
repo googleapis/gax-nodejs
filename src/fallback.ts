@@ -143,7 +143,7 @@ export class GrpcClient {
         new GoogleAuth(options as GoogleAuthOptions);
     }
     this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
-    this.grpcVersion = require('../../package.json').version + '-fallback';
+    this.grpcVersion = require('../../package.json').version;
   }
 
   /**
