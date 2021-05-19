@@ -29,9 +29,10 @@ export function warn(code: string, message: string, type?: string) {
   if (isBrowser()) {
     console.warn(message);
   } else {
-    if(type !== 'undefined') {
+    if (type !== 'undefined') {
       process.emitWarning(message, type);
+    } else {
+      process.emitWarning(message);
     }
-    else {process.emitWarning(message)}
   }
 }
