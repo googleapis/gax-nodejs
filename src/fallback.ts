@@ -143,7 +143,7 @@ export class GrpcClient {
         new GoogleAuth(options as GoogleAuthOptions);
     }
     this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
-    this.grpcVersion = 'fallback'; // won't be used anywhere but we need it to exist in the class
+    this.grpcVersion = require('../../package.json').version;
   }
 
   /**
