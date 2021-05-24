@@ -28,13 +28,11 @@ export function warn(code: string, message: string, warnType?: string) {
 
   if (isBrowser()) {
     console.warn(message);
+  } else if (typeof warnType !== 'undefined') {
+    process.emitWarning(message, {
+      type: warnType,
+    });
   } else {
-    if (typeof warnType !== 'undefined') {
-      process.emitWarning(message, {
-        type: warnType,
-      });
-    } else {
-      process.emitWarning(message);
-    }
+    process.emitWarning(message);
   }
 }
