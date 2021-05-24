@@ -18,7 +18,7 @@ import {isBrowser} from './isbrowser';
 
 const emittedWarnings = new Set<string>();
 
-// Type is the type of warning (e.g. 'DeprecationgWarning', 'ExperimentalWarning', etc.)
+// Type is the type of warning (e.g. 'DeprecationWarning', 'ExperimentalWarning', etc.)
 export function warn(code: string, message: string, type?: string) {
   // Only show a given warning once
   if (emittedWarnings.has(code)) {
@@ -29,8 +29,11 @@ export function warn(code: string, message: string, type?: string) {
   if (isBrowser()) {
     console.warn(message);
   } else {
-    if (type !== 'undefined') {
-      process.emitWarning(message, type);
+    if (typeof type !== 'undefined') {
+      process.emitWarning(message,
+        {
+          type: type
+        });
     } else {
       process.emitWarning(message);
     }
