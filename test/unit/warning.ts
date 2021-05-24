@@ -19,7 +19,6 @@ import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
 
 import {warn} from '../../src/warnings';
-import { emitWarning } from 'process';
 
 describe('warnings', () => {
   it('should warn the given code once with the first message', done => {
@@ -46,16 +45,12 @@ describe('warnings', () => {
   it('should include warning type if type is provided', done => {
     const stub = sinon.stub(process, 'emitWarning');
     warn('codeD', 'messageD-1', 'WarningType1');
-    assert(stub.calledWith('messageD-1', 
-    {
-      type: 'WarningType1'
-    }));
+    assert(
+      stub.calledWith('messageD-1', {
+        type: 'WarningType1',
+      })
+    );
     stub.restore();
     done();
   });
 });
-
-// const stub = sinon.stub(process, 'emitWarning');
-// warn('codeD', 'messageD-1', 'WarningType1');
-// console.warn(stub.getCall(0).args);
-// stub.restore();
