@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.14.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.13.0...v2.14.0) (2021-05-24)
+
+
+### Features
+
+* add `gcf-owl-bot[bot]` to `ignoreAuthors` ([#1007](https://www.github.com/googleapis/gax-nodejs/issues/1007)) ([4fac451](https://www.github.com/googleapis/gax-nodejs/commit/4fac45186cea40c0945598636faee5d9d7ba1103))
+* add type parameter to warn function ([#1009](https://www.github.com/googleapis/gax-nodejs/issues/1009)) ([fef2e7c](https://www.github.com/googleapis/gax-nodejs/commit/fef2e7c7d81d2187b05542862386c2391e7edd74))
+* update rest version for metrics ([#1005](https://www.github.com/googleapis/gax-nodejs/issues/1005)) ([233d6a7](https://www.github.com/googleapis/gax-nodejs/commit/233d6a7dbed5655652a0b5100773cc7837e59a5f))
+
 ## [2.13.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.12.0...v2.13.0) (2021-05-12)
 
 
