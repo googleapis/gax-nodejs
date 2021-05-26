@@ -66,6 +66,9 @@ export interface ClientStubOptions {
   port?: number;
   sslCreds?: grpc.ChannelCredentials;
   [index: string]: string | number | undefined | {};
+  // For mtls:
+  cert?: string;
+  key?: string;
 }
 
 export class ClientStub extends grpc.Client {
@@ -157,7 +160,14 @@ export class GrpcClient {
       return opts.sslCreds;
     }
     const grpc = this.grpc;
-    const sslCreds = grpc.credentials.createSsl();
+    const sslCreds =
+      opts.cert && opts.key
+        ? grpc.credentials.createSsl(
+            null,
+            Buffer.from(opts.key),
+            Buffer.from(opts.cert)
+          )
+        : grpc.credentials.createSsl();
     const client = await this.auth.getClient();
     const credentials = grpc.credentials.combineChannelCredentials(
       sslCreds,
