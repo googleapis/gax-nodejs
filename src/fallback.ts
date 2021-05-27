@@ -323,7 +323,18 @@ export class GrpcClient {
       ) => {
         const [method, requestData, serviceCallback] = serviceStub[
           methodName
-        ].apply(serviceStub, [req, callback]);
+        ].apply(serviceStub, [
+          req,
+          (err: Error | null, response: {}) => {
+            if (!err) {
+              // converts a protobuf message instance to a plain JavaScript object with enum conversion options specified
+              response = method.resolvedResponseType.toObject(response, {
+                enums: String,
+              });
+            }
+            callback(err, response);
+          },
+        ]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cancelController: AbortController, cancelSignal: any;
         if (isBrowser() || typeof AbortController !== 'undefined') {
