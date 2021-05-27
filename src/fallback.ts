@@ -325,8 +325,7 @@ export class GrpcClient {
           methodName
         ].apply(serviceStub, [
           req,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (err: any, response: any) => {
+          (err: Error | null, response: {}) => {
             if (!err) {
               // converts a protobuf message instance to a plain JavaScript object with enum conversion options specified
               response = method.resolvedResponseType.toObject(response, {
