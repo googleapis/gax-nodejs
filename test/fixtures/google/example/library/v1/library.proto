@@ -28,7 +28,6 @@ option java_multiple_files = true;
 option java_outer_classname = "LibraryProto";
 option java_package = "com.google.example.library.v1";
 
-
 // This API represents a simple digital library.  It lets you manage Shelf
 // resources and Book resources in the library. It defines the following
 // resource model:
@@ -132,6 +131,9 @@ message Shelf {
 
   // The theme of the shelf
   string theme = 2;
+
+  // The enum type of the shelf.
+  ShelfType type = 3;
 }
 
 // Request message for LibraryService.CreateShelf.
@@ -255,4 +257,11 @@ message MoveBookRequest {
 
   // The name of the destination shelf.
   string other_shelf_name = 2;
+}
+
+// Enum value for shelf type.
+enum ShelfType {
+  TYPEONE = 1;
+
+  TYPETWO = 2;
 }

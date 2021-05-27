@@ -21,6 +21,7 @@ import * as assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
 import * as nodeFetch from 'node-fetch';
 import * as protobuf from 'protobufjs';
+import * as path from 'path';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
@@ -49,7 +50,9 @@ const opts = {
 describe('regapic', () => {
   let gaxGrpc: GrpcClient,
     protos: protobuf.NamespaceBase,
+    libProtos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
+    libraryService: protobuf.Service,
     stubOptions: {};
 
   before(() => {
@@ -61,6 +64,17 @@ describe('regapic', () => {
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
+    const TEST_JSON = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'test',
+      'fixtures',
+      'library.json'
+    );
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    libProtos = gaxGrpc.loadProtoJSON(require(TEST_JSON));
+    libraryService = libProtos.lookupService('LibraryService');
     stubOptions = {
       servicePath: 'foo.example.com',
       port: 443,
@@ -90,6 +104,39 @@ describe('regapic', () => {
         assert.strictEqual(requestObject.content, result.content);
         done();
       });
+    });
+  });
+
+  it('should support enum conversion in proto message response', done => {
+    const requestObject = {name: 'shelves/shelf-name'};
+    const responseObject = {
+      name: 'shelf-name',
+      theme: 'shelf-theme',
+      type: 1,
+    };
+    // incomplete types for nodeFetch, so...
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(nodeFetch, 'Promise' as any).returns(
+      Promise.resolve({
+        ok: true,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+        },
+      })
+    );
+
+    gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+      libStub.getShelf(
+        requestObject,
+        {},
+        {},
+        (err: {}, result: {name: {}; theme: {}; type: {}}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual('shelf-name', result.name);
+          assert.strictEqual('TYPEONE', result.type);
+          done();
+        }
+      );
     });
   });
 });
