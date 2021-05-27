@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.14.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.14.0...v2.14.1) (2021-05-27)
+
+
+### Bug Fixes
+
+* rest transport enum value display incorectly ([#1015](https://www.github.com/googleapis/gax-nodejs/issues/1015)) ([055387b](https://www.github.com/googleapis/gax-nodejs/commit/055387b1f497f6a4132f228d82d95d9a6f6c53f7))
+
 ## [2.14.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.13.0...v2.14.0) (2021-05-24)
 
 
