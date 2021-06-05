@@ -31,7 +31,7 @@
     "@compodoc/compodoc": "^1.1.7",
     "@microsoft/api-documenter": "^7.8.10",
     "@microsoft/api-extractor": "^7.8.10",
-    "@types/download": "^6.2.4",
+    "@types/download": "^8.0.0",
     "@types/fs-extra": "^8.0.1",
     "@types/mocha": "^8.0.0",
     "@types/ncp": "^2.0.1",
