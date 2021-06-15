@@ -133,7 +133,7 @@ export class GrpcClient {
       if (!options.auth) {
         throw new Error(
           JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.'
+          'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.'
         );
       }
       this.auth = options.auth as OAuth2Client;
@@ -279,9 +279,9 @@ export class GrpcClient {
       method:
         | protobuf.Method
         | protobuf.rpc.ServiceMethod<
-            protobuf.Message<{}>,
-            protobuf.Message<{}>
-          >,
+          protobuf.Message<{}>,
+          protobuf.Message<{}>
+        >,
       requestData: Uint8Array,
       callback: protobuf.RPCImplCallback
     ) {
@@ -435,7 +435,7 @@ export class GrpcClient {
 
         const fetch = isBrowser()
           ? // eslint-disable-next-line no-undef
-            window.fetch
+          window.fetch
           : (nodeFetch as unknown as NodeFetchType);
         const fetchRequest = {
           headers,
