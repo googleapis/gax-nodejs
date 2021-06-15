@@ -27,7 +27,6 @@ import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
-import Long = require('long');
 
 const authClient = {
   getRequestHeaders() {
@@ -224,7 +223,7 @@ describe('regapic', () => {
         author: 'book-author',
         title: 'book-title',
         read: true,
-        bookId: '9007199254740992',
+        bookId: bookId,
       };
       // incomplete types for nodeFetch, so...
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -247,7 +246,7 @@ describe('regapic', () => {
           ) => {
             assert.strictEqual(err, null);
             assert.strictEqual('book-name', result.name);
-            assert.strictEqual('9007199254740992', result.bookId);
+            assert.strictEqual(bookId.toString(), result.bookId);
             done();
           }
         );
