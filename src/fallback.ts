@@ -327,9 +327,10 @@ export class GrpcClient {
           req,
           (err: Error | null, response: {}) => {
             if (!err) {
-              // converts a protobuf message instance to a plain JavaScript object with enum conversion options specified
+              // converts a protobuf message instance to a plain JavaScript object with enum, longs conversion options specified
               response = method.resolvedResponseType.toObject(response, {
                 enums: String,
+                longs: String,
               });
             }
             callback(err, response);
@@ -400,7 +401,10 @@ export class GrpcClient {
           const decodedRequest = method.resolvedRequestType.decode(requestData);
           const requestJSON = method.resolvedRequestType.toObject(
             // TODO: use toJSON instead of toObject
-            decodedRequest
+            decodedRequest,
+            {
+              longs: String,
+            }
           );
           const transcoded = transcode(
             requestJSON,
