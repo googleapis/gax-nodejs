@@ -110,16 +110,12 @@
                           "requestType": "GetBookRequest",
                           "responseType": "Book",
                           "options": {
-                            "(google.api.http).get": "/v1/{name=shelves/*/books/*}",
-                            "(google.api.http).additional_bindings.get": "/v1/{name=shelves/*/book_id/*}"
+                            "(google.api.http).get": "/v1/{name=shelves/*/books/*}"
                           },
                           "parsedOptions": [
                             {
                               "(google.api.http)": {
-                                "get": "/v1/{name=shelves/*/books/*}",
-                                "additional_bindings": {
-                                  "get": "/v1/{name=shelves/*/book_id/*}"
-                                }
+                                "get": "/v1/{name=shelves/*/books/*}"
                               }
                             }
                           ]

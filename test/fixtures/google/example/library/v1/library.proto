@@ -77,12 +77,7 @@ service LibraryService {
 
   // Gets a book. Returns NOT_FOUND if the book does not exist.
   rpc GetBook(GetBookRequest) returns (Book) {
-    option (google.api.http) = {
-      get: "/v1/{name=shelves/*/books/*}"
-      additional_bindings {
-        get: "/v1/{name=shelves/*/book_id/*}"
-      }
-     };
+    option (google.api.http) = { get: "/v1/{name=shelves/*/books/*}" };
   }
 
   // Lists books in a shelf. The order is unspecified but deterministic. Newly
