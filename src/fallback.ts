@@ -403,6 +403,7 @@ export class GrpcClient {
             // TODO: use toJSON instead of toObject
             decodedRequest,
             {
+              enums: String,
               longs: String,
             }
           );
