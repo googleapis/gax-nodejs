@@ -39,7 +39,7 @@ export interface ClientOptions
   apiEndpoint?: string;
   // clientCertSource must return a tuple of cert and key, which
   // are used to configure mTLS:
-  clientCertSource?: (callback: () => [string, string]) => void;
+  clientCertSource?: () => [string, string];
 }
 
 export interface Descriptors {
