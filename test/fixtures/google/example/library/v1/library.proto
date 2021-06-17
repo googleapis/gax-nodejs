@@ -77,7 +77,12 @@ service LibraryService {
 
   // Gets a book. Returns NOT_FOUND if the book does not exist.
   rpc GetBook(GetBookRequest) returns (Book) {
-    option (google.api.http) = { get: "/v1/{name=shelves/*/books/*}" };
+    option (google.api.http) = {
+      get: "/v1/{name=shelves/*/books/*}"
+      additional_bindings: {
+        get: "/v1/{name=shelves/*/book_id/*}"
+      }
+    };
   }
 
   // Lists books in a shelf. The order is unspecified but deterministic. Newly
@@ -120,6 +125,9 @@ message Book {
 
   // Value indicating whether the book has been read.
   bool read = 4;
+
+  // The id of the book.
+  int64 book_id = 5;
 }
 
 // A Shelf contains a collection of books with a theme.
@@ -203,6 +211,9 @@ message CreateBookRequest {
 message GetBookRequest {
   // The name of the book to retrieve.
   string name = 1;
+
+  // The the id of the book.
+  int64 book_id = 2;
 }
 
 // Request message for LibraryService.ListBooks.

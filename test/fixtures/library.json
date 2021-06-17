@@ -110,12 +110,16 @@
                           "requestType": "GetBookRequest",
                           "responseType": "Book",
                           "options": {
-                            "(google.api.http).get": "/v1/{name=shelves/*/books/*}"
+                            "(google.api.http).get": "/v1/{name=shelves/*/books/*}",
+                            "(google.api.http).additional_bindings.get": "/v1/{name=shelves/*/book_id/*}"
                           },
                           "parsedOptions": [
                             {
                               "(google.api.http)": {
-                                "get": "/v1/{name=shelves/*/books/*}"
+                                "get": "/v1/{name=shelves/*/books/*}",
+                                "additional_bindings": {
+                                  "get": "/v1/{name=shelves/*/book_id/*}"
+                                }
                               }
                             }
                           ]
@@ -199,6 +203,10 @@
                         "read": {
                           "type": "bool",
                           "id": 4
+                        },
+                        "bookId": {
+                          "type": "int64",
+                          "id": 5
                         }
                       }
                     },
@@ -296,6 +304,10 @@
                         "name": {
                           "type": "string",
                           "id": 1
+                        },
+                        "bookId": {
+                          "type": "int64",
+                          "id": 2
                         }
                       }
                     },
