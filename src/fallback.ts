@@ -168,14 +168,15 @@ export class GrpcClient {
     return root;
   }
 
-  private getServiceMethods(service: protobuf.Service) {
-    const methods = Object.keys(service.methods);
+  private static getServiceMethods(service: protobuf.Service) {
+    const methods: {[name: string]: protobuf.Method} = {};
+    for (const [methodName, methodObject] of Object.entries(service.methods)) {
+      const methodNameLowerCamelCase =
+        methodName[0].toLowerCase() + methodName.substring(1);
+      methods[methodNameLowerCamelCase] = methodObject;
+    }
 
-    const methodsLowerCamelCase = methods.map(method => {
-      return method[0].toLowerCase() + method.substring(1);
-    });
-
-    return methodsLowerCamelCase;
+    return methods;
   }
 
   /**
@@ -285,7 +286,7 @@ export class GrpcClient {
       requestData: Uint8Array,
       callback: protobuf.RPCImplCallback
     ) {
-      return [method, requestData, callback];
+      return [requestData, callback];
     }
 
     // decoder for google.rpc.Status messages
@@ -307,34 +308,44 @@ export class GrpcClient {
       false,
       false
     ) as unknown as FallbackServiceStub;
-    const methods = this.getServiceMethods(service);
 
-    const newServiceStub = service.create(
+    const methods = GrpcClient.getServiceMethods(service);
+
+    // grpcCompatibleServiceStub methods accept four parameters:
+    // request, options, metadata, and callback - similar to
+    // the stub returned by grpc.ts
+    const grpcCompatibleServiceStub = service.create(
       serviceClientImpl,
       false,
       false
     ) as unknown as FallbackServiceStub;
-    for (const methodName of methods) {
-      newServiceStub[methodName] = (
+    for (const [methodName, methodObject] of Object.entries(methods)) {
+      grpcCompatibleServiceStub[methodName] = (
         req: {},
         options: {[name: string]: string},
         metadata: {},
         callback: Function
       ) => {
-        const [method, requestData, serviceCallback] = serviceStub[
-          methodName
-        ].apply(serviceStub, [
-          req,
-          (err: Error | null, response: {}) => {
-            if (!err) {
-              // converts a protobuf message instance to a plain JavaScript object with enum conversion options specified
-              response = method.resolvedResponseType.toObject(response, {
-                enums: String,
-              });
-            }
-            callback(err, response);
-          },
-        ]);
+        const [requestData, serviceCallback] = serviceStub[methodName].apply(
+          serviceStub,
+          [
+            methodObject.resolvedRequestType!.fromObject(req),
+            (err: Error | null, response: protobuf.Message<{}>) => {
+              if (!err) {
+                // converts a protobuf message instance to a plain JavaScript object
+                // with enum and long conversion options specified
+                const responseObject =
+                  methodObject.resolvedResponseType!.toObject(response, {
+                    enums: String,
+                    longs: String,
+                  });
+                callback(null, responseObject);
+              } else {
+                callback(err);
+              }
+            },
+          ]
+        );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let cancelController: AbortController, cancelSignal: any;
         if (isBrowser() || typeof AbortController !== 'undefined') {
@@ -380,13 +391,13 @@ export class GrpcClient {
         }
 
         const protoNamespaces: string[] = [];
-        let currNamespace = method.parent;
+        let currNamespace = methodObject.parent!;
         while (currNamespace.name !== '') {
           protoNamespaces.unshift(currNamespace.name);
-          currNamespace = currNamespace.parent;
+          currNamespace = currNamespace.parent!;
         }
         const protoServiceName = protoNamespaces.join('.');
-        const rpcName = method.name;
+        const rpcName = methodObject.name;
 
         let url: string;
         let data: string;
@@ -397,21 +408,26 @@ export class GrpcClient {
         if (this.fallback === 'rest') {
           // REGAPIC: JSON over HTTP/1 with gRPC trancoding
           headers['Content-Type'] = 'application/json';
-          const decodedRequest = method.resolvedRequestType.decode(requestData);
-          const requestJSON = method.resolvedRequestType.toObject(
+          const decodedRequest =
+            methodObject.resolvedRequestType!.decode(requestData);
+          const requestJSON = methodObject.resolvedRequestType!.toObject(
             // TODO: use toJSON instead of toObject
-            decodedRequest
+            decodedRequest,
+            {
+              enums: String,
+              longs: String,
+            }
           );
           const transcoded = transcode(
             requestJSON,
-            method.parsedOptions,
-            method.resolvedRequestType.fields
+            methodObject.parsedOptions,
+            methodObject.resolvedRequestType!.fields
           );
           if (!transcoded) {
             throw new Error(
               `Cannot build HTTP request for ${JSON.stringify(
                 requestJSON
-              )}, method: ${method.name}`
+              )}, method: ${methodObject.name}`
             );
           }
           httpMethod = transcoded.httpMethod;
@@ -467,9 +483,10 @@ export class GrpcClient {
                 );
                 throw error;
               }
-              const message = method.resolvedResponseType.fromObject(response);
-              const encoded = method.resolvedResponseType
-                .encode(message)
+              const message =
+                methodObject.resolvedResponseType!.fromObject(response);
+              const encoded = methodObject
+                .resolvedResponseType!.encode(message)
                 .finish();
               serviceCallback(null, encoded);
             } else {
@@ -501,7 +518,7 @@ export class GrpcClient {
         };
       };
     }
-    return newServiceStub;
+    return grpcCompatibleServiceStub;
   }
 }
 

@@ -139,4 +139,118 @@ describe('regapic', () => {
       );
     });
   });
+
+  describe('should support long data type conversion in proto message', () => {
+    it('large number long data type conversion in proto message response', done => {
+      const requestObject = {name: 'shelves/shelf-name/books/book-name'};
+      const responseObject = {
+        name: 'book-name',
+        author: 'book-author',
+        title: 'book-title',
+        read: true,
+        bookId: 9007199254740992,
+      };
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
+      );
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getBook(
+          requestObject,
+          {},
+          {},
+          (
+            err: {},
+            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
+          ) => {
+            assert.strictEqual(err, null);
+            assert.strictEqual('book-name', result.name);
+            assert.strictEqual('9007199254740992', result.bookId);
+            done();
+          }
+        );
+      });
+    });
+
+    it('small number long data type conversion in proto message response', done => {
+      const requestObject = {name: 'shelves/shelf-name/books/book-name'};
+      const responseObject = {
+        name: 'book-name',
+        author: 'book-author',
+        title: 'book-title',
+        read: true,
+        bookId: 42,
+      };
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
+      );
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getBook(
+          requestObject,
+          {},
+          {},
+          (
+            err: {},
+            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
+          ) => {
+            assert.strictEqual(err, null);
+            assert.strictEqual('book-name', result.name);
+            assert.strictEqual('42', result.bookId);
+            done();
+          }
+        );
+      });
+    });
+
+    it('long data type conversion in proto message request', done => {
+      const bookId = 9007199254740992;
+      const requestObject = {name: `shelves/shelf-name/book_id/${bookId}`};
+      const responseObject = {
+        name: 'book-name',
+        author: 'book-author',
+        title: 'book-title',
+        read: true,
+        bookId: bookId,
+      };
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
+      );
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getBook(
+          requestObject,
+          {},
+          {},
+          (
+            err: {},
+            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
+          ) => {
+            assert.strictEqual(err, null);
+            assert.strictEqual('book-name', result.name);
+            assert.strictEqual(bookId.toString(), result.bookId);
+            done();
+          }
+        );
+      });
+    });
+  });
 });

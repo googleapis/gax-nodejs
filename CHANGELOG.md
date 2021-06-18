@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.15.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.15.0...v2.15.1) (2021-06-17)
+
+
+### Bug Fixes
+
+* support int64 conversion between the pf message and JSON object ([#1028](https://www.github.com/googleapis/gax-nodejs/issues/1028)) ([b46f57d](https://www.github.com/googleapis/gax-nodejs/commit/b46f57dcf88d70f9b8b3fcd5119dd68e02b6a71a))
+
 ## [2.15.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.14.1...v2.15.0) (2021-06-10)
 
 
