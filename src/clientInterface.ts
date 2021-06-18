@@ -37,9 +37,6 @@ export interface ClientOptions
   clientConfig?: gax.ClientConfig;
   fallback?: boolean | 'rest' | 'proto';
   apiEndpoint?: string;
-  // clientCertSource must return a tuple of cert and key, which
-  // are used to configure mTLS:
-  clientCertSource?: (callback: () => [string, string]) => void;
 }
 
 export interface Descriptors {
