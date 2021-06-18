@@ -105,3 +105,4 @@ export {
 } from './clientInterface';
 
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
+export {warn} from './warnings';

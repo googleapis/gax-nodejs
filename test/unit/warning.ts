@@ -42,4 +42,15 @@ describe('warnings', () => {
     stub.restore();
     done();
   });
+  it('should include warning type if type is provided', done => {
+    const stub = sinon.stub(process, 'emitWarning');
+    warn('codeD', 'messageD-1', 'WarningType1');
+    assert(
+      stub.calledWith('messageD-1', {
+        type: 'WarningType1',
+      })
+    );
+    stub.restore();
+    done();
+  });
 });

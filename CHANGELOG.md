@@ -4,6 +4,50 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.15.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.15.0...v2.15.1) (2021-06-17)
+
+
+### Bug Fixes
+
+* support int64 conversion between the pf message and JSON object ([#1028](https://www.github.com/googleapis/gax-nodejs/issues/1028)) ([b46f57d](https://www.github.com/googleapis/gax-nodejs/commit/b46f57dcf88d70f9b8b3fcd5119dd68e02b6a71a))
+
+## [2.15.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.14.1...v2.15.0) (2021-06-10)
+
+
+### Features
+
+* expose cert and key for mTLS ([#1014](https://www.github.com/googleapis/gax-nodejs/issues/1014)) ([f025fc1](https://www.github.com/googleapis/gax-nodejs/commit/f025fc155c505792bc74929a7803a2df63c331cd))
+
+### [2.14.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.14.0...v2.14.1) (2021-05-27)
+
+
+### Bug Fixes
+
+* rest transport enum value display incorectly ([#1015](https://www.github.com/googleapis/gax-nodejs/issues/1015)) ([055387b](https://www.github.com/googleapis/gax-nodejs/commit/055387b1f497f6a4132f228d82d95d9a6f6c53f7))
+
+## [2.14.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.13.0...v2.14.0) (2021-05-24)
+
+
+### Features
+
+* add `gcf-owl-bot[bot]` to `ignoreAuthors` ([#1007](https://www.github.com/googleapis/gax-nodejs/issues/1007)) ([4fac451](https://www.github.com/googleapis/gax-nodejs/commit/4fac45186cea40c0945598636faee5d9d7ba1103))
+* add type parameter to warn function ([#1009](https://www.github.com/googleapis/gax-nodejs/issues/1009)) ([fef2e7c](https://www.github.com/googleapis/gax-nodejs/commit/fef2e7c7d81d2187b05542862386c2391e7edd74))
+* update rest version for metrics ([#1005](https://www.github.com/googleapis/gax-nodejs/issues/1005)) ([233d6a7](https://www.github.com/googleapis/gax-nodejs/commit/233d6a7dbed5655652a0b5100773cc7837e59a5f))
+
+## [2.13.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.12.0...v2.13.0) (2021-05-12)
+
+
+### Features
+
+* add validation for proto3 optional default value ([#997](https://www.github.com/googleapis/gax-nodejs/issues/997)) ([c59c153](https://www.github.com/googleapis/gax-nodejs/commit/c59c153f012460d03d69eae4f84700bedbef74a0))
+
+
+### Bug Fixes
+
+* do not consider inherited properties for transcoding ([#995](https://www.github.com/googleapis/gax-nodejs/issues/995)) ([e0984a1](https://www.github.com/googleapis/gax-nodejs/commit/e0984a1a0f8d31f1aeac308a14b7694f25338531))
+* load LRO proto JSON using require ([#1004](https://www.github.com/googleapis/gax-nodejs/issues/1004)) ([62c8055](https://www.github.com/googleapis/gax-nodejs/commit/62c8055f5d0f7b017156444035967e5ac143241b))
+* prettier rules change ([#998](https://www.github.com/googleapis/gax-nodejs/issues/998)) ([f75d2b5](https://www.github.com/googleapis/gax-nodejs/commit/f75d2b52b3d5d08cbe593f7269876429a7fd1bc7))
+
 ## [2.12.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.11.3...v2.12.0) (2021-04-29)
 
 
