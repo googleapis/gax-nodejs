@@ -23,7 +23,8 @@ import * as os from 'os';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {rmdirSync, mkdirSync, writeFileSync} from 'fs';
+import {mkdirSync, writeFileSync} from 'fs';
+import {sync as rimrafSync} from 'rimraf';
 import {afterEach, describe, it, beforeEach} from 'mocha';
 
 import {protobuf} from '../../src/index';
@@ -643,9 +644,9 @@ dvorak
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const client = gaxGrpc();
       const [cert, key] = await client._detectClientCertificate();
-      assert.strictEqual(cert, certExpected);
-      assert.strictEqual(key, keyExpected);
-      rmdirSync(tmpFolder, {recursive: true}); // Cleanup.
+      assert.ok(cert.includes('qwerty'));
+      assert.ok(key.includes('dvorak'));
+      rimrafSync(tmpFolder); // Cleanup.
     });
   });
 });
