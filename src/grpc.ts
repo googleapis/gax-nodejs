@@ -19,7 +19,7 @@ import {execFile} from 'child_process';
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as grpc from '@grpc/grpc-js';
-import {homedir} from 'os';
+import * as os from 'os';
 import {join} from 'path';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
@@ -455,7 +455,7 @@ export class GrpcClient {
       // If context aware metadata exists, run the cert provider command,
       // parse the output to extract cert and key, and use this cert/key.
       const metadataPath = join(
-        homedir(),
+        os.homedir(),
         '.secureConnect',
         'context_aware_metadata.json'
       );
