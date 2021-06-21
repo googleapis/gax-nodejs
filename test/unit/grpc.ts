@@ -622,7 +622,6 @@ dvorak
     };
     afterEach(() => {
       sandbox.restore();
-      rmdirSync(tmpFolder, {recursive: true});
       delete process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE;
     });
     it('does not read certificate if GOOGLE_API_USE_CLIENT_CERTIFICATE not set', async () => {
@@ -646,6 +645,7 @@ dvorak
       const [cert, key] = await client._detectClientCertificate();
       assert.strictEqual(cert, certExpected);
       assert.strictEqual(key, keyExpected);
+      rmdirSync(tmpFolder, {recursive: true}); // Cleanup.
     });
   });
 });
