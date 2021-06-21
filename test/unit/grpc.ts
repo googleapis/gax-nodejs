@@ -22,7 +22,7 @@ import * as assert from 'assert';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {describe, it, beforeEach} from 'mocha';
+import {afterEach, describe, it, beforeEach} from 'mocha';
 
 import {protobuf} from '../../src/index';
 import {
@@ -564,6 +564,53 @@ describe('grpc', () => {
           correctPath
         );
       });
+    });
+  });
+
+  describe('_mtlsServicePath', () => {
+    beforeEach(() => {
+      delete process.env.GOOGLE_API_USE_MTLS_ENDPOINT;
+      delete process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE;
+    });
+    it('returns custom service path if one provided', () => {
+      const expected = 'https://foo.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(expected, true, true);
+      assert.strictEqual(servicePath, expected);
+    });
+    it('returns original service path if GOOGLE_API_USE_MTLS_ENDPOINT=never', () => {
+      process.env.GOOGLE_API_USE_MTLS_ENDPOINT = 'never';
+      const expected = 'https://foo.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(expected, false, true);
+      assert.strictEqual(servicePath, expected);
+    });
+    it('returns mTLS service path if certificate found, and discovery is auto', () => {
+      const expected = 'https://foo.mtls.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(
+        'https://foo.googleapis.com',
+        false,
+        true
+      );
+      assert.strictEqual(servicePath, expected);
+    });
+    it('returns mTLS service path if certificate found, and GOOGLE_API_USE_MTLS_ENDPOINT=always', () => {
+      process.env.GOOGLE_API_USE_MTLS_ENDPOINT = 'always';
+      const expected = 'https://foo.mtls.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(
+        'https://foo.googleapis.com',
+        false,
+        false
+      );
+      assert.strictEqual(servicePath, expected);
+    });
+  });
+  describe('_detectClientCertificate', () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
     });
   });
 });

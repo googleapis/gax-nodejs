@@ -397,8 +397,7 @@ export class GrpcClient {
     const servicePath = this._mtlsServicePath(
       options.servicePath,
       customServicePath,
-      cert,
-      key
+      cert && key
     );
     const opts = Object.assign({}, options, {cert, key, servicePath});
     const serviceAddress = servicePath + ':' + opts.port;
@@ -490,8 +489,7 @@ export class GrpcClient {
   _mtlsServicePath(
     servicePath: string | undefined,
     customServicePath: boolean | undefined,
-    cert: string,
-    key: string
+    hasCertificate: boolean
   ): string | undefined {
     // If user provides a custom service path, return the current service
     // path and do not attempt to add mtls subdomain:
@@ -505,7 +503,7 @@ export class GrpcClient {
     } else if (
       (typeof process !== 'undefined' &&
         process?.env?.GOOGLE_API_USE_MTLS_ENDPOINT === 'always') ||
-      (cert && key)
+      hasCertificate
     ) {
       // Either auto-detect or explicit setting of endpoint:
       return servicePath.replace('googleapis.com', 'mtls.googleapis.com');
