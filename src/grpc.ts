@@ -15,9 +15,12 @@
  */
 
 import * as grpcProtoLoader from '@grpc/proto-loader';
+import {execFile} from 'child_process';
 import * as fs from 'fs';
 import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as grpc from '@grpc/grpc-js';
+import * as os from 'os';
+import {join} from 'path';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
@@ -47,6 +50,34 @@ export interface GrpcClientOptions extends GoogleAuthOptions {
 
 export interface MetadataValue {
   equals: Function;
+}
+
+/*
+ * Async version of readFile.
+ *
+ * @returns {Promise} Contents of file at path.
+ */
+async function readFileAsync(path: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, 'utf8', (err, content) => {
+      if (err) return reject(err);
+      else resolve(content);
+    });
+  });
+}
+
+/*
+ * Async version of execFile.
+ *
+ * @returns {Promise} stdout from command execution.
+ */
+async function execFileAsync(command: string, args: string[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile(command, args, (err, stdout) => {
+      if (err) return reject(err);
+      else resolve(stdout);
+    });
+  });
 }
 
 export interface Metadata {
@@ -347,9 +378,14 @@ export class GrpcClient {
    * @param {number} options.port - The port of the service.
    * @param {grpcTypes.ClientCredentials=} options.sslCreds - The credentials to be used
    *   to set up gRPC connection.
+   * @param {string} defaultServicePath - The default service path.
    * @return {Promise} A promise which resolves to a gRPC stub instance.
    */
-  async createStub(CreateStub: typeof ClientStub, options: ClientStubOptions) {
+  async createStub(
+    CreateStub: typeof ClientStub,
+    options: ClientStubOptions,
+    customServicePath?: boolean
+  ) {
     // The following options are understood by grpc-gcp and need a special treatment
     // (should be passed without a `grpc.` prefix)
     const grpcGcpOptions = [
@@ -357,8 +393,15 @@ export class GrpcClient {
       'grpc.channelFactoryOverride',
       'grpc.gcpApiConfig',
     ];
-    const serviceAddress = options.servicePath + ':' + options.port;
-    const creds = await this._getCredentials(options);
+    const [cert, key] = await this._detectClientCertificate(options);
+    const servicePath = this._mtlsServicePath(
+      options.servicePath,
+      customServicePath,
+      cert && key
+    );
+    const opts = Object.assign({}, options, {cert, key, servicePath});
+    const serviceAddress = servicePath + ':' + opts.port;
+    const creds = await this._getCredentials(opts);
     const grpcOptions: ClientOptions = {};
     // @grpc/grpc-js limits max receive/send message length starting from v0.8.0
     // https://github.com/grpc/grpc-node/releases/tag/%40grpc%2Fgrpc-js%400.8.0
@@ -366,7 +409,7 @@ export class GrpcClient {
     grpcOptions['grpc.max_receive_message_length'] = -1;
     grpcOptions['grpc.max_send_message_length'] = -1;
     grpcOptions['grpc.initial_reconnect_backoff_ms'] = 1000;
-    Object.keys(options).forEach(key => {
+    Object.keys(opts).forEach(key => {
       const value = options[key];
       // the older versions had a bug which required users to call an option
       // grpc.grpc.* to make it actually pass to gRPC as grpc.*, let's handle
@@ -387,6 +430,88 @@ export class GrpcClient {
       grpcOptions as ClientOptions
     );
     return stub;
+  }
+
+  /**
+   * Detect mTLS client certificate based on logic described in
+   * https://google.aip.dev/auth/4114.
+   *
+   * @param {object} [options] - The configuration object.
+   * @returns {Promise} Resolves array of strings representing cert and key.
+   */
+  async _detectClientCertificate(opts?: ClientOptions) {
+    const certRegex =
+      /(?<cert>-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----)/s;
+    const keyRegex =
+      /(?<key>-----BEGIN PRIVATE KEY-----.*?-----END PRIVATE KEY-----)/s;
+    // If GOOGLE_API_USE_CLIENT_CERTIFICATE is true...:
+    if (
+      typeof process !== 'undefined' &&
+      process?.env?.GOOGLE_API_USE_CLIENT_CERTIFICATE === 'true'
+    ) {
+      if (opts?.cert && opts?.key) {
+        return [opts.cert, opts.key];
+      }
+      // If context aware metadata exists, run the cert provider command,
+      // parse the output to extract cert and key, and use this cert/key.
+      const metadataPath = join(
+        os.homedir(),
+        '.secureConnect',
+        'context_aware_metadata.json'
+      );
+      const metadata = JSON.parse(await readFileAsync(metadataPath));
+      if (!metadata.cert_provider_command) {
+        throw Error('no cert_provider_command found');
+      }
+      const stdout = await execFileAsync(
+        metadata.cert_provider_command[0],
+        metadata.cert_provider_command.slice(1)
+      );
+      const matchCert = stdout.toString().match(certRegex);
+      const matchKey = stdout.toString().match(keyRegex);
+      if (!(matchCert?.groups && matchKey?.groups)) {
+        throw Error('unable to parse certificate and key');
+      } else {
+        return [matchCert.groups.cert, matchKey.groups.key];
+      }
+    }
+    // If GOOGLE_API_USE_CLIENT_CERTIFICATE is not set or false,
+    // use no cert or key:
+    return [undefined, undefined];
+  }
+
+  /**
+   * Return service path, taking into account mTLS logic.
+   * See: https://google.aip.dev/auth/4114
+   *
+   * @param {string|undefined} servicePath - The path of the service.
+   * @param {string|undefined} customServicePath - Did the user provide a custom service URL.
+   * @param {boolean} hasCertificate - Was a certificate found.
+   * @returns {string} The DNS address for this service.
+   */
+  _mtlsServicePath(
+    servicePath: string | undefined,
+    customServicePath: boolean | undefined,
+    hasCertificate: boolean
+  ): string | undefined {
+    // If user provides a custom service path, return the current service
+    // path and do not attempt to add mtls subdomain:
+    if (customServicePath || !servicePath) return servicePath;
+    if (
+      typeof process !== 'undefined' &&
+      process?.env?.GOOGLE_API_USE_MTLS_ENDPOINT === 'never'
+    ) {
+      // It was explicitly asked that mtls endpoint not be used:
+      return servicePath;
+    } else if (
+      (typeof process !== 'undefined' &&
+        process?.env?.GOOGLE_API_USE_MTLS_ENDPOINT === 'always') ||
+      hasCertificate
+    ) {
+      // Either auto-detect or explicit setting of endpoint:
+      return servicePath.replace('googleapis.com', 'mtls.googleapis.com');
+    }
+    return servicePath;
   }
 
   /**
