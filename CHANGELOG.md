@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.16.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.15.1...v2.16.0) (2021-06-22)
+
+
+### Features
+
+* **mtls:** support for GOOGLE_API_USE_CLIENT_CERTIFICATE/GOOGLE_API_USE_MTLS_ENDPOINT ([#1034](https://www.github.com/googleapis/gax-nodejs/issues/1034)) ([cfcb398](https://www.github.com/googleapis/gax-nodejs/commit/cfcb398941ec8392b16e4613894d71982e339850))
+
+
+### Bug Fixes
+
+* **mtls:** remove unused clientCertSource method ([#1031](https://www.github.com/googleapis/gax-nodejs/issues/1031)) ([5c62b71](https://www.github.com/googleapis/gax-nodejs/commit/5c62b71b3215941106259624c6534eb4a66724bb))
+
 ### [2.15.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.15.0...v2.15.1) (2021-06-17)
 
 
