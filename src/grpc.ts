@@ -484,6 +484,9 @@ export class GrpcClient {
    * Return service path, taking into account mTLS logic.
    * See: https://google.aip.dev/auth/4114
    *
+   * @param {string|undefined} servicePath - The path of the service.
+   * @param {string|undefined} customServicePath - Did the user provide a custom service URL.
+   * @param {boolean} hasCertificate - Was a certificate found.
    * @returns {string} The DNS address for this service.
    */
   _mtlsServicePath(
