@@ -441,9 +441,9 @@ export class GrpcClient {
    */
   async _detectClientCertificate(opts?: ClientOptions) {
     const certRegex =
-      /(?<cert>-----BEGIN CERTIFICATE-----[\s\S]*-----END CERTIFICATE-----)/;
+      /(?<cert>-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----)/s;
     const keyRegex =
-      /(?<key>-----BEGIN PRIVATE KEY-----[\s\S]*-----END PRIVATE KEY-----)/;
+      /(?<key>-----BEGIN PRIVATE KEY-----.*?-----END PRIVATE KEY-----)/s;
     // If GOOGLE_API_USE_CLIENT_CERTIFICATE is true...:
     if (
       typeof process !== 'undefined' &&

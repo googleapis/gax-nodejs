@@ -274,7 +274,13 @@ export class GrpcClient {
    * @param {number} opts.port - The port of the service.
    * @return {Promise} A promise which resolves to a gRPC-fallback service stub, which is a protobuf.js service stub instance modified to match the gRPC stub API
    */
-  async createStub(service: protobuf.Service, opts: ClientStubOptions) {
+  async createStub(
+    service: protobuf.Service,
+    opts: ClientStubOptions,
+    // For consistency with createStub in grpc.ts, customServicePath is defined:
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    customServicePath?: boolean
+  ) {
     // an RPC function to be passed to protobufjs RPC API
     function serviceClientImpl(
       method:
