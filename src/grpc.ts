@@ -81,6 +81,7 @@ export class GrpcClient {
   grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
+  useJWTAccess?: boolean;
 
   /**
    * Key for proto cache map. We are doing our best to make sure we respect
@@ -126,9 +127,9 @@ export class GrpcClient {
    * @constructor
    */
   constructor(options: GrpcClientOptions = {}) {
+    options.useJWTAccess = true;
     this.auth = options.auth || new GoogleAuth(options);
     this.fallback = false;
-
     const minimumVersion = 10;
     const major = Number(process.version.match(/^v(\d+)/)?.[1]);
     if (Number.isNaN(major) || major < minimumVersion) {
