@@ -138,6 +138,9 @@ export class GrpcClient {
       }
       this.auth = options.auth as OAuth2Client;
     } else {
+      if (options.auth instanceof GoogleAuth) {
+        options.useJWTAccess = true;
+      }
       this.auth =
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
