@@ -112,7 +112,6 @@ export class GrpcClient {
   grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
-  useJWTAccess?: boolean;
 
   /**
    * Key for proto cache map. We are doing our best to make sure we respect
