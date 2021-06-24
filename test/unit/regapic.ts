@@ -141,11 +141,36 @@ describe('regapic', () => {
       });
     });
 
-    it('should support enum conversion in proto message request', done => {
+    it('should support enum conversion in proto message request using symbolic name', done => {
       const shelf = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 'TYPEONE',
+      };
+      const requestObject = {shelf: shelf};
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.createShelf(requestObject, {}, {}, (err: {}) => {
+          assert.strictEqual(err, null);
+          done();
+        });
+      });
+    });
+
+    it('should support enum conversion in proto message request using type value', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 1,
       };
       const requestObject = {shelf: shelf};
       // incomplete types for nodeFetch, so...
