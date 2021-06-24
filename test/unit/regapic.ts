@@ -107,36 +107,68 @@ describe('regapic', () => {
     });
   });
 
-  it('should support enum conversion in proto message response', done => {
-    const requestObject = {name: 'shelves/shelf-name'};
-    const responseObject = {
-      name: 'shelf-name',
-      theme: 'shelf-theme',
-      type: 1,
-    };
-    // incomplete types for nodeFetch, so...
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sinon.stub(nodeFetch, 'Promise' as any).returns(
-      Promise.resolve({
-        ok: true,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
-        },
-      })
-    );
-
-    gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-      libStub.getShelf(
-        requestObject,
-        {},
-        {},
-        (err: {}, result: {name: {}; theme: {}; type: {}}) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual('shelf-name', result.name);
-          assert.strictEqual('TYPEONE', result.type);
-          done();
-        }
+  describe('should support enum conversion in proto message', () => {
+    it('should support enum conversion in proto message response', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 1,
+      };
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
       );
+
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getShelf(
+          requestObject,
+          {},
+          {},
+          (err: {}, result: {name: {}; theme: {}; type: {}}) => {
+            assert.strictEqual(err, null);
+            assert.strictEqual('shelf-name', result.name);
+            assert.strictEqual('TYPEONE', result.type);
+            done();
+          }
+        );
+      });
+    });
+
+    it('should support enum conversion in proto message request', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 'TYPEONE',
+      };
+      const requestObject = {shelf: shelf};
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.createShelf(requestObject, {}, {}, (err: {}) => {
+          assert.strictEqual(err, null);
+          done();
+        });
+      });
+    });
+    it('should throw error with invalid enum in proto message request', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 'INVALID-TYPE',
+      };
+      const requestObject = {shelf: shelf};
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        assert.throws(
+          () => libStub.createShelf(requestObject, {}, {}, {}),
+          Error
+        );
+        done();
+      });
     });
   });
 
