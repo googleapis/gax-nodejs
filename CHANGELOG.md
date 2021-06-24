@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.17.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.16.0...v2.17.0) (2021-06-24)
+
+
+### Features
+
+* add enum unit test ([#1037](https://www.github.com/googleapis/gax-nodejs/issues/1037)) ([782ba15](https://www.github.com/googleapis/gax-nodejs/commit/782ba1533fb8bc85eeda13d35727c7d18ec81bf3))
+
 ## [2.16.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.15.1...v2.16.0) (2021-06-22)
 
 
