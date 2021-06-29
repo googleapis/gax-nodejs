@@ -200,26 +200,23 @@ describe('paged iteration', () => {
   });
 
   describe('use async iterator', () => {
-    const spy = sinon.spy(func);
-    let apiCall: GaxCall;
-    beforeEach(() => {
-      apiCall = util.createApiCall(spy, createOptions);
-    });
-
-    async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
-      let counter = 0;
-      const resources = [];
-      for await (const resource of iterable) {
-        counter++;
-        resources.push(resource);
-        if (counter === 10) {
-          break;
-        }
-      }
-      return resources;
-    }
-
     it('returns an iterable, count to 10', async () => {
+      const spy = sinon.spy(func);
+      const apiCall = util.createApiCall(spy, createOptions);
+
+      async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
+        let counter = 0;
+        const resources = [];
+        for await (const resource of iterable) {
+          counter++;
+          resources.push(resource);
+          if (counter === 10) {
+            break;
+          }
+        }
+        return resources;
+      }
+
       const settings = new gax.CallSettings(
         (createOptions && createOptions.settings) || {}
       );
@@ -227,6 +224,46 @@ describe('paged iteration', () => {
         descriptor.asyncIterate(apiCall, {}, settings)
       );
       assert.strictEqual(resources.length, 10);
+    });
+
+    it('does not stop on empty resources list', async () => {
+      function func(
+        request: {pageToken?: number},
+        metadata: {},
+        options: {},
+        callback: APICallback
+      ) {
+        const responsePages = [
+          [1, 2, 3],
+          [],
+          [4, 5, 6],
+          [],
+          [],
+          [7],
+          [8, 9],
+          [],
+          [10],
+        ];
+        const pageToken = request.pageToken || 0;
+        if (pageToken >= responsePages.length) {
+          callback(null, {nums: []});
+        } else {
+          callback(null, {
+            nums: responsePages[pageToken],
+            nextPageToken: pageToken + 1,
+          });
+        }
+      }
+      const apiCall = util.createApiCall(func, createOptions);
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      const iterable = descriptor.asyncIterate(apiCall, {}, settings);
+      const results = [];
+      for await (const result of iterable) {
+        results.push(result);
+      }
+      assert.deepStrictEqual(results, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
   });
 
