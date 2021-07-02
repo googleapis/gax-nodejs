@@ -128,10 +128,11 @@ export class OperationsClient {
 
     for (const methodName of operationsStubMethods) {
       const innerCallPromise = this.operationsStub.then(
-        stub => (...args: Array<{}>) => {
-          const func = stub[methodName];
-          return func.apply(stub, args);
-        },
+        stub =>
+          (...args: Array<{}>) => {
+            const func = stub[methodName];
+            return func.apply(stub, args);
+          },
         err => () => {
           throw err;
         }
