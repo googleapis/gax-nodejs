@@ -473,3 +473,83 @@ describe('paged iteration', () => {
     });
   });
 });
+
+describe('REGAPIC Pagination', () => {
+  const pageSize = 3;
+  const pagesToStream = 5;
+  const descriptor = new PageDescriptor('pageToken', 'nextPageToken', 'items');
+  const retryOptions = util.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
+  const createOptions = {
+    settings: {retry: retryOptions},
+    descriptor,
+  };
+
+  function func(
+    request: {pageToken?: number},
+    metadata: {},
+    options: {},
+    callback: APICallback
+  ) {
+    const pageToken = request.pageToken || 0;
+    if (pageToken >= pageSize * pagesToStream) {
+      callback(null, {items: {}});
+    } else {
+      const pairs = {
+        'regions/us-central1': {
+          warning: {
+            code: 'NO_RESULTS_ON_PAGE',
+            message:
+              "There are no results for scope 'regions/us-central1' on this page.",
+          },
+        },
+        'regions/us-east1': {
+          addresses: [
+            {
+              id: '5011754511478056813',
+              creationTimestamp: '2021-05-28T23:04:50.044-07:00',
+              name: 'test-address-0',
+            },
+            {
+              id: '1036412484008568684',
+              creationTimestamp: '2021-05-28T23:04:51.044-07:00',
+              name: 'test-address-1',
+            },
+          ],
+        },
+      };
+      callback(null, {items: pairs, nextPageToken: pageToken + pageSize});
+    }
+  }
+
+  describe('use async tuple iterator', () => {
+    const spy = sinon.spy(func);
+    let apiCall: GaxCall;
+    beforeEach(() => {
+      apiCall = util.createApiCall(spy, createOptions);
+    });
+
+    async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
+      let counter = 0;
+      const resources = [];
+      for await (const resource of iterable) {
+        counter++;
+        resources.push(resource);
+        if (counter === 10) {
+          break;
+        }
+      }
+      console.log('================resources:: ', resources);
+      return resources;
+    }
+
+    it('return an tuple iterable, count to 10', async () => {
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      const resources = await iterableChecker(
+        descriptor.asyncIterate(apiCall, {}, settings)
+      );
+      assert.strictEqual(resources.length, 10);
+    });
+  });
+});

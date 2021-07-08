@@ -159,7 +159,14 @@ export class PageDescriptor implements Descriptor {
                 nextPageRequest!,
                 options
               )) as ResultTuple;
-              cache.push(...(result as ResponseType[]));
+              // Pagination return as map object pair with stirng key and any object value.
+              if (result && !Array.isArray(result)) {
+                for (const [key, value] of Object.entries(result)) {
+                  cache.push([key, value]);
+                }
+              } else {
+                cache.push(...(result as ResponseType[]));
+              }
               if (cache.length === 0) {
                 ++attempts;
                 if (attempts > maxAttemptsEmptyResponse) {
