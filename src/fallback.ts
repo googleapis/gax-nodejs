@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-// Not all browsers support `TextEncoder`. The following `require` will
-// provide a fast UTF8-only replacement for those browsers that don't support
-// text encoding natively.
-import {isBrowser} from './isbrowser';
-let needTextEncoderPolyfill = false;
+/* global window */
+/* global AbortController */
 
-if (
-  isBrowser() &&
-  // eslint-disable-next-line node/no-unsupported-features/node-builtins
-  (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined')
-) {
-  needTextEncoderPolyfill = true;
-}
-if (
-  typeof process !== 'undefined' &&
-  process?.versions?.node &&
-  process?.versions?.node.match(/^10\./)
-) {
+import {
+  hasWindowFetch,
+  hasTextEncoder,
+  hasTextDecoder,
+  isNodeJS,
+  hasAbortController,
+} from './featureDetection';
+
+if (isNodeJS() && (!hasTextDecoder() || !hasTextEncoder())) {
   // Node.js 10 does not have global TextDecoder
   // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -41,7 +35,7 @@ if (
     TextEncoder: util.TextEncoder,
   });
 }
-if (needTextEncoderPolyfill) {
+if (!hasTextEncoder() && !hasTextDecoder() && !isNodeJS()) {
   require('fast-text-encoding');
 }
 
@@ -129,11 +123,11 @@ export class GrpcClient {
       fallback?: boolean | 'rest' | 'proto';
     } = {}
   ) {
-    if (isBrowser()) {
+    if (!isNodeJS()) {
       if (!options.auth) {
         throw new Error(
           JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.'
+            'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Use OAuth2Client from google-auth-library.'
         );
       }
       this.auth = options.auth as OAuth2Client;
@@ -352,17 +346,11 @@ export class GrpcClient {
             },
           ]
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let cancelController: AbortController, cancelSignal: any;
-        if (isBrowser() || typeof AbortController !== 'undefined') {
-          // eslint-disable-next-line no-undef
-          cancelController = new AbortController();
-        } else {
-          cancelController = new NodeAbortController();
-        }
-        if (cancelController) {
-          cancelSignal = cancelController.signal;
-        }
+
+        const cancelController = hasAbortController()
+          ? new AbortController()
+          : new NodeAbortController();
+        const cancelSignal = cancelController.signal;
         let cancelRequested = false;
 
         const headers = Object.assign({}, authHeader);
@@ -450,9 +438,8 @@ export class GrpcClient {
           url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
         }
 
-        const fetch = isBrowser()
-          ? // eslint-disable-next-line no-undef
-            window.fetch
+        const fetch = hasWindowFetch()
+          ? window.fetch
           : (nodeFetch as unknown as NodeFetchType);
         const fetchRequest = {
           headers,
@@ -512,12 +499,6 @@ export class GrpcClient {
 
         return {
           cancel: () => {
-            if (!cancelController) {
-              console.warn(
-                'AbortController not found: Cancellation is not supported in this environment'
-              );
-              return;
-            }
             cancelRequested = true;
             cancelController.abort();
           },
