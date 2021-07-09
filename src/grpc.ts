@@ -159,6 +159,7 @@ export class GrpcClient {
   constructor(options: GrpcClientOptions = {}) {
     this.auth = options.auth || new GoogleAuth(options);
     this.fallback = false;
+
     const minimumVersion = 10;
     const major = Number(process.version.match(/^v(\d+)/)?.[1]);
     if (Number.isNaN(major) || major < minimumVersion) {
