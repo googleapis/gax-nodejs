@@ -25,18 +25,19 @@ import {
   hasAbortController,
 } from './featureDetection';
 
-if (isNodeJS() && (!hasTextDecoder() || !hasTextEncoder())) {
-  // Node.js 10 does not have global TextDecoder
-  // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const util = require('util');
-  Object.assign(global, {
-    TextDecoder: util.TextDecoder,
-    TextEncoder: util.TextEncoder,
-  });
-}
-if (!hasTextEncoder() && !hasTextDecoder() && !isNodeJS()) {
-  require('fast-text-encoding');
+if (!hasTextEncoder() || !hasTextDecoder()) {
+  if (isNodeJS()) {
+    // Node.js 10 does not have global TextDecoder
+    // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const util = require('util');
+    Object.assign(global, {
+      TextDecoder: util.TextDecoder,
+      TextEncoder: util.TextEncoder,
+    });
+  } else {
+    require('fast-text-encoding');
+  }
 }
 
 import * as protobuf from 'protobufjs';
