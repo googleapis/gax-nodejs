@@ -32,6 +32,8 @@ import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {PagedApiCaller} from './pagedApiCaller';
 
+const maxAttemptsEmptyResponse = 10;
+
 export interface ResponseType {
   [index: string]: string;
 }
@@ -150,13 +152,20 @@ export class PageDescriptor implements Descriptor {
                 value: cache.shift(),
               });
             }
-            if (nextPageRequest) {
+            let attempts = 0;
+            while (cache.length === 0 && nextPageRequest) {
               let result: {} | [ResponseType] | null;
               [result, nextPageRequest] = (await apiCall(
                 nextPageRequest!,
                 options
               )) as ResultTuple;
               cache.push(...(result as ResponseType[]));
+              if (cache.length === 0) {
+                ++attempts;
+                if (attempts > maxAttemptsEmptyResponse) {
+                  break;
+                }
+              }
             }
             if (cache.length === 0) {
               return Promise.resolve({done: true, value: undefined});
