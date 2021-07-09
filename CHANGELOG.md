@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.17.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.17.0...v2.17.1) (2021-07-09)
+
+
+### Bug Fixes
+
+* **deps:** upgrade google-auth-library ([#1049](https://www.github.com/googleapis/gax-nodejs/issues/1049)) ([3ee8268](https://www.github.com/googleapis/gax-nodejs/commit/3ee82686ffa0baeb432712a13166e73b845b8284))
+* types for setImmediate calls ([#1050](https://www.github.com/googleapis/gax-nodejs/issues/1050)) ([a8222eb](https://www.github.com/googleapis/gax-nodejs/commit/a8222eb112f0fc6856a50ecd512d9b52dde0df62))
+
 ## [2.17.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.16.0...v2.17.0) (2021-06-24)
 
 
