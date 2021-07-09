@@ -18,7 +18,14 @@ import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
 import {APICaller} from '../apiCaller';
-import {GaxCall, APICallback, RequestType, ResultTuple} from '../apitypes';
+import {
+  GaxCall,
+  APICallback,
+  RequestType,
+  ResultTuple,
+  NextPageRequestType,
+  RawResponseType,
+} from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
@@ -62,9 +69,9 @@ export class PageDescriptor implements Descriptor {
     let started = false;
     function callback(
       err: Error | null,
-      resources: Array<{}>,
-      next: {},
-      apiResp: {}
+      resources: Array<ResponseType>,
+      next: NextPageRequestType,
+      apiResp: RawResponseType
     ) {
       if (err) {
         stream.emit('error', err);
@@ -101,7 +108,7 @@ export class PageDescriptor implements Descriptor {
         request = next;
         started = false;
       } else {
-        setImmediate(apiCall, next, options, callback);
+        setImmediate(apiCall, next, options, callback as APICallback);
       }
     }
     stream.on('resume', () => {
