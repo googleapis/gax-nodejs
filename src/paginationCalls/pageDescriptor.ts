@@ -159,7 +159,7 @@ export class PageDescriptor implements Descriptor {
                 nextPageRequest!,
                 options
               )) as ResultTuple;
-              // Pagination return as map object pair with stirng key and any object value.
+              // For pagination response with protobuf map type, use tuple as representation.
               if (result && !Array.isArray(result)) {
                 for (const [key, value] of Object.entries(result)) {
                   cache.push([key, value]);

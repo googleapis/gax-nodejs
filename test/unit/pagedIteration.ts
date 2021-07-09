@@ -538,7 +538,6 @@ describe('REGAPIC Pagination', () => {
           break;
         }
       }
-      console.log('================resources:: ', resources);
       return resources;
     }
 
