@@ -18,6 +18,7 @@ import {
   SimpleCallbackFunction,
   NextPageRequestType,
   RequestType,
+  APICallback,
 } from '../apitypes';
 
 /**
@@ -71,7 +72,7 @@ export class ResourceCollector {
     const callback = (
       ...args: [Error | null, Array<{}>, NextPageRequestType]
     ) => this.callback(...args);
-    setImmediate(this.apiCall, nextPageRequest, callback);
+    setImmediate(this.apiCall, nextPageRequest, callback as APICallback);
   }
 
   processAllPages(firstRequest: RequestType): Promise<Array<{}>> {
@@ -83,7 +84,7 @@ export class ResourceCollector {
       const callback = (
         ...args: [Error | null, Array<{}>, NextPageRequestType]
       ) => this.callback(...args);
-      setImmediate(this.apiCall, firstRequest, callback);
+      setImmediate(this.apiCall, firstRequest, callback as APICallback);
     });
   }
 }

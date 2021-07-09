@@ -64,6 +64,7 @@ export class OperationsClient {
   auth?: GoogleAuth | OAuth2Client;
   innerApiCalls: {[name: string]: Function};
   descriptor: {[method: string]: PageDescriptor};
+  operationsStub: Promise<{[method: string]: Function}>;
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,7 +113,7 @@ export class OperationsClient {
     };
     // Put together the "service stub" for
     // google.longrunning.Operations.
-    const operationsStub = gaxGrpc.createStub(
+    this.operationsStub = gaxGrpc.createStub(
       opts.fallback
         ? operationsProtos.lookupService('google.longrunning.Operations')
         : operationsProtos.google.longrunning.Operations,
@@ -126,7 +127,7 @@ export class OperationsClient {
     ];
 
     for (const methodName of operationsStubMethods) {
-      const innerCallPromise = operationsStub.then(
+      const innerCallPromise = this.operationsStub.then(
         stub =>
           (...args: Array<{}>) => {
             const func = stub[methodName];
@@ -142,6 +143,11 @@ export class OperationsClient {
         this.descriptor[methodName]
       );
     }
+  }
+
+  /** Closes this operations client. */
+  close() {
+    this.operationsStub.then(stub => stub.close());
   }
 
   /**

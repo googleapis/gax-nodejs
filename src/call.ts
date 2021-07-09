@@ -78,11 +78,18 @@ export class OngoingCall {
     if (this.completed) {
       return;
     }
-    // eslint-disable-next-line
-    const canceller = func(argument, (...args: any[]) => {
-      this.completed = true;
-      setImmediate(this.callback!, ...args);
-    });
+    const canceller = func(
+      argument,
+      (
+        err: GoogleError | null,
+        response?: ResponseType,
+        next?: NextPageRequestType,
+        rawResponse?: RawResponseType
+      ) => {
+        this.completed = true;
+        setImmediate(this.callback!, err, response, next, rawResponse);
+      }
+    );
     this.cancelFunc = () => canceller.cancel();
   }
 }
