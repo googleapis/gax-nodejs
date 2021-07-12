@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {isBrowser} from './isbrowser';
+import {isNodeJS} from './featureDetection';
 
 const emittedWarnings = new Set<string>();
 
@@ -26,7 +26,7 @@ export function warn(code: string, message: string, warnType?: string) {
   }
   emittedWarnings.add(code);
 
-  if (isBrowser()) {
+  if (!isNodeJS()) {
     console.warn(message);
   } else if (typeof warnType !== 'undefined') {
     process.emitWarning(message, {
