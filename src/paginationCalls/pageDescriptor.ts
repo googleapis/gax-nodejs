@@ -143,7 +143,7 @@ export class PageDescriptor implements Descriptor {
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         let nextPageRequest: RequestType | null | undefined = request;
-        const cache: {}[] = [];
+        const cache: Array<ResponseType | [string, ResponseType]> = [];
         return {
           async next() {
             if (cache.length > 0) {
@@ -162,7 +162,7 @@ export class PageDescriptor implements Descriptor {
               // For pagination response with protobuf map type, use tuple as representation.
               if (result && !Array.isArray(result)) {
                 for (const [key, value] of Object.entries(result)) {
-                  cache.push([key, value]);
+                  cache.push([key, value as ResponseType]);
                 }
               } else {
                 cache.push(...(result as ResponseType[]));
