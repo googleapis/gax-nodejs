@@ -23,7 +23,7 @@ import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import * as streamEvents from 'stream-events';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
-import {APICallback, GaxCall} from '../../src/apitypes';
+import {APICallback, GaxCall, RequestType} from '../../src/apitypes';
 import {describe, it, beforeEach} from 'mocha';
 
 import * as util from './utils';
@@ -483,6 +483,29 @@ describe('REGAPIC Pagination', () => {
     settings: {retry: retryOptions},
     descriptor,
   };
+  const response: RequestType = {
+    'regions/us-central1': {
+      warning: {
+        code: 'NO_RESULTS_ON_PAGE',
+        message:
+          "There are no results for scope 'regions/us-central1' on this page.",
+      },
+    },
+    'regions/us-east1': {
+      addresses: [
+        {
+          id: '5011754511478056813',
+          creationTimestamp: '2021-05-28T23:04:50.044-07:00',
+          name: 'test-address-0',
+        },
+        {
+          id: '1036412484008568684',
+          creationTimestamp: '2021-05-28T23:04:51.044-07:00',
+          name: 'test-address-1',
+        },
+      ],
+    },
+  };
 
   function func(
     request: {pageToken?: number},
@@ -494,30 +517,7 @@ describe('REGAPIC Pagination', () => {
     if (pageToken >= pageSize * pagesToStream) {
       callback(null, {items: {}});
     } else {
-      const pairs = {
-        'regions/us-central1': {
-          warning: {
-            code: 'NO_RESULTS_ON_PAGE',
-            message:
-              "There are no results for scope 'regions/us-central1' on this page.",
-          },
-        },
-        'regions/us-east1': {
-          addresses: [
-            {
-              id: '5011754511478056813',
-              creationTimestamp: '2021-05-28T23:04:50.044-07:00',
-              name: 'test-address-0',
-            },
-            {
-              id: '1036412484008568684',
-              creationTimestamp: '2021-05-28T23:04:51.044-07:00',
-              name: 'test-address-1',
-            },
-          ],
-        },
-      };
-      callback(null, {items: pairs, nextPageToken: pageToken + pageSize});
+      callback(null, {items: response, nextPageToken: pageToken + pageSize});
     }
   }
 
@@ -549,6 +549,10 @@ describe('REGAPIC Pagination', () => {
         descriptor.asyncIterate(apiCall, {}, settings)
       );
       assert.strictEqual(resources.length, 10);
+      for await (const [key, value] of resources as [string, ResponseType]) {
+        assert.ok(response.hasOwnProperty(key));
+        assert.strictEqual(value, response[key]);
+      }
     });
   });
 });
