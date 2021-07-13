@@ -429,7 +429,6 @@ describe('paged iteration', () => {
     });
 
     describe('response', () => {
-      console.log('________test out PRs');
       let nums: number[] = [];
       let nextPageToken: number | undefined = undefined;
       function sendResponse(
