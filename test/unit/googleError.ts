@@ -34,8 +34,9 @@ describe('gRPC-google error decoding', () => {
           ],
         };
     const decoder = new GoogleErrorDecoder();
+
     const decodedError = decoder.decodeRpcStatusDetails([errorBin])[0];
-        console.log(decodedError);
+
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
       JSON.stringify(decodedError),
@@ -43,35 +44,41 @@ describe('gRPC-google error decoding', () => {
     );
   });
 
-  /*it('decodes error and status code', () => {
-    // example of an actual google.rpc.Status error message returned by Language API
-    const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
+  it('decodes multiple errors', () => {
+    // example of when there are multiple errors available to be decoded
+    const fixtureName = path.resolve(__dirname, '..', 'fixtures','badRequest.bin');
     const errorBin = fs.readFileSync(fixtureName);
-    const expectedError = Object.assign(
-      new Error(
-        '3 INVALID_ARGUMENT: One of content, or gcs_content_uri must be set.'
-      ),
-      {
-        code: 3,
-        details: [
-          {
-            fieldViolations: [
-              {
-                field: 'document.content',
-                description: 'Must have some text content to annotate.',
-              },
-            ],
-          },
-        ],
-      }
-    );
-    const decoder = new FallbackErrorDecoder();
-    const decodedError = decoder.decodeErrorFromBuffer(errorBin);
-    assert(decodedError instanceof Error);
+    const expectedError = {
+      fieldViolations: [
+            {
+              field: 'document.language',
+              description: 'The document language is not valid',
+            },
+          ],
+        };
+    const decoder = new GoogleErrorDecoder();
+
+    const decodedError = decoder.decodeRpcStatusDetails([errorBin, errorBin, errorBin]);
+
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
       JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
+      JSON.stringify([expectedError,expectedError, expectedError])
     );
-  });*/
+  });
+
+  it('does not decode when no error exists', () => {
+    // example of when there's no grpc-error available to be decoded
+    let emptyArr: Buffer[] = []
+    const decoder = new GoogleErrorDecoder();
+
+    const decodedError = decoder.decodeRpcStatusDetails(emptyArr);
+
+    // nested error messages have different types so we can't use deepStrictEqual here
+    assert.strictEqual(
+      JSON.stringify(decodedError),
+      JSON.stringify([])
+    );
+  });
+
 });
