@@ -135,8 +135,7 @@ export class PagedApiCaller implements APICaller {
    * It's supposed to be a gRPC service stub function wrapped into several layers of wrappers that make it
    * accept just two parameters: (request, callback).
    * @param request A request object that came from the user.
-   * @param settings Call settings. We are interested in `maxResults`, autoPaginate`, `pageToken`, and `pageSize`
-   * (they are all optional).
+   * @param settings Call settings. We are interested in `maxResults` and `autoPaginate` (they are optional).
    * @param ongoingCall An instance of OngoingCall or OngoingCallPromise that can be used for call cancellation,
    * and is used to return results to the user.
    */
@@ -147,14 +146,6 @@ export class PagedApiCaller implements APICaller {
     ongoingCall: OngoingCall
   ) {
     request = Object.assign({}, request);
-
-    // If settings object contain pageToken or pageSize, override the corresponding fields in the request object.
-    if (settings.pageToken) {
-      request[this.pageDescriptor.requestPageTokenField] = settings.pageToken;
-    }
-    if (settings.pageSize) {
-      request[this.pageDescriptor.requestPageSizeField!] = settings.pageSize;
-    }
 
     if (!settings.autoPaginate) {
       // they don't want auto-pagination this time - okay, just call once
