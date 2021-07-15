@@ -315,14 +315,18 @@ export async function generateRootName(directories: string[]): Promise<string> {
  * @param {string[]} directories List of directories to process. Normally, just the
  * `./src` folder of the given client library.
  */
-export async function main(directories: string[]): Promise<void> {
+export async function main(parameters: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
   let skipJson = false;
-  for (const directory of directories) {
-    if (directory === '--skip-json') {
+  const directories: string[] = [];
+  for (const parameter of parameters) {
+    if (parameter === '--skip-json') {
       skipJson = true;
       continue;
     }
+    // it's not an option so it's a directory
+    const directory = parameter;
+    directories.push(directory);
     protoJsonFiles.push(...(await findProtoJsonFiles(directory)));
   }
   const rootName = await generateRootName(directories);
