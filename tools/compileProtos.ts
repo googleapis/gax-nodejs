@@ -223,27 +223,30 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
  */
 async function compileProtos(
   rootName: string,
-  protos: string[]
+  protos: string[],
+  skipJson = false
 ): Promise<void> {
-  // generate protos.json file from proto list
-  const jsonOutput = path.join('protos', 'protos.json');
-  if (protos.length === 0) {
-    // no input file, just emit an empty object
-    await writeFile(jsonOutput, '{}');
-    return;
+  if (!skipJson) {
+    // generate protos.json file from proto list
+    const jsonOutput = path.join('protos', 'protos.json');
+    if (protos.length === 0) {
+      // no input file, just emit an empty object
+      await writeFile(jsonOutput, '{}');
+      return;
+    }
+    const pbjsArgs4JSON = [
+      '--target',
+      'json',
+      '-p',
+      'protos',
+      '-p',
+      path.join(__dirname, '..', '..', 'protos'),
+      '-o',
+      jsonOutput,
+    ];
+    pbjsArgs4JSON.push(...protos);
+    await pbjsMain(pbjsArgs4JSON);
   }
-  const pbjsArgs4JSON = [
-    '--target',
-    'json',
-    '-p',
-    'protos',
-    '-p',
-    path.join(__dirname, '..', '..', 'protos'),
-    '-o',
-    jsonOutput,
-  ];
-  pbjsArgs4JSON.push(...protos);
-  await pbjsMain(pbjsArgs4JSON);
 
   // generate protos/protos.js from protos.json
   const jsOutput = path.join('protos', 'protos.js');
@@ -314,19 +317,24 @@ export async function generateRootName(directories: string[]): Promise<string> {
  */
 export async function main(directories: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
+  let skipJson = false;
   for (const directory of directories) {
+    if (directory === '--skip-json') {
+      skipJson = true;
+      continue;
+    }
     protoJsonFiles.push(...(await findProtoJsonFiles(directory)));
   }
   const rootName = await generateRootName(directories);
   const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(rootName, protos);
+  await compileProtos(rootName, protos, skipJson);
 }
 
 /**
  * Shows the usage information.
  */
 function usage() {
-  console.log(`Usage: node ${process.argv[1]} directory ...`);
+  console.log(`Usage: node ${process.argv[1]} [--skip-json] directory ...`);
   console.log(
     `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
   );
