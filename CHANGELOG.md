@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.19.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.18.0...v2.19.0) (2021-07-15)
+
+
+### Features
+
+* **compileProtos:** allow to skip JSON file generation ([#1058](https://www.github.com/googleapis/gax-nodejs/issues/1058)) ([dac4d1e](https://www.github.com/googleapis/gax-nodejs/commit/dac4d1efc8c65755e8e2176db1590b3311a13ca1))
+
 ## [2.18.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.17.1...v2.18.0) (2021-07-13)
 
 
