@@ -14,135 +14,118 @@
  * limitations under the License.
  */
 
- import {Status} from './status';
+import {Status} from './status';
 
- import {
-   APICallback,
-   NextPageRequestType,
-   RawResponseType,
-   RequestType,
-   ResponseType,
-   ResultTuple,
-   SimpleCallbackFunction,
- } from './apitypes';
- import {GoogleError, GoogleErrorDecoder} from './googleError';
- export class OngoingCall {
-   callback: APICallback;
-   cancelFunc?: () => void;
-   completed: boolean;
- 
-   /**
-    * OngoingCall manages callback, API calls, and cancellation
-    * of the API calls.
-    * @param {APICallback=} callback
-    *   The callback to be called asynchronously when the API call
-    *   finishes.
-    * @constructor
-    * @property {APICallback} callback
-    *   The callback function to be called.
-    * @private
-    */
-   constructor(callback: APICallback) {
-     this.callback = callback;
-     this.completed = false;
-   }
- 
-   /**
-    * Cancels the ongoing promise.
-    */
-   cancel(): void {
-     if (this.completed) {
-       return;
-     }
-     this.completed = true;
-     if (this.cancelFunc) {
-       this.cancelFunc();
-     } else {
-       const error = new GoogleError('cancelled');
-       error.code = Status.CANCELLED;
-       this.callback!(error);
-     }
-   }
- 
-   /**
-    * Call calls the specified function. Result will be used to fulfill
-    * the promise.
-    *
-    * @param {SimpleCallbackFunction} func
-    *   A function for an API call.
-    * @param {Object} argument
-    *   A request object.
-    */
-   call(func: SimpleCallbackFunction, argument: RequestType): void {
-     if (this.completed) {
-       return;
-     }
-     const canceller = func(
-       argument,
-       (
-         err: GoogleError | null,
-         response?: ResponseType,
-         next?: NextPageRequestType,
-         rawResponse?: RawResponseType
-       ) => {
-         this.completed = true;
-         setImmediate(this.callback!, err, response, next, rawResponse);
-       }
-     );
-     this.cancelFunc = () => canceller.cancel();
-   }
- }
- 
- export interface CancellablePromise<T> extends Promise<T> {
-   cancel(): void;
- }
- 
- export class OngoingCallPromise extends OngoingCall {
-   promise: CancellablePromise<ResultTuple>;
-   /**
-    * GaxPromise is GRPCCallbackWrapper, but it holds a promise when
-    * the API call finishes.
-    * @constructor
-    * @private
-    */
-   constructor() {
-     let resolveCallback: (
-       result: [ResponseType, NextPageRequestType, RawResponseType]
-     ) => void;
-     let rejectCallback: (err: Error) => void;
-     const callback: APICallback = (
-       err: GoogleError | null,
-       response?: ResponseType,
-       next?: NextPageRequestType,
-       rawResponse?: RawResponseType
-     ) => {
-      if (err) {
-        const decoder = new GoogleErrorDecoder();
-        err.metadata.internalRepr.forEach((value : Buffer[], key: string) => {
-            if (key === 'grpc-status-details-bin') {
-                //console.log('value: ',value);
-                // value is an array of Buffers
-                // for ... iterate over elements in value
-                const statusDetails = decoder.decodeRpcStatusDetails(value);
-                err.statusDetails = statusDetails.length==1? statusDetails[0]: statusDetails;
-            }
-        });
-        rejectCallback(err);
+import {
+  APICallback,
+  NextPageRequestType,
+  RawResponseType,
+  RequestType,
+  ResponseType,
+  ResultTuple,
+  SimpleCallbackFunction,
+} from './apitypes';
+import {GoogleError} from './googleError';
+
+export class OngoingCall {
+  callback: APICallback;
+  cancelFunc?: () => void;
+  completed: boolean;
+
+  /**
+   * OngoingCall manages callback, API calls, and cancellation
+   * of the API calls.
+   * @param {APICallback=} callback
+   *   The callback to be called asynchronously when the API call
+   *   finishes.
+   * @constructor
+   * @property {APICallback} callback
+   *   The callback function to be called.
+   * @private
+   */
+  constructor(callback: APICallback) {
+    this.callback = callback;
+    this.completed = false;
+  }
+
+  /**
+   * Cancels the ongoing promise.
+   */
+  cancel(): void {
+    if (this.completed) {
+      return;
     }
-else if (response !== undefined) {
-         resolveCallback([response, next || null, rawResponse || null]);
-       } else {
-         throw new GoogleError('Neither error nor response are defined');
-       }
-     };
-     const promise = new Promise((resolve, reject) => {
-       resolveCallback = resolve;
-       rejectCallback = reject;
-     }) as CancellablePromise<ResultTuple>;
-     super(callback);
-     this.promise = promise;
-     this.promise.cancel = () => {
-       this.cancel();
-     };
-   }
- }
+    this.completed = true;
+    if (this.cancelFunc) {
+      this.cancelFunc();
+    } else {
+      const error = new GoogleError('cancelled');
+      error.code = Status.CANCELLED;
+      this.callback!(error);
+    }
+  }
+
+  /**
+   * Call calls the specified function. Result will be used to fulfill
+   * the promise.
+   *
+   * @param {SimpleCallbackFunction} func
+   *   A function for an API call.
+   * @param {Object} argument
+   *   A request object.
+   */
+  call(func: SimpleCallbackFunction, argument: RequestType): void {
+    if (this.completed) {
+      return;
+    }
+    // eslint-disable-next-line
+    const canceller = func(argument, (...args: any[]) => {
+      this.completed = true;
+      setImmediate(this.callback!, ...args);
+    });
+    this.cancelFunc = () => canceller.cancel();
+  }
+}
+
+export interface CancellablePromise<T> extends Promise<T> {
+  cancel(): void;
+}
+
+export class OngoingCallPromise extends OngoingCall {
+  promise: CancellablePromise<ResultTuple>;
+  /**
+   * GaxPromise is GRPCCallbackWrapper, but it holds a promise when
+   * the API call finishes.
+   * @constructor
+   * @private
+   */
+  constructor() {
+    let resolveCallback: (
+      result: [ResponseType, NextPageRequestType, RawResponseType]
+    ) => void;
+    let rejectCallback: (err: Error) => void;
+    const callback: APICallback = (
+      err: GoogleError | null,
+      response?: ResponseType,
+      next?: NextPageRequestType,
+      rawResponse?: RawResponseType
+    ) => {
+      if (err) {
+        rejectCallback(err);
+      } else if (response !== undefined) {
+        resolveCallback([response, next || null, rawResponse || null]);
+      } else {
+        throw new GoogleError('Neither error nor response are defined');
+      }
+    };
+    const promise = new Promise((resolve, reject) => {
+      resolveCallback = resolve;
+      rejectCallback = reject;
+    }) as CancellablePromise<ResultTuple>;
+    super(callback);
+    this.promise = promise;
+    this.promise.cancel = () => {
+      this.cancel();
+    };
+  }
+}
