@@ -64,7 +64,8 @@ async function preparePackage(packageName: string): Promise<void> {
     ['clone', `${baseRepoUrl}${packageName}.git`, packageName],
     {stdio: 'inherit'}
   );
-  const tag = await latestRelease(packageName);
+  // const tag = await latestRelease(packageName);
+  const tag = 'legacy-8';
   await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
 
   const packageJson = path.join(packageName, 'package.json');
