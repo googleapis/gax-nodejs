@@ -17,6 +17,7 @@
 import * as grpc from '@grpc/grpc-js';
 import {GrpcClient, GrpcClientOptions} from './grpc';
 import * as IamProtos from '../protos/iam_service';
+import * as LocationProtos from '../protos/locations';
 import * as operationsProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
@@ -70,9 +71,11 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro, operationsProtos, IamProtos};
+export {lro, operationsProtos, IamProtos, LocationProtos};
 export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
+export {LocationsClient} from './locationService';
+
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
 

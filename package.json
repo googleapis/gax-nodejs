@@ -84,6 +84,7 @@
     "compile": "tsc -p . && cp src/*.json build/src && cp -r test/fixtures build/test && cp -r protos build/",
     "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
     "compile-iam-protos": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module -r iam_protos google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -o protos/iam_service.d.ts",
+    "compile-location-protos": "pbjs -t json google/cloud/location/locations.proto -p ./protos > protos/locations.json && pbjs -t static-module -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.js && pbts protos/locations.js -o protos/locations.d.ts",
     "compile-status-protos": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
     "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
     "fix": "gts fix",
