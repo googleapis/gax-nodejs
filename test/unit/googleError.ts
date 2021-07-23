@@ -23,16 +23,21 @@ import {GoogleErrorDecoder} from '../../src/googleError';
 describe('gRPC-google error decoding', () => {
   it('decodes error', () => {
     // example of an actual google.rpc.Status error message returned by Language API
-    const fixtureName = path.resolve(__dirname, '..', 'fixtures','badRequest.bin');
+    const fixtureName = path.resolve(
+      __dirname,
+      '..',
+      'fixtures',
+      'badRequest.bin'
+    );
     const errorBin = fs.readFileSync(fixtureName);
     const expectedError = {
       fieldViolations: [
-            {
-              field: 'document.language',
-              description: 'The document language is not valid',
-            },
-          ],
-        };
+        {
+          field: 'document.language',
+          description: 'The document language is not valid',
+        },
+      ],
+    };
     const decoder = new GoogleErrorDecoder();
 
     const decodedError = decoder.decodeRpcStatusDetails([errorBin])[0];
@@ -46,39 +51,104 @@ describe('gRPC-google error decoding', () => {
 
   it('decodes multiple errors', () => {
     // example of when there are multiple errors available to be decoded
-    const fixtureName = path.resolve(__dirname, '..', 'fixtures','badRequest.bin');
-    const errorBin = fs.readFileSync(fixtureName);
-    const expectedError = {
+    const pathArr: string[] = [
+      'badRequest.bin',
+      'quotaFailure.bin',
+      'preconditionFailure.bin',
+      'resourceInfo.bin',
+    ];
+    let decodedErrorArr = [];
+    const badRequest = {
       fieldViolations: [
-            {
-              field: 'document.language',
-              description: 'The document language is not valid',
-            },
-          ],
-        };
+        {
+          field: 'document.language',
+          description: 'The document language is not valid',
+        },
+      ],
+    };
+    const quotaFailure = {
+      violations: [
+        {
+          subject: 'test',
+          description: 'test',
+        },
+      ],
+    };
+    const preconditionFailure = {
+      violations: [
+        {
+          type: 'test',
+          subject: 'test',
+          description: 'test',
+        },
+      ],
+    };
+    const resourceInfo = {
+      resourceType: 'test',
+      resourceName: 'test',
+      owner: 'test',
+      description: 'test',
+    };
     const decoder = new GoogleErrorDecoder();
 
-    const decodedError = decoder.decodeRpcStatusDetails([errorBin, errorBin, errorBin]);
+    for (let i = 0; i < pathArr.length; i++) {
+      const fixtureName = path.resolve(__dirname, '..', 'fixtures', pathArr[i]);
+      decodedErrorArr.push(fs.readFileSync(fixtureName));
+    }
+    decodedErrorArr = decoder.decodeRpcStatusDetails(decodedErrorArr);
 
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify([expectedError,expectedError, expectedError])
+      JSON.stringify(decodedErrorArr),
+      JSON.stringify([
+        badRequest,
+        quotaFailure,
+        preconditionFailure,
+        resourceInfo,
+      ])
     );
   });
 
   it('does not decode when no error exists', () => {
     // example of when there's no grpc-error available to be decoded
-    let emptyArr: Buffer[] = []
+    const emptyArr: Buffer[] = [];
     const decoder = new GoogleErrorDecoder();
 
     const decodedError = decoder.decodeRpcStatusDetails(emptyArr);
 
     // nested error messages have different types so we can't use deepStrictEqual here
-    assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify([])
-    );
+    assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
   });
 
+  it('does not decode when unknown type is encoded in type_url', () => {
+    // example of when error details' type_url doesn't match "type.googleapis.com"
+    const decoder = new GoogleErrorDecoder();
+    const any = {type_url: 'noMatch', value: new Uint8Array()};
+
+    try {
+      decoder.decodeProtobufAny(any);
+    } catch (err) {
+      assert.strictEqual(
+        0,
+        err
+          .toString()
+          .indexOf('Error: Unknown type encoded in google.protobuf.any:')
+      );
+    }
+  });
+
+  it('does not decode when error type does not exist under "type.googleapis.com" ', () => {
+    // example of when error details' type_url = "type.googleapis.com/{errType}" and errType is invalid
+    const decoder = new GoogleErrorDecoder();
+    const any = {
+      type_url: 'type.googleapis.com/noMatch',
+      value: new Uint8Array(),
+    };
+
+    try {
+      decoder.decodeProtobufAny(any);
+    } catch (err) {
+      assert.strictEqual(0, err.toString().indexOf('Error: no such type'));
+    }
+  });
 });

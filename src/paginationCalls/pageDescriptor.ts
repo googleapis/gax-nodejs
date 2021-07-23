@@ -101,7 +101,7 @@ export class PageDescriptor implements Descriptor {
         request = next;
         started = false;
       } else {
-        setImmediate(apiCall, next, options, callback);
+        setImmediate(apiCall, next, options, callback as APICallback);
       }
     }
     stream.on('resume', () => {

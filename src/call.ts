@@ -25,7 +25,7 @@ import {
   ResultTuple,
   SimpleCallbackFunction,
 } from './apitypes';
-import {GoogleError} from './googleError';
+import {GoogleError, GoogleErrorDecoder} from './googleError';
 
 export class OngoingCall {
   callback: APICallback;
@@ -79,10 +79,16 @@ export class OngoingCall {
       return;
     }
     // eslint-disable-next-line
-    const canceller = func(argument, (...args: any[]) => {
-      this.completed = true;
-      setImmediate(this.callback!, ...args);
-    });
+    const canceller = func(argument, (
+        err: GoogleError | null,
+        response?: ResponseType,
+        next?: NextPageRequestType,
+        rawResponse?: RawResponseType
+      ) => {
+        this.completed = true;
+        setImmediate(this.callback!, err, response, next, rawResponse);
+      }
+    );
     this.cancelFunc = () => canceller.cancel();
   }
 }
@@ -111,6 +117,16 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
+        if (err.metadata?.internalRepr) {
+          const decoder = new GoogleErrorDecoder();
+          err.metadata.internalRepr.forEach((value: Buffer[], key: string) => {
+            if (key === 'grpc-status-details-bin') {
+              const statusDetails = decoder.decodeRpcStatusDetails(value);
+              err.statusDetails =
+                statusDetails.length === 1 ? statusDetails[0] : statusDetails;
+            }
+          });
+        }
         rejectCallback(err);
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
