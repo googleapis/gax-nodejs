@@ -78,8 +78,9 @@ export class OngoingCall {
     if (this.completed) {
       return;
     }
-    // eslint-disable-next-line
-    const canceller = func(argument, (
+    const canceller = func(
+      argument,
+      (
         err: GoogleError | null,
         response?: ResponseType,
         next?: NextPageRequestType,
