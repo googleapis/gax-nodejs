@@ -81,7 +81,7 @@ export class PagedApiCaller implements APICaller {
         );
         return;
       }
-      const resources = response[resourceFieldName];
+      const resources = response[resourceFieldName] || [];
       const pageToken = response[responsePageTokenFieldName];
       let nextPageRequest = null;
       if (pageToken) {
