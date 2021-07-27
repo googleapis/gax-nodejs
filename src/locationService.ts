@@ -467,51 +467,6 @@ export class LocationsClient {
   }
 
   /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   *   The resource that owns the locations collection, if applicable.
-   * @param {string} request.filter
-   *   The standard list filter.
-   * @param {number} request.pageSize
-   *   The standard list page size.
-   * @param {string} request.pageToken
-   *   The standard list page token.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream}
-   *   An object stream which emits an object representing [Location]{@link google.cloud.location.Location} on 'data' event.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed. Note that it can affect your quota.
-   *   We recommend using `listLocationsAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
-   *   for more details and examples.
-   */
-  listLocationsStream(
-    request: protos.google.cloud.location.IListLocationsRequest,
-    options?: gax.CallOptions
-  ): Transform {
-    request = request || {};
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      routingHeader.fromParams({
-        name: request.name || '',
-      });
-    const callSettings = new gax.CallSettings(options);
-    this.initialize();
-    return this.descriptors.page.listLocations.createStream(
-      this.innerApiCalls.listLocations as GaxCall,
-      request,
-      callSettings
-    );
-  }
-
-  /**
    * Equivalent to `listLocations`, but returns an iterable object.
    *
    * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
