@@ -69,15 +69,19 @@ describe('gRPC-google error decoding', () => {
       'fixtures',
       'multipleErrors.json'
     );
-    const error_details_path =
-      '/usr/local/google/home/akosile/googleapis/google/rpc/error_details.proto';
-    const status_path =
-      '/usr/local/google/home/akosile/googleapis/google/rpc/status.proto';
+    const protos_path = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'protos',
+      'google',
+      'rpc'
+    );
     fs.readFile(fixtureName, 'utf8', (err, data) => {
       const objs = JSON.parse(data) as MyObj[];
       for (const obj of objs) {
         protobuf.load(
-          [error_details_path, status_path],
+          [protos_path + '/error_details.proto', protos_path + '/status.proto'],
           (err: Error, root: protobuf.Root) => {
             if (err) {
               throw err;
@@ -95,7 +99,6 @@ describe('gRPC-google error decoding', () => {
             bufferArr.push(status_buffer);
             if (objs.length === bufferArr.length) {
               decodedErrorArr = decoder.decodeRpcStatusDetails(bufferArr);
-              console.log(decodedErrorArr);
               assert.strictEqual(
                 JSON.stringify(expectedErrorArr),
                 JSON.stringify(decodedErrorArr)
