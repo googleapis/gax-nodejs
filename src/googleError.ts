@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 import {Status} from './status';
 import * as protobuf from 'protobufjs';
 import {Metadata} from '@google-cloud/common';
+import {FallbackErrorDecoder} from './fallbackError';
 export class GoogleError extends Error {
   code?: Status;
   note?: string;
@@ -35,34 +36,7 @@ interface RpcStatus {
   details: ProtobufAny[];
 }
 
-export class GoogleErrorDecoder {
-  root: protobuf.Root;
-  anyType: protobuf.Type;
-  statusType: protobuf.Type;
-
-  constructor() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const errorProtoJson = require('../../protos/status.json');
-    this.root = protobuf.Root.fromJSON(errorProtoJson);
-    this.anyType = this.root.lookupType('google.protobuf.Any');
-    this.statusType = this.root.lookupType('google.rpc.Status');
-  }
-
-  decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {
-    const match = anyValue.type_url.match(/^type.googleapis.com\/(.*)/);
-    if (!match) {
-      throw new Error(
-        `Unknown type encoded in google.protobuf.any: ${anyValue.type_url}`
-      );
-    }
-    const typeName = match[1];
-    const type = this.root.lookupType(typeName);
-    if (!type) {
-      throw new Error(`Cannot lookup type ${typeName}`);
-    }
-    return type.decode(anyValue.value);
-  }
-
+export class GoogleErrorDecoder extends FallbackErrorDecoder {
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
   decodeRpcStatusDetails(
     bufferArr: Buffer[] | ArrayBuffer[]
