@@ -1,21 +1,29 @@
 [
-	{"type": "google.rpc.BadRequest", "value":{
+  {
+    "type": "google.rpc.BadRequest",
+    "value": {
       "fieldViolations": [
         {
           "field": "document.language",
           "description": "The document language is not valid"
         }
       ]
-    } },
-	{"type": "google.rpc.QuotaFailure", "value": {
+    }
+  },
+  {
+    "type": "google.rpc.QuotaFailure",
+    "value": {
       "violations": [
         {
           "subject": "test",
           "description": "test"
         }
       ]
-    }},
-	{"type": "google.rpc.PreconditionFailure", "value": {
+    }
+  },
+  {
+    "type": "google.rpc.PreconditionFailure",
+    "value": {
       "violations": [
         {
           "type": "test",
@@ -23,11 +31,15 @@
           "description": "test"
         }
       ]
-    }},
-	{"type": "google.rpc.ResourceInfo", "value": {
+    }
+  },
+  {
+    "type": "google.rpc.ResourceInfo",
+    "value": {
       "resourceType": "test",
       "resourceName": "test",
       "owner": "test",
       "description": "test"
-    }}
+    }
+  }
 ]

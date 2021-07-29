@@ -17,6 +17,8 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as fs from 'fs';
+import * as util from 'util';
+import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import {GoogleErrorDecoder} from '../../src/googleError';
 
@@ -26,42 +28,13 @@ interface MyObj {
 }
 
 describe('gRPC-google error decoding', () => {
-  it('decodes error', () => {
-    // example of an actual google.rpc.Status error message returned by Language API
-    const fixtureName = path.resolve(
-      __dirname,
-      '..',
-      'fixtures',
-      'badRequest.bin'
-    );
-    const errorBin = fs.readFileSync(fixtureName);
-    const expectedError = {
-      fieldViolations: [
-        {
-          field: 'document.language',
-          description: 'The document language is not valid',
-        },
-      ],
-    };
-    const decoder = new GoogleErrorDecoder();
-
-    const decodedError = decoder.decodeRpcStatusDetails([errorBin])[0];
-
-    // nested error messages have different types so we can't use deepStrictEqual here
-    assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
-    );
-  });
-
-  it('decodes multiple errors', () => {
+  it('decodes multiple errors', async () => {
     // example of when there are multiple errors available to be decoded
     const bufferArr = [] as Buffer[];
     let decodedErrorArr = [] as protobuf.Message<{}>[];
     const expectedErrorArr = [] as protobuf.Message<{}>[];
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const protobuf = require('protobufjs');
     const decoder = new GoogleErrorDecoder();
+    const readFile = util.promisify(fs.readFile);
 
     const fixtureName = path.resolve(
       __dirname,
@@ -77,37 +50,31 @@ describe('gRPC-google error decoding', () => {
       'google',
       'rpc'
     );
-    fs.readFile(fixtureName, 'utf8', (err, data) => {
-      const objs = JSON.parse(data) as MyObj[];
-      for (const obj of objs) {
-        protobuf.load(
-          [protos_path + '/error_details.proto', protos_path + '/status.proto'],
-          (err: Error, root: protobuf.Root) => {
-            if (err) {
-              throw err;
-            }
-            const MessageType = root.lookupType(obj.type);
-            expectedErrorArr.push(obj.value);
-            const buffer = MessageType.encode(obj.value).finish() as Buffer;
-            const any = {
-              type_url: 'type.googleapis.com/' + obj.type,
-              value: buffer,
-            };
-            const status = {code: 3, message: 'test', details: [any]};
-            const Status = root.lookupType('google.rpc.Status');
-            const status_buffer = Status.encode(status).finish() as Buffer;
-            bufferArr.push(status_buffer);
-            if (objs.length === bufferArr.length) {
-              decodedErrorArr = decoder.decodeRpcStatusDetails(bufferArr);
-              assert.strictEqual(
-                JSON.stringify(expectedErrorArr),
-                JSON.stringify(decodedErrorArr)
-              );
-            }
-          }
-        );
-      }
-    });
+
+    const data = await readFile(fixtureName, 'utf8');
+    const root = protobuf.loadSync([
+      path.join(protos_path, 'error_details.proto'),
+      path.join(protos_path, 'status.proto'),
+    ]);
+    const objs = JSON.parse(data) as MyObj[];
+    for (const obj of objs) {
+      const MessageType = root.lookupType(obj.type);
+      expectedErrorArr.push(obj.value);
+      const buffer = MessageType.encode(obj.value).finish() as Buffer;
+      const any = {
+        type_url: 'type.googleapis.com/' + obj.type,
+        value: buffer,
+      };
+      const status = {code: 3, message: 'test', details: [any]};
+      const Status = root.lookupType('google.rpc.Status');
+      const status_buffer = Status.encode(status).finish() as Buffer;
+      bufferArr.push(status_buffer);
+    }
+    decodedErrorArr = decoder.decodeRpcStatusDetails(bufferArr);
+    assert.strictEqual(
+      JSON.stringify(expectedErrorArr),
+      JSON.stringify(decodedErrorArr)
+    );
   });
 
   it('does not decode when no error exists', () => {

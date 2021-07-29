@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Google LLC
+ * Copyright 2020 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 import {Status} from './status';
 import * as protobuf from 'protobufjs';
-import {Metadata} from '@google-cloud/common';
 import {FallbackErrorDecoder} from './fallbackError';
+import {Metadata} from './grpc';
+
 export class GoogleError extends Error {
   code?: Status;
   note?: string;
   metadata?: Metadata;
-  statusDetails?: protobuf.Message<{}> | protobuf.Message<{}>[];
+  statusDetails?: string | protobuf.Message<{}>[];
 }
 
 interface ProtobufAny {

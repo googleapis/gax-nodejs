@@ -118,15 +118,11 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
-        if (err.metadata?.internalRepr) {
+        if (err.metadata) {
           const decoder = new GoogleErrorDecoder();
-          err.metadata.internalRepr.forEach((value: Buffer[], key: string) => {
-            if (key === 'grpc-status-details-bin') {
-              const statusDetails = decoder.decodeRpcStatusDetails(value);
-              err.statusDetails =
-                statusDetails.length === 1 ? statusDetails[0] : statusDetails;
-            }
-          });
+          err.statusDetails = decoder.decodeRpcStatusDetails(
+            err.metadata.get('grpc-status-details-bin') as Buffer[]
+          );
         }
         rejectCallback(err);
       } else if (response !== undefined) {
