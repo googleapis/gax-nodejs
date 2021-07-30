@@ -30,7 +30,6 @@ import {
 import {PageDescriptor} from './paginationCalls/pageDescriptor';
 import jsonProtos = require('../protos/locations.json');
 
-import {Transform} from 'stream';
 import {GaxCall, RequestType} from './apitypes';
 
 /**
