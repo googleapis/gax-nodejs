@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.20.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.20.0...v2.20.1) (2021-07-30)
+
+
+### Bug Fixes
+
+* clean up the lint ([#1067](https://www.github.com/googleapis/gax-nodejs/issues/1067)) ([d08e9d5](https://www.github.com/googleapis/gax-nodejs/commit/d08e9d5d67df89a4cecc73f8c00a76adc5e393a2))
+
 ## [2.20.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.19.0...v2.20.0) (2021-07-30)
 
 
