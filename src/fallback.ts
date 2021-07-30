@@ -63,7 +63,7 @@ import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
-import {FallbackErrorDecoder, FallbackServiceError} from './fallbackError';
+import {GoogleErrorDecoder, FallbackServiceError} from './googleError';
 import {transcode} from './transcoding';
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -291,7 +291,7 @@ export class GrpcClient {
     }
 
     // decoder for google.rpc.Status messages
-    const statusDecoder = new FallbackErrorDecoder();
+    const statusDecoder = new GoogleErrorDecoder();
 
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
