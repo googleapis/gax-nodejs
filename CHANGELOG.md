@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.20.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.19.0...v2.20.0) (2021-07-30)
+
+
+### Features
+
+* support Locations service as mixin service ([#1064](https://www.github.com/googleapis/gax-nodejs/issues/1064)) ([6635b7c](https://www.github.com/googleapis/gax-nodejs/commit/6635b7ce9312f654dc873c9b026e48efa7fd6425))
+
 ## [2.19.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.18.0...v2.19.0) (2021-07-15)
 
 
