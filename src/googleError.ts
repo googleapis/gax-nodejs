@@ -15,8 +15,104 @@
  */
 
 import {Status} from './status';
+import * as protobuf from 'protobufjs';
+import {Metadata} from './grpc';
 
 export class GoogleError extends Error {
   code?: Status;
   note?: string;
+  metadata?: Metadata;
+  statusDetails?: string | protobuf.Message<{}>[];
+}
+
+export type FallbackServiceError = FallbackStatusObject & Error;
+interface FallbackStatusObject {
+  code: Status;
+  message: string;
+  details: Array<{}>;
+}
+
+interface ProtobufAny {
+  type_url: string;
+  value: Uint8Array;
+}
+
+interface RpcStatus {
+  code: number;
+  message: string;
+  details: ProtobufAny[];
+}
+
+export class GoogleErrorDecoder {
+  root: protobuf.Root;
+  anyType: protobuf.Type;
+  statusType: protobuf.Type;
+
+  constructor() {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const errorProtoJson = require('../../protos/status.json');
+    this.root = protobuf.Root.fromJSON(errorProtoJson);
+    this.anyType = this.root.lookupType('google.protobuf.Any');
+    this.statusType = this.root.lookupType('google.rpc.Status');
+  }
+
+  decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {
+    const match = anyValue.type_url.match(/^type.googleapis.com\/(.*)/);
+    if (!match) {
+      throw new Error(
+        `Unknown type encoded in google.protobuf.any: ${anyValue.type_url}`
+      );
+    }
+    const typeName = match[1];
+    const type = this.root.lookupType(typeName);
+    if (!type) {
+      throw new Error(`Cannot lookup type ${typeName}`);
+    }
+    return type.decode(anyValue.value);
+  }
+
+  // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
+  decodeRpcStatus(buffer: Buffer | ArrayBuffer): FallbackStatusObject {
+    const uint8array = new Uint8Array(buffer);
+    const status = this.statusType.decode(uint8array) as unknown as RpcStatus;
+
+    // google.rpc.Status contains an array of google.protobuf.Any
+    // which need a special treatment
+    const result = {
+      code: status.code,
+      message: status.message,
+      details: status.details.map(detail => this.decodeProtobufAny(detail)),
+    };
+    return result;
+  }
+
+  // Construct an Error from a StatusObject.
+  // Adapted from https://github.com/grpc/grpc-node/blob/master/packages/grpc-js/src/call.ts#L79
+  callErrorFromStatus(status: FallbackStatusObject): FallbackServiceError {
+    status.message = `${status.code} ${Status[status.code]}: ${status.message}`;
+    return Object.assign(new Error(status.message), status);
+  }
+
+  // Decodes gRPC-fallback error which is an instance of google.rpc.Status,
+  // and puts it into the object similar to gRPC ServiceError object.
+  decodeErrorFromBuffer(buffer: Buffer | ArrayBuffer): Error {
+    return this.callErrorFromStatus(this.decodeRpcStatus(buffer));
+  }
+  // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
+  decodeRpcStatusDetails(
+    bufferArr: Buffer[] | ArrayBuffer[]
+  ): protobuf.Message<{}>[] {
+    const status: protobuf.Message<{}>[] = [];
+    bufferArr.forEach(buffer => {
+      const uint8array = new Uint8Array(buffer);
+      const error_status = this.statusType.decode(
+        uint8array
+      ) as unknown as RpcStatus;
+      const status_details_array = error_status.details.map(detail =>
+        this.decodeProtobufAny(detail)
+      );
+      status.push(status_details_array[0]);
+    });
+    return status;
+  }
 }
