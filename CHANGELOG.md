@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.21.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.21.0...v2.21.1) (2021-08-03)
+
+
+### Bug Fixes
+
+* **deps:** pin protobufjs ([#1071](https://www.github.com/googleapis/gax-nodejs/issues/1071)) ([b2229d5](https://www.github.com/googleapis/gax-nodejs/commit/b2229d53bf46b45541c9d5b729f1441a6fda9a16))
+
 ## [2.21.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.20.0...v2.21.0) (2021-08-02)
 
 
