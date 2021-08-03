@@ -133,6 +133,7 @@ describe('decode metadata for ErrorInfo', () => {
       domain: 'googleapis.com',
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const errorProtoJson = require('../../protos/status.json');
     const root = protobuf.Root.fromJSON(errorProtoJson);
     const errorInfoType = root.lookupType('ErrorInfo');
