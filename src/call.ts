@@ -120,9 +120,7 @@ export class OngoingCallPromise extends OngoingCall {
       if (err) {
         if (err.metadata) {
           const decoder = new GoogleErrorDecoder();
-          err.statusDetails = decoder.decodeRpcStatusDetails(
-            err.metadata.get('grpc-status-details-bin') as Buffer[]
-          );
+          rejectCallback(decoder.decodeMetadata(err));
         }
         rejectCallback(err);
       } else if (response !== undefined) {

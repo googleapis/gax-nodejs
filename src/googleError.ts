@@ -23,6 +23,8 @@ export class GoogleError extends Error {
   note?: string;
   metadata?: Metadata;
   statusDetails?: string | protobuf.Message<{}>[];
+  reason?: string;
+  domain?: string;
 }
 
 export type FallbackServiceError = FallbackStatusObject & Error;
@@ -43,10 +45,17 @@ interface RpcStatus {
   details: ProtobufAny[];
 }
 
+interface ErrorInfo {
+  reason: string;
+  domain: string;
+  metadata: {string: string};
+}
+
 export class GoogleErrorDecoder {
   root: protobuf.Root;
   anyType: protobuf.Type;
   statusType: protobuf.Type;
+  errorInfoType: protobuf.Type;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -54,6 +63,7 @@ export class GoogleErrorDecoder {
     this.root = protobuf.Root.fromJSON(errorProtoJson);
     this.anyType = this.root.lookupType('google.protobuf.Any');
     this.statusType = this.root.lookupType('google.rpc.Status');
+    this.errorInfoType = this.root.lookupType('ErrorInfo');
   }
 
   decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {
@@ -114,5 +124,43 @@ export class GoogleErrorDecoder {
       status.push(status_details_array[0]);
     });
     return status;
+  }
+
+  decodeMetadata(err: GoogleError): GoogleError {
+    if (!err.metadata) {
+      return err;
+    }
+    if (err.metadata.get('grpc-status-details-bin')) {
+      err.statusDetails = this.decodeRpcStatusDetails(
+        err.metadata.get('grpc-status-details-bin') as Buffer[]
+      );
+    }
+    // Promote the ErrorInfo fields as first-class of error
+    if (err.metadata.get('google.rpc.errorinfo-bin')) {
+      const buffer = err.metadata.get('google.rpc.errorinfo-bin') as Buffer[];
+      if (buffer.length > 1) {
+        throw new Error(
+          `Multiple ErrorInfo type encoded in err.metadata.get('google.rpc.errorinfo-bin'): ${err.metadata.get(
+            'google.rpc.errorinfo-bin'
+          )}`
+        );
+      }
+      const uint8array = new Uint8Array(buffer[0]);
+      const errorInfo = this.errorInfoType.decode(
+        uint8array
+      ) as unknown as ErrorInfo;
+      if (errorInfo.reason) {
+        err.reason = errorInfo.reason;
+      }
+      if (errorInfo.domain) {
+        err.domain = errorInfo.domain;
+      }
+      if (errorInfo.metadata) {
+        for (const [key, value] of Object.entries(errorInfo.metadata)) {
+          err.metadata.set(key, value);
+        }
+      }
+    }
+    return err;
   }
 }
