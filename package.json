@@ -90,6 +90,7 @@
     "fix": "gts fix",
     "prepare": "npm run compile && node ./build/tools/prepublish.js && mkdirp build/protos && cp -r protos/* build/protos/",
     "system-test": "c8 mocha build/test/system-test --timeout 600000",
+    "system-test-echo": "c8 mocha build/test/system-test/test.endtoend.js --timeout 600000",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
