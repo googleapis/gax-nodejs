@@ -29,14 +29,14 @@ import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
 
 const authClient = {
-  getRequestHeaders() {
+  async getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
   },
 };
 
 const authStub = {
-  getClient() {
-    return Promise.resolve(authClient);
+  async getClient() {
+    return authClient;
   },
 };
 
@@ -99,9 +99,12 @@ describe('regapic', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
+      echoStub.echo(requestObject, {}, {}, (err?: {}, result?: {}) => {
         assert.strictEqual(err, null);
-        assert.strictEqual(requestObject.content, result.content);
+        assert.strictEqual(
+          requestObject.content,
+          (result as {content: string}).content
+        );
         done();
       });
     });
@@ -127,18 +130,19 @@ describe('regapic', () => {
       );
 
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getShelf(
-          requestObject,
-          {},
-          {},
-          (err: {}, result: {name: {}; theme: {}; type: {}}) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('shelf-name', result.name);
-            assert.strictEqual('TYPEONE', result.type);
-            done();
-          }
-        );
-      });
+        libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'shelf-name',
+            (result as {name: {}; theme: {}; type: {}}).name
+          );
+          assert.strictEqual(
+            'TYPEONE',
+            (result as {name: {}; theme: {}; type: {}}).type
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
 
     it('should support enum conversion in proto message request using symbolic name', done => {
@@ -159,11 +163,11 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.createShelf(requestObject, {}, {}, (err: {}) => {
+        libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
           assert.strictEqual(err, null);
           done();
         });
-      });
+      }, /* catch: */ done);
     });
 
     it('should support enum conversion in proto message request using type value', done => {
@@ -184,11 +188,11 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.createShelf(requestObject, {}, {}, (err: {}) => {
+        libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
           assert.strictEqual(err, null);
           done();
         });
-      });
+      }, /* catch: */ done);
     });
   });
 
@@ -213,21 +217,35 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getBook(
-          requestObject,
-          {},
-          {},
-          (
-            err: {},
-            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
-          ) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('book-name', result.name);
-            assert.strictEqual('9007199254740992', result.bookId);
-            done();
-          }
-        );
-      });
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name
+          );
+          assert.strictEqual(
+            '9007199254740992',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
 
     it('small number long data type conversion in proto message response', done => {
@@ -250,21 +268,35 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getBook(
-          requestObject,
-          {},
-          {},
-          (
-            err: {},
-            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
-          ) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('book-name', result.name);
-            assert.strictEqual('42', result.bookId);
-            done();
-          }
-        );
-      });
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name
+          );
+          assert.strictEqual(
+            '42',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
 
     it('long data type conversion in proto message request', done => {
@@ -288,21 +320,35 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getBook(
-          requestObject,
-          {},
-          {},
-          (
-            err: {},
-            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
-          ) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('book-name', result.name);
-            assert.strictEqual(bookId.toString(), result.bookId);
-            done();
-          }
-        );
-      });
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name
+          );
+          assert.strictEqual(
+            bookId.toString(),
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
   });
 });
