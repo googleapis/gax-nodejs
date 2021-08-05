@@ -17,13 +17,13 @@
 // This file implements gRPC to HTTP transcoding, as described in
 // https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#grpc-transcoding
 
+import {JSONObject, JSONValue} from 'proto3-json-serializer';
 import {Field} from 'protobufjs';
 import {google} from '../protos/http';
-import {RequestType} from './apitypes';
 import {camelToSnakeCase, snakeToCamelCase} from './util';
 
 export interface TranscodedRequest {
-  httpMethod: string;
+  httpMethod: 'get' | 'post' | 'put' | 'patch' | 'delete';
   url: string;
   queryString: string;
   data: string | {};
@@ -37,7 +37,8 @@ const proto3OptionalName = 'proto3_optional';
 type allowedOptions = '(google.api.method_signature)';
 
 // List of methods as defined in google/api/http.proto (see HttpRule)
-const supportedHttpMethods = ['get', 'post', 'put', 'patch', 'delete'];
+const supportedHttpMethods: Array<'get' | 'put' | 'post' | 'patch' | 'delete'> =
+  ['get', 'post', 'put', 'patch', 'delete'];
 
 export type ParsedOptionsType = Array<
   {
@@ -48,16 +49,16 @@ export type ParsedOptionsType = Array<
 >;
 
 export function getField(
-  request: RequestType,
+  request: JSONObject,
   field: string
-): string | number | Array<string | number> | undefined {
+): JSONValue | undefined {
   const parts = field.split('.');
-  let value: RequestType | string | number | undefined = request;
+  let value: JSONValue = request;
   for (const part of parts) {
     if (typeof value !== 'object') {
       return undefined;
     }
-    value = (value as RequestType)[part] as RequestType;
+    value = (value as JSONObject)[part] as JSONValue;
   }
   if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
     return undefined;
@@ -65,29 +66,29 @@ export function getField(
   return value;
 }
 
-export function deepCopy(request: RequestType): RequestType {
+export function deepCopy(request: JSONObject): JSONObject {
   if (typeof request !== 'object' || request === null) {
     return request;
   }
   const copy = Object.assign({}, request);
   for (const key in copy) {
     if (Array.isArray(copy[key])) {
-      copy[key] = (copy[key] as RequestType[]).map(deepCopy);
+      copy[key] = (copy[key] as JSONObject[]).map(deepCopy);
     } else if (typeof copy[key] === 'object' && copy[key] !== null) {
-      copy[key] = deepCopy(copy[key] as RequestType);
+      copy[key] = deepCopy(copy[key] as JSONObject);
     }
   }
   return copy;
 }
 
-export function deleteField(request: RequestType, field: string): void {
+export function deleteField(request: JSONObject, field: string): void {
   const parts = field.split('.');
   while (parts.length > 1) {
     if (typeof request !== 'object') {
       return;
     }
     const part = parts.shift() as string;
-    request = request[part] as RequestType;
+    request = request[part] as JSONObject;
   }
   const part = parts.shift() as string;
   if (typeof request !== 'object') {
@@ -97,13 +98,13 @@ export function deleteField(request: RequestType, field: string): void {
 }
 
 export function buildQueryStringComponents(
-  request: RequestType,
+  request: JSONObject,
   prefix = ''
 ): string[] {
   const resultList = [];
   for (const key in request) {
     if (Array.isArray(request[key])) {
-      for (const value of request[key] as RequestType[]) {
+      for (const value of request[key] as JSONObject[]) {
         resultList.push(
           `${prefix}${encodeWithoutSlashes(key)}=${encodeWithoutSlashes(
             value.toString()
@@ -112,12 +113,12 @@ export function buildQueryStringComponents(
       }
     } else if (typeof request[key] === 'object' && request[key] !== null) {
       resultList.push(
-        ...buildQueryStringComponents(request[key] as RequestType, `${key}.`)
+        ...buildQueryStringComponents(request[key] as JSONObject, `${key}.`)
       );
     } else {
       resultList.push(
         `${prefix}${encodeWithoutSlashes(key)}=${encodeWithoutSlashes(
-          request[key].toString()
+          request[key] === null ? 'null' : request[key]!.toString()
         )}`
       );
     }
@@ -177,7 +178,7 @@ interface MatchResult {
 }
 
 export function match(
-  request: RequestType,
+  request: JSONObject,
   pattern: string
 ): MatchResult | undefined {
   let url = pattern;
@@ -193,7 +194,10 @@ export function match(
     if (typeof fieldValue === 'undefined') {
       return undefined;
     }
-    const appliedPattern = applyPattern(pattern, fieldValue.toString());
+    const appliedPattern = applyPattern(
+      pattern,
+      fieldValue === null ? 'null' : fieldValue!.toString()
+    );
     if (typeof appliedPattern === 'undefined') {
       return undefined;
     }
@@ -203,8 +207,8 @@ export function match(
   return {matchedFields, url};
 }
 
-export function flattenObject(request: RequestType): RequestType {
-  const result: RequestType = {};
+export function flattenObject(request: JSONObject): JSONObject {
+  const result: JSONObject = {};
   for (const key in request) {
     if (typeof request[key] === 'undefined') {
       continue;
@@ -218,7 +222,7 @@ export function flattenObject(request: RequestType): RequestType {
     }
 
     if (typeof request[key] === 'object' && request[key] !== null) {
-      const nested = flattenObject(request[key] as RequestType);
+      const nested = flattenObject(request[key] as JSONObject);
       for (const nestedKey in nested) {
         result[`${key}.${nestedKey}`] = nested[nestedKey];
       }
@@ -232,13 +236,13 @@ export function flattenObject(request: RequestType): RequestType {
 }
 
 export function requestChangeCaseAndCleanup(
-  request: RequestType,
+  request: JSONObject,
   caseChangeFunc: (key: string) => string
 ) {
   if (!request || typeof request !== 'object') {
     return request;
   }
-  const convertedRequest: RequestType = {};
+  const convertedRequest: JSONObject = {};
   for (const field in request) {
     // cleaning up inherited properties
     if (!Object.prototype.hasOwnProperty.call(request, field)) {
@@ -248,11 +252,11 @@ export function requestChangeCaseAndCleanup(
     const value = request[field];
     if (Array.isArray(value)) {
       convertedRequest[convertedField] = value.map(v =>
-        requestChangeCaseAndCleanup(v as RequestType, caseChangeFunc)
+        requestChangeCaseAndCleanup(v as JSONObject, caseChangeFunc)
       );
     } else {
       convertedRequest[convertedField] = requestChangeCaseAndCleanup(
-        value as RequestType,
+        value as JSONObject,
         caseChangeFunc
       );
     }
@@ -290,7 +294,7 @@ export function getFieldNameOnBehavior(
 }
 
 export function transcode(
-  request: RequestType,
+  request: JSONObject,
   parsedOptions: ParsedOptionsType,
   requestFields?: {[k: string]: Field}
 ): TranscodedRequest | undefined {
@@ -362,7 +366,7 @@ export function transcode(
 
       // one field possibly goes to request data, others go to query string
       const body = httpRule.body;
-      let data: string | RequestType = '';
+      let data: string | JSONObject = '';
       const queryStringObject = deepCopy(request); // use camel case for query string
       if (body) {
         deleteField(queryStringObject, snakeToCamelCase(body));
@@ -370,7 +374,7 @@ export function transcode(
         data =
           optionalFields.has(body) && snakeRequest[body] === 'undefined'
             ? ''
-            : (snakeRequest[body] as RequestType);
+            : (snakeRequest[body] as JSONObject);
       }
       for (const field of matchedFields) {
         deleteField(queryStringObject, snakeToCamelCase(field));
@@ -384,7 +388,7 @@ export function transcode(
       const queryStringComponents =
         buildQueryStringComponents(queryStringObject);
       const queryString = queryStringComponents.join('&');
-      let camelCaseData: string | RequestType;
+      let camelCaseData: string | JSONObject;
       if (typeof data === 'string') {
         camelCaseData = data;
       } else {

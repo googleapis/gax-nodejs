@@ -28,7 +28,7 @@ function sleep(timeout: number) {
 
 describe('Run tests against gRPC server', () => {
   const authStub = {
-    getRequestHeaders() {
+    async getRequestHeaders() {
       return {Authorization: 'Bearer SOME_TOKEN'};
     },
   };

@@ -32,14 +32,14 @@ import {GrpcClient} from '../../src/fallback';
 const hasAbortController = typeof AbortController !== 'undefined';
 
 const authClient = {
-  getRequestHeaders() {
+  async getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
   },
 };
 
 const authStub = {
-  getClient() {
-    return Promise.resolve(authClient);
+  async getClient() {
+    return authClient;
   },
 };
 
@@ -123,15 +123,13 @@ describe('createStub', () => {
   it('should create a stub', async () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
 
-    assert(echoStub instanceof protobuf.rpc.Service);
-
     // The stub should consist of service methods
-    assert.strict(typeof echoStub.echo, 'function');
-    assert.strict(typeof echoStub.pagedExpand, 'function');
-    assert.strict(typeof echoStub.wait, 'function');
+    assert.strictEqual(typeof echoStub.echo, 'function');
+    assert.strictEqual(typeof echoStub.pagedExpand, 'function');
+    assert.strictEqual(typeof echoStub.wait, 'function');
 
-    // There should be 6 methods for the echo service (and 4 other methods in the object)
-    assert.strictEqual(Object.keys(echoStub).length, 10);
+    // There should be 6 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 6);
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
@@ -140,15 +138,13 @@ describe('createStub', () => {
   it('should support optional parameters', async () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubExtraOptions);
 
-    assert(echoStub instanceof protobuf.rpc.Service);
-
     // The stub should consist of methods
     assert.strictEqual(typeof echoStub.echo, 'function');
     assert.strictEqual(typeof echoStub.collect, 'function');
     assert.strictEqual(typeof echoStub.chat, 'function');
 
-    // There should be 6 methods for the echo service (and 4 other members in the object)
-    assert.strictEqual(Object.keys(echoStub).length, 10);
+    // There should be 6 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 6);
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
@@ -274,9 +270,12 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error, result?: {}) => {
         assert.strictEqual(err, null);
-        assert.strictEqual(requestObject.content, result.content);
+        assert.strictEqual(
+          requestObject.content,
+          (result as {content: string}).content
+        );
         done();
       });
     });
@@ -313,7 +312,7 @@ describe('grpc-fallback', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: Error) => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof Error);
         assert.strictEqual(err.message, expectedMessage);
         assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
