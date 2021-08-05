@@ -175,7 +175,7 @@ describe('decode metadata for ErrorInfo', () => {
       }
     );
     const decoder = new GoogleErrorDecoder();
-    const decodedError = decoder.decodeMetadata(grpcError);
+    const decodedError = decoder.decode(grpcError);
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);

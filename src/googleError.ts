@@ -139,7 +139,7 @@ export class GoogleErrorDecoder {
     return status;
   }
 
-  decodeMetadata(err: GoogleError): GoogleError {
+  decode(err: GoogleError): GoogleError {
     if (!err.metadata) {
       return err;
     }
@@ -152,7 +152,7 @@ export class GoogleErrorDecoder {
     if (err.metadata.get('google.rpc.errorinfo-bin')) {
       const buffer = err.metadata.get('google.rpc.errorinfo-bin') as Buffer[];
       if (buffer.length > 1) {
-        throw new Error(
+        throw new GoogleError(
           `Multiple ErrorInfo type encoded in err.metadata.get('google.rpc.errorinfo-bin'): ${err.metadata.get(
             'google.rpc.errorinfo-bin'
           )}`

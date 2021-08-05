@@ -118,11 +118,9 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
-        if (err.metadata) {
-          const decoder = new GoogleErrorDecoder();
-          rejectCallback(decoder.decodeMetadata(err));
-        }
-        rejectCallback(err);
+        const decoder = new GoogleErrorDecoder();
+        const decodedErr = decoder.decode(err);
+        rejectCallback(decodedErr);
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
       } else {
