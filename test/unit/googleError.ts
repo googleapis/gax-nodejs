@@ -28,6 +28,25 @@ interface MyObj {
 }
 
 describe('gRPC-google error decoding', () => {
+  const fixtureName = path.resolve(
+    __dirname,
+    '..',
+    'fixtures',
+    'multipleErrors.json'
+  );
+  const protos_path = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    'protos',
+    'google',
+    'rpc'
+  );
+  const root = protobuf.loadSync([
+    path.join(protos_path, 'error_details.proto'),
+    path.join(protos_path, 'status.proto'),
+  ]);
+
   it('decodes multiple errors', async () => {
     // example of when there are multiple errors available to be decoded
     const bufferArr = [] as Buffer[];
@@ -36,26 +55,7 @@ describe('gRPC-google error decoding', () => {
     const decoder = new GoogleErrorDecoder();
     const readFile = util.promisify(fs.readFile);
 
-    const fixtureName = path.resolve(
-      __dirname,
-      '..',
-      'fixtures',
-      'multipleErrors.json'
-    );
-    const protos_path = path.resolve(
-      __dirname,
-      '..',
-      '..',
-      'protos',
-      'google',
-      'rpc'
-    );
-
     const data = await readFile(fixtureName, 'utf8');
-    const root = protobuf.loadSync([
-      path.join(protos_path, 'error_details.proto'),
-      path.join(protos_path, 'status.proto'),
-    ]);
     const objs = JSON.parse(data) as MyObj[];
     for (const obj of objs) {
       const MessageType = root.lookupType(obj.type);
@@ -85,6 +85,33 @@ describe('gRPC-google error decoding', () => {
     const decodedError = decoder.decodeRpcStatusDetails(emptyArr);
 
     // nested error messages have different types so we can't use deepStrictEqual here
+    assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
+  });
+
+  it('DecodeRpcStatus does not fail when unknown type is encoded', () => {
+    const any = {type_url: 'noMatch', value: new Uint8Array()};
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish();
+    const decoder = new GoogleErrorDecoder();
+
+    const decodedError = decoder.decodeRpcStatus(status_buffer);
+
+    assert.strictEqual(
+      JSON.stringify(decodedError),
+      '{"code":3,"message":"test","details":[]}'
+    );
+  });
+
+  it('DecodeRpcStatusDetails does not fail when unknown type is encoded', () => {
+    const any = {type_url: 'noMatch', value: new Uint8Array()};
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish();
+    const decoder = new GoogleErrorDecoder();
+
+    const decodedError = decoder.decodeRpcStatusDetails([status_buffer]);
+
     assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
   });
 
