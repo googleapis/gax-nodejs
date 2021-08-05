@@ -139,7 +139,7 @@ export class GoogleErrorDecoder {
     return status;
   }
 
-  decode(err: GoogleError): GoogleError {
+  decodeMetadata(err: GoogleError): GoogleError {
     if (!err.metadata) {
       return err;
     }
