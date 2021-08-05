@@ -109,3 +109,6 @@ export {
 
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
 export {warn} from './warnings';
+
+import * as serializer from 'proto3-json-serializer';
+export {serializer};

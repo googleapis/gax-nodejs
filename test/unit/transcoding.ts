@@ -78,14 +78,17 @@ describe('gRPC to HTTP transcoding', () => {
 
   // Main transcode() function
   it('transcode', () => {
-    assert.deepEqual(transcode({parent: 'projects/project'}, parsedOptions), {
-      httpMethod: 'get',
-      url: '/v3/projects/project/supportedLanguages',
-      queryString: '',
-      data: '',
-    });
+    assert.deepStrictEqual(
+      transcode({parent: 'projects/project'}, parsedOptions),
+      {
+        httpMethod: 'get',
+        url: '/v3/projects/project/supportedLanguages',
+        queryString: '',
+        data: '',
+      }
+    );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode({parent: 'projects/project', field: 'value'}, parsedOptions),
       {
         httpMethod: 'get',
@@ -95,7 +98,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {parent: 'projects/project', field: 'value', a: 42},
         parsedOptions
@@ -108,7 +111,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {parent: 'post1/project', field: 'value', a: 42},
         parsedOptions
@@ -121,7 +124,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {parent: 'post2/project', field: 'value', a: 42},
         parsedOptions
@@ -134,7 +137,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode({parent: 'get/project', field: 'value', a: 42}, parsedOptions),
       {
         httpMethod: 'get',
@@ -145,7 +148,7 @@ describe('gRPC to HTTP transcoding', () => {
     );
 
     // Checking camel-snake-case conversions
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {
           snakeCaseFirst: 'first',
@@ -162,7 +165,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {
           snakeCaseSecond: 'second',
@@ -226,7 +229,7 @@ describe('gRPC to HTTP transcoding', () => {
       getField({field: {subfield: 'stringValue'}}, 'field.subfield'),
       'stringValue'
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       getField({field: {subfield: [1, 2, 3]}}, 'field.subfield'),
       [1, 2, 3]
     );
@@ -250,35 +253,35 @@ describe('gRPC to HTTP transcoding', () => {
   it('deleteField', () => {
     const request1 = {field: 'stringValue'};
     deleteField(request1, 'field');
-    assert.deepEqual(request1, {});
+    assert.deepStrictEqual(request1, {});
 
     const request2 = {field: 'stringValue'};
     deleteField(request2, 'nosuchfield');
-    assert.deepEqual(request2, {
+    assert.deepStrictEqual(request2, {
       field: 'stringValue',
     });
 
     const request3 = {field: 'stringValue'};
     deleteField(request3, 'field.subfield');
-    assert.deepEqual(request3, {
+    assert.deepStrictEqual(request3, {
       field: 'stringValue',
     });
 
     const request4 = {field: {subfield: 'stringValue'}};
     deleteField(request4, 'field.subfield');
-    assert.deepEqual(request4, {field: {}});
+    assert.deepStrictEqual(request4, {field: {}});
 
     const request5 = {field: {subfield: 'stringValue', q: 'w'}, e: 'f'};
     deleteField(request5, 'field.subfield');
-    assert.deepEqual(request5, {field: {q: 'w'}, e: 'f'});
+    assert.deepStrictEqual(request5, {field: {q: 'w'}, e: 'f'});
 
     const request6 = {field: {subfield: 'stringValue'}};
     deleteField(request6, 'field.nosuchfield');
-    assert.deepEqual(request6, {field: {subfield: 'stringValue'}});
+    assert.deepStrictEqual(request6, {field: {subfield: 'stringValue'}});
 
     const request7 = {field: {subfield: {subsubfield: 'stringValue', q: 'w'}}};
     deleteField(request7, 'field.subfield.subsubfield');
-    assert.deepEqual(request7, {field: {subfield: {q: 'w'}}});
+    assert.deepStrictEqual(request7, {field: {subfield: {q: 'w'}}});
   });
 
   it('encodeWithSlashes', () => {
@@ -334,16 +337,16 @@ describe('gRPC to HTTP transcoding', () => {
   });
 
   it('flattenObject', () => {
-    assert.deepEqual(flattenObject({}), {});
-    assert.deepEqual(flattenObject({field: 'value'}), {field: 'value'});
-    assert.deepEqual(
+    assert.deepStrictEqual(flattenObject({}), {});
+    assert.deepStrictEqual(flattenObject({field: 'value'}), {field: 'value'});
+    assert.deepStrictEqual(
       flattenObject({field: 'value', nested: {subfield: 'subvalue'}}),
       {field: 'value', 'nested.subfield': 'subvalue'}
     );
   });
 
   it('match', () => {
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value'},
         '/v3/{parent=projects/*}/supportedLanguages'
@@ -353,14 +356,14 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st/locations/location', test: 'value'},
         '/v3/{parent=projects/*}/supportedLanguages'
       ),
       undefined
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st/locations/location', test: 'value'},
         '/v3/{parent=projects/*/locations/*}/supportedLanguages'
@@ -370,14 +373,14 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/locations/location/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value'},
         '/v3/{parent=projects/*}/{field=*}/supportedLanguages'
       ),
       undefined
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value', field: 42},
         '/v3/{parent=projects/*}/{field=*}/supportedLanguages'
@@ -387,7 +390,7 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/42/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {
           parent: 'projects/te st',
@@ -402,11 +405,11 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/fields/field42/a/b%2Cc/d/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match({}, '/v3/{field.subfield}/supportedLanguages'),
       undefined
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match({field: {subfield: 42}}, '/v3/{field.subfield}/supportedLanguages'),
       {
         matchedFields: ['field.subfield'],
@@ -424,7 +427,7 @@ describe('gRPC to HTTP transcoding', () => {
       repeated: [1, 2, {a: 'b'}],
     };
     const copy = deepCopy(request as RequestType);
-    assert.deepEqual(copy, request);
+    assert.deepStrictEqual(copy, request);
     request.field.subfield = 43;
     request.repeated[0] = -1;
     (request.repeated[2] as RequestType).a = 'c';
@@ -434,14 +437,14 @@ describe('gRPC to HTTP transcoding', () => {
   });
 
   it('buildQueryStringComponents', () => {
-    assert.deepEqual(buildQueryStringComponents({field: 'value'}), [
+    assert.deepStrictEqual(buildQueryStringComponents({field: 'value'}), [
       'field=value',
     ]);
-    assert.deepEqual(buildQueryStringComponents({field: 'value', a: 42}), [
-      'field=value',
-      'a=42',
-    ]);
-    assert.deepEqual(
+    assert.deepStrictEqual(
+      buildQueryStringComponents({field: 'value', a: 42}),
+      ['field=value', 'a=42']
+    );
+    assert.deepStrictEqual(
       buildQueryStringComponents({
         field: 'value',
         repeated: [1, 2, 'z z z'],
@@ -497,11 +500,11 @@ describe('gRPC to HTTP transcoding', () => {
         list_field: [1, 2, 3],
       },
     };
-    assert.deepEqual(
+    assert.deepStrictEqual(
       requestChangeCaseAndCleanup(request, camelToSnakeCase),
       expectedSnakeCase
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       requestChangeCaseAndCleanup(expectedSnakeCase, snakeToCamelCase),
       request
     );

@@ -34,7 +34,7 @@ describe('Run unit tests of echo client', () => {
   const error = new Error() as GoogleError;
   error.code = FAKE_STATUS_CODE;
   const authStub = {
-    getRequestHeaders() {
+    async getRequestHeaders() {
       return {Authorization: 'Bearer SOME_TOKEN'};
     },
   };

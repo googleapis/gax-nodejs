@@ -88,10 +88,19 @@ export class GoogleErrorDecoder {
 
     // google.rpc.Status contains an array of google.protobuf.Any
     // which need a special treatment
+    const details: Array<protobuf.Message> = [];
+    for (const detail of status.details) {
+      try {
+        const decodedDetail = this.decodeProtobufAny(detail);
+        details.push(decodedDetail);
+      } catch (err) {
+        // cannot decode detail, likely because of the unknown type - just skip it
+      }
+    }
     const result = {
       code: status.code,
       message: status.message,
-      details: status.details.map(detail => this.decodeProtobufAny(detail)),
+      details,
     };
     return result;
   }
@@ -108,6 +117,7 @@ export class GoogleErrorDecoder {
   decodeErrorFromBuffer(buffer: Buffer | ArrayBuffer): Error {
     return this.callErrorFromStatus(this.decodeRpcStatus(buffer));
   }
+
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
   decodeRpcStatusDetails(
     bufferArr: Buffer[] | ArrayBuffer[]
@@ -118,10 +128,13 @@ export class GoogleErrorDecoder {
       const error_status = this.statusType.decode(
         uint8array
       ) as unknown as RpcStatus;
-      const status_details_array = error_status.details.map(detail =>
-        this.decodeProtobufAny(detail)
-      );
-      status.push(status_details_array[0]);
+      for (const detail of error_status.details) {
+        try {
+          status.push(this.decodeProtobufAny(detail));
+        } catch (err) {
+          // cannot decode detail, likely because of the unknown type - just skip it
+        }
+      }
     });
     return status;
   }

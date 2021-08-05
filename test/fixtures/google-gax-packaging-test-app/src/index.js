@@ -50,7 +50,7 @@ async function testShowcase() {
   const fakeGoogleAuth = {
     getClient: async () => {
       return {
-        getRequestHeaders: () => {
+        getRequestHeaders: async () => {
           return {
             Authorization: 'Bearer zzzz',
           };

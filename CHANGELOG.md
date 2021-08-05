@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.22.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.21.1...v2.22.0) (2021-08-05)
+
+
+### Features
+
+* use proto3 JSON serializer for REGAPIC workflows ([#1074](https://www.github.com/googleapis/gax-nodejs/issues/1074)) ([6ef89f1](https://www.github.com/googleapis/gax-nodejs/commit/6ef89f16fdc3bb09200dc048b4fa5e15d265e973))
+
+
+### Bug Fixes
+
+* do not fail when decoding unknown error ([#1077](https://www.github.com/googleapis/gax-nodejs/issues/1077)) ([90e19b1](https://www.github.com/googleapis/gax-nodejs/commit/90e19b19b5d84430f929c4f510f4775344669a6b))
+
 ### [2.21.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.21.0...v2.21.1) (2021-08-03)
 
 
