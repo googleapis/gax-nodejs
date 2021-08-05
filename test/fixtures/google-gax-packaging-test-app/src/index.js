@@ -22,6 +22,7 @@ const util = require('util');
 const path = require('path');
 const protobuf = require('protobufjs');
 const grpc = require('@grpc/grpc-js');
+const { GoogleError } = require('google-gax');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -129,28 +130,27 @@ async function testEchoError(client) {
     path.join(protos_path, 'error_details.proto')
   );
   const objs = JSON.parse(data);
-  const MessageType = root.lookupType(objs[0].type);
-  const buffer = MessageType.encode(objs[0].value).finish();
-  const request = {
-    error: {
-      code: 3,
-      message: 'Test error',
-      details: [{
-        type_url: 'type.googleapis.com/' + objs[0].type,
-        value: buffer,
-      }],
-    },
-  };
-  const timer = setTimeout(() => {
-    throw new Error('End-to-end testEcho method fails with timeout');
-  }, 12000);
-  try {
-    await client.echo(request);
-  } catch(err) {
-    clearTimeout(timer);
-    assert.strictEqual(JSON.stringify(objs[0].value),
-    JSON.stringify(err.statusDetails[0]));
+  for (const obj of objs) {
+    const MessageType = root.lookupType(obj.type);
+    const buffer = MessageType.encode(obj.value).finish();
+    const request = {
+      error: {
+        code: 3,
+        message: 'Test error',
+        details: [{
+          type_url: 'type.googleapis.com/' + obj.type,
+          value: buffer,
+        }],
+      },
+    };
+    const timer = setTimeout(() => {
+      throw new Error('End-to-end testEchoError method fails with timeout');
+    }, 12000);
+    await assert.rejects(() => client.echo(request),
+    Error);
+    clearTimeout(timer)
   }
+
 }
 
 async function testExpand(client) {
