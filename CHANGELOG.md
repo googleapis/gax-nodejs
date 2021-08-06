@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.22.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.22.0...v2.22.1) (2021-08-06)
+
+
+### Bug Fixes
+
+* refactor path templates to simplify regexes ([#1079](https://www.github.com/googleapis/gax-nodejs/issues/1079)) ([23c43b6](https://www.github.com/googleapis/gax-nodejs/commit/23c43b6f5e368eb2a5d06d375c41df0d7e45ff45))
+
 ## [2.22.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.21.1...v2.22.0) (2021-08-05)
 
 
