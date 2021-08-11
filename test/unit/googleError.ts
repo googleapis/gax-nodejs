@@ -20,7 +20,8 @@ import * as fs from 'fs';
 import * as util from 'util';
 import * as protobuf from 'protobufjs';
 import * as path from 'path';
-import {GoogleErrorDecoder} from '../../src/googleError';
+import {GoogleError, GoogleErrorDecoder} from '../../src/googleError';
+import {Metadata} from '@grpc/grpc-js';
 
 interface MyObj {
   type: string;
@@ -144,6 +145,46 @@ describe('gRPC-google error decoding', () => {
       decoder.decodeProtobufAny(any);
     } catch (err) {
       assert.strictEqual(0, err.toString().indexOf('Error: no such type'));
+    }
+  });
+});
+
+describe('decode metadata for ErrorInfo', () => {
+  it('metadata contains key google.rpc.errorinfo-bin', async () => {
+    const errorInfoObj = {
+      metadata: {
+        consumer: 'projects/455411330361',
+        service: 'translate.googleapis.com',
+      },
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('google.rpc.errorinfo-bin', buffer);
+    const grpcError = Object.assign(
+      new GoogleError('mock error with ErrorInfo'),
+      {
+        code: 7,
+        metadata: metadata,
+      }
+    );
+    const decoder = new GoogleErrorDecoder();
+    const decodedError = decoder.decodeMetadata(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError.domain, errorInfoObj.domain);
+    assert.strictEqual(decodedError.reason, errorInfoObj.reason);
+    for (const [key, value] of Object.entries(errorInfoObj.metadata)) {
+      assert.ok(decodedError.metadata);
+      assert.strictEqual(
+        (decodedError.metadata.get(key) as Array<string>).shift(),
+        value
+      );
     }
   });
 });
