@@ -119,8 +119,13 @@ export class OngoingCallPromise extends OngoingCall {
     ) => {
       if (err) {
         const decoder = new GoogleErrorDecoder();
-        const decodedErr = decoder.decodeMetadata(err);
-        rejectCallback(decodedErr);
+        try {
+          const decodedErr = decoder.decodeMetadata(err);
+          rejectCallback(decodedErr);
+        } catch (decodeErr) {
+          // Ignore the decoder error now, and return back original error.
+          rejectCallback(err);
+        }
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
       } else {
