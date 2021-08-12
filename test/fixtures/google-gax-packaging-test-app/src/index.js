@@ -147,11 +147,18 @@ async function testEchoError(client) {
       throw new Error('End-to-end testEchoError method fails with timeout');
     }, 12000);
     await assert.rejects(() => client.echo(request),
-    Error);
-    clearTimeout(timer)
+      Error);
+    try {
+      await client.echo(request);
+    } catch (err) {
+      clearTimeout(timer);
+      assert.strictEqual(JSON.stringify(obj.value),
+        JSON.stringify(err.statusDetails[0]));
+    }
   }
-
 }
+
+
 
 async function testExpand(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
