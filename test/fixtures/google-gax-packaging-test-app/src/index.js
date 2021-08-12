@@ -17,7 +17,12 @@
 'use strict';
 
 const assert = require('assert');
+const fs = require('fs');
+const util = require('util');
+const path = require('path');
+const protobuf = require('protobufjs');
 const grpc = require('@grpc/grpc-js');
+const { GoogleError } = require('google-gax');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -72,6 +77,7 @@ async function testShowcase() {
 
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
+  await testEchoError(grpcClient);
   await testExpand(grpcClient);
   await testPagedExpand(grpcClient);
   await testPagedExpandAsync(grpcClient);
@@ -96,6 +102,63 @@ async function testEcho(client) {
   clearTimeout(timer);
   assert.deepStrictEqual(request.content, response.content);
 }
+
+async function testEchoError(client) {
+  const readFile = util.promisify(fs.readFile);
+
+  const fixtureName = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'test',
+    'fixtures',
+    'multipleErrors.json'
+  );
+  const protos_path = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'protos',
+    'google',
+    'rpc'
+  );
+
+  const data = await readFile(fixtureName, 'utf8');
+  const root = protobuf.loadSync(
+    path.join(protos_path, 'error_details.proto')
+  );
+  const objs = JSON.parse(data);
+  for (const obj of objs) {
+    const MessageType = root.lookupType(obj.type);
+    const buffer = MessageType.encode(obj.value).finish();
+    const request = {
+      error: {
+        code: 3,
+        message: 'Test error',
+        details: [{
+          type_url: 'type.googleapis.com/' + obj.type,
+          value: buffer,
+        }],
+      },
+    };
+    const timer = setTimeout(() => {
+      throw new Error('End-to-end testEchoError method fails with timeout');
+    }, 12000);
+    await assert.rejects(() => client.echo(request),
+      Error);
+    try {
+      await client.echo(request);
+    } catch (err) {
+      clearTimeout(timer);
+      assert.strictEqual(JSON.stringify(obj.value),
+        JSON.stringify(err.statusDetails[0]));
+    }
+  }
+}
+
+
 
 async function testExpand(client) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
@@ -162,7 +225,7 @@ async function testCollect(client) {
       resolve(result);
     });
     for (const word of words) {
-      const request = {content: word};
+      const request = { content: word };
       stream.write(request);
     }
     stream.end();
@@ -192,7 +255,7 @@ async function testChat(client) {
     });
     stream.on('error', reject);
     for (const word of words) {
-      stream.write({content: word});
+      stream.write({ content: word });
     }
     stream.end();
   });
