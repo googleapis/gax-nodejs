@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.24.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.23.0...v2.24.0) (2021-08-12)
+
+
+### Features
+
+* GoogleError/GoogleErrorDecoder integration testing ([#1075](https://www.github.com/googleapis/gax-nodejs/issues/1075)) ([a1be268](https://www.github.com/googleapis/gax-nodejs/commit/a1be268982d92b659a8d9ef396a18516a69d446b))
+
 ## [2.23.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.22.1...v2.23.0) (2021-08-11)
 
 
