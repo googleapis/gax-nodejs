@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.23.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.22.1...v2.23.0) (2021-08-11)
+
+
+### Features
+
+* promote ErrorInfo fields ([#1070](https://www.github.com/googleapis/gax-nodejs/issues/1070)) ([33ef6bb](https://www.github.com/googleapis/gax-nodejs/commit/33ef6bbadee58a0c4169b21cfdfc0e0d111df69e))
+
 ### [2.22.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.22.0...v2.22.1) (2021-08-06)
 
 
