@@ -29,7 +29,7 @@ import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1bet
 const statusJsonProto = require('../../protos/status.json');
 
 const authStub = {
-  getRequestHeaders() {
+  async getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
   },
 };
@@ -86,15 +86,13 @@ describe('createStub', () => {
   it('should create a stub', async () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
 
-    assert(echoStub instanceof protobuf.rpc.Service);
-
     // The stub should consist of service methods
     assert(echoStub.echo instanceof Function);
     assert(echoStub.pagedExpand instanceof Function);
     assert(echoStub.wait instanceof Function);
 
-    // There should be 6 methods for the echo service (and 4 other methods in the object)
-    assert.strictEqual(Object.keys(echoStub).length, 10);
+    // There should be 6 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 6);
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
@@ -103,15 +101,13 @@ describe('createStub', () => {
   it('should support optional parameters', async () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubExtraOptions);
 
-    assert(echoStub instanceof protobuf.rpc.Service);
-
     // The stub should consist of methods
     assert(echoStub.echo instanceof Function);
     assert(echoStub.collect instanceof Function);
     assert(echoStub.chat instanceof Function);
 
-    // There should be 6 methods for the echo service (and 4 other members in the object)
-    assert.strictEqual(Object.keys(echoStub).length, 10);
+    // There should be 6 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 6);
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
@@ -128,7 +124,7 @@ describe('grpc-fallback', () => {
   const savedAbortController = window.AbortController;
 
   const authStub = {
-    getRequestHeaders() {
+    async getRequestHeaders() {
       return {Authorization: 'Bearer SOME_TOKEN'};
     },
   };
@@ -269,7 +265,7 @@ describe('grpc-fallback', () => {
     sinon.replace(window, 'fetch', fakeFetch);
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: Error) => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof Error);
         assert.strictEqual(err.message, '3 INVALID_ARGUMENT: Error message');
         assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));

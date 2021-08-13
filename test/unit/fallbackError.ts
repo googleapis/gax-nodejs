@@ -18,7 +18,7 @@ import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as path from 'path';
-import {FallbackErrorDecoder} from '../../src/fallbackError';
+import {GoogleErrorDecoder} from '../../src/googleError';
 
 describe('gRPC-fallback error decoding', () => {
   it('decodes error', () => {
@@ -39,7 +39,7 @@ describe('gRPC-fallback error decoding', () => {
         },
       ],
     };
-    const decoder = new FallbackErrorDecoder();
+    const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeRpcStatus(errorBin);
 
     // nested error messages have different types so we can't use deepStrictEqual here
@@ -71,7 +71,7 @@ describe('gRPC-fallback error decoding', () => {
         ],
       }
     );
-    const decoder = new FallbackErrorDecoder();
+    const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeErrorFromBuffer(errorBin);
     assert(decodedError instanceof Error);
     // nested error messages have different types so we can't use deepStrictEqual here

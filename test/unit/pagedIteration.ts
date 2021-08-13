@@ -23,7 +23,7 @@ import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import * as streamEvents from 'stream-events';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
-import {APICallback, GaxCall} from '../../src/apitypes';
+import {APICallback, GaxCall, RequestType} from '../../src/apitypes';
 import {describe, it, beforeEach} from 'mocha';
 
 import * as util from './utils';
@@ -200,26 +200,23 @@ describe('paged iteration', () => {
   });
 
   describe('use async iterator', () => {
-    const spy = sinon.spy(func);
-    let apiCall: GaxCall;
-    beforeEach(() => {
-      apiCall = util.createApiCall(spy, createOptions);
-    });
-
-    async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
-      let counter = 0;
-      const resources = [];
-      for await (const resource of iterable) {
-        counter++;
-        resources.push(resource);
-        if (counter === 10) {
-          break;
-        }
-      }
-      return resources;
-    }
-
     it('returns an iterable, count to 10', async () => {
+      const spy = sinon.spy(func);
+      const apiCall = util.createApiCall(spy, createOptions);
+
+      async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
+        let counter = 0;
+        const resources = [];
+        for await (const resource of iterable) {
+          counter++;
+          resources.push(resource);
+          if (counter === 10) {
+            break;
+          }
+        }
+        return resources;
+      }
+
       const settings = new gax.CallSettings(
         (createOptions && createOptions.settings) || {}
       );
@@ -227,6 +224,46 @@ describe('paged iteration', () => {
         descriptor.asyncIterate(apiCall, {}, settings)
       );
       assert.strictEqual(resources.length, 10);
+    });
+
+    it('does not stop on empty resources list', async () => {
+      function func(
+        request: {pageToken?: number},
+        metadata: {},
+        options: {},
+        callback: APICallback
+      ) {
+        const responsePages = [
+          [1, 2, 3],
+          [],
+          [4, 5, 6],
+          [],
+          [],
+          [7],
+          [8, 9],
+          [],
+          [10],
+        ];
+        const pageToken = request.pageToken || 0;
+        if (pageToken >= responsePages.length) {
+          callback(null, {nums: []});
+        } else {
+          callback(null, {
+            nums: responsePages[pageToken],
+            nextPageToken: pageToken + 1,
+          });
+        }
+      }
+      const apiCall = util.createApiCall(func, createOptions);
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      const iterable = descriptor.asyncIterate(apiCall, {}, settings);
+      const results = [];
+      for await (const result of iterable) {
+        results.push(result);
+      }
+      assert.deepStrictEqual(results, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
   });
 
@@ -433,6 +470,89 @@ describe('paged iteration', () => {
           0
         );
       });
+    });
+  });
+});
+
+describe('REGAPIC Pagination', () => {
+  const pageSize = 3;
+  const pagesToStream = 5;
+  const descriptor = new PageDescriptor('pageToken', 'nextPageToken', 'items');
+  const retryOptions = util.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
+  const createOptions = {
+    settings: {retry: retryOptions},
+    descriptor,
+  };
+  const response: RequestType = {
+    'regions/us-central1': {
+      warning: {
+        code: 'NO_RESULTS_ON_PAGE',
+        message:
+          "There are no results for scope 'regions/us-central1' on this page.",
+      },
+    },
+    'regions/us-east1': {
+      addresses: [
+        {
+          id: '5011754511478056813',
+          creationTimestamp: '2021-05-28T23:04:50.044-07:00',
+          name: 'test-address-0',
+        },
+        {
+          id: '1036412484008568684',
+          creationTimestamp: '2021-05-28T23:04:51.044-07:00',
+          name: 'test-address-1',
+        },
+      ],
+    },
+  };
+
+  function func(
+    request: {pageToken?: number},
+    metadata: {},
+    options: {},
+    callback: APICallback
+  ) {
+    const pageToken = request.pageToken || 0;
+    if (pageToken >= pageSize * pagesToStream) {
+      callback(null, {items: {}});
+    } else {
+      callback(null, {items: response, nextPageToken: pageToken + pageSize});
+    }
+  }
+
+  describe('use async tuple iterator', () => {
+    const spy = sinon.spy(func);
+    let apiCall: GaxCall;
+    beforeEach(() => {
+      apiCall = util.createApiCall(spy, createOptions);
+    });
+
+    async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
+      let counter = 0;
+      const resources = [];
+      for await (const resource of iterable) {
+        counter++;
+        resources.push(resource);
+        if (counter === 10) {
+          break;
+        }
+      }
+      return resources;
+    }
+
+    it('return an tuple iterable, count to 10', async () => {
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      const resources = await iterableChecker(
+        descriptor.asyncIterate(apiCall, {}, settings)
+      );
+      assert.strictEqual(resources.length, 10);
+      for await (const [key, value] of resources as [string, ResponseType]) {
+        assert.ok(response.hasOwnProperty(key));
+        assert.strictEqual(value, response[key]);
+      }
     });
   });
 });

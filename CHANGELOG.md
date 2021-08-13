@@ -4,6 +4,94 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.24.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.23.0...v2.24.0) (2021-08-12)
+
+
+### Features
+
+* GoogleError/GoogleErrorDecoder integration testing ([#1075](https://www.github.com/googleapis/gax-nodejs/issues/1075)) ([a1be268](https://www.github.com/googleapis/gax-nodejs/commit/a1be268982d92b659a8d9ef396a18516a69d446b))
+
+## [2.23.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.22.1...v2.23.0) (2021-08-11)
+
+
+### Features
+
+* promote ErrorInfo fields ([#1070](https://www.github.com/googleapis/gax-nodejs/issues/1070)) ([33ef6bb](https://www.github.com/googleapis/gax-nodejs/commit/33ef6bbadee58a0c4169b21cfdfc0e0d111df69e))
+
+### [2.22.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.22.0...v2.22.1) (2021-08-06)
+
+
+### Bug Fixes
+
+* refactor path templates to simplify regexes ([#1079](https://www.github.com/googleapis/gax-nodejs/issues/1079)) ([23c43b6](https://www.github.com/googleapis/gax-nodejs/commit/23c43b6f5e368eb2a5d06d375c41df0d7e45ff45))
+
+## [2.22.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.21.1...v2.22.0) (2021-08-05)
+
+
+### Features
+
+* use proto3 JSON serializer for REGAPIC workflows ([#1074](https://www.github.com/googleapis/gax-nodejs/issues/1074)) ([6ef89f1](https://www.github.com/googleapis/gax-nodejs/commit/6ef89f16fdc3bb09200dc048b4fa5e15d265e973))
+
+
+### Bug Fixes
+
+* do not fail when decoding unknown error ([#1077](https://www.github.com/googleapis/gax-nodejs/issues/1077)) ([90e19b1](https://www.github.com/googleapis/gax-nodejs/commit/90e19b19b5d84430f929c4f510f4775344669a6b))
+
+### [2.21.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.21.0...v2.21.1) (2021-08-03)
+
+
+### Bug Fixes
+
+* **deps:** pin protobufjs ([#1071](https://www.github.com/googleapis/gax-nodejs/issues/1071)) ([b2229d5](https://www.github.com/googleapis/gax-nodejs/commit/b2229d53bf46b45541c9d5b729f1441a6fda9a16))
+
+## [2.21.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.20.0...v2.21.0) (2021-08-02)
+
+
+### Features
+
+* decode error details property from google.rpc.Status ([#1057](https://www.github.com/googleapis/gax-nodejs/issues/1057)) ([2dde63e](https://www.github.com/googleapis/gax-nodejs/commit/2dde63e87c11144e79e523df48756c60c119d404))
+
+
+### Bug Fixes
+
+* clean up the lint ([#1067](https://www.github.com/googleapis/gax-nodejs/issues/1067)) ([d08e9d5](https://www.github.com/googleapis/gax-nodejs/commit/d08e9d5d67df89a4cecc73f8c00a76adc5e393a2))
+
+## [2.20.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.19.0...v2.20.0) (2021-07-30)
+
+
+### Features
+
+* support Locations service as mixin service ([#1064](https://www.github.com/googleapis/gax-nodejs/issues/1064)) ([6635b7c](https://www.github.com/googleapis/gax-nodejs/commit/6635b7ce9312f654dc873c9b026e48efa7fd6425))
+
+## [2.19.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.18.0...v2.19.0) (2021-07-15)
+
+
+### Features
+
+* **compileProtos:** allow to skip JSON file generation ([#1058](https://www.github.com/googleapis/gax-nodejs/issues/1058)) ([dac4d1e](https://www.github.com/googleapis/gax-nodejs/commit/dac4d1efc8c65755e8e2176db1590b3311a13ca1))
+
+## [2.18.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.17.1...v2.18.0) (2021-07-13)
+
+
+### Features
+
+* make OperationsClient closeable ([#1047](https://www.github.com/googleapis/gax-nodejs/issues/1047)) ([2dbba29](https://www.github.com/googleapis/gax-nodejs/commit/2dbba29dde552fb35c275a4a44b06fb4698eb5cf))
+* support map handle for DIREGAPIC Pagination ([#1052](https://www.github.com/googleapis/gax-nodejs/issues/1052)) ([faab4c6](https://www.github.com/googleapis/gax-nodejs/commit/faab4c652c4943fc18c792995180bf59dbd5c7bc))
+
+
+### Bug Fixes
+
+* make pagination work for empty responses ([#1043](https://www.github.com/googleapis/gax-nodejs/issues/1043)) ([cbe2d3f](https://www.github.com/googleapis/gax-nodejs/commit/cbe2d3f9de4ec01e8e61699b5fa6bf7b34b870a5))
+* replace isBrowser() with home made feature detection ([#1054](https://www.github.com/googleapis/gax-nodejs/issues/1054)) ([2c8e56d](https://www.github.com/googleapis/gax-nodejs/commit/2c8e56d5812af7b08ff6d68169d1d8ea325e03c2))
+
+### [2.17.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.17.0...v2.17.1) (2021-07-09)
+
+
+### Bug Fixes
+
+* **deps:** upgrade google-auth-library ([#1049](https://www.github.com/googleapis/gax-nodejs/issues/1049)) ([3ee8268](https://www.github.com/googleapis/gax-nodejs/commit/3ee82686ffa0baeb432712a13166e73b845b8284))
+* types for setImmediate calls ([#1050](https://www.github.com/googleapis/gax-nodejs/issues/1050)) ([a8222eb](https://www.github.com/googleapis/gax-nodejs/commit/a8222eb112f0fc6856a50ecd512d9b52dde0df62))
+
 ## [2.17.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.16.0...v2.17.0) (2021-06-24)
 
 
