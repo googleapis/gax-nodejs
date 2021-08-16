@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.24.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.0...v2.24.1) (2021-08-16)
+
+
+### Bug Fixes
+
+* **deps:** upgrade google auth to 7.6.1 ([#1085](https://www.github.com/googleapis/gax-nodejs/issues/1085)) ([d297a29](https://www.github.com/googleapis/gax-nodejs/commit/d297a29376d5d2e2a085ddfb754d6cb344d8fb7c))
+
 ## [2.24.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.23.0...v2.24.0) (2021-08-12)
 
 
