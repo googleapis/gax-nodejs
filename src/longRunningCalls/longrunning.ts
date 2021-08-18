@@ -311,13 +311,11 @@ export class Operation extends EventEmitter {
           }
           // special case: some APIs fail to set either result or error
           // but set done = true (e.g. speech with silent file).
-          // Don't hang forever in this case.
+          // Some APIs just use this for the normal completion
+          // (e.g. nodejs-contact-center-insights), so let's just return
+          // an empty response in this case.
           if (rawResponse!.done) {
-            const error = new GoogleError(
-              'Long running operation has finished but there was no result'
-            );
-            error.code = Status.UNKNOWN;
-            setImmediate(emit, 'error', error);
+            setImmediate(emit, 'complete', {}, metadata, rawResponse);
             return;
           }
           setTimeout(() => {
