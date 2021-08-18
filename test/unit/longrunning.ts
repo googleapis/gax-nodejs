@@ -487,16 +487,16 @@ describe('longrunning', () => {
         apiCall({})
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
-            const promise = operation.promise();
+            const promise = operation.promise() as Promise<[{}, {}, {}]>;
             return promise;
           })
-          .then(() => {
-            done(new Error('Should not get here.'));
-          })
-          .catch(error => {
-            assert(error instanceof Error);
+          .then(([response, metadata, rawResponse]) => {
+            assert.deepStrictEqual(response, {});
+            assert.strictEqual(metadata, METADATA_VAL);
+            assert.deepStrictEqual(rawResponse, BAD_OP);
             done();
-          });
+          })
+          .catch(done);
       });
     });
 
