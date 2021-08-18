@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.24.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.1...v2.24.2) (2021-08-18)
+
+
+### Bug Fixes
+
+* do not throw error on empty LRO response ([#1087](https://www.github.com/googleapis/gax-nodejs/issues/1087)) ([1978197](https://www.github.com/googleapis/gax-nodejs/commit/197819799f270d886b4372ff4c9b81acd39992b1))
+
 ### [2.24.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.0...v2.24.1) (2021-08-16)
 
 
