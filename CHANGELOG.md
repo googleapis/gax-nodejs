@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.24.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.2...v2.24.3) (2021-08-31)
+
+
+### Bug Fixes
+
+* use the full type name for ErrorInfo ([#1093](https://www.github.com/googleapis/gax-nodejs/issues/1093)) ([c1e646a](https://www.github.com/googleapis/gax-nodejs/commit/c1e646abf148ab55da4dcdfc65e7d2647d0208a9))
+
 ### [2.24.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.1...v2.24.2) (2021-08-18)
 
 
