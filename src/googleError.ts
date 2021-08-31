@@ -63,7 +63,7 @@ export class GoogleErrorDecoder {
     this.root = protobuf.Root.fromJSON(errorProtoJson);
     this.anyType = this.root.lookupType('google.protobuf.Any');
     this.statusType = this.root.lookupType('google.rpc.Status');
-    this.errorInfoType = this.root.lookupType('google.rpc.ErrorInfo');
+    this.errorInfoType = this.root.lookupType('google.rpc.ErrorInfo');;
   }
 
   decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {
