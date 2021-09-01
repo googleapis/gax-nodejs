@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.25.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.3...v2.25.0) (2021-09-01)
+
+
+### Features
+
+* Add compute operation service protos ([#1090](https://www.github.com/googleapis/gax-nodejs/issues/1090)) ([e5ed779](https://www.github.com/googleapis/gax-nodejs/commit/e5ed7792199862e27e1c40de711bfb7c13a9b99c))
+
 ### [2.24.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.2...v2.24.3) (2021-08-31)
 
 
