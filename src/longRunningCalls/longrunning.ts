@@ -24,46 +24,107 @@ import {GoogleError} from '../googleError';
 import {Metadata} from '../grpc';
 import {LongRunningDescriptor} from './longRunningDescriptor';
 import * as operationProtos from '../../protos/operations';
+import * as computeOperationProtos from '../../protos/compute_operations';
+import {google} from '../../protos/iam_service';
+import {OperationsClient} from '../operationsClient';
+import {RegionOperationsClient} from '../diregapicOperationsClient/regionOperationsClient';
 
 /**
  * @callback GetOperationCallback
  * @param {?Error} error
  * @param {?Object} result
  * @param {?Object} metadata
- * @param {?google.longrunning.Operation} rawResponse
+ * @param {?google.longrunning.Operation | google.cloud.compute.v1.Operation} rawResponse
  */
 export interface GetOperationCallback {
   (
     err?: Error | null,
     result?: {},
-    metadata?: {},
-    rawResponse?: LROOperation
+    metadata?: {} | null,
+    rawResponse?: LROOperation | ComputeLROOperation
   ): void;
 }
 
 type LROOperation = operationProtos.google.longrunning.Operation;
+type ComputeLROOperation =
+  computeOperationProtos.google.cloud.compute.v1.Operation;
+
+function setOperationName(
+  operation: LROOperation | ComputeLROOperation,
+  isDiregapic: boolean | undefined
+): string | null | undefined {
+  if (isDiregapic) {
+    return (operation as ComputeLROOperation).id;
+  }
+  return (operation as LROOperation).name;
+}
+
+function setOperationDone(
+  operation: LROOperation | ComputeLROOperation,
+  isDiregapic: boolean | undefined
+): boolean {
+  if (isDiregapic) {
+    return (
+      (operation as ComputeLROOperation).status ===
+      computeOperationProtos.google.cloud.compute.v1.Operation.Status.DONE
+    );
+  }
+  return (operation as LROOperation).done;
+}
+
+function setOperationError(
+  operation: LROOperation | ComputeLROOperation,
+  isDiregapic: boolean | undefined
+): GoogleError | undefined {
+  if (isDiregapic) {
+    if (!(operation as ComputeLROOperation).httpErrorMessage) {
+      return undefined;
+    }
+    const computeErr = new GoogleError(
+      (operation as ComputeLROOperation).httpErrorMessage!
+    );
+    if (!(operation as ComputeLROOperation).httpErrorStatusCode) {
+      return undefined;
+    }
+    computeErr.code = (operation as ComputeLROOperation).httpErrorStatusCode!;
+    return computeErr;
+  }
+  return (operation as LROOperation).error as unknown as GoogleError;
+}
+
+function isComputeOperationDone(
+  operation: LROOperation | ComputeLROOperation,
+  isDiregapic: boolean | undefined
+): boolean | undefined {
+  return (
+    isDiregapic &&
+    (operation as ComputeLROOperation).status ===
+      computeOperationProtos.google.cloud.compute.v1.Operation.Status.DONE
+  );
+}
 
 export class Operation extends EventEmitter {
   completeListeners: number;
   hasActiveListeners: boolean;
-  latestResponse: LROOperation;
+  latestResponse: LROOperation | ComputeLROOperation;
   longrunningDescriptor: LongRunningDescriptor;
   result: {} | null;
   metadata: Metadata | null;
   backoffSettings: BackoffSettings;
   _callOptions?: CallOptions;
-  currentCallPromise_?: CancellablePromise<ResultTuple>;
-  name?: string;
+  currentCallPromise_?: CancellablePromise<ResultTuple> | Promise<ResultTuple>;
+  name?: string | null;
   done?: boolean;
   error?: GoogleError;
   response?: {};
+  diregapic?: boolean;
 
   /**
    * Wrapper for a google.longrunnung.Operation.
    *
    * @constructor
    *
-   * @param {google.longrunning.Operation} grpcOp - The operation to be wrapped.
+   * @param {google.longrunning.Operation | google.cloud.compute.v1.Operation} grpcOp - The operation to be wrapped.
    * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
    * operations service client and unpacking mechanisms for the operation.
    * @param {BackoffSettings} backoffSettings - The backoff settings used in
@@ -72,7 +133,7 @@ export class Operation extends EventEmitter {
    * requests.
    */
   constructor(
-    grpcOp: LROOperation,
+    grpcOp: LROOperation | ComputeLROOperation,
     longrunningDescriptor: LongRunningDescriptor,
     backoffSettings: BackoffSettings,
     callOptions?: CallOptions
@@ -81,14 +142,18 @@ export class Operation extends EventEmitter {
     this.completeListeners = 0;
     this.hasActiveListeners = false;
     this.latestResponse = grpcOp;
-    this.name = this.latestResponse.name;
-    this.done = this.latestResponse.done;
-    this.error = this.latestResponse.error as unknown as GoogleError;
+    this.longrunningDescriptor = longrunningDescriptor;
+    this.diregapic = this.longrunningDescriptor.diregapic;
+    this.name = setOperationName(this.latestResponse, this.diregapic);
+    this.done = setOperationDone(this.latestResponse, this.diregapic);
+    this.error = setOperationError(this.latestResponse, this.diregapic);
     this.longrunningDescriptor = longrunningDescriptor;
     this.result = null;
     this.metadata = null;
     this.backoffSettings = backoffSettings;
-    this._unpackResponse(grpcOp);
+    this.diregapic
+      ? this._unpackDiregapicResponse(grpcOp as ComputeLROOperation)
+      : this._unpackResponse(grpcOp as LROOperation);
     this._listenForEvents();
     this._callOptions = callOptions;
   }
@@ -129,13 +194,14 @@ export class Operation extends EventEmitter {
    * request.
    */
   cancel() {
-    if (this.currentCallPromise_) {
-      this.currentCallPromise_.cancel();
+    if (!this.diregapic && this.currentCallPromise_) {
+      (this.currentCallPromise_ as CancellablePromise<ResultTuple>).cancel();
     }
-    const operationsClient = this.longrunningDescriptor.operationsClient;
+    const operationsClient = this.longrunningDescriptor
+      .operationsClient as OperationsClient;
     const cancelRequest =
       new operationProtos.google.longrunning.CancelOperationRequest();
-    cancelRequest.name = this.latestResponse.name;
+    cancelRequest.name = (this.latestResponse as LROOperation).name;
     return operationsClient.cancelOperation(cancelRequest);
   }
 
@@ -165,9 +231,11 @@ export class Operation extends EventEmitter {
     function promisifyResponse() {
       if (!callback) {
         return new Promise((resolve, reject) => {
-          if (self.latestResponse.error) {
-            const error = new GoogleError(self.latestResponse.error.message!);
-            error.code = self.latestResponse.error.code!;
+          if ((self.latestResponse as LROOperation).error) {
+            const error = new GoogleError(
+              (self.latestResponse as LROOperation).error!.message!
+            );
+            error.code = (self.latestResponse as LROOperation).error!.code!;
             reject(error);
           } else {
             resolve([self.result, self.metadata, self.latestResponse]);
@@ -176,20 +244,69 @@ export class Operation extends EventEmitter {
       }
       return;
     }
+    function promisifyDiregapicResponse() {
+      if (!callback) {
+        return new Promise((resolve, reject) => {
+          if ((self.latestResponse as ComputeLROOperation).httpErrorMessage) {
+            const error = new GoogleError(
+              (self.latestResponse as ComputeLROOperation).httpErrorMessage!
+            );
+            if (
+              (self.latestResponse as ComputeLROOperation).httpErrorStatusCode
+            ) {
+              error.code = (
+                self.latestResponse as ComputeLROOperation
+              ).httpErrorStatusCode!;
+              reject(error);
+            }
+          } else {
+            resolve([self.result, null, self.latestResponse]);
+          }
+        });
+      }
+      return;
+    }
 
-    if (this.latestResponse.done) {
-      this._unpackResponse(this.latestResponse, callback);
+    if (!this.diregapic && (this.latestResponse as LROOperation).done) {
+      this._unpackResponse(this.latestResponse as LROOperation, callback);
       return promisifyResponse() as Promise<{}>;
     }
-    const request =
-      new operationProtos.google.longrunning.GetOperationRequest();
-    request.name = this.latestResponse.name;
-    this.currentCallPromise_ = operationsClient.getOperationInternal(
-      request,
-      this._callOptions!
-    );
+    if (isComputeOperationDone(this.latestResponse, this.diregapic)) {
+      this._unpackDiregapicResponse(
+        this.latestResponse as ComputeLROOperation,
+        callback
+      );
+      return promisifyDiregapicResponse() as Promise<{}>;
+    }
+    if (!this.diregapic) {
+      const request =
+        new operationProtos.google.longrunning.GetOperationRequest();
+      request.name = (this.latestResponse as LROOperation).name;
+      this.currentCallPromise_ = (
+        operationsClient as OperationsClient
+      ).getOperationInternal(request, this._callOptions!);
+    } else {
+      const request =
+        new computeOperationProtos.google.cloud.compute.v1.GetRegionOperationRequest();
+      operationsClient.getProjectId().then(project => {
+        request.project = project;
+        request.operation = this.longrunningDescriptor.operation!;
+        request.region = this.longrunningDescriptor.region!;
+        this.currentCallPromise_ = (
+          operationsClient as RegionOperationsClient
+        ).getOperationInternal(request, this._callOptions!);
+      });
+    }
 
     const noCallbackPromise = this.currentCallPromise_!.then(responses => {
+      if (self.diregapic) {
+        self.latestResponse = responses[0] as ComputeLROOperation;
+        self._unpackDiregapicResponse(
+          responses[0] as ComputeLROOperation,
+          callback
+        );
+        return promisifyDiregapicResponse()!;
+      }
       self.latestResponse = responses[0] as LROOperation;
       self._unpackResponse(responses[0] as LROOperation, callback);
       return promisifyResponse()!;
@@ -234,6 +351,33 @@ export class Operation extends EventEmitter {
     }
   }
 
+  _unpackDiregapicResponse(
+    op: ComputeLROOperation,
+    callback?: GetOperationCallback
+  ) {
+    if (isComputeOperationDone(op, true)) {
+      if (op.httpErrorMessage) {
+        const error = new GoogleError(op.httpErrorMessage);
+        if (op.httpErrorStatusCode) {
+          error.code = op.httpErrorStatusCode;
+        }
+        this.error = error;
+        if (callback) {
+          callback(error);
+        }
+        return;
+      }
+
+      if (op) {
+        this.response = op;
+        this.done = true;
+      }
+    }
+
+    if (callback) {
+      callback(null, this.response!, null, op);
+    }
+  }
   /**
    * Poll `getOperation` to check the operation's status. This runs a loop to
    * ping using the backoff strategy specified at initialization.
@@ -256,8 +400,9 @@ export class Operation extends EventEmitter {
       deadline = now.getTime() + this.backoffSettings.totalTimeoutMillis;
     }
     let previousMetadataBytes: Uint8Array;
-    if (this.latestResponse.metadata) {
-      previousMetadataBytes = this.latestResponse.metadata.value!;
+    if (!this.diregapic && (this.latestResponse as LROOperation).metadata) {
+      previousMetadataBytes = (this.latestResponse as LROOperation).metadata!
+        .value!;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -295,27 +440,32 @@ export class Operation extends EventEmitter {
           setImmediate(emit, 'error', err);
           return;
         }
-
         if (!result) {
           if (
-            rawResponse!.metadata &&
+            !self.diregapic &&
+            (rawResponse as LROOperation)!.metadata &&
             (!previousMetadataBytes ||
               (rawResponse &&
                 !arrayEquals(
-                  rawResponse.metadata.value!,
+                  (rawResponse as LROOperation).metadata!.value!,
                   previousMetadataBytes
                 )))
           ) {
             setImmediate(emit, 'progress', metadata, rawResponse);
-            previousMetadataBytes = rawResponse!.metadata!.value!;
+            previousMetadataBytes = (rawResponse as LROOperation).metadata!
+              .value!;
           }
           // special case: some APIs fail to set either result or error
           // but set done = true (e.g. speech with silent file).
           // Some APIs just use this for the normal completion
           // (e.g. nodejs-contact-center-insights), so let's just return
           // an empty response in this case.
-          if (rawResponse!.done) {
+          if (!self.diregapic && (rawResponse as LROOperation)!.done) {
             setImmediate(emit, 'complete', {}, metadata, rawResponse);
+            return;
+          }
+          if (isComputeOperationDone(rawResponse!, self.diregapic)) {
+            setImmediate(emit, 'complete', {}, {}, rawResponse);
             return;
           }
           setTimeout(() => {
@@ -355,7 +505,7 @@ export class Operation extends EventEmitter {
  *
  * @constructor
  *
- * @param {google.longrunning.Operation} op - The operation to be wrapped.
+ * @param {google.longrunning.Operation | google.cloud.compute.v1.Operation} op - The operation to be wrapped.
  * @param {LongRunningDescriptor} longrunningDescriptor - This defines the
  * operations service client and unpacking mechanisms for the operation.
  * @param {BackoffSettings} backoffSettings - The backoff settings used in
@@ -364,7 +514,7 @@ export class Operation extends EventEmitter {
  * requests.
  */
 export function operation(
-  op: LROOperation,
+  op: LROOperation | ComputeLROOperation,
   longrunningDescriptor: LongRunningDescriptor,
   backoffSettings: BackoffSettings,
   callOptions?: CallOptions

@@ -16,6 +16,7 @@
 
 import * as protobuf from 'protobufjs';
 import {Descriptor} from '../descriptor';
+import {RegionOperationsClient} from '../diregapicOperationsClient/regionOperationsClient';
 import {OperationsClient} from '../operationsClient';
 import {LongrunningApiCaller} from './longRunningApiCaller';
 
@@ -30,18 +31,23 @@ export interface AnyDecoder {
  * A descriptor for long-running operations.
  */
 export class LongRunningDescriptor implements Descriptor {
-  operationsClient: OperationsClient;
+  operationsClient: OperationsClient | RegionOperationsClient;
   responseDecoder: AnyDecoder;
   metadataDecoder: AnyDecoder;
+  diregapic?: boolean;
+  operation?: string;
+  region?: string;
 
   constructor(
-    operationsClient: OperationsClient,
+    operationsClient: OperationsClient | RegionOperationsClient,
     responseDecoder: AnyDecoder,
-    metadataDecoder: AnyDecoder
+    metadataDecoder: AnyDecoder,
+    diregapic?: boolean
   ) {
     this.operationsClient = operationsClient;
     this.responseDecoder = responseDecoder;
     this.metadataDecoder = metadataDecoder;
+    this.diregapic = diregapic;
   }
 
   getApiCaller() {

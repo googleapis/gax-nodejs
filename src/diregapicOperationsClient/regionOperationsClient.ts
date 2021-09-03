@@ -26,7 +26,7 @@ import {
   PaginationCallback,
 } from '../clientInterface';
 import {CallOptions} from '../gax';
-import {GaxCall, RequestType} from '../apitypes';
+import {GaxCall, RequestType, ResultTuple} from '../apitypes';
 
 import {Transform} from 'stream';
 import * as protos from '../../protos/compute_operations';
@@ -401,6 +401,21 @@ export class RegionOperationsClient {
       });
     this.initialize();
     return this.innerApiCalls.delete(request, options, callback);
+  }
+  getOperationInternal(
+    request: protos.google.cloud.compute.v1.IGetRegionOperationRequest,
+    options?: CallOptions,
+    callback?: Callback<
+      protos.google.cloud.compute.v1.IOperation,
+      | protos.google.cloud.compute.v1.IGetRegionOperationRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<ResultTuple> {
+    request = request || {};
+    options = options || {};
+    return this.innerApiCalls.get(request, options, callback);
   }
   get(
     request?: protos.google.cloud.compute.v1.IGetRegionOperationRequest,
