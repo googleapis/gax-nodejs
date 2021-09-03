@@ -70,7 +70,7 @@ export class LocationsClient {
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
-   * in [this document](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#creating-the-client-instance).
+   * in [this document](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#creating-the-client-instance).
    * The common options are:
    * @param {object} [options.credentials] - Credentials object.
    * @param {string} [options.credentials.client_email]
@@ -331,7 +331,7 @@ export class LocationsClient {
    * @returns {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing [Location]{@link google.cloud.location.Location}.
    *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#regular-methods)
    *   for more details and examples.
    * @example
    * const [response] = await client.getLocation(request);
@@ -420,7 +420,7 @@ export class LocationsClient {
    *   We recommend using `listLocationsAsync()`
    *   method described below for async iteration which you can stop as needed.
    *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination)
    *   for more details and examples.
    */
   listLocations(
@@ -487,7 +487,7 @@ export class LocationsClient {
    *   [Location]{@link google.cloud.location.Location}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
    *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination)
    *   for more details and examples.
    * @example
    * const iterable = client.listLocationsAsync(request);

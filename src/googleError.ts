@@ -106,7 +106,7 @@ export class GoogleErrorDecoder {
   }
 
   // Construct an Error from a StatusObject.
-  // Adapted from https://github.com/grpc/grpc-node/blob/master/packages/grpc-js/src/call.ts#L79
+  // Adapted from https://github.com/grpc/grpc-node/blob/main/packages/grpc-js/src/call.ts#L79
   callErrorFromStatus(status: FallbackStatusObject): FallbackServiceError {
     status.message = `${status.code} ${Status[status.code]}: ${status.message}`;
     return Object.assign(new Error(status.message), status);
