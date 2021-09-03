@@ -211,8 +211,32 @@ export class CallSettings {
     let longrunning = this.longrunning;
     let apiName = this.apiName;
     let retryRequestOptions = this.retryRequestOptions;
+    // If a method-specific timeout is set in the service config, and the retry codes for that
+    // method are non-null, then that timeout value will be used to
+    // override backoff settings.
+    if (
+      retry !== undefined &&
+      retry !== null &&
+      retry.retryCodes !== null &&
+      retry.retryCodes.length > 0
+    ) {
+      retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+      retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+      retry.backoffSettings.totalTimeoutMillis = timeout;
+    }
+    // If the user provides a timeout to the method, that timeout value will be used
+    // to override the backoff settings.
     if ('timeout' in options) {
       timeout = options.timeout!;
+      if (
+        retry !== undefined &&
+        retry !== null &&
+        retry.retryCodes.length > 0
+      ) {
+        retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+        retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+        retry.backoffSettings.totalTimeoutMillis = timeout;
+      }
     }
     if ('retry' in options) {
       retry = mergeRetryOptions(retry || ({} as RetryOptions), options.retry!);
