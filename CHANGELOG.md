@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.25.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.0...v2.25.1) (2021-09-03)
+
+
+### Bug Fixes
+
+* **build:** migrate to main branch ([#1101](https://www.github.com/googleapis/gax-nodejs/issues/1101)) ([713e245](https://www.github.com/googleapis/gax-nodejs/commit/713e24502d96543cbbffaec218cb079351cea26d))
+
 ## [2.25.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.24.3...v2.25.0) (2021-09-01)
 
 
