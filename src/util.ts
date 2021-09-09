@@ -45,5 +45,8 @@ export function snakeToCamelCase(str: string) {
   if (splitted.length === 0) {
     return str;
   }
-  return [splitted[0], ...splitted.slice(1).map(capitalize)].join('');
+  return [
+    str.charAt(0) === '_' ? capitalize(splitted[0]) : splitted[0],
+    ...splitted.slice(1).map(capitalize),
+  ].join('');
 }

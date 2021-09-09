@@ -188,6 +188,42 @@ describe('gRPC to HTTP transcoding', () => {
     );
   });
 
+  it('transcode should not decapitalize the first capital letter', () => {
+    assert.deepStrictEqual(
+      transcode(
+        {
+          parent: 'post1/project',
+          IPProtocol: 'tcp',
+        },
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        queryString: '',
+        url: '/v3/post1/project/supportedLanguages',
+        data: {
+          IPProtocol: 'tcp',
+        },
+      }
+    );
+    assert.deepStrictEqual(
+      transcode(
+        {
+          parent: 'post2/project',
+          IPProtocol: 'tcp',
+          field: 'value',
+        },
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        queryString: 'IPProtocol=tcp',
+        url: '/v3/post2/project/supportedLanguages',
+        data: 'value',
+      }
+    );
+  });
+
   it('transcode should ignore inherited properties', () => {
     // In this test we emulate protobuf object that has inherited circular
     // references in the prototype. This is supposed to be a pure JS code
