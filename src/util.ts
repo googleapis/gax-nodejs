@@ -19,7 +19,7 @@
  * to snake_case (normally used in proto definitions).
  */
 export function camelToSnakeCase(str: string) {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  return str.replace(/(?!^)[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 }
 
 /**
@@ -41,12 +41,10 @@ export function snakeToCamelCase(str: string) {
   const splitted = str
     .split(/(?=[A-Z])|[\s\W_]+/)
     .filter(w => w.length > 0)
-    .map(word => word.toLowerCase());
+    //
+    .map((word, index) => (index === 0 ? word : word.toLowerCase()));
   if (splitted.length === 0) {
     return str;
   }
-  return [
-    str.charAt(0) === '_' ? capitalize(splitted[0]) : splitted[0],
-    ...splitted.slice(1).map(capitalize),
-  ].join('');
+  return [splitted[0], ...splitted.slice(1).map(capitalize)].join('');
 }
