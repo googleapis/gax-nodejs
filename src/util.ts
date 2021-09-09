@@ -19,6 +19,7 @@
  * to snake_case (normally used in proto definitions).
  */
 export function camelToSnakeCase(str: string) {
+  // Keep the first position capitalization, otherwise decapitalize with underscore.
   return str.replace(/(?!^)[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 }
 
@@ -41,7 +42,7 @@ export function snakeToCamelCase(str: string) {
   const splitted = str
     .split(/(?=[A-Z])|[\s\W_]+/)
     .filter(w => w.length > 0)
-    //
+    // Keep the capitalization for the first split.
     .map((word, index) => (index === 0 ? word : word.toLowerCase()));
   if (splitted.length === 0) {
     return str;

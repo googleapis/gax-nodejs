@@ -222,6 +222,23 @@ describe('gRPC to HTTP transcoding', () => {
         data: 'value',
       }
     );
+    assert.deepStrictEqual(
+      transcode(
+        {
+          parent: 'post1/project',
+          iPProtocol: 'tcp',
+        },
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        queryString: '',
+        url: '/v3/post1/project/supportedLanguages',
+        data: {
+          iPProtocol: 'tcp',
+        },
+      }
+    );
   });
 
   it('transcode should ignore inherited properties', () => {
