@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.25.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.1...v2.25.2) (2021-09-10)
+
+
+### Bug Fixes
+
+* **diregapic:** support field name IPProtocol gRPC transcoding ([#1103](https://www.github.com/googleapis/gax-nodejs/issues/1103)) ([d9c2f21](https://www.github.com/googleapis/gax-nodejs/commit/d9c2f21d80dc9c2c6eda427fddc7cbb2ac1c9f2b))
+
 ### [2.25.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.0...v2.25.1) (2021-09-03)
 
 
