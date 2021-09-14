@@ -111,7 +111,7 @@ export class GrpcClient {
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';
-  private static protoCache = new Map<string, grpc.GrpcObject>();
+  private static protoCache = new Map<string | Buffer, grpc.GrpcObject>();
 
   /**
    * Key for proto cache map. We are doing our best to make sure we respect

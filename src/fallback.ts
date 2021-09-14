@@ -81,7 +81,7 @@ export class GrpcClient {
   authClient?: AuthClient;
   fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
-  private static protoCache = new Map<string, protobuf.Root>();
+  private static protoCache = new Map<string | Buffer, protobuf.Root>();
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
