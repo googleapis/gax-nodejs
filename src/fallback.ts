@@ -81,7 +81,7 @@ export class GrpcClient {
   authClient?: AuthClient;
   fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
-  private static protoCache = new Map<string | Buffer, protobuf.Root>();
+  private static protoCache = new Map<string, protobuf.Root>();
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -134,7 +134,7 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json);
+    const hash = objectHash(json).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

@@ -111,7 +111,7 @@ export class GrpcClient {
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';
-  private static protoCache = new Map<string | Buffer, grpc.GrpcObject>();
+  private static protoCache = new Map<string, grpc.GrpcObject>();
 
   /**
    * Key for proto cache map. We are doing our best to make sure we respect
@@ -292,7 +292,7 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json);
+    const hash = objectHash(json).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;
