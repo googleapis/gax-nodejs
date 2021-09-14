@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.25.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.2...v2.25.3) (2021-09-14)
+
+
+### Bug Fixes
+
+* protoCache map key support Buffer type ([#1106](https://www.github.com/googleapis/gax-nodejs/issues/1106)) ([a7ce8ab](https://www.github.com/googleapis/gax-nodejs/commit/a7ce8abc11be39722f6060f74b4d54ce6461dd40))
+
 ### [2.25.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.1...v2.25.2) (2021-09-10)
 
 
