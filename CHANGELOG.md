@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.25.4](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.3...v2.25.4) (2021-09-15)
+
+
+### Bug Fixes
+
+* editing retry logic ([#1100](https://www.github.com/googleapis/gax-nodejs/issues/1100)) ([05548d5](https://www.github.com/googleapis/gax-nodejs/commit/05548d5ba287af5a8833402108ac55d900889a38))
+
 ### [2.25.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.2...v2.25.3) (2021-09-14)
 
 
