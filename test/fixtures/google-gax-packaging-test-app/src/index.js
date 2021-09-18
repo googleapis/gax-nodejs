@@ -130,31 +130,44 @@ async function testEchoError(client) {
     path.join(protos_path, 'error_details.proto')
   );
   const objs = JSON.parse(data);
+  const details = [];
+  const expectedDetails = [];
   for (const obj of objs) {
     const MessageType = root.lookupType(obj.type);
     const buffer = MessageType.encode(obj.value).finish();
-    const request = {
-      error: {
-        code: 3,
-        message: 'Test error',
-        details: [{
-          type_url: 'type.googleapis.com/' + obj.type,
-          value: buffer,
-        }],
-      },
-    };
-    const timer = setTimeout(() => {
+    details.push({
+      type_url: 'type.googleapis.com/' + obj.type,
+      value: buffer,
+    });
+    expectedDetails.push(obj.value);
+  }
+  const request = {
+    error: {
+      code: 3,
+      message: 'Test error',
+      details: details,
+    },
+  };
+  const timer = setTimeout(() => {
       throw new Error('End-to-end testEchoError method fails with timeout');
-    }, 12000);
-    await assert.rejects(() => client.echo(request),
-      Error);
-    try {
+  }, 12000);
+  await assert.rejects(() => client.echo(request),
+    Error);
+  try {
       await client.echo(request);
-    } catch (err) {
+  } catch (err) {
       clearTimeout(timer);
-      assert.strictEqual(JSON.stringify(obj.value),
-        JSON.stringify(err.statusDetails[0]));
-    }
+      assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
+      const errorInfo = objs.find(item => item.type === 'google.rpc.ErrorInfo')?.value;
+      assert.strictEqual(err.domain, errorInfo.domain)
+      assert.strictEqual(err.reason, errorInfo.reason)
+      for (const [key, value] of Object.entries(errorInfo.metadata)) {
+        assert.ok(err.metadata);
+        assert.strictEqual(
+          err.metadata.get(key).shift(),
+          value
+        );
+      }
   }
 }
 

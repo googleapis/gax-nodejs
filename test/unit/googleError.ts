@@ -50,43 +50,56 @@ describe('gRPC-google error decoding', () => {
 
   it('decodes multiple errors', async () => {
     // example of when there are multiple errors available to be decoded
-    const bufferArr = [] as Buffer[];
-    let decodedErrorArr = [] as protobuf.Message<{}>[];
     const expectedErrorArr = [] as protobuf.Message<{}>[];
     const decoder = new GoogleErrorDecoder();
     const readFile = util.promisify(fs.readFile);
 
     const data = await readFile(fixtureName, 'utf8');
     const objs = JSON.parse(data) as MyObj[];
+    const details = [];
     for (const obj of objs) {
       const MessageType = root.lookupType(obj.type);
       expectedErrorArr.push(obj.value);
       const buffer = MessageType.encode(obj.value).finish() as Buffer;
-      const any = {
+      const anyObj = {
         type_url: 'type.googleapis.com/' + obj.type,
         value: buffer,
       };
-      const status = {code: 3, message: 'test', details: [any]};
-      const Status = root.lookupType('google.rpc.Status');
-      const status_buffer = Status.encode(status).finish() as Buffer;
-      bufferArr.push(status_buffer);
+      details.push(anyObj);
     }
-    decodedErrorArr = decoder.decodeRpcStatusDetails(bufferArr);
+    const status = {code: 3, message: 'test', details: details};
+    const Status = root.lookupType('google.rpc.Status');
+    const statusBuffer = Status.encode(status).finish() as Buffer;
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
+      new Array(statusBuffer)
+    );
     assert.strictEqual(
       JSON.stringify(expectedErrorArr),
-      JSON.stringify(decodedErrorArr)
+      JSON.stringify(gRPCStatusDetailsObj.details)
+    );
+    assert.deepStrictEqual(
+      JSON.stringify(gRPCStatusDetailsObj.errorInfo),
+      JSON.stringify(
+        objs.find(item => item.type === 'google.rpc.ErrorInfo')?.value
+      )
     );
   });
 
   it('does not decode when no error exists', () => {
     // example of when there's no grpc-error available to be decoded
-    const emptyArr: Buffer[] = [];
+    const emptyBuffer: Buffer = Buffer.from('');
     const decoder = new GoogleErrorDecoder();
 
-    const decodedError = decoder.decodeRpcStatusDetails(emptyArr);
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
+      new Array(emptyBuffer)
+    );
 
     // nested error messages have different types so we can't use deepStrictEqual here
-    assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
+    assert.strictEqual(
+      JSON.stringify(gRPCStatusDetailsObj.details),
+      JSON.stringify([])
+    );
+    assert.strictEqual(gRPCStatusDetailsObj.errorInfo, undefined);
   });
 
   it('DecodeRpcStatus does not fail when unknown type is encoded', () => {
@@ -111,9 +124,14 @@ describe('gRPC-google error decoding', () => {
     const status_buffer = Status.encode(status).finish();
     const decoder = new GoogleErrorDecoder();
 
-    const decodedError = decoder.decodeRpcStatusDetails([status_buffer]);
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
+      new Array(status_buffer)
+    );
 
-    assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
+    assert.strictEqual(
+      JSON.stringify(gRPCStatusDetailsObj.details),
+      JSON.stringify([])
+    );
   });
 
   it('does not decode when unknown type is encoded in type_url', () => {
@@ -149,8 +167,8 @@ describe('gRPC-google error decoding', () => {
   });
 });
 
-describe('decode metadata for ErrorInfo', () => {
-  it('metadata contains key google.rpc.errorinfo-bin', async () => {
+describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
+  it('metadata contains key grpc-status-details-bin with ErrorInfo', async () => {
     const errorInfoObj = {
       metadata: {
         consumer: 'projects/455411330361',
@@ -165,8 +183,15 @@ describe('decode metadata for ErrorInfo', () => {
     const root = protobuf.Root.fromJSON(errorProtoJson);
     const errorInfoType = root.lookupType('ErrorInfo');
     const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const any = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
     const metadata = new Metadata();
-    metadata.set('google.rpc.errorinfo-bin', buffer);
+    metadata.set('grpc-status-details-bin', status_buffer);
     const grpcError = Object.assign(
       new GoogleError('mock error with ErrorInfo'),
       {
@@ -174,8 +199,7 @@ describe('decode metadata for ErrorInfo', () => {
         metadata: metadata,
       }
     );
-    const decoder = new GoogleErrorDecoder();
-    const decodedError = decoder.decodeMetadata(grpcError);
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
@@ -186,5 +210,30 @@ describe('decode metadata for ErrorInfo', () => {
         value
       );
     }
+  });
+  it('metadata has no key grpc-status-details-bin', async () => {
+    const metadata = new Metadata();
+    metadata.set('grpc-server-stats-bin', Buffer.from('AAKENLPQKNSALSDFJ'));
+    const grpcError = Object.assign(
+      new GoogleError('mock error with metadata'),
+      {
+        code: 7,
+        metadata: metadata,
+      }
+    );
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError, grpcError);
+  });
+  it('no grpc metadata', async () => {
+    const grpcError = Object.assign(
+      new GoogleError('mock error without metadata'),
+      {
+        code: 7,
+      }
+    );
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError, grpcError);
   });
 });
