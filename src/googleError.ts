@@ -76,7 +76,7 @@ interface RpcStatus {
 
 interface GRPCStatusDetailsObject {
   details: protobuf.Message<{}>[];
-  errorInfo: ErrorInfo | undefined;
+  errorInfo?: ErrorInfo;
 }
 
 interface ErrorInfo {
@@ -89,7 +89,6 @@ export class GoogleErrorDecoder {
   root: protobuf.Root;
   anyType: protobuf.Type;
   statusType: protobuf.Type;
-  errorInfoType: protobuf.Type;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -97,7 +96,6 @@ export class GoogleErrorDecoder {
     this.root = protobuf.Root.fromJSON(errorProtoJson);
     this.anyType = this.root.lookupType('google.protobuf.Any');
     this.statusType = this.root.lookupType('google.rpc.Status');
-    this.errorInfoType = this.root.lookupType('google.rpc.ErrorInfo');
   }
 
   decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {
