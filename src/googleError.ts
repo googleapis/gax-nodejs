@@ -61,6 +61,9 @@ interface FallbackStatusObject {
   code: Status;
   message: string;
   details: Array<{}>;
+  reason?: string;
+  domain?: string;
+  metadata?: {string: string};
 }
 
 interface ProtobufAny {
@@ -121,10 +124,14 @@ export class GoogleErrorDecoder {
     // google.rpc.Status contains an array of google.protobuf.Any
     // which need a special treatment
     const details: Array<protobuf.Message> = [];
+    let errorInfo;
     for (const detail of status.details) {
       try {
         const decodedDetail = this.decodeProtobufAny(detail);
         details.push(decodedDetail);
+        if (detail.type_url === 'type.googleapis.com/google.rpc.ErrorInfo') {
+          errorInfo = decodedDetail as unknown as ErrorInfo;
+        }
       } catch (err) {
         // cannot decode detail, likely because of the unknown type - just skip it
       }
@@ -133,6 +140,9 @@ export class GoogleErrorDecoder {
       code: status.code,
       message: status.message,
       details,
+      reason: errorInfo?.reason,
+      domain: errorInfo?.domain,
+      metadata: errorInfo?.metadata,
     };
     return result;
   }

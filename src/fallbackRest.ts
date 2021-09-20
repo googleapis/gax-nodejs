@@ -95,6 +95,16 @@ export function decodeResponse(
       new Error(json['error']['message']),
       json.error
     );
+    // Promote the ErrorInfo fields as first-class citizen in error.
+    const errorInfo = json.error.details.find(
+      (item: {[x: string]: string}) =>
+        item['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo'
+    );
+    if (errorInfo) {
+      error.reason = errorInfo.reason;
+      error.domain = errorInfo.domain;
+      error.metadata = errorInfo.metadata;
+    }
     throw error;
   }
   const message = serializer.fromProto3JSON(rpc.resolvedResponseType!, json);
