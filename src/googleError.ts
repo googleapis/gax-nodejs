@@ -25,6 +25,7 @@ export class GoogleError extends Error {
   statusDetails?: string | protobuf.Message<{}>[];
   reason?: string;
   domain?: string;
+  errorInfoMetadata?: {string: string};
 
   // Parse details field in google.rpc.status wire over gRPC medatadata.
   // Promote google.rpc.ErrorInfo if exist.
@@ -36,21 +37,21 @@ export class GoogleError extends Error {
           decoder.decodeGRPCStatusDetails(
             err.metadata.get('grpc-status-details-bin') as []
           );
-        if (statusDetailsObj && statusDetailsObj.details.length > 0) {
+        if (
+          statusDetailsObj &&
+          statusDetailsObj.details &&
+          statusDetailsObj.details.length > 0
+        ) {
           err.statusDetails = statusDetailsObj.details;
         }
         if (statusDetailsObj && statusDetailsObj.errorInfo) {
           err.reason = statusDetailsObj.errorInfo.reason;
           err.domain = statusDetailsObj.errorInfo.domain;
-          for (const [key, value] of Object.entries(
-            statusDetailsObj.errorInfo.metadata
-          )) {
-            err.metadata.set(key, value);
-          }
+          err.errorInfoMetadata = statusDetailsObj.errorInfo.metadata;
         }
       }
     } catch (decodeErr) {
-      return err;
+      // ignoring the error
     }
     return err;
   }
