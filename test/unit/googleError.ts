@@ -87,12 +87,10 @@ describe('gRPC-google error decoding', () => {
 
   it('does not decode when no error exists', () => {
     // example of when there's no grpc-error available to be decoded
-    const emptyBuffer: Buffer = Buffer.from('');
+    const emptyBuffer: Buffer[] = [];
     const decoder = new GoogleErrorDecoder();
 
-    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
-      new Array(emptyBuffer)
-    );
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(emptyBuffer);
 
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
@@ -124,9 +122,9 @@ describe('gRPC-google error decoding', () => {
     const status_buffer = Status.encode(status).finish();
     const decoder = new GoogleErrorDecoder();
 
-    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
-      new Array(status_buffer)
-    );
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails([
+      status_buffer,
+    ]);
 
     assert.strictEqual(
       JSON.stringify(gRPCStatusDetailsObj.details),
@@ -168,16 +166,15 @@ describe('gRPC-google error decoding', () => {
 });
 
 describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
+  const errorInfoObj = {
+    reason: 'SERVICE_DISABLED',
+    domain: 'googleapis.com',
+    metadata: {
+      consumer: 'projects/455411330361',
+      service: 'translate.googleapis.com',
+    },
+  };
   it('metadata contains key grpc-status-details-bin with ErrorInfo', async () => {
-    const errorInfoObj = {
-      metadata: {
-        consumer: 'projects/455411330361',
-        service: 'translate.googleapis.com',
-      },
-      reason: 'SERVICE_DISABLED',
-      domain: 'googleapis.com',
-    };
-
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const errorProtoJson = require('../../protos/status.json');
     const root = protobuf.Root.fromJSON(errorProtoJson);
@@ -208,6 +205,47 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
       JSON.stringify(errorInfoObj.metadata)
     );
   });
+
+  it('metadata contains key grpc-status-details-bin with ErrorInfo and other unknow type', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const anyObj = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const unknownObj = {
+      type_url: 'unknown_type',
+      value: Buffer.from(''),
+    };
+    const status = {code: 3, message: 'test', details: [anyObj, unknownObj]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('grpc-status-details-bin', status_buffer);
+    const grpcError = Object.assign(
+      new GoogleError('mock error with ErrorInfo'),
+      {
+        code: 7,
+        metadata: metadata,
+      }
+    );
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify([errorInfoObj])
+    );
+    assert.strictEqual(decodedError.domain, errorInfoObj.domain);
+    assert.strictEqual(decodedError.reason, errorInfoObj.reason);
+    assert.strictEqual(
+      JSON.stringify(decodedError.errorInfoMetadata),
+      JSON.stringify(errorInfoObj.metadata)
+    );
+  });
+
   it('metadata has no key grpc-status-details-bin', async () => {
     const metadata = new Metadata();
     metadata.set('grpc-server-stats-bin', Buffer.from('AAKENLPQKNSALSDFJ'));
@@ -222,6 +260,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(decodedError, grpcError);
   });
+
   it('no grpc metadata', async () => {
     const grpcError = Object.assign(
       new GoogleError('mock error without metadata'),
