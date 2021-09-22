@@ -161,13 +161,7 @@ async function testEchoError(client) {
       const errorInfo = objs.find(item => item.type === 'google.rpc.ErrorInfo')?.value;
       assert.strictEqual(err.domain, errorInfo.domain)
       assert.strictEqual(err.reason, errorInfo.reason)
-      for (const [key, value] of Object.entries(errorInfo.metadata)) {
-        assert.ok(err.metadata);
-        assert.strictEqual(
-          err.metadata.get(key).shift(),
-          value
-        );
-      }
+      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo.metadata));
   }
 }
 

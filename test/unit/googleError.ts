@@ -203,13 +203,10 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
-    for (const [key, value] of Object.entries(errorInfoObj.metadata)) {
-      assert.ok(decodedError.metadata);
-      assert.strictEqual(
-        (decodedError.metadata.get(key) as Array<string>).shift(),
-        value
-      );
-    }
+    assert.strictEqual(
+      JSON.stringify(decodedError.errorInfoMetadata),
+      JSON.stringify(errorInfoObj.metadata)
+    );
   });
   it('metadata has no key grpc-status-details-bin', async () => {
     const metadata = new Metadata();
