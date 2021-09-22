@@ -159,8 +159,8 @@ async function testEchoError(client) {
       clearTimeout(timer);
       assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
       const errorInfo = objs.reduce(item => {
-        if (item.type === 'google.rpc.ErrorInfo') {
-          return item.value;
+        if (item['type'] === 'google.rpc.ErrorInfo') {
+          return item['value'];
         }});
       assert.ok(errorInfo)
       assert.strictEqual(err.domain, errorInfo.domain)
