@@ -37,7 +37,11 @@ export class GoogleError extends Error {
           decoder.decodeGRPCStatusDetails(
             err.metadata.get('grpc-status-details-bin') as []
           );
-        if (statusDetailsObj && statusDetailsObj.details.length > 0) {
+        if (
+          statusDetailsObj &&
+          statusDetailsObj.details &&
+          statusDetailsObj.details.length > 0
+        ) {
           err.statusDetails = statusDetailsObj.details;
         }
         if (statusDetailsObj && statusDetailsObj.errorInfo) {
@@ -47,7 +51,7 @@ export class GoogleError extends Error {
         }
       }
     } catch (decodeErr) {
-      return err;
+      // ignoring the error
     }
     return err;
   }
