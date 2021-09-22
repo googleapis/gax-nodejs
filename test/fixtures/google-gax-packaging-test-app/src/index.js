@@ -129,9 +129,10 @@ async function testEchoError(client) {
   const root = protobuf.loadSync(
     path.join(protos_path, 'error_details.proto')
   );
-  const objs = JSON.parse(JSON.stringify(data));
+  const objs = JSON.parse(data);
   const details = [];
   const expectedDetails = [];
+  let errorInfo = {};
   for (const obj of objs) {
     const MessageType = root.lookupType(obj.type);
     const buffer = MessageType.encode(obj.value).finish();
@@ -140,6 +141,9 @@ async function testEchoError(client) {
       value: buffer,
     });
     expectedDetails.push(obj.value);
+    if (obj.type === 'google.rpc.ErrorInfo') {
+      errorInfo = obj.value;
+    }
   }
   const request = {
     error: {
@@ -158,7 +162,6 @@ async function testEchoError(client) {
   } catch (err) {
       clearTimeout(timer);
       assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
-      const errorInfo = objs.find(item => item.type === 'google.rpc.ErrorInfo').value;
       assert.ok(errorInfo)
       assert.strictEqual(err.domain, errorInfo.domain)
       assert.strictEqual(err.reason, errorInfo.reason)
