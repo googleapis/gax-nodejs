@@ -87,10 +87,10 @@ describe('gRPC-google error decoding', () => {
 
   it('does not decode when no error exists', () => {
     // example of when there's no grpc-error available to be decoded
-    const emptyBuffer: Buffer[] = [];
+    const emptyArr: Buffer[] = [];
     const decoder = new GoogleErrorDecoder();
 
-    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(emptyBuffer);
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(emptyArr);
 
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
