@@ -129,7 +129,7 @@ async function testEchoError(client) {
   const root = protobuf.loadSync(
     path.join(protos_path, 'error_details.proto')
   );
-  const objs = JSON.parse(data);
+  const objs = Array.from(JSON.parse(data));
   const details = [];
   const expectedDetails = [];
   for (const obj of objs) {
