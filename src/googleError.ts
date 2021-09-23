@@ -89,7 +89,7 @@ interface FallbackStatusObject {
   details: Array<{}>;
   reason?: string;
   domain?: string;
-  metadata?: {string: string};
+  errorInfoMetadata?: {string: string};
 }
 
 interface ProtobufAny {

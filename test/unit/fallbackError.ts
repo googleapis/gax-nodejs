@@ -44,7 +44,10 @@ describe('gRPC-fallback error decoding', () => {
     const decodedError = decoder.decodeRpcStatus(errorBin);
 
     // nested error messages have different types so we can't use deepStrictEqual here
-    assert.equal(JSON.stringify(decodedError), JSON.stringify(expectedError));
+    assert.strictEqual(
+      JSON.stringify(decodedError),
+      JSON.stringify(expectedError)
+    );
   });
 
   it('decodes error and status code', () => {
