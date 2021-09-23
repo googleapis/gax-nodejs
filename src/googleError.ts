@@ -55,6 +55,31 @@ export class GoogleError extends Error {
     }
     return err;
   }
+
+  // Parse http JSON error and promote google.rpc.ErrorInfo if exist.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static parseHttpError(json: any): GoogleError {
+    const error = Object.assign(
+      new GoogleError(json['error']['message']),
+      json.error
+    );
+    // Promote the ErrorInfo fields as first-class citizen in error.
+    const errorInfo = !json['error']['details']
+      ? undefined
+      : json['error']['details'].find(
+          (item: {[x: string]: string}) =>
+            item['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo'
+        );
+    if (errorInfo) {
+      error.reason = errorInfo.reason;
+      error.domain = errorInfo.domain;
+      // error.metadata has been occupized for gRPC metadata, so we use
+      // errorInfoMetadat to represent ErrorInfo' metadata field. Keep
+      // consistency with gRPC ErrorInfo metadata field name.
+      error.errorInfoMetadata = errorInfo.metadata;
+    }
+    return error;
+  }
 }
 
 export type FallbackServiceError = FallbackStatusObject & Error;
@@ -143,7 +168,7 @@ export class GoogleErrorDecoder {
       details,
       reason: errorInfo?.reason,
       domain: errorInfo?.domain,
-      metadata: errorInfo?.metadata,
+      errorInfoMetadata: errorInfo?.metadata,
     };
     return result;
   }

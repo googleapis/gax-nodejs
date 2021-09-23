@@ -20,6 +20,7 @@ import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
 import {FetchParameters} from './fallbackServiceStub';
 import {hasTextDecoder, hasTextEncoder, isNodeJS} from './featureDetection';
+import {GoogleError} from './googleError';
 import {transcode} from './transcoding';
 
 if (!hasTextEncoder() || !hasTextDecoder()) {
@@ -91,20 +92,7 @@ export function decodeResponse(
   const decodedString = new TextDecoder().decode(response);
   const json = JSON.parse(decodedString);
   if (!ok) {
-    const error = Object.assign(
-      new Error(json['error']['message']),
-      json.error
-    );
-    // Promote the ErrorInfo fields as first-class citizen in error.
-    const errorInfo = json.error.details.find(
-      (item: {[x: string]: string}) =>
-        item['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo'
-    );
-    if (errorInfo) {
-      error.reason = errorInfo.reason;
-      error.domain = errorInfo.domain;
-      error.metadata = errorInfo.metadata;
-    }
+    const error = GoogleError.parseHttpError(json);
     throw error;
   }
   const message = serializer.fromProto3JSON(rpc.resolvedResponseType!, json);

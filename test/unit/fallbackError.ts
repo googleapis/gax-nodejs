@@ -109,7 +109,7 @@ describe('gRPC-fallback error decoding', () => {
         details: [errorInfo],
         reason: errorInfo.reason,
         domain: errorInfo.domain,
-        metadata: errorInfo.metadata,
+        errorInfoMetadata: errorInfo.metadata,
       }
     );
     const status = Object.assign(new Error('mock error.'), {
@@ -122,9 +122,8 @@ describe('gRPC-fallback error decoding', () => {
     });
     const Status = root.lookupType('google.rpc.Status');
     const statusBuffer = Status.encode(status).finish() as Buffer;
-    const errorBin = fs.readFileSync(statusBuffer);
     const decoder = new GoogleErrorDecoder();
-    const decodedError = decoder.decodeErrorFromBuffer(errorBin);
+    const decodedError = decoder.decodeErrorFromBuffer(statusBuffer);
     assert(decodedError instanceof Error);
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
