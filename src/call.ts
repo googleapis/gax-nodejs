@@ -118,7 +118,11 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
-        rejectCallback(GoogleError.parseGRPCStatusDetails(err));
+        if (err.metadata && err.metadata.get('grpc-status-details-bin')) {
+          rejectCallback(GoogleError.parseGRPCStatusDetails(err));
+        } else {
+          rejectCallback(err);
+        }
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
       } else {
