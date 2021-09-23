@@ -118,7 +118,8 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
-        if (err.metadata && err.metadata.get('grpc-status-details-bin')) {
+        // If gRPC metadata exist, parsed google.rpc.status details.
+        if (err.metadata) {
           rejectCallback(GoogleError.parseGRPCStatusDetails(err));
         } else {
           rejectCallback(err);
