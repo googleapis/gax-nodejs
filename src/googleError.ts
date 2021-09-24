@@ -63,6 +63,8 @@ export class GoogleError extends Error {
       new GoogleError(json['error']['message']),
       json.error
     );
+    // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
+    // Rename "detials" to "statusDetails".
     error.statusDetails = json['error']['details'];
     delete error.details;
     // Promote the ErrorInfo fields as first-class citizen in error.
@@ -75,7 +77,7 @@ export class GoogleError extends Error {
     if (errorInfo) {
       error.reason = errorInfo.reason;
       error.domain = errorInfo.domain;
-      // error.metadata has been occupized for gRPC metadata, so we use
+      // error.metadata has been occupied for gRPC metadata, so we use
       // errorInfoMetadat to represent ErrorInfo' metadata field. Keep
       // consistency with gRPC ErrorInfo metadata field name.
       error.errorInfoMetadata = errorInfo.metadata;
