@@ -19,7 +19,7 @@ import {describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import {GoogleErrorDecoder} from '../../src/googleError';
+import {GoogleError, GoogleErrorDecoder} from '../../src/googleError';
 
 describe('gRPC-fallback error decoding', () => {
   it('decodes error', () => {
@@ -42,11 +42,11 @@ describe('gRPC-fallback error decoding', () => {
     };
     const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeRpcStatus(errorBin);
-
-    // nested error messages have different types so we can't use deepStrictEqual here
+    assert.strictEqual(decodedError.code, expectedError.code);
+    assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify(expectedError.details)
     );
   });
 
@@ -74,11 +74,13 @@ describe('gRPC-fallback error decoding', () => {
     );
     const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeErrorFromBuffer(errorBin);
-    assert(decodedError instanceof Error);
-    // nested error messages have different types so we can't use deepStrictEqual here
+    assert(decodedError instanceof GoogleError);
+
+    assert.strictEqual(decodedError.code, expectedError.code);
+    assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify(expectedError.details)
     );
   });
 
@@ -127,11 +129,12 @@ describe('gRPC-fallback error decoding', () => {
     const statusBuffer = Status.encode(status).finish() as Buffer;
     const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeErrorFromBuffer(statusBuffer);
-    assert(decodedError instanceof Error);
-    // nested error messages have different types so we can't use deepStrictEqual here
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError.code, expectedError.code);
+    assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify(expectedError.details)
     );
   });
 });

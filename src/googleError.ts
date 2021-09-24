@@ -63,6 +63,8 @@ export class GoogleError extends Error {
       new GoogleError(json['error']['message']),
       json.error
     );
+    error.statusDetails = json['error']['details'];
+    delete error.details;
     // Promote the ErrorInfo fields as first-class citizen in error.
     const errorInfo = !json['error']['details']
       ? undefined
@@ -86,7 +88,7 @@ export type FallbackServiceError = FallbackStatusObject & Error;
 interface FallbackStatusObject {
   code: Status;
   message: string;
-  details: Array<{}>;
+  statusDetails: Array<{}>;
   reason?: string;
   domain?: string;
   errorInfoMetadata?: {string: string};
@@ -165,7 +167,7 @@ export class GoogleErrorDecoder {
     const result = {
       code: status.code,
       message: status.message,
-      details,
+      statusDetails: details,
       reason: errorInfo?.reason,
       domain: errorInfo?.domain,
       errorInfoMetadata: errorInfo?.metadata,
@@ -177,7 +179,7 @@ export class GoogleErrorDecoder {
   // Adapted from https://github.com/grpc/grpc-node/blob/main/packages/grpc-js/src/call.ts#L79
   callErrorFromStatus(status: FallbackStatusObject): FallbackServiceError {
     status.message = `${status.code} ${Status[status.code]}: ${status.message}`;
-    return Object.assign(new Error(status.message), status);
+    return Object.assign(new GoogleError(status.message), status);
   }
 
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status,

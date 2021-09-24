@@ -313,9 +313,13 @@ describe('grpc-fallback', () => {
     );
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof Error);
+        assert(err instanceof GoogleError);
         assert.strictEqual(err.message, expectedMessage);
-        assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
+        assert.strictEqual(err.code, expectedError.code);
+        assert.strictEqual(
+          JSON.stringify(err.statusDetails),
+          JSON.stringify(expectedError.details)
+        );
         done();
       });
     });
@@ -371,6 +375,11 @@ describe('grpc-fallback', () => {
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
+        assert.strictEqual(
+          JSON.stringify(err.statusDetails),
+          JSON.stringify(serverError['error']['details'])
+        );
+        assert.strictEqual(err.code, serverError['error']['code']);
         assert.strictEqual(err.message, serverError['error']['message']);
         assert.strictEqual(err.reason, errorInfo.reason);
         assert.strictEqual(err.domain, errorInfo.domain);
