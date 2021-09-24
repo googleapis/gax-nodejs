@@ -86,7 +86,7 @@ async function testShowcase() {
   await testWait(grpcClient);
 
   await testEcho(fallbackClient);
-  await testEchoError(fallbackClient, true);
+  await testEchoError(fallbackClient);
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
   await testPagedExpandAsync(fallbackClient);
@@ -104,7 +104,7 @@ async function testEcho(client) {
   assert.deepStrictEqual(request.content, response.content);
 }
 
-async function testEchoError(client, rest) {
+async function testEchoError(client) {
   const readFile = util.promisify(fs.readFile);
 
   const fixtureName = path.resolve(
@@ -162,7 +162,7 @@ async function testEchoError(client, rest) {
       await client.echo(request);
   } catch (err) {
       clearTimeout(timer);
-      assert.strictEqual(rest ? JSON.stringify(err.details) : JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
+      assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo)
       assert.strictEqual(err.domain, errorInfo.domain)
       assert.strictEqual(err.reason, errorInfo.reason)
