@@ -423,6 +423,9 @@ export class GrpcClient {
         }
         grpcOptions[key] = value as string | number;
       }
+      if (key.startsWith('grpc-node.')) {
+        grpcOptions[key] = value as string | number;
+      }
     });
     const stub = new CreateStub(
       serviceAddress,
