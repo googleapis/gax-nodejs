@@ -22,7 +22,7 @@ import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
 import {LongrunningDescriptor} from '../../src';
 import * as operationProtos from '../../protos/operations';
-import {GaxCallPromise} from '../../src/apitypes';
+import {ComputeLROOperation, GaxCallPromise} from '../../src/apitypes';
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
 import * as longrunning from '../../src/longRunningCalls/longrunning';
@@ -30,6 +30,8 @@ import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
 import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
+import protobuf = require('protobufjs');
+import {rpcCodeFromHttpStatusCode} from '../../src/status';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
@@ -77,11 +79,81 @@ const BAD_OP = {
   metadata: METADATA,
   done: true,
 };
+const COMPUTE_OPERATION_ID = '2747743835218909742';
+const COMPUTE_OPERATION_NAME =
+  'operation-1632871617038-5cd168cb28738-60ffeb05-53f5a827';
+const PENDING_COMPUTE_OP = {
+  warnings: [],
+  id: COMPUTE_OPERATION_ID,
+  _id: 'id',
+  kind: 'compute#operation',
+  _kind: 'kind',
+  name: COMPUTE_OPERATION_NAME,
+  _name: 'name',
+  user: 'test_user',
+  _user: 'user',
+  status: 'RUNNING',
+  _status: 'status',
+};
+const SUCCESSFUL_COMPUTE_OP = {
+  warnings: [],
+  id: COMPUTE_OPERATION_ID,
+  _id: 'id',
+  kind: 'compute#operation',
+  _kind: 'kind',
+  name: COMPUTE_OPERATION_NAME,
+  _name: 'name',
+  user: 'test_user',
+  _user: 'user',
+  status: 'DONE',
+  _status: 'status',
+};
+const ERROR_COMPUTE_OP = {
+  warnings: [],
+  id: COMPUTE_OPERATION_ID,
+  _id: 'id',
+  kind: 'compute#operation',
+  _kind: 'kind',
+  name: COMPUTE_OPERATION_NAME,
+  _name: 'name',
+  user: 'test_user',
+  _user: 'user',
+  status: 'DONE',
+  _status: 'status',
+  error: {
+    errors: [
+      {
+        code: 400,
+        location: 'test-location',
+        message: 'error message',
+      },
+    ],
+  },
+  httpErrorMessage: 'httpErrorMessage',
+  httpErrorStatusCode: 400,
+};
 const mockDecoder = (val: {}) => {
   return val.toString();
 };
 
-function createApiCall(func: Function, client?: OperationsClient) {
+function createApiCall(
+  func: Function,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  client?: OperationsClient | any,
+  diregapic?: boolean
+) {
+  if (diregapic) {
+    const descriptor = new LongrunningDescriptor(
+      client!,
+      mockDecoder as unknown as AnyDecoder,
+      null,
+      {
+        pollingMethodName: 'get',
+        pollingMethodRequestType: new protobuf.Type('test'),
+      }
+    );
+    return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
+  }
   const descriptor = new LongrunningDescriptor(
     client!,
     mockDecoder as unknown as AnyDecoder,
@@ -94,6 +166,11 @@ interface SpyableOperationsClient extends OperationsClient {
   getOperation: sinon.SinonSpy & longrunning.Operation;
   cancelOperation: sinon.SinonSpy;
   cancelGetOperationSpy: sinon.SinonSpy;
+}
+
+interface SpyableComputeOperationClient {
+  get: sinon.SinonSpy & ComputeLROOperation;
+  getProjectId: sinon.SinonSpy;
 }
 
 describe('longrunning', () => {
@@ -733,6 +810,565 @@ describe('longrunning', () => {
           .catch(err => {
             done(err);
           });
+      });
+    });
+  });
+});
+
+describe('diregapic longrunning', () => {
+  describe('diregapic operation', () => {
+    describe('createApiCall', () => {
+      function mockOperationsClient(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        opts?: any
+      ): SpyableComputeOperationClient {
+        opts = opts || {};
+        let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
+        const getSpy = sinon.spy(() => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let resolver: any;
+          const promise = new Promise(resolve => {
+            resolver = resolve;
+          });
+
+          if (remainingCalls && remainingCalls > 1) {
+            resolver([PENDING_COMPUTE_OP]);
+            --remainingCalls;
+          } else if (!opts.dontResolve) {
+            resolver([opts.finalOperation || SUCCESSFUL_COMPUTE_OP]);
+          }
+          return promise;
+        });
+        const getProjectIdSpy = sinon.spy(() => {
+          return Promise.resolve(['fake_project_id']);
+        });
+        return {
+          get: getSpy,
+          getProjectId: getProjectIdSpy,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+      }
+      it('diregapic longrunning call resolves to the correct datatypes', done => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
+          callback(null, PENDING_COMPUTE_OP);
+        };
+        const defaultInitialRetryDelayMillis = 100;
+        const defaultRetryDelayMultiplier = 1.3;
+        const defaultMaxRetryDelayMillis = 60000;
+        const defaultTotalTimeoutMillis = null;
+        const apiCall = createApiCall(func, mockOperationsClient, true);
+        apiCall({})
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            const rawResponse = responses[1];
+            assert(operation instanceof Object);
+            assert(operation.hasOwnProperty('backoffSettings'));
+            assert.strictEqual(
+              operation.backoffSettings.initialRetryDelayMillis,
+              defaultInitialRetryDelayMillis
+            );
+            assert.strictEqual(
+              operation.backoffSettings.retryDelayMultiplier,
+              defaultRetryDelayMultiplier
+            );
+            assert.strictEqual(
+              operation.backoffSettings.maxRetryDelayMillis,
+              defaultMaxRetryDelayMillis
+            );
+            assert.strictEqual(
+              operation.backoffSettings.totalTimeoutMillis,
+              defaultTotalTimeoutMillis
+            );
+            assert(operation.hasOwnProperty('longrunningDescriptor'));
+            assert.strictEqual(operation.name, COMPUTE_OPERATION_ID);
+            assert.strictEqual(operation.done, false);
+            assert.deepStrictEqual(
+              operation.latestResponse,
+              PENDING_COMPUTE_OP
+            );
+            assert.strictEqual(operation.result, null);
+            assert.strictEqual(operation.metadata, null);
+            assert.deepStrictEqual(rawResponse, PENDING_COMPUTE_OP);
+            done();
+          })
+          .catch(done);
+      });
+    });
+
+    describe('GlobalOperations', () => {
+      function mockGloableOperationsClient(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        opts?: any
+      ): SpyableComputeOperationClient {
+        opts = opts || {};
+        let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
+        const getSpy = sinon.spy(() => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let resolver: any;
+          const promise = new Promise(resolve => {
+            resolver = resolve;
+          });
+
+          if (remainingCalls && remainingCalls > 1) {
+            resolver([PENDING_COMPUTE_OP]);
+            --remainingCalls;
+          } else if (!opts.dontResolve) {
+            resolver([opts.finalOperation || SUCCESSFUL_COMPUTE_OP]);
+          }
+          return promise;
+        });
+        const getProjectIdSpy = sinon.spy(() => {
+          return Promise.resolve(['fake_project_id']);
+        });
+        return {
+          get: getSpy,
+          getProjectId: getProjectIdSpy,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+      }
+      it('returns an Operation with correct values', done => {
+        const client = mockGloableOperationsClient();
+        const desc = new LongrunningDescriptor(
+          client,
+          mockDecoder as unknown as AnyDecoder,
+          null,
+          {
+            pollingService: 'GlobaleOperations',
+            pollingMethodName: 'get',
+            pollingMethodRequestType: new protobuf.Type('test'),
+          }
+        );
+        const initialRetryDelayMillis = 1;
+        const retryDelayMultiplier = 2;
+        const maxRetryDelayMillis = 3;
+        const totalTimeoutMillis = 4;
+        const unusedRpcValue = 0;
+        const backoff = gax.createBackoffSettings(
+          initialRetryDelayMillis,
+          retryDelayMultiplier,
+          maxRetryDelayMillis,
+          unusedRpcValue,
+          unusedRpcValue,
+          unusedRpcValue,
+          totalTimeoutMillis
+        );
+        const operation = longrunning.operation(
+          SUCCESSFUL_COMPUTE_OP as {} as ComputeLROOperation,
+          desc,
+          backoff
+        );
+        assert(operation instanceof Object);
+        assert(operation.hasOwnProperty('backoffSettings'));
+        assert.strictEqual(
+          operation.backoffSettings.initialRetryDelayMillis,
+          initialRetryDelayMillis
+        );
+        assert.strictEqual(
+          operation.backoffSettings.retryDelayMultiplier,
+          retryDelayMultiplier
+        );
+        assert.strictEqual(
+          operation.backoffSettings.maxRetryDelayMillis,
+          maxRetryDelayMillis
+        );
+        assert.strictEqual(
+          operation.backoffSettings.totalTimeoutMillis,
+          totalTimeoutMillis
+        );
+        assert(operation.hasOwnProperty('longrunningDescriptor'));
+        assert.strictEqual(operation.name, COMPUTE_OPERATION_ID);
+        assert.strictEqual(operation.done, true);
+        assert.strictEqual(operation.result, null);
+        assert.strictEqual(operation.metadata, null);
+        assert.deepStrictEqual(operation.latestResponse, SUCCESSFUL_COMPUTE_OP);
+        done();
+      });
+
+      describe('get compute operation', () => {
+        it('does not make an api call if cached op is finished', done => {
+          const func = (
+            argument: {},
+            metadata: {},
+            options: {},
+            callback: Function
+          ) => {
+            callback(null, SUCCESSFUL_COMPUTE_OP);
+          };
+          const client = mockGloableOperationsClient();
+          const apiCall = createApiCall(func, client, true);
+          apiCall({})
+            .then(responses => {
+              const operation = responses[0] as longrunning.Operation;
+              operation.getOperation((err, result, metadata, rawResponse) => {
+                if (err) {
+                  done(err);
+                }
+                assert.strictEqual(result, SUCCESSFUL_COMPUTE_OP);
+                assert.strictEqual(metadata, SUCCESSFUL_COMPUTE_OP);
+                assert.deepStrictEqual(rawResponse, SUCCESSFUL_COMPUTE_OP);
+                assert.strictEqual(client.get.callCount, 0);
+                done();
+              });
+            })
+            .catch(done);
+        });
+
+        it('makes an api call to get the updated operation', done => {
+          const func = (
+            argument: {},
+            metadata: {},
+            options: {},
+            callback: Function
+          ) => {
+            callback(null, PENDING_COMPUTE_OP);
+          };
+          const client = mockGloableOperationsClient();
+          const apiCall = createApiCall(func, client, true);
+          apiCall({})
+            .then(responses => {
+              const operation = responses[0] as longrunning.Operation;
+              operation.getOperation((err, result, metadata, rawResponse) => {
+                if (err) {
+                  done(err);
+                }
+                assert.strictEqual(result, SUCCESSFUL_COMPUTE_OP);
+                assert.strictEqual(metadata, SUCCESSFUL_COMPUTE_OP);
+                assert.deepStrictEqual(rawResponse, SUCCESSFUL_COMPUTE_OP);
+                assert.strictEqual(client.get.callCount, 1);
+                done();
+              });
+            })
+            .catch(error => {
+              done(error);
+            });
+        });
+
+        it('does not return a promise when given a callback.', done => {
+          const func = (
+            argument: {},
+            metadata: {},
+            options: {},
+            callback: Function
+          ) => {
+            callback(null, PENDING_COMPUTE_OP);
+          };
+          const client = mockGloableOperationsClient();
+          const apiCall = createApiCall(func, client, true);
+          apiCall({})
+            .then(responses => {
+              const operation = responses[0] as longrunning.Operation;
+              assert.strictEqual(
+                operation.getOperation((err, result, metadata, rawResponse) => {
+                  if (err) {
+                    done(err);
+                  }
+                  assert.strictEqual(result, SUCCESSFUL_COMPUTE_OP);
+                  assert.strictEqual(metadata, SUCCESSFUL_COMPUTE_OP);
+                  assert.deepStrictEqual(rawResponse, SUCCESSFUL_COMPUTE_OP);
+                  assert.strictEqual(client.get.callCount, 1);
+                  done();
+                }),
+                undefined
+              );
+            })
+            .catch(error => {
+              done(error);
+            });
+        });
+
+        it('returns a promise that resolves to the correct data', done => {
+          const func = (
+            argument: {},
+            metadata: {},
+            options: {},
+            callback: Function
+          ) => {
+            callback(null, PENDING_COMPUTE_OP);
+          };
+          const client = mockGloableOperationsClient();
+          const apiCall = createApiCall(func, client, true);
+          apiCall({})
+            .then(responses => {
+              const operation = responses[0] as longrunning.Operation;
+              return operation.getOperation();
+            })
+            .then((responses: {[name: string]: {}}) => {
+              const result = responses[0];
+              const metadata = responses[1];
+              const rawResponse = responses[2];
+              assert.strictEqual(result, SUCCESSFUL_COMPUTE_OP);
+              assert.strictEqual(metadata, SUCCESSFUL_COMPUTE_OP);
+              assert.deepStrictEqual(rawResponse, SUCCESSFUL_COMPUTE_OP);
+              assert.strictEqual(client.get.callCount, 1);
+              done();
+            })
+            .catch(error => {
+              done(error);
+            });
+        });
+
+        it('returns a promise that rejects an operation error.', done => {
+          const func = (
+            argument: {},
+            metadata: {},
+            options: {},
+            callback: Function
+          ) => {
+            callback(null, ERROR_COMPUTE_OP);
+          };
+          const client = mockGloableOperationsClient();
+          const apiCall = createApiCall(func, client, true);
+          apiCall({})
+            .then(responses => {
+              const operation = responses[0] as longrunning.Operation;
+              return operation.getOperation();
+            })
+            .then(() => {
+              done(new Error('Should not get here.'));
+            })
+            .catch(error => {
+              assert(error instanceof GoogleError);
+              assert.strictEqual(
+                error.message,
+                ERROR_COMPUTE_OP.httpErrorMessage
+              );
+              assert.strictEqual(
+                error.code,
+                rpcCodeFromHttpStatusCode(ERROR_COMPUTE_OP.httpErrorStatusCode)
+              );
+              done();
+            });
+        });
+
+        it('request of get operation compose from arguments', done => {
+          const func = (
+            argument: {},
+            metadata: {},
+            options: {},
+            callback: Function
+          ) => {
+            callback(null, SUCCESSFUL_COMPUTE_OP);
+          };
+          const client = mockGloableOperationsClient();
+          const apiCall = createApiCall(func, client, true);
+          apiCall({project: 'project_return_from_service'})
+            .then(responses => {
+              const operation = responses[0] as longrunning.Operation;
+              operation.getOperation((err, result, metadata, rawResponse) => {
+                if (err) {
+                  done(err);
+                }
+                assert.strictEqual(result, SUCCESSFUL_COMPUTE_OP);
+                assert.strictEqual(metadata, SUCCESSFUL_COMPUTE_OP);
+                assert.deepStrictEqual(rawResponse, SUCCESSFUL_COMPUTE_OP);
+                assert.strictEqual(client.get.callCount, 0);
+                done();
+              });
+            })
+            .catch(done);
+        });
+      });
+    });
+
+    describe('ZoneOperations', () => {
+      const PENDING_COMPUTE_OP_ZONE = Object.assign(PENDING_COMPUTE_OP, {
+        zone: 'us-central',
+      });
+      const SUCCESSFUL_COMPUTE_OP_ZONE = Object.assign(SUCCESSFUL_COMPUTE_OP, {
+        zone: 'us-central',
+      });
+      function mockZoneOperationClient(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        opts?: any
+      ): SpyableComputeOperationClient {
+        opts = opts || {};
+        let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
+        const getSpy = sinon.spy(() => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let resolver: any;
+          const promise = new Promise(resolve => {
+            resolver = resolve;
+          });
+
+          if (remainingCalls && remainingCalls > 1) {
+            resolver([PENDING_COMPUTE_OP_ZONE]);
+            --remainingCalls;
+          } else if (!opts.dontResolve) {
+            resolver([opts.finalOperation || SUCCESSFUL_COMPUTE_OP_ZONE]);
+          }
+          return promise;
+        });
+        return {
+          get: getSpy,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+      }
+      it('returns an Operation with correct values', done => {
+        const client = mockZoneOperationClient();
+        const desc = new LongrunningDescriptor(
+          client,
+          mockDecoder as unknown as AnyDecoder,
+          null,
+          {
+            pollingService: 'ZoneOperations',
+            pollingMethodName: 'get',
+            pollingMethodRequestType: new protobuf.Type('test'),
+          }
+        );
+        const initialRetryDelayMillis = 1;
+        const retryDelayMultiplier = 2;
+        const maxRetryDelayMillis = 3;
+        const totalTimeoutMillis = 4;
+        const unusedRpcValue = 0;
+        const backoff = gax.createBackoffSettings(
+          initialRetryDelayMillis,
+          retryDelayMultiplier,
+          maxRetryDelayMillis,
+          unusedRpcValue,
+          unusedRpcValue,
+          unusedRpcValue,
+          totalTimeoutMillis
+        );
+        const operation = longrunning.operation(
+          SUCCESSFUL_COMPUTE_OP as {} as ComputeLROOperation,
+          desc,
+          backoff
+        );
+        assert(operation instanceof Object);
+        assert(operation.hasOwnProperty('backoffSettings'));
+        assert.strictEqual(
+          operation.backoffSettings.initialRetryDelayMillis,
+          initialRetryDelayMillis
+        );
+        assert.strictEqual(
+          operation.backoffSettings.retryDelayMultiplier,
+          retryDelayMultiplier
+        );
+        assert.strictEqual(
+          operation.backoffSettings.maxRetryDelayMillis,
+          maxRetryDelayMillis
+        );
+        assert.strictEqual(
+          operation.backoffSettings.totalTimeoutMillis,
+          totalTimeoutMillis
+        );
+        assert(operation.hasOwnProperty('longrunningDescriptor'));
+        assert.strictEqual(operation.name, COMPUTE_OPERATION_ID);
+        assert.strictEqual(operation.done, true);
+        assert.strictEqual(operation.result, null);
+        assert.strictEqual(operation.metadata, null);
+        assert.deepStrictEqual(
+          operation.latestResponse,
+          SUCCESSFUL_COMPUTE_OP_ZONE
+        );
+        done();
+      });
+    });
+
+    describe('RegionOperations', () => {
+      const PENDING_COMPUTE_OP_REGION = Object.assign(PENDING_COMPUTE_OP, {
+        region: 'compute-region',
+      });
+      const SUCCESSFUL_COMPUTE_OP_REGION = Object.assign(
+        SUCCESSFUL_COMPUTE_OP,
+        {
+          region: 'compute-region',
+        }
+      );
+      function mockRegionOperationsClient(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        opts?: any
+      ): SpyableComputeOperationClient {
+        opts = opts || {};
+        let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
+        const getSpy = sinon.spy(() => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let resolver: any;
+          const promise = new Promise(resolve => {
+            resolver = resolve;
+          });
+
+          if (remainingCalls && remainingCalls > 1) {
+            resolver([PENDING_COMPUTE_OP_REGION]);
+            --remainingCalls;
+          } else if (!opts.dontResolve) {
+            resolver([opts.finalOperation || SUCCESSFUL_COMPUTE_OP_REGION]);
+          }
+          return promise;
+        });
+        const getProjectIdSpy = sinon.spy(() => {
+          return Promise.resolve();
+        });
+        return {
+          get: getSpy,
+          getProjectId: getProjectIdSpy,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+      }
+      it('returns an Operation with correct values', done => {
+        const client = mockRegionOperationsClient();
+        const desc = new LongrunningDescriptor(
+          client,
+          mockDecoder as unknown as AnyDecoder,
+          null,
+          {
+            pollingService: 'RegionOperations',
+            pollingMethodName: 'get',
+            pollingMethodRequestType: new protobuf.Type('test'),
+          }
+        );
+        const initialRetryDelayMillis = 1;
+        const retryDelayMultiplier = 2;
+        const maxRetryDelayMillis = 3;
+        const totalTimeoutMillis = 4;
+        const unusedRpcValue = 0;
+        const backoff = gax.createBackoffSettings(
+          initialRetryDelayMillis,
+          retryDelayMultiplier,
+          maxRetryDelayMillis,
+          unusedRpcValue,
+          unusedRpcValue,
+          unusedRpcValue,
+          totalTimeoutMillis
+        );
+        const operation = longrunning.operation(
+          SUCCESSFUL_COMPUTE_OP_REGION as {} as ComputeLROOperation,
+          desc,
+          backoff
+        );
+        assert(operation instanceof Object);
+        assert(operation.hasOwnProperty('backoffSettings'));
+        assert.strictEqual(
+          operation.backoffSettings.initialRetryDelayMillis,
+          initialRetryDelayMillis
+        );
+        assert.strictEqual(
+          operation.backoffSettings.retryDelayMultiplier,
+          retryDelayMultiplier
+        );
+        assert.strictEqual(
+          operation.backoffSettings.maxRetryDelayMillis,
+          maxRetryDelayMillis
+        );
+        assert.strictEqual(
+          operation.backoffSettings.totalTimeoutMillis,
+          totalTimeoutMillis
+        );
+        assert(operation.hasOwnProperty('longrunningDescriptor'));
+        assert.strictEqual(operation.name, COMPUTE_OPERATION_ID);
+        assert.strictEqual(operation.done, true);
+        assert.strictEqual(operation.result, null);
+        assert.strictEqual(operation.metadata, null);
+        assert.deepStrictEqual(
+          operation.latestResponse,
+          SUCCESSFUL_COMPUTE_OP_REGION
+        );
+        done();
       });
     });
   });
