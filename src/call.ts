@@ -25,7 +25,7 @@ import {
   ResultTuple,
   SimpleCallbackFunction,
 } from './apitypes';
-import {GoogleError, GoogleErrorDecoder} from './googleError';
+import {GoogleError} from './googleError';
 
 export class OngoingCall {
   callback: APICallback;
@@ -118,12 +118,10 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
-        const decoder = new GoogleErrorDecoder();
-        try {
-          const decodedErr = decoder.decodeMetadata(err);
-          rejectCallback(decodedErr);
-        } catch (decodeErr) {
-          // Ignore the decoder error now, and return back original error.
+        // If gRPC metadata exist, parsed google.rpc.status details.
+        if (err.metadata) {
+          rejectCallback(GoogleError.parseGRPCStatusDetails(err));
+        } else {
           rejectCallback(err);
         }
       } else if (response !== undefined) {

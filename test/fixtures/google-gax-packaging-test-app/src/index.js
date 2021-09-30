@@ -86,6 +86,7 @@ async function testShowcase() {
   await testWait(grpcClient);
 
   await testEcho(fallbackClient);
+  await testEchoError(fallbackClient);
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
   await testPagedExpandAsync(fallbackClient);
@@ -130,31 +131,42 @@ async function testEchoError(client) {
     path.join(protos_path, 'error_details.proto')
   );
   const objs = JSON.parse(data);
+  const details = [];
+  const expectedDetails = [];
+  let errorInfo = {};
   for (const obj of objs) {
     const MessageType = root.lookupType(obj.type);
     const buffer = MessageType.encode(obj.value).finish();
-    const request = {
-      error: {
-        code: 3,
-        message: 'Test error',
-        details: [{
-          type_url: 'type.googleapis.com/' + obj.type,
-          value: buffer,
-        }],
-      },
-    };
-    const timer = setTimeout(() => {
-      throw new Error('End-to-end testEchoError method fails with timeout');
-    }, 12000);
-    await assert.rejects(() => client.echo(request),
-      Error);
-    try {
-      await client.echo(request);
-    } catch (err) {
-      clearTimeout(timer);
-      assert.strictEqual(JSON.stringify(obj.value),
-        JSON.stringify(err.statusDetails[0]));
+    details.push({
+      type_url: 'type.googleapis.com/' + obj.type,
+      value: buffer,
+    });
+    expectedDetails.push(obj.value);
+    if (obj.type === 'google.rpc.ErrorInfo') {
+      errorInfo = obj.value;
     }
+  }
+  const request = {
+    error: {
+      code: 3,
+      message: 'Test error',
+      details: details,
+    },
+  };
+  const timer = setTimeout(() => {
+      throw new Error('End-to-end testEchoError method fails with timeout');
+  }, 12000);
+  await assert.rejects(() => client.echo(request),
+    Error);
+  try {
+      await client.echo(request);
+  } catch (err) {
+      clearTimeout(timer);
+      assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
+      assert.ok(errorInfo)
+      assert.strictEqual(err.domain, errorInfo.domain)
+      assert.strictEqual(err.reason, errorInfo.reason)
+      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo.metadata));
   }
 }
 

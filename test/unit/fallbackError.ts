@@ -18,7 +18,8 @@ import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as path from 'path';
-import {GoogleErrorDecoder} from '../../src/googleError';
+import * as protobuf from 'protobufjs';
+import {GoogleError, GoogleErrorDecoder} from '../../src/googleError';
 
 describe('gRPC-fallback error decoding', () => {
   it('decodes error', () => {
@@ -41,11 +42,11 @@ describe('gRPC-fallback error decoding', () => {
     };
     const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeRpcStatus(errorBin);
-
-    // nested error messages have different types so we can't use deepStrictEqual here
+    assert.strictEqual(decodedError.code, expectedError.code);
+    assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify(expectedError.details)
     );
   });
 
@@ -73,11 +74,67 @@ describe('gRPC-fallback error decoding', () => {
     );
     const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeErrorFromBuffer(errorBin);
-    assert(decodedError instanceof Error);
-    // nested error messages have different types so we can't use deepStrictEqual here
+    assert(decodedError instanceof GoogleError);
+
+    assert.strictEqual(decodedError.code, expectedError.code);
+    assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
-      JSON.stringify(decodedError),
-      JSON.stringify(expectedError)
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify(expectedError.details)
+    );
+  });
+
+  it('decodes error with ErrorInfo', () => {
+    const protos_path = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      'protos',
+      'google',
+      'rpc'
+    );
+    const root = protobuf.loadSync([
+      path.join(protos_path, 'error_details.proto'),
+      path.join(protos_path, 'status.proto'),
+    ]);
+    const errorInfo = {
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+      metadata: {
+        consumer: 'projects/455411330361',
+        service: 'translate.googleapis.com',
+      },
+    };
+    const MessageType = root.lookupType('google.rpc.ErrorInfo');
+    const errorInfoBuffer = MessageType.encode(errorInfo).finish() as Buffer;
+    const expectedError = Object.assign(
+      new Error('7 PERMISSION_DENIED: mock error.'),
+      {
+        code: 7,
+        details: [errorInfo],
+        reason: errorInfo.reason,
+        domain: errorInfo.domain,
+        errorInfoMetadata: errorInfo.metadata,
+      }
+    );
+    const status = Object.assign(new Error('mock error.'), {
+      code: 7,
+      status: 'PERMISSION_DENIED',
+      details: new Array({
+        type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+        value: errorInfoBuffer,
+      }),
+    });
+    const Status = root.lookupType('google.rpc.Status');
+    const statusBuffer = Status.encode(status).finish() as Buffer;
+    const decoder = new GoogleErrorDecoder();
+    const decodedError = decoder.decodeErrorFromBuffer(statusBuffer);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError.code, expectedError.code);
+    assert.strictEqual(decodedError.message, expectedError.message);
+    assert.strictEqual(
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify(expectedError.details)
     );
   });
 });
