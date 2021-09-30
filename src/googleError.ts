@@ -67,7 +67,7 @@ export class GoogleError extends Error {
     // Rename "detials" to "statusDetails".
     error.statusDetails = json['error']['details'];
     delete error.details;
-    // Promote the ErrorInfo fields as first-class citizen in error.
+    // Promote the ErrorInfo fields as error's top-level.
     const errorInfo = !json['error']['details']
       ? undefined
       : json['error']['details'].find(
