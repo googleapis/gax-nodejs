@@ -55,13 +55,45 @@ export class GoogleError extends Error {
     }
     return err;
   }
+
+  // Parse http JSON error and promote google.rpc.ErrorInfo if exist.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static parseHttpError(json: any): GoogleError {
+    const error = Object.assign(
+      new GoogleError(json['error']['message']),
+      json.error
+    );
+    // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
+    // Rename "detials" to "statusDetails".
+    error.statusDetails = json['error']['details'];
+    delete error.details;
+    // Promote the ErrorInfo fields as error's top-level.
+    const errorInfo = !json['error']['details']
+      ? undefined
+      : json['error']['details'].find(
+          (item: {[x: string]: string}) =>
+            item['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo'
+        );
+    if (errorInfo) {
+      error.reason = errorInfo.reason;
+      error.domain = errorInfo.domain;
+      // error.metadata has been occupied for gRPC metadata, so we use
+      // errorInfoMetadat to represent ErrorInfo' metadata field. Keep
+      // consistency with gRPC ErrorInfo metadata field name.
+      error.errorInfoMetadata = errorInfo.metadata;
+    }
+    return error;
+  }
 }
 
 export type FallbackServiceError = FallbackStatusObject & Error;
 interface FallbackStatusObject {
   code: Status;
   message: string;
-  details: Array<{}>;
+  statusDetails: Array<{}>;
+  reason?: string;
+  domain?: string;
+  errorInfoMetadata?: {string: string};
 }
 
 interface ProtobufAny {
@@ -122,10 +154,14 @@ export class GoogleErrorDecoder {
     // google.rpc.Status contains an array of google.protobuf.Any
     // which need a special treatment
     const details: Array<protobuf.Message> = [];
+    let errorInfo;
     for (const detail of status.details) {
       try {
         const decodedDetail = this.decodeProtobufAny(detail);
         details.push(decodedDetail);
+        if (detail.type_url === 'type.googleapis.com/google.rpc.ErrorInfo') {
+          errorInfo = decodedDetail as unknown as ErrorInfo;
+        }
       } catch (err) {
         // cannot decode detail, likely because of the unknown type - just skip it
       }
@@ -133,7 +169,10 @@ export class GoogleErrorDecoder {
     const result = {
       code: status.code,
       message: status.message,
-      details,
+      statusDetails: details,
+      reason: errorInfo?.reason,
+      domain: errorInfo?.domain,
+      errorInfoMetadata: errorInfo?.metadata,
     };
     return result;
   }
@@ -142,7 +181,7 @@ export class GoogleErrorDecoder {
   // Adapted from https://github.com/grpc/grpc-node/blob/main/packages/grpc-js/src/call.ts#L79
   callErrorFromStatus(status: FallbackStatusObject): FallbackServiceError {
     status.message = `${status.code} ${Status[status.code]}: ${status.message}`;
-    return Object.assign(new Error(status.message), status);
+    return Object.assign(new GoogleError(status.message), status);
   }
 
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status,

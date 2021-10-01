@@ -86,6 +86,7 @@ async function testShowcase() {
   await testWait(grpcClient);
 
   await testEcho(fallbackClient);
+  await testEchoError(fallbackClient);
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
   await testPagedExpandAsync(fallbackClient);

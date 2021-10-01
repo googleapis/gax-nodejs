@@ -27,6 +27,7 @@ import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
+import {GoogleError} from '../../src';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
@@ -310,12 +311,82 @@ describe('grpc-fallback', () => {
         },
       })
     );
-
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof Error);
+        assert(err instanceof GoogleError);
         assert.strictEqual(err.message, expectedMessage);
-        assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
+        assert.strictEqual(err.code, expectedError.code);
+        assert.strictEqual(
+          JSON.stringify(err.statusDetails),
+          JSON.stringify(expectedError.details)
+        );
+        done();
+      });
+    });
+  });
+
+  it('should promote ErrorInfo if exist in fallback-rest error', done => {
+    const requestObject = {content: 'test-content'};
+    // example of an actual google.rpc.Status error message returned by Translate API
+    const errorInfo = {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+      metadata: {
+        service: 'translate.googleapis.com',
+        consumer: 'projects/123',
+      },
+    };
+    const serverError = {
+      error: {
+        code: 403,
+        message:
+          'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+        status: 'PERMISSION_DENIED',
+        details: [
+          {
+            '@type': 'type.googleapis.com/google.rpc.Help',
+            links: [
+              {
+                description: 'Google developers console API activation',
+                url: 'https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361',
+              },
+            ],
+          },
+          errorInfo,
+        ],
+      },
+    };
+    const opts = {
+      auth: authStub,
+      fallback: 'rest',
+    };
+    // @ts-ignore incomplete options
+    gaxGrpc = new GrpcClient(opts);
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert(err instanceof GoogleError);
+        assert.strictEqual(
+          JSON.stringify(err.statusDetails),
+          JSON.stringify(serverError['error']['details'])
+        );
+        assert.strictEqual(err.code, serverError['error']['code']);
+        assert.strictEqual(err.message, serverError['error']['message']);
+        assert.strictEqual(err.reason, errorInfo.reason);
+        assert.strictEqual(err.domain, errorInfo.domain);
+        assert.strictEqual(
+          JSON.stringify(err.errorInfoMetadata),
+          JSON.stringify(errorInfo.metadata)
+        );
         done();
       });
     });

@@ -111,7 +111,7 @@ describe('gRPC-google error decoding', () => {
 
     assert.strictEqual(
       JSON.stringify(decodedError),
-      '{"code":3,"message":"test","details":[]}'
+      '{"code":3,"message":"test","statusDetails":[]}'
     );
   });
 

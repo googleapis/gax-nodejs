@@ -4,6 +4,20 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.27.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.26.0...v2.27.0) (2021-09-30)
+
+
+### Features
+
+* promote error info field in http error ([#1111](https://www.github.com/googleapis/gax-nodejs/issues/1111)) ([a5702bd](https://www.github.com/googleapis/gax-nodejs/commit/a5702bd19ce7daae7fee5b60202bbf834e0621b0))
+
+## [2.26.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.4...v2.26.0) (2021-09-27)
+
+
+### Features
+
+* support customize options for grpc-node. ([#1115](https://www.github.com/googleapis/gax-nodejs/issues/1115)) ([82fb0cb](https://www.github.com/googleapis/gax-nodejs/commit/82fb0cb347211ffa511943febcb22c972f3407d3))
+
 ### [2.25.4](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.3...v2.25.4) (2021-09-15)
 
 
