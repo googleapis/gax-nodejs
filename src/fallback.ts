@@ -32,7 +32,7 @@ import * as objectHash from 'object-hash';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
-import {Descriptor} from './descriptor';
+import {Descriptor, StreamDescriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 import {FallbackServiceError} from './googleError';
 import * as fallbackProto from './fallbackProto';
@@ -360,10 +360,14 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor
 ): GaxCall {
-  if (descriptor && 'streaming' in descriptor) {
+  if (
+    descriptor &&
+    'streaming' in descriptor &&
+    (descriptor as StreamDescriptor).type !== 1
+  ) {
     return () => {
       throw new Error(
-        'The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls.'
+        'The gRPC-fallback client library (e.g. browser version of the library) currently does not support client-streaming or bidi-stream calls.'
       );
     };
   }

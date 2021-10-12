@@ -28,9 +28,14 @@ import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
 import {APICallback} from '../../src/apitypes';
 import internal = require('stream');
+import {StreamArrayParser} from '../../src/streamArrayParser';
+import path = require('path');
+import protobuf = require('protobufjs');
 
 function createApiCallStreaming(
-  func: Promise<GRPCCall> | sinon.SinonSpy<Array<{}>, internal.Transform>,
+  func:
+    | Promise<GRPCCall>
+    | sinon.SinonSpy<Array<{}>, internal.Transform | StreamArrayParser>,
   type: streaming.StreamType
 ) {
   const settings = new gax.CallSettings();
@@ -304,6 +309,80 @@ describe('streaming', () => {
     s.on('error', err => {
       assert.strictEqual(err, cancelError);
       done();
+    });
+  });
+
+  describe('apiCall return StreamArrayParser', () => {
+    it('forwards data, end event', done => {
+      const protos_path = path.resolve(
+        __dirname,
+        '..',
+        'fixtures',
+        'user.proto'
+      );
+      const root = protobuf.loadSync(protos_path);
+      const UserService = root.lookupService('UserService');
+      UserService.resolveAll();
+      const streamMethod = UserService.methods['RunQuery'];
+      const spy = sinon.spy((...args: Array<{}>) => {
+        assert.strictEqual(args.length, 3);
+        const s = new StreamArrayParser(streamMethod);
+        s.push({resources: [1, 2]});
+        s.push({resources: [3, 4, 5]});
+        s.push(null);
+        return s;
+      });
+      const apiCall = createApiCallStreaming(
+        spy,
+        streaming.StreamType.SERVER_STREAMING
+      );
+      const s = apiCall({}, undefined);
+      assert.strictEqual(s.readable, true);
+      assert.strictEqual(s.writable, false);
+      const actualResults: Array<{resources: Array<number>}> = [];
+      s.on('data', data => {
+        actualResults.push(data);
+      });
+      s.on('end', () => {
+        assert.strictEqual(
+          JSON.stringify(actualResults),
+          JSON.stringify([{resources: [1, 2]}, {resources: [3, 4, 5]}])
+        );
+        done();
+      });
+    });
+
+    it('forwards error event', done => {
+      const protos_path = path.resolve(
+        __dirname,
+        '..',
+        'fixtures',
+        'user.proto'
+      );
+      const root = protobuf.loadSync(protos_path);
+      const UserService = root.lookupService('UserService');
+      UserService.resolveAll();
+      const streamMethod = UserService.methods['RunQuery'];
+      const spy = sinon.spy((...args: Array<{}>) => {
+        assert.strictEqual(args.length, 3);
+        const s = new StreamArrayParser(streamMethod);
+        s.push({resources: [1, 2]});
+        s.push(null);
+        s.emit('error', new Error('test error'));
+        return s;
+      });
+      const apiCall = createApiCallStreaming(
+        spy,
+        streaming.StreamType.SERVER_STREAMING
+      );
+      const s = apiCall({}, undefined);
+      assert.strictEqual(s.readable, true);
+      assert.strictEqual(s.writable, false);
+      s.on('error', err => {
+        assert(err instanceof Error);
+        assert.deepStrictEqual(err.message, 'test error');
+        done();
+      });
     });
   });
 });

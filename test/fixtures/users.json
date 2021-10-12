@@ -1,0 +1,33 @@
+[{
+  "name": "John Doe",
+  "occupation": "gardener",
+  "born": "1992-03-02"
+}
+,
+{
+  "name": "Skipped Double \"Quotes",
+  "occupation": "teacher",
+  "born": "1967-11-22"
+},
+{
+  "name": "String Nest {Curly Brackets}",
+  "occupation": "accountant",
+  "born": "1995-04-07"
+}
+,
+{
+  "name": "String Nest [Square Brackets]",
+  "occupation": "pilot",
+  "born": "1977-10-31"
+},
+{
+  "name": "Lucy Black 2",
+  "occupation": "accountant",
+  "born": "1995-04-07"
+},
+{
+  "name": "Lucy Black 3",
+  "occupation": "accountant",
+  "born": "1995-04-08"
+}
+]
