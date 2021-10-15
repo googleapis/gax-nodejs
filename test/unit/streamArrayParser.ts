@@ -20,6 +20,7 @@ import {before, describe, it} from 'mocha';
 import {pipeline, Readable} from 'stream';
 import path = require('path');
 import protobuf = require('protobufjs');
+import {toProtobufJSON} from './utils';
 
 interface User {
   name: string;
@@ -52,6 +53,7 @@ describe('Parse REST stream array', () => {
   const protos_path = path.resolve(__dirname, '..', 'fixtures', 'user.proto');
   const root = protobuf.loadSync(protos_path);
   const UserService = root.lookupService('UserService');
+  const User = root.lookupType('User');
 
   let inStream: Readable;
   let streamMethod: protobuf.Method;
@@ -62,24 +64,39 @@ describe('Parse REST stream array', () => {
   it('should successfully decode array of valid JSON', done => {
     const expectedResults = [
       {
-        name: 'John Doe',
-        occupation: 'gardener',
-        born: '1992-03-02',
+        name: {firstName: 'John', lastName: 'Doe'},
+        occupation: ['gardener'],
+        updateTime: '2021-07-21T07:37:32.616613Z',
+        description: 'Normal Test',
+        age: 22,
       },
       {
-        name: 'Skipped Double "Quotes',
-        occupation: 'teacher',
-        born: '1967-11-22',
+        name: {firstName: 'Susan', lastName: 'Young'},
+        occupation: ['teacher'],
+        updateTime: '2021-07-21T07:37:33.038352Z',
+        description: 'Skipped Double "Quotes',
+        age: 55,
       },
       {
-        name: 'String Nest {Curly Brackets}',
-        occupation: 'accountant',
-        born: '1995-04-07',
+        name: {firstName: 'Sue', lastName: 'Young'},
+        occupation: ['teacher', 'worker'],
+        updateTime: '2021-07-21T07:37:33.038352Z',
+        description: 'Skipped Double \\"Quotes',
+        age: 50,
       },
       {
-        name: 'String Nest [Square Brackets]',
-        occupation: 'pilot',
-        born: '1977-10-31',
+        name: {firstName: 'Kiran', lastName: 'Mitchell'},
+        occupation: ['accountant'],
+        updateTime: '2021-07-21T07:37:33.038352Z',
+        description: 'String Nest {Curly Brackets}',
+        age: 32,
+      },
+      {
+        name: {firstName: 'Omar', lastName: 'Coleman'},
+        occupation: ['pilot', 'engineer'],
+        updateTime: '2021-10-15T22:20:58.331136Z',
+        description: 'String Nest [Square Brackets]',
+        age: 29,
       },
     ];
     inStream = createRandomChunkReadableStream(JSON.stringify(expectedResults));
@@ -95,10 +112,11 @@ describe('Parse REST stream array', () => {
       actualResults.push(data);
     });
     streamArrayParser.on('end', () => {
-      assert.strictEqual(
-        JSON.stringify(actualResults),
-        JSON.stringify(expectedResults)
-      );
+      assert.strictEqual(actualResults.length, expectedResults.length);
+      actualResults.forEach((actual, index) => {
+        const expect = toProtobufJSON(User, expectedResults[index]);
+        assert.strictEqual(JSON.stringify(actual), JSON.stringify(expect));
+      });
       done();
     });
   });
@@ -113,7 +131,7 @@ describe('Parse REST stream array', () => {
       assert(err instanceof Error);
       assert.deepStrictEqual(
         err.message,
-        "API service stream data must start with a '[' and close with the corresponding ']'"
+        "Internal Error: API service stream data must start with a '[' and close with the corresponding ']'"
       );
       done();
     });

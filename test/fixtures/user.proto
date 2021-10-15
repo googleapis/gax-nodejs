@@ -16,6 +16,8 @@ syntax = "proto3";
 
 package userPacakge;
 
+import "google/protobuf/timestamp.proto";
+
 service UserService {
 
   rpc RunQuery(QueryRequest) returns (stream User) {}
@@ -26,7 +28,14 @@ message QueryRequest {
 }
 
 message User {
-    string name = 1;
-    string occupation = 2;
-    string born = 3;
+    Name name = 1;
+    repeated string occupation = 2;
+    google.protobuf.Timestamp update_time = 3;
+    string description = 4;
+    int32 age = 5;
+}
+
+message Name {
+  string first_name = 1;
+  string last_name = 2;
 }

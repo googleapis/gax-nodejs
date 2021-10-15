@@ -19,6 +19,8 @@ import {createApiCall as realCreateApiCall} from '../../src/createApiCall';
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
 import {Descriptor} from '../../src/descriptor';
+import {serializer} from '../../src';
+import {defaultToObjectOptions} from '../../src/fallback';
 
 export const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
@@ -95,4 +97,14 @@ export function createRetryOptions(
         )
       : backoffSettingsOrInitialRetryDelayMillis;
   return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
+}
+
+export function toProtobufJSON(protobufType: protobuf.Type, json: any) {
+  const message = serializer.fromProto3JSON(protobufType, json);
+  if (!message) {
+    throw new Error(
+      `Internal Error: fail to convert JSON to protobuf specific JSON, protobuf type: ${protobufType}`
+    );
+  }
+  return protobufType.toObject(message, defaultToObjectOptions);
 }

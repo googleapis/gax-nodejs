@@ -127,7 +127,7 @@ export function generateServiceStub(
           return fetch(url, fetchRequest);
         })
         .then((response: Response | NodeFetchResponse) => {
-          if (rpc.responseStream) {
+          if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,
               streamArrayParser,
