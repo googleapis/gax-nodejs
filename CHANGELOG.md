@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.27.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.1...v2.27.2) (2021-10-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.4.0 ([#1123](https://www.github.com/googleapis/gax-nodejs/issues/1123)) ([d422711](https://www.github.com/googleapis/gax-nodejs/commit/d4227111154cc4dfee7849750b0eeb8841aa3512))
+
 ### [2.27.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.0...v2.27.1) (2021-10-01)
 
 
