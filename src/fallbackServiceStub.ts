@@ -99,7 +99,7 @@ export function generateServiceStub(
       for (const key of Object.keys(options)) {
         headers[key] = options[key][0];
       }
-      const streamArrayParser: StreamArrayParser = new StreamArrayParser(rpc);
+      const streamArrayParser = new StreamArrayParser(rpc);
 
       authClient
         .getRequestHeaders()

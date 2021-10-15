@@ -39,6 +39,7 @@ import * as fallbackProto from './fallbackProto';
 import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
+import {StreamType} from '.';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -363,7 +364,7 @@ export function createApiCall(
   if (
     descriptor &&
     'streaming' in descriptor &&
-    (descriptor as StreamDescriptor).type !== 1
+    (descriptor as StreamDescriptor).type !== StreamType.SERVER_STREAMING
   ) {
     return () => {
       throw new Error(

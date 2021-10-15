@@ -70,7 +70,7 @@ export class StreamArrayParser extends Transform {
         this.emit(
           'error',
           new Error(
-            "API service stream data must start with a '[' and close with the corresponding ']'"
+            "Internal Error: API service stream data must start with a '[' and close with the corresponding ']'"
           )
         );
       }
