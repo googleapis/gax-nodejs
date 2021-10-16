@@ -125,6 +125,7 @@ export class StreamArrayParser extends Transform {
           }
           break;
         case '\\':
+          // Escaping escape character.
           curIndex++;
           break;
         default:

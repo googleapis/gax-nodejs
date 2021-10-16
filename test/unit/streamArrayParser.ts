@@ -74,14 +74,14 @@ describe('Parse REST stream array', () => {
         name: {firstName: 'Susan', lastName: 'Young'},
         occupation: ['teacher'],
         updateTime: '2021-07-21T07:37:33.038352Z',
-        description: 'Skipped Double "Quotes',
+        description: 'Escaping Double "Quotes',
         age: 55,
       },
       {
         name: {firstName: 'Sue', lastName: 'Young'},
         occupation: ['teacher', 'worker'],
         updateTime: '2021-07-21T07:37:33.038352Z',
-        description: 'Skipped Double \\"Quotes',
+        description: 'Escaping escape \\"Quotes',
         age: 50,
       },
       {
