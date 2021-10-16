@@ -99,7 +99,7 @@ export function createRetryOptions(
   return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
 }
 
-export function toProtobufJSON(protobufType: protobuf.Type, json: any) {
+export function toProtobufJSON(protobufType: protobuf.Type, json: {}) {
   const message = serializer.fromProto3JSON(protobufType, json);
   if (!message) {
     throw new Error(
