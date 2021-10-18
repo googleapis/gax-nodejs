@@ -105,20 +105,18 @@ describe('Parse REST stream array', () => {
     const streamArrayParser = new StreamArrayParser(streamMethod);
     pipeline(inStream, streamArrayParser, err => {
       if (err) {
-        throw new Error('should not be run.');
+        throw new Error(`should not be run with error ${err}`);
       }
       assert.strictEqual(err, undefined);
     });
-    const actualResults: User[] = [];
+    let count = 0;
     streamArrayParser.on('data', data => {
-      actualResults.push(data);
+      const expect = toProtobufJSON(User, expectedResults[count]);
+      assert.strictEqual(JSON.stringify(data), JSON.stringify(expect));
+      count++;
     });
     streamArrayParser.on('end', () => {
-      assert.strictEqual(actualResults.length, expectedResults.length);
-      actualResults.forEach((actual, index) => {
-        const expect = toProtobufJSON(User, expectedResults[index]);
-        assert.strictEqual(JSON.stringify(actual), JSON.stringify(expect));
-      });
+      assert.strictEqual(count, expectedResults.length);
       done();
     });
   });
