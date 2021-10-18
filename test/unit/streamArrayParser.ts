@@ -23,9 +23,11 @@ import protobuf = require('protobufjs');
 import {toProtobufJSON} from './utils';
 
 interface User {
-  name: string;
-  occupation: string;
-  born: string;
+  name: {firstName: string; lastName: string};
+  occupation: string[];
+  updateTime: string;
+  description: string;
+  age: number;
 }
 
 function createRandomChunkReadableStream(data: string) {
@@ -117,6 +119,33 @@ describe('Parse REST stream array', () => {
         const expect = toProtobufJSON(User, expectedResults[index]);
         assert.strictEqual(JSON.stringify(actual), JSON.stringify(expect));
       });
+      done();
+    });
+  });
+  it('should assign defaul value if the service response is not valid protobuf specific JSON', done => {
+    const expectedResults = [
+      {
+        name: 'Not Valid Name Message',
+        occupation: ['gardener'],
+        updateTime: '2021-07-21T07:37:32.616613Z',
+        description: 'Normal Test',
+        age: 22,
+      },
+    ];
+    inStream = createRandomChunkReadableStream(JSON.stringify(expectedResults));
+    const streamArrayParser = new StreamArrayParser(streamMethod);
+    pipeline(inStream, streamArrayParser, err => {
+      if (err) {
+        throw new Error('should not be run.');
+      }
+      assert.strictEqual(err, undefined);
+    });
+    streamArrayParser.on('data', (data: User) => {
+      assert.notEqual(data.name, expectedResults[0].name);
+      assert.strictEqual(data.name.firstName, '');
+      assert.strictEqual(data.name.lastName, '');
+    });
+    streamArrayParser.on('end', () => {
       done();
     });
   });

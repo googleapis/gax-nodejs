@@ -313,17 +313,12 @@ describe('streaming', () => {
   });
 
   describe('apiCall return StreamArrayParser', () => {
+    const protos_path = path.resolve(__dirname, '..', 'fixtures', 'user.proto');
+    const root = protobuf.loadSync(protos_path);
+    const UserService = root.lookupService('UserService');
+    UserService.resolveAll();
+    const streamMethod = UserService.methods['RunQuery'];
     it('forwards data, end event', done => {
-      const protos_path = path.resolve(
-        __dirname,
-        '..',
-        'fixtures',
-        'user.proto'
-      );
-      const root = protobuf.loadSync(protos_path);
-      const UserService = root.lookupService('UserService');
-      UserService.resolveAll();
-      const streamMethod = UserService.methods['RunQuery'];
       const spy = sinon.spy((...args: Array<{}>) => {
         assert.strictEqual(args.length, 3);
         const s = new StreamArrayParser(streamMethod);
@@ -353,16 +348,6 @@ describe('streaming', () => {
     });
 
     it('forwards error event', done => {
-      const protos_path = path.resolve(
-        __dirname,
-        '..',
-        'fixtures',
-        'user.proto'
-      );
-      const root = protobuf.loadSync(protos_path);
-      const UserService = root.lookupService('UserService');
-      UserService.resolveAll();
-      const streamMethod = UserService.methods['RunQuery'];
       const spy = sinon.spy((...args: Array<{}>) => {
         assert.strictEqual(args.length, 3);
         const s = new StreamArrayParser(streamMethod);
@@ -381,6 +366,45 @@ describe('streaming', () => {
       s.on('error', err => {
         assert(err instanceof Error);
         assert.deepStrictEqual(err.message, 'test error');
+        done();
+      });
+    });
+
+    it('cancels StreamArrayParser in the middle', done => {
+      function schedulePush(s: StreamArrayParser, c: number) {
+        const intervalId = setInterval(() => {
+          s.push(c);
+          c++;
+        }, 10);
+        s.on('finish', () => {
+          clearInterval(intervalId);
+        });
+      }
+      const cancelError = new Error('cancelled');
+      const spy = sinon.spy((...args: Array<{}>) => {
+        assert.strictEqual(args.length, 3);
+        const s = new StreamArrayParser(streamMethod);
+        schedulePush(s, 0);
+        return s;
+      });
+      const apiCall = createApiCallStreaming(
+        //@ts-ignore
+        spy,
+        streaming.StreamType.SERVER_STREAMING
+      );
+      const s = apiCall({}, undefined);
+      let counter = 0;
+      const expectedCount = 5;
+      s.on('data', data => {
+        assert.strictEqual(data, counter);
+        counter++;
+        if (counter === expectedCount) {
+          s.cancel();
+        } else if (counter > expectedCount) {
+          done(new Error('should not reach'));
+        }
+      });
+      s.on('end', () => {
         done();
       });
     });

@@ -147,11 +147,9 @@ export class StreamArrayParser extends Transform {
   }
 
   cancel(): void {
-    if (this._done) {
-      return;
-    }
     this._done = true;
     this.cancelRequested = true;
     this.cancelController.abort();
+    this.end();
   }
 }
