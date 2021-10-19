@@ -47,7 +47,7 @@
     "execa": "^5.0.0",
     "file-loader": "^6.0.0",
     "fs-extra": "^10.0.0",
-    "google-proto-files": "^2.1.0",
+    "google-proto-files": "^2.5.0",
     "gts": "^2.0.0",
     "is-docker": "^2.0.0",
     "json-loader": "^0.5.7",
