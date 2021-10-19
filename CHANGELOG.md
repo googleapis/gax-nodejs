@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [2.28.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.1...v2.28.0) (2021-10-19)
+
+
+### Features
+
+* export google/api/routing.proto ([#1126](https://www.github.com/googleapis/gax-nodejs/issues/1126)) ([c62667e](https://www.github.com/googleapis/gax-nodejs/commit/c62667ed6499b6529203b6d8d66debb854fe1376))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.4.0 ([#1123](https://www.github.com/googleapis/gax-nodejs/issues/1123)) ([d422711](https://www.github.com/googleapis/gax-nodejs/commit/d4227111154cc4dfee7849750b0eeb8841aa3512))
+
 ### [2.27.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.0...v2.27.1) (2021-10-01)
 
 
