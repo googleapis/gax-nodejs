@@ -257,6 +257,71 @@ describe('streaming', () => {
     }, 50);
   });
 
+  it('Not receive metadata event', done => {
+    const responseMetadata = {metadata: true};
+    const status = {code: 0, metadata: responseMetadata};
+    const expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+      metadata: responseMetadata,
+    };
+    function func() {
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.on('finish', () => {
+        s.emit('status', status);
+      });
+      return s;
+    }
+    const apiCall = createApiCallStreaming(
+      //@ts-ignore
+      func,
+      streaming.StreamType.BIDI_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    const metadataCallback = sinon.spy();
+    let receivedStatus: {};
+    let receivedResponse: {};
+    let finished = false;
+
+    function check() {
+      if (
+        typeof receivedStatus !== 'undefined' &&
+        typeof receivedResponse !== 'undefined' &&
+        finished
+      ) {
+        assert.deepStrictEqual(receivedStatus, status);
+        assert.deepStrictEqual(receivedResponse, expectedResponse);
+        done();
+      }
+    }
+
+    s.on('metadata', metadataCallback);
+    s.on('status', data => {
+      receivedStatus = data;
+      check();
+    });
+    s.on('response', data => {
+      receivedResponse = data;
+      check();
+    });
+    s.on('finish', () => {
+      finished = true;
+      check();
+    });
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, true);
+    setTimeout(() => {
+      s.end(s);
+    }, 50);
+    s.on('end', () => {
+      assert.strictEqual(metadataCallback.callCount, 0);
+      done();
+    });
+  });
+
   it('cancels in the middle', done => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function schedulePush(s: any, c: number) {

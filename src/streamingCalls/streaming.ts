@@ -17,6 +17,7 @@
 /* This file describes the gRPC-streaming. */
 
 import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
+import {Metadata} from '@grpc/grpc-js';
 
 import {
   APICallback,
@@ -76,6 +77,13 @@ export enum StreamType {
   BIDI_STREAMING = 3,
 }
 
+interface Status {
+  code: number;
+  details: string;
+  message?: string;
+  metadata?: Metadata;
+}
+
 export class StreamProxy extends duplexify implements GRPCCallResult {
   type: StreamType;
   private _callback: APICallback;
@@ -113,10 +121,27 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {Stream} stream - The API request stream.
    */
   forwardEvents(stream: Stream) {
+    // Avoid "response" events emit twice.
+    let responseHasSent = false;
+
     const eventsToForward = ['metadata', 'response', 'status'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
+    });
+
+    // gRPC guaranteed emit the 'status' event but not 'metadata'. Emit the 'response'
+    // event if stream has no 'metadata' event. This also avoid stream swallow the
+    // other events, such as 'end'.
+    stream.on('status', (status: Status) => {
+      if (!responseHasSent) {
+        stream.emit('response', {
+          code: 200,
+          details: '',
+          message: 'OK',
+          metadata: status.metadata,
+        });
+      }
     });
 
     // We also want to supply the status data as 'response' event to support
@@ -134,6 +159,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         message: 'OK',
         metadata,
       });
+      responseHasSent = true;
     });
   }
 
