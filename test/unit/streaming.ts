@@ -401,7 +401,7 @@ describe('streaming', () => {
       s.push(null);
       s.on('end', () => {
         setTimeout(() => {
-          console.log('emit status event')
+          console.log('emit status event');
           s.emit('status', expectedStatus);
         }, 10);
       });
