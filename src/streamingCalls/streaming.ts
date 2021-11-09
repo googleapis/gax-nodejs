@@ -129,9 +129,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       stream.on(event, this.emit.bind(this, event));
     });
 
-    // gRPC guaranteed emit the 'status' event but not 'metadata'. And 'status' is the last event to be emit.
+    // gRPC is guaranteed emit the 'status' event but not 'metadata', and 'status' is the last event to emit.
     // Emit the 'response' event if stream has no 'metadata' event.
-    // This avoids stream swallow the other events, such as 'end'.
+    // This avoids the stream swallowing the other events, such as 'end'.
     stream.on('status', () => {
       if (!this._responseHasSent) {
         stream.emit('response', {
