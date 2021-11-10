@@ -306,4 +306,150 @@ describe('streaming', () => {
       done();
     });
   });
+
+  it('emit response when stream received metadata event', done => {
+    const responseMetadata = {metadata: true};
+    const expectedStatus = {code: 0, metadata: responseMetadata};
+    const expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+      metadata: responseMetadata,
+    };
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      setImmediate(() => {
+        s.emit('metadata', responseMetadata);
+      });
+      s.on('end', () => {
+        setTimeout(() => {
+          s.emit('status', expectedStatus);
+        }, 10);
+      });
+      return s;
+    });
+
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    let receivedMetadata: {};
+    let receivedStatus: {};
+    let receivedResponse: {};
+    let ended = false;
+
+    function check() {
+      if (
+        typeof receivedMetadata !== 'undefined' &&
+        typeof receivedStatus !== 'undefined' &&
+        typeof receivedResponse !== 'undefined' &&
+        ended
+      ) {
+        assert.deepStrictEqual(receivedMetadata, responseMetadata);
+        assert.deepStrictEqual(receivedStatus, expectedStatus);
+        assert.deepStrictEqual(receivedResponse, expectedResponse);
+        done();
+      }
+    }
+
+    const dataCallback = sinon.spy(data => {
+      assert.deepStrictEqual(data, undefined);
+    });
+    const responseCallback = sinon.spy();
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
+    s.on('data', dataCallback);
+    s.on('metadata', data => {
+      receivedMetadata = data;
+      check();
+    });
+    s.on('response', data => {
+      receivedResponse = data;
+      responseCallback();
+      check();
+    });
+    s.on('status', data => {
+      receivedStatus = data;
+      check();
+    });
+    s.on('end', () => {
+      ended = true;
+      check();
+      assert.strictEqual(dataCallback.callCount, 0);
+      assert.strictEqual(responseCallback.callCount, 1);
+    });
+  });
+
+  it('emit response when stream received no metadata event', done => {
+    const responseMetadata = {metadata: true};
+    const expectedStatus = {code: 0, metadata: responseMetadata};
+    const expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+    };
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      s.on('end', () => {
+        setTimeout(() => {
+          console.log('emit status event');
+          s.emit('status', expectedStatus);
+        }, 10);
+      });
+      return s;
+    });
+
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    let receivedStatus: {};
+    let receivedResponse: {};
+    let ended = false;
+
+    function check() {
+      if (
+        typeof receivedStatus !== 'undefined' &&
+        typeof receivedResponse !== 'undefined' &&
+        ended
+      ) {
+        assert.deepStrictEqual(receivedStatus, expectedStatus);
+        assert.deepStrictEqual(receivedResponse, expectedResponse);
+        done();
+      }
+    }
+
+    const dataCallback = sinon.spy(data => {
+      assert.deepStrictEqual(data, undefined);
+    });
+    const responseCallback = sinon.spy();
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
+    s.on('data', dataCallback);
+    s.on('response', data => {
+      receivedResponse = data;
+      responseCallback();
+      check();
+    });
+    s.on('status', data => {
+      receivedStatus = data;
+      check();
+    });
+    s.on('end', () => {
+      ended = true;
+      check();
+      assert.strictEqual(dataCallback.callCount, 0);
+      assert.strictEqual(responseCallback.callCount, 1);
+    });
+  });
 });
