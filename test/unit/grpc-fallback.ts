@@ -379,7 +379,7 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(serverError['error']['details'])
         );
-        assert.strictEqual(err.code, serverError['error']['code']);
+        assert.strictEqual(err.code, 7);
         assert.strictEqual(err.message, serverError['error']['message']);
         assert.strictEqual(err.reason, errorInfo.reason);
         assert.strictEqual(err.domain, errorInfo.domain);
