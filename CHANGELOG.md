@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.28.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.28.0...v2.28.1) (2021-11-10)
+
+
+### Bug Fixes
+
+* handle stream has no metadata event ([#1132](https://www.github.com/googleapis/gax-nodejs/issues/1132)) ([ad29bc2](https://www.github.com/googleapis/gax-nodejs/commit/ad29bc26567b588d5d694350844bea5de40963d6))
+
 ## [2.28.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.1...v2.28.0) (2021-10-19)
 
 
