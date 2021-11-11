@@ -109,14 +109,20 @@ describe('Parse REST stream array', () => {
       }
       assert.strictEqual(err, undefined);
     });
-    let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any[] = [];
     streamArrayParser.on('data', data => {
-      const expect = toProtobufJSON(User, expectedResults[count]);
-      assert.strictEqual(JSON.stringify(data), JSON.stringify(expect));
-      count++;
+      results.push(data);
     });
     streamArrayParser.on('end', () => {
-      assert.strictEqual(count, expectedResults.length);
+      assert.strictEqual(results.length, expectedResults.length);
+      for (const key in expectedResults) {
+        const expect = toProtobufJSON(User, expectedResults[key]);
+        assert.strictEqual(
+          JSON.stringify(results[key]),
+          JSON.stringify(expect)
+        );
+      }
       done();
     });
   });
