@@ -115,7 +115,6 @@ describe('Parse REST stream array', () => {
       results.push(data);
     });
     streamArrayParser.on('end', () => {
-      assert.strictEqual(results.length, expectedResults.length);
       for (const key in expectedResults) {
         const expect = toProtobufJSON(User, expectedResults[key]);
         assert.strictEqual(
