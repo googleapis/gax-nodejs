@@ -17,6 +17,7 @@
 /* This file describes the gRPC-streaming. */
 
 import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
+import {Metadata} from '@grpc/grpc-js';
 
 import {
   APICallback,
@@ -77,11 +78,19 @@ export enum StreamType {
   BIDI_STREAMING = 3,
 }
 
+interface Status {
+  code: number;
+  details: string;
+  message?: string;
+  metadata?: Metadata;
+}
+
 export class StreamProxy extends duplexify implements GRPCCallResult {
   type: StreamType;
   private _callback: APICallback;
   private _isCancelCalled: boolean;
   stream?: CancellableStream;
+  private _responseHasSent: boolean;
   /**
    * StreamProxy is a proxy to gRPC-streaming method.
    *
@@ -99,6 +108,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     this.type = type;
     this._callback = callback;
     this._isCancelCalled = false;
+    this._responseHasSent = false;
   }
 
   cancel() {
@@ -122,6 +132,19 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       stream.on(event, this.emit.bind(this, event));
     });
 
+    // gRPC is guaranteed emit the 'status' event but not 'metadata', and 'status' is the last event to emit.
+    // Emit the 'response' event if stream has no 'metadata' event.
+    // This avoids the stream swallowing the other events, such as 'end'.
+    stream.on('status', () => {
+      if (!this._responseHasSent) {
+        stream.emit('response', {
+          code: 200,
+          details: '',
+          message: 'OK',
+        });
+      }
+    });
+
     // We also want to supply the status data as 'response' event to support
     // the behavior of google-cloud-node expects.
     // see:
@@ -137,6 +160,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         message: 'OK',
         metadata,
       });
+      this._responseHasSent = true;
     });
   }
 
