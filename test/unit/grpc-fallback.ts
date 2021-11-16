@@ -129,8 +129,8 @@ describe('createStub', () => {
     assert.strictEqual(typeof echoStub.pagedExpand, 'function');
     assert.strictEqual(typeof echoStub.wait, 'function');
 
-    // There should be 6 methods for the echo service
-    assert.strictEqual(Object.keys(echoStub).length, 6);
+    // There should be 7 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 7);
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
@@ -144,8 +144,8 @@ describe('createStub', () => {
     assert.strictEqual(typeof echoStub.collect, 'function');
     assert.strictEqual(typeof echoStub.chat, 'function');
 
-    // There should be 6 methods for the echo service
-    assert.strictEqual(Object.keys(echoStub).length, 6);
+    // There should be 7 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 7);
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
@@ -379,7 +379,7 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(serverError['error']['details'])
         );
-        assert.strictEqual(err.code, serverError['error']['code']);
+        assert.strictEqual(err.code, 7);
         assert.strictEqual(err.message, serverError['error']['message']);
         assert.strictEqual(err.reason, errorInfo.reason);
         assert.strictEqual(err.domain, errorInfo.domain);
