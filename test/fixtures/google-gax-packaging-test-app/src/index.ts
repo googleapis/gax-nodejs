@@ -88,20 +88,20 @@ async function testShowcase() {
   const restClient = new gapic.v1beta1.EchoClient(restClientOpts);
 
   // assuming gRPC server is started locally
-  // await testEcho(grpcClient);
-  // await testEchoError(grpcClient);
-  // await testExpand(grpcClient);
-  // await testPagedExpand(grpcClient);
-  // await testPagedExpandAsync(grpcClient);
-  // await testCollect(grpcClient);
-  // await testChat(grpcClient);
-  // await testWait(grpcClient);
+  await testEcho(grpcClient);
+  await testEchoError(grpcClient);
+  await testExpand(grpcClient);
+  await testPagedExpand(grpcClient);
+  await testPagedExpandAsync(grpcClient);
+  await testCollect(grpcClient);
+  await testChat(grpcClient);
+  await testWait(grpcClient);
 
-  // await testEcho(fallbackClient);
-  // await testEchoError(fallbackClient);
-  // await testPagedExpand(fallbackClient);
-  // await testWait(fallbackClient);
-  // await testPagedExpandAsync(fallbackClient);
+  await testEcho(fallbackClient);
+  await testEchoError(fallbackClient);
+  await testPagedExpand(fallbackClient);
+  await testWait(fallbackClient);
+  await testPagedExpandAsync(fallbackClient);
 
   await testExpand(restClient);
 }
