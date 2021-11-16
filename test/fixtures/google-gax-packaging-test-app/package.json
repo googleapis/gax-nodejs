@@ -12,7 +12,7 @@
   "scripts": {
     "lint": "eslint **/*.js",
     "prettier": "prettier --write **/*.js",
-    "start": "node build/src/index.js",
+    "start": "node src/index.js",
     "test": "mocha test/*.js"
   },
   "devDependencies": {

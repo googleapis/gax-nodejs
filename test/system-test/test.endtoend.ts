@@ -45,7 +45,7 @@ const testAppName = 'google-gax-packaging-test-app';
 const testAppSource = path.join(fixturesDir, testAppName);
 const testAppDestination = path.join(testDir, testAppName);
 
-describe.only('Run end-to-end test', () => {
+describe('Run end-to-end test', () => {
   const grpcServer = new ShowcaseServer();
   before(async () => {
     await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
@@ -55,12 +55,10 @@ describe.only('Run end-to-end test', () => {
     await rmrf(testDir);
     await mkdir(testDir);
     process.chdir(testDir);
-    console.log('------testDir:: ', testDir)
     await grpcServer.start();
   });
 
   it('should be able to prepare test app', async () => {
-    console.log('---------testAppSource:; ', testAppSource)
     await ncpp(testAppSource, testAppDestination);
     await ncpp(gaxTarball, path.join(testAppDestination, 'google-gax.tgz'));
     await execa('npm', ['install'], {
@@ -70,7 +68,6 @@ describe.only('Run end-to-end test', () => {
   });
 
   it('should be able to run unit tests of test app', async () => {
-    console.log('-------testAppDestination:: ', testAppDestination);
     await execa('npm', ['test'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 

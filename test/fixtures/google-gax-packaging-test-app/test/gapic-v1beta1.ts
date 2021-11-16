@@ -24,8 +24,8 @@ import {describe, it} from 'mocha';
 import * as echoModule from '../src';
 
 import {PassThrough} from 'stream';
-
-import {protobuf, LROperation, operationsProtos} from '../../../../src';
+//@ts-ignore
+import {protobuf, LROperation, operationsProtos} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (

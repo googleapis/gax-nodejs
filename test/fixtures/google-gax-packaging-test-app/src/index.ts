@@ -180,18 +180,14 @@ async function testExpand(client: EchoClient) {
   const request = {
     content: words.join(' '),
   };
-  const result = await new Promise((resolve, reject) => {
-    const stream = client.expand(request);
-    const result: string[] = [];
-    stream.on('data', response => {
+  const stream = await client.expand(request);
+  const result: string[] = [];
+    stream.on('data', (response: {content: string}) => {
       result.push(response.content);
     });
     stream.on('end', () => {
-      resolve(result);
+      assert.deepStrictEqual(words, result);
     });
-    stream.on('error', reject);
-  });
-  assert.deepStrictEqual(words, result);
 }
 
 async function testPagedExpand(client: EchoClient) {
@@ -231,8 +227,8 @@ async function testPagedExpandAsync(client: EchoClient) {
 
 async function testCollect(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const stream = await client.collect((err, result) => {
-    assert.deepStrictEqual(result, words.join(' '));
+  const stream = await client.collect((err: Error, result: {content: string}) => {
+    assert.deepStrictEqual(result.content, words.join(' '));
   });
   for (const word of words) {
       const request = { content: word };
@@ -255,7 +251,7 @@ async function testChat(client: EchoClient) {
   const result = await new Promise((resolve, reject) => {
     const result: string[] = [];
     const stream = client.chat();
-    stream.on('data', response => {
+    stream.on('data', (response: {content: string}) => {
       result.push(response.content);
     });
     stream.on('end', () => {
