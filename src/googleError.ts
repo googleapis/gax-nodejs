@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Status} from './status';
+import {Status, rpcCodeFromHttpStatusCode} from './status';
 import * as protobuf from 'protobufjs';
 import {Metadata} from './grpc';
 
@@ -63,6 +63,11 @@ export class GoogleError extends Error {
       new GoogleError(json['error']['message']),
       json.error
     );
+    // Map Http Status Code to gRPC Status Code
+    if (json['error']['code']) {
+      error.code = rpcCodeFromHttpStatusCode(json['error']['code']);
+    }
+
     // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
     // Rename "detials" to "statusDetails".
     error.statusDetails = json['error']['details'];
