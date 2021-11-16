@@ -15,6 +15,9 @@
  */
 
 'use strict';
+import {EchoClient} from './v1beta1';
+import * as v1beta1 from './v1beta1';
+export {v1beta1}
 
 const assert = require('assert');
 const fs = require('fs');
@@ -92,7 +95,7 @@ async function testShowcase() {
   await testPagedExpandAsync(fallbackClient);
 }
 
-async function testEcho(client) {
+async function testEcho(client: EchoClient) {
   const request = {
     content: 'test',
   };
@@ -104,7 +107,7 @@ async function testEcho(client) {
   assert.deepStrictEqual(request.content, response.content);
 }
 
-async function testEchoError(client) {
+async function testEchoError(client: EchoClient) {
   const readFile = util.promisify(fs.readFile);
 
   const fixtureName = path.resolve(
@@ -133,7 +136,7 @@ async function testEchoError(client) {
   const objs = JSON.parse(data);
   const details = [];
   const expectedDetails = [];
-  let errorInfo = {};
+  let errorInfo: {domain: string, reason: string, metadata: [string, string]};
   for (const obj of objs) {
     const MessageType = root.lookupType(obj.type);
     const buffer = MessageType.encode(obj.value).finish();
@@ -163,23 +166,23 @@ async function testEchoError(client) {
   } catch (err) {
       clearTimeout(timer);
       assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
-      assert.ok(errorInfo)
-      assert.strictEqual(err.domain, errorInfo.domain)
-      assert.strictEqual(err.reason, errorInfo.reason)
-      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo.metadata));
+      assert.ok(errorInfo!)
+      assert.strictEqual(err.domain, errorInfo!.domain)
+      assert.strictEqual(err.reason, errorInfo!.reason)
+      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
   }
 }
 
 
 
-async function testExpand(client) {
+async function testExpand(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
   };
   const result = await new Promise((resolve, reject) => {
     const stream = client.expand(request);
-    const result = [];
+    const result: string[] = [];
     stream.on('data', response => {
       result.push(response.content);
     });
@@ -191,7 +194,7 @@ async function testExpand(client) {
   assert.deepStrictEqual(words, result);
 }
 
-async function testPagedExpand(client) {
+async function testPagedExpand(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
@@ -206,7 +209,7 @@ async function testPagedExpand(client) {
   assert.deepStrictEqual(words, result);
 }
 
-async function testPagedExpandAsync(client) {
+async function testPagedExpandAsync(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
@@ -226,26 +229,19 @@ async function testPagedExpandAsync(client) {
   assert.deepStrictEqual(words, response);
 }
 
-async function testCollect(client) {
+async function testCollect(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const result = await new Promise((resolve, reject) => {
-    const stream = client.collect((err, result) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(result);
-    });
-    for (const word of words) {
+  const stream = await client.collect((err, result) => {
+    assert.deepStrictEqual(result, words.join(' '));
+  });
+  for (const word of words) {
       const request = { content: word };
       stream.write(request);
     }
-    stream.end();
-  });
-  assert.deepStrictEqual(result.content, words.join(' '));
+  stream.end();
 }
 
-async function testChat(client) {
+async function testChat(client: EchoClient) {
   const words = [
     'nobody',
     'ever',
@@ -257,7 +253,7 @@ async function testChat(client) {
     'one',
   ];
   const result = await new Promise((resolve, reject) => {
-    const result = [];
+    const result: string[] = [];
     const stream = client.chat();
     stream.on('data', response => {
       result.push(response.content);
@@ -274,7 +270,7 @@ async function testChat(client) {
   assert.deepStrictEqual(result, words);
 }
 
-async function testWait(client) {
+async function testWait(client: EchoClient) {
   const request = {
     ttl: {
       seconds: 5,

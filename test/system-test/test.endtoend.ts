@@ -30,7 +30,8 @@ const ncpp = util.promisify(ncp);
 
 const testDir = path.join(process.cwd(), '.kitchen-sink');
 const gaxDir = path.resolve(__dirname, '..', '..', '..');
-const fixturesDir = path.join(gaxDir, 'test', 'fixtures');
+const buildDir = path.join(process.cwd(), 'build');
+const fixturesDir = path.join(buildDir, 'test', 'fixtures');
 
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball
@@ -44,7 +45,7 @@ const testAppName = 'google-gax-packaging-test-app';
 const testAppSource = path.join(fixturesDir, testAppName);
 const testAppDestination = path.join(testDir, testAppName);
 
-describe('Run end-to-end test', () => {
+describe.only('Run end-to-end test', () => {
   const grpcServer = new ShowcaseServer();
   before(async () => {
     await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
@@ -54,10 +55,12 @@ describe('Run end-to-end test', () => {
     await rmrf(testDir);
     await mkdir(testDir);
     process.chdir(testDir);
+    console.log('------testDir:: ', testDir)
     await grpcServer.start();
   });
 
   it('should be able to prepare test app', async () => {
+    console.log('---------testAppSource:; ', testAppSource)
     await ncpp(testAppSource, testAppDestination);
     await ncpp(gaxTarball, path.join(testAppDestination, 'google-gax.tgz'));
     await execa('npm', ['install'], {
@@ -67,6 +70,7 @@ describe('Run end-to-end test', () => {
   });
 
   it('should be able to run unit tests of test app', async () => {
+    console.log('-------testAppDestination:: ', testAppDestination);
     await execa('npm', ['test'], {cwd: testAppDestination, stdio: 'inherit'});
   });
 
