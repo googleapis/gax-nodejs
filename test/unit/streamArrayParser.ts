@@ -17,9 +17,10 @@
 import * as assert from 'assert';
 import {StreamArrayParser} from '../../src/streamArrayParser';
 import {before, describe, it} from 'mocha';
-import {pipeline, Readable} from 'stream';
+import {pipeline} from 'stream';
 import path = require('path');
 import protobuf = require('protobufjs');
+import {PassThrough} from 'stream';
 import {toProtobufJSON} from './utils';
 
 interface User {
@@ -31,9 +32,9 @@ interface User {
 }
 
 function createRandomChunkReadableStream(data: string) {
-  const stream = new Readable({
+  assert.notEqual(data, undefined);
+  const stream = new PassThrough({
     objectMode: true,
-    read() {},
   });
 
   const users = data.split('');
@@ -57,7 +58,6 @@ describe('Parse REST stream array', () => {
   const UserService = root.lookupService('UserService');
   const User = root.lookupType('User');
 
-  let inStream: Readable;
   let streamMethod: protobuf.Method;
   before(() => {
     UserService.resolveAll();
@@ -101,7 +101,12 @@ describe('Parse REST stream array', () => {
         age: 29,
       },
     ];
-    inStream = createRandomChunkReadableStream(JSON.stringify(expectedResults));
+    const inStream = createRandomChunkReadableStream(
+      JSON.stringify(expectedResults)
+    );
+    inStream.on('data', d => {
+      assert.notEqual(d, undefined);
+    });
     const streamArrayParser = new StreamArrayParser(streamMethod);
     pipeline(inStream, streamArrayParser, err => {
       if (err) {
@@ -135,7 +140,9 @@ describe('Parse REST stream array', () => {
         age: 22,
       },
     ];
-    inStream = createRandomChunkReadableStream(JSON.stringify(expectedResults));
+    const inStream = createRandomChunkReadableStream(
+      JSON.stringify(expectedResults)
+    );
     const streamArrayParser = new StreamArrayParser(streamMethod);
     pipeline(inStream, streamArrayParser, err => {
       if (err) {
@@ -154,7 +161,9 @@ describe('Parse REST stream array', () => {
   });
   it("should listen on error if input stream is not start '['", done => {
     const expectedResults = {};
-    inStream = createRandomChunkReadableStream(JSON.stringify(expectedResults));
+    const inStream = createRandomChunkReadableStream(
+      JSON.stringify(expectedResults)
+    );
     const streamArrayParser = new StreamArrayParser(streamMethod);
     pipeline(inStream, streamArrayParser, err => {
       assert(err instanceof Error);
