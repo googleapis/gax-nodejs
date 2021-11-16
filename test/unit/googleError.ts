@@ -22,6 +22,7 @@ import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import {GoogleError, GoogleErrorDecoder} from '../../src/googleError';
 import {Metadata} from '@grpc/grpc-js';
+import {rpcCodeFromHttpStatusCode} from '../../src/status';
 
 interface MyObj {
   type: string;
@@ -271,5 +272,32 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(decodedError, grpcError);
+  });
+});
+
+describe('map http status code to gRPC status code', () => {
+  it('error with http status code', () => {
+    const json = {
+      error: {
+        code: 403,
+        message:
+          'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+        status: 'PERMISSION_DENIED',
+      },
+    };
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+  });
+
+  it('error without http status code', () => {
+    const json = {
+      error: {
+        message:
+          'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+        status: 'PERMISSION_DENIED',
+      },
+    };
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, undefined);
   });
 });

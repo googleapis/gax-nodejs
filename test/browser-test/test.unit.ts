@@ -20,9 +20,9 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import {Transform} from 'stream';
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1';
+import {GoogleAuth} from 'google-auth-library';
+import {GoogleError} from '../../src';
 interface Operation {
   promise(): Function;
 }
@@ -34,15 +34,21 @@ describe('Run unit tests of echo client', () => {
   const error = new Error() as GoogleError;
   error.code = FAKE_STATUS_CODE;
   const authStub = {
-    async getRequestHeaders() {
-      return {Authorization: 'Bearer SOME_TOKEN'};
+    getClient: async () => {
+      return {
+        getRequestHeaders: async () => {
+          return {
+            Authorization: 'Bearer zzzz',
+          };
+        },
+      };
     },
   };
 
   describe('echo', () => {
-    it('invokes echo without error', done => {
+    it('invokes echo without error', async done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -57,21 +63,19 @@ describe('Run unit tests of echo client', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.echo = mockSimpleGrpcMethod(
+      client.innerApiCalls.echo = mockSimpleGrpcMethod(
         request,
         expectedResponse
       );
 
-      client.echo(request, (err: Error, response: {}) => {
-        assert.ifError(err);
-        assert.deepStrictEqual(response, expectedResponse);
-        done();
-      });
+      const [response] = await client.echo(request);
+      assert.deepStrictEqual(response, expectedResponse);
+      done();
     });
 
-    it('invokes echo with error', done => {
+    it('invokes echo with error', async done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -80,21 +84,21 @@ describe('Run unit tests of echo client', () => {
       const request = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.echo = mockSimpleGrpcMethod(request, null, error);
-
-      client.echo(request, (err: {code: number}, response: {}) => {
-        assert(err instanceof Error);
+      client.innerApiCalls.echo = mockSimpleGrpcMethod(request, null, error);
+      try {
+        await client.echo(request);
+      } catch (err) {
+        assert(err instanceof GoogleError);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        assert(typeof response === 'undefined');
         done();
-      });
+      }
     });
   });
 
   describe('expand', () => {
     it('invokes expand without error', done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -109,7 +113,7 @@ describe('Run unit tests of echo client', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.expand = mockServerStreamingGrpcMethod(
+      client.innerApiCalls.expand = mockServerStreamingGrpcMethod(
         request,
         expectedResponse
       );
@@ -122,13 +126,11 @@ describe('Run unit tests of echo client', () => {
       stream.on('error', (err: Error) => {
         done(err);
       });
-
-      stream.write();
     });
 
     it('invokes expand with error', done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -137,7 +139,7 @@ describe('Run unit tests of echo client', () => {
       const request = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.expand = mockServerStreamingGrpcMethod(
+      client.innerApiCalls.expand = mockServerStreamingGrpcMethod(
         request,
         null,
         error
@@ -152,15 +154,13 @@ describe('Run unit tests of echo client', () => {
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
         done();
       });
-
-      stream.write();
     });
   });
 
   describe('pagedExpand', () => {
-    it('invokes pagedExpand without error', done => {
+    it('invokes pagedExpand without error', async done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -178,7 +178,7 @@ describe('Run unit tests of echo client', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.pagedExpand = (
+      client.innerApiCalls.pagedExpand = (
         actualRequest: {},
         options: {},
         callback: Function
@@ -187,16 +187,14 @@ describe('Run unit tests of echo client', () => {
         callback(null, expectedResponse.responses);
       };
 
-      client.pagedExpand(request, (err: {}, response: {}) => {
-        assert.ifError(err);
-        assert.deepStrictEqual(response, expectedResponse.responses);
-        done();
-      });
+      const [response] = await client.pagedExpand(request);
+      assert.deepStrictEqual(response, expectedResponse.responses);
+      done();
     });
 
-    it('invokes pagedExpand with error', done => {
+    it('invokes pagedExpand with error', async done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -205,25 +203,26 @@ describe('Run unit tests of echo client', () => {
       const request = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.pagedExpand = mockSimpleGrpcMethod(
+      client.innerApiCalls.pagedExpand = mockSimpleGrpcMethod(
         request,
         null,
         error
       );
 
-      client.pagedExpand(request, (err: {code: number}, response: {}) => {
-        assert(err instanceof Error);
+      try {
+        await client.pagedExpand(request);
+      } catch (err) {
+        assert(err instanceof GoogleError);
         assert.strictEqual(err.code, FAKE_STATUS_CODE);
-        assert(typeof response === 'undefined');
         done();
-      });
+      }
     });
   });
 
   describe('chat', () => {
     it('invokes chat without error', done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -238,7 +237,7 @@ describe('Run unit tests of echo client', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.chat = mockBidiStreamingGrpcMethod(
+      client.innerApiCalls.chat = mockBidiStreamingGrpcMethod(
         request,
         expectedResponse
       );
@@ -258,7 +257,7 @@ describe('Run unit tests of echo client', () => {
 
     it('invokes chat with error', done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -267,7 +266,7 @@ describe('Run unit tests of echo client', () => {
       const request = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.chat = mockBidiStreamingGrpcMethod(
+      client.innerApiCalls.chat = mockBidiStreamingGrpcMethod(
         request,
         null,
         error
@@ -291,7 +290,7 @@ describe('Run unit tests of echo client', () => {
   describe('wait', () => {
     it('invokes wait without error', done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -306,18 +305,18 @@ describe('Run unit tests of echo client', () => {
       };
 
       // Mock Grpc layer
-      client._innerApiCalls.wait = mockLongRunningGrpcMethod(
+      client.innerApiCalls.wait = mockLongRunningGrpcMethod(
         request,
         expectedResponse
       );
 
       client
         .wait(request)
-        .then((responses: Operation[]) => {
+        .then(responses => {
           const operation = responses[0];
           return operation.promise();
         })
-        .then((responses: Operation[]) => {
+        .then(responses => {
           assert.deepStrictEqual(responses[0], expectedResponse);
           done();
         })
@@ -328,7 +327,7 @@ describe('Run unit tests of echo client', () => {
 
     it('invokes wait with error', done => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
@@ -337,7 +336,7 @@ describe('Run unit tests of echo client', () => {
       const request = {};
 
       // Mock Grpc layer
-      client._innerApiCalls.wait = mockLongRunningGrpcMethod(
+      client.innerApiCalls.wait = mockLongRunningGrpcMethod(
         request,
         null,
         error
@@ -345,7 +344,7 @@ describe('Run unit tests of echo client', () => {
 
       client
         .wait(request)
-        .then((responses: Operation[]) => {
+        .then(responses => {
           const operation = responses[0];
           return operation.promise();
         })
@@ -361,15 +360,15 @@ describe('Run unit tests of echo client', () => {
 
     it('has longrunning decoder functions', () => {
       const client = new EchoClient({
-        auth: authStub,
+        auth: authStub as unknown as GoogleAuth,
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
       assert(
-        client._descriptors.longrunning.wait.responseDecoder instanceof Function
+        client.descriptors.longrunning.wait.responseDecoder instanceof Function
       );
       assert(
-        client._descriptors.longrunning.wait.metadataDecoder instanceof Function
+        client.descriptors.longrunning.wait.metadataDecoder instanceof Function
       );
     });
   });

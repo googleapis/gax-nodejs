@@ -16,9 +16,8 @@
 
 import * as assert from 'assert';
 import {describe, it, before} from 'mocha';
-// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-// @ts-ignore
-import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import {GoogleAuth} from 'google-auth-library';
+import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1';
 
 function sleep(timeout: number) {
   return new Promise(resolve => {
@@ -28,13 +27,19 @@ function sleep(timeout: number) {
 
 describe('Run tests against gRPC server', () => {
   const authStub = {
-    async getRequestHeaders() {
-      return {Authorization: 'Bearer SOME_TOKEN'};
+    getClient: async () => {
+      return {
+        getRequestHeaders: async () => {
+          return {
+            Authorization: 'Bearer zzzz',
+          };
+        },
+      };
     },
   };
 
   const opts = {
-    auth: authStub,
+    auth: authStub as unknown as GoogleAuth,
     protocol: 'http',
     port: 1337,
   };
@@ -93,7 +98,7 @@ describe('Run tests against gRPC server', () => {
       pageSize: 2,
     };
     const [response] = await client.pagedExpand(request);
-    const result = response.map((r: {content: string}) => r.content);
+    const result = response.map(r => r.content);
     assert.deepStrictEqual(words, result);
   });
 
