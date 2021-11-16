@@ -74,25 +74,36 @@ async function testShowcase() {
     auth: fakeGoogleAuth,
   };
 
+  const restClientOpts = {
+    fallback: 'rest',
+    protocol: 'http',
+    port: 7469,
+    auth: fakeGoogleAuth,
+  };
+
   const grpcClient = new gapic.v1beta1.EchoClient(grpcClientOpts);
 
   const fallbackClient = new gapic.v1beta1.EchoClient(fallbackClientOpts);
 
-  // assuming gRPC server is started locally
-  await testEcho(grpcClient);
-  await testEchoError(grpcClient);
-  await testExpand(grpcClient);
-  await testPagedExpand(grpcClient);
-  await testPagedExpandAsync(grpcClient);
-  await testCollect(grpcClient);
-  await testChat(grpcClient);
-  await testWait(grpcClient);
+  const restClient = new gapic.v1beta1.EchoClient(restClientOpts);
 
-  await testEcho(fallbackClient);
-  await testEchoError(fallbackClient);
-  await testPagedExpand(fallbackClient);
-  await testWait(fallbackClient);
-  await testPagedExpandAsync(fallbackClient);
+  // assuming gRPC server is started locally
+  // await testEcho(grpcClient);
+  // await testEchoError(grpcClient);
+  // await testExpand(grpcClient);
+  // await testPagedExpand(grpcClient);
+  // await testPagedExpandAsync(grpcClient);
+  // await testCollect(grpcClient);
+  // await testChat(grpcClient);
+  // await testWait(grpcClient);
+
+  // await testEcho(fallbackClient);
+  // await testEchoError(fallbackClient);
+  // await testPagedExpand(fallbackClient);
+  // await testWait(fallbackClient);
+  // await testPagedExpandAsync(fallbackClient);
+
+  await testExpand(restClient);
 }
 
 async function testEcho(client: EchoClient) {
