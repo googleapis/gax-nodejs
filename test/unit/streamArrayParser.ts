@@ -129,6 +129,10 @@ describe('Parse REST stream array', () => {
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results: any[] = [];
+    streamArrayParser.on('error', err => {
+      console.log('-------errr: ', err);
+      assert.equal(err, undefined);
+    });
     streamArrayParser.on('data', data => {
       assert.notEqual(data, undefined);
       results.push(data);
