@@ -103,7 +103,11 @@ async function testShowcase() {
   await testWait(fallbackClient);
   await testPagedExpandAsync(fallbackClient);
 
+  await testEcho(restClient);
   await testExpand(restClient);
+  await testPagedExpand(restClient);
+  await testPagedExpandAsync(restClient);
+  await testWait(restClient);
 }
 
 async function testEcho(client: EchoClient) {
