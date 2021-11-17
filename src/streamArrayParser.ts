@@ -124,6 +124,7 @@ export class StreamArrayParser extends Transform {
         case ']':
           if (!this._isInString && this._level === 1) {
             this._done = true;
+            this.push(null);
           }
           break;
         case '\\':
