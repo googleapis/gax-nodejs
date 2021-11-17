@@ -527,7 +527,6 @@ describe('apiCall return StreamArrayParser', () => {
         clearInterval(intervalId);
       });
     }
-    const cancelError = new Error('cancelled');
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
       const s = new StreamArrayParser(streamMethod);
