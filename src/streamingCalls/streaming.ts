@@ -26,6 +26,7 @@ import {
   SimpleCallbackFunction,
 } from '../apitypes';
 import {RetryRequestOptions} from '../gax';
+import {StreamArrayParser} from '../streamArrayParser';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -124,7 +125,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
   forwardEvents(stream: Stream) {
     const eventsToForward = ['metadata', 'response', 'status'];
-
+    if (stream instanceof StreamArrayParser) {
+      eventsToForward.push('data', 'end', 'error');
+    }
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
     });
