@@ -71,10 +71,13 @@ export class StreamArrayParser extends Transform {
     if (this._level === 0 && curIndex === 0) {
       if (String.fromCharCode(chunk[0]) !== '[') {
         this.emit(
-            'error',
-            new Error(
-                `Internal Error: API service stream data must start with a '[' and close with the corresponding ']', but it start with ${
-                    String.fromCharCode(chunk[0])}`));
+          'error',
+          new Error(
+            `Internal Error: API service stream data must start with a '[' and close with the corresponding ']', but it start with ${String.fromCharCode(
+              chunk[0]
+            )}`
+          )
+        );
       }
       curIndex++;
       this._level++;
