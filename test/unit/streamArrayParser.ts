@@ -80,6 +80,13 @@ describe('Parse REST stream array', () => {
         age: 55,
       },
       {
+        name: {firstName: 'Sue', lastName: 'Young'},
+        occupation: ['teacher', 'worker'],
+        updateTime: '2021-07-21T07:37:33.038352Z',
+        description: 'Escaping escape \\"Quotes',
+        age: 50,
+      },
+      {
         name: {firstName: 'Kiran', lastName: 'Mitchell'},
         occupation: ['accountant'],
         updateTime: '2021-07-21T07:37:33.038352Z',

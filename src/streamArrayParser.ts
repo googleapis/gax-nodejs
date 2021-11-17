@@ -24,6 +24,7 @@ export class StreamArrayParser extends Transform {
   private _done: boolean;
   private _prevBlock: Buffer;
   private _isInString: boolean;
+  private _isSkipped: boolean;
   private _level: number;
   rpc: protobuf.Method;
   cancelController: AbortController;
@@ -55,6 +56,7 @@ export class StreamArrayParser extends Transform {
     this._done = false;
     this._prevBlock = Buffer.from('');
     this._isInString = false;
+    this._isSkipped = false;
     this._level = 0;
     this.rpc = rpc;
     this.cancelController = hasAbortController()
@@ -85,57 +87,61 @@ export class StreamArrayParser extends Transform {
 
     while (curIndex < chunk.length) {
       const curValue = String.fromCharCode(chunk[curIndex]);
-      switch (curValue) {
-        case '{':
-          // Check if it's in string, we ignore the curly brace in string.
-          // Otherwise the object level++.
-          if (!this._isInString) {
-            this._level++;
-          }
-          if (!this._isInString && this._level === 2) {
-            objectStart = curIndex;
-          }
-          break;
-        case '"':
-          // Flip the string status
-          this._isInString = !this._isInString;
-          break;
-        case '}':
-          // check if it's in string
-          // if true, do nothing
-          // if false and level = 0, push data
-          if (!this._isInString) {
-            this._level--;
-          }
-          if (!this._isInString && this._level === 1) {
-            // find a object
-            const objBuff = Buffer.concat([
-              this._prevBlock,
-              chunk.slice(objectStart, curIndex + 1),
-            ]);
-            try {
-              // HTTP reponse.ok is true.
-              const msgObj = decodeResponse(this.rpc, true, objBuff);
-              this.push(msgObj);
-            } catch (err) {
-              this.emit('error', err);
+      if (!this._isSkipped) {
+        switch (curValue) {
+          case '{':
+            // Check if it's in string, we ignore the curly brace in string.
+            // Otherwise the object level++.
+            if (!this._isInString) {
+              this._level++;
             }
-            objectStart = curIndex + 1;
-            this._prevBlock = Buffer.from('');
-          }
-          break;
-        case ']':
-          if (!this._isInString && this._level === 1) {
-            this._done = true;
-            this.push(null);
-          }
-          break;
-        case '\\':
-          // Escaping escape character.
-          curIndex++;
-          break;
-        default:
-          break;
+            if (!this._isInString && this._level === 2) {
+              objectStart = curIndex;
+            }
+            break;
+          case '"':
+            // Flip the string status
+            this._isInString = !this._isInString;
+            break;
+          case '}':
+            // check if it's in string
+            // if true, do nothing
+            // if false and level = 0, push data
+            if (!this._isInString) {
+              this._level--;
+            }
+            if (!this._isInString && this._level === 1) {
+              // find a object
+              const objBuff = Buffer.concat([
+                this._prevBlock,
+                chunk.slice(objectStart, curIndex + 1),
+              ]);
+              try {
+                // HTTP reponse.ok is true.
+                const msgObj = decodeResponse(this.rpc, true, objBuff);
+                this.push(msgObj);
+              } catch (err) {
+                this.emit('error', err);
+              }
+              objectStart = curIndex + 1;
+              this._prevBlock = Buffer.from('');
+            }
+            break;
+          case ']':
+            if (!this._isInString && this._level === 1) {
+              this._done = true;
+              this.push(null);
+            }
+            break;
+          case '\\':
+            // Escaping escape character.
+            this._isSkipped = true;
+            break;
+          default:
+            break;
+        }
+      } else {
+        this._isSkipped = false;
       }
       curIndex++;
     }
