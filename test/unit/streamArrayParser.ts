@@ -72,6 +72,40 @@ describe('Parse REST stream array', () => {
         description: 'Normal Test',
         age: 22,
       },
+    ];
+    const inStream = createRandomChunkReadableStream(
+      JSON.stringify(expectedResults)
+    );
+    inStream.on('data', d => {
+      assert.notEqual(d, undefined);
+    });
+    const streamArrayParser = new StreamArrayParser(streamMethod);
+    pipeline(inStream, streamArrayParser, err => {
+      if (err) {
+        throw new Error(`should not be run with error ${err}`);
+      }
+      assert.strictEqual(err, undefined);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any[] = [];
+    streamArrayParser.on('data', data => {
+      assert.notEqual(data, undefined);
+      results.push(data);
+    });
+    streamArrayParser.on('end', () => {
+      for (const key in expectedResults) {
+        const expect = toProtobufJSON(User, expectedResults[key]);
+        assert.strictEqual(
+          JSON.stringify(results[key]),
+          JSON.stringify(expect)
+        );
+      }
+      done();
+    });
+  });
+
+  it('should successfully decode array of valid JSON with Double Quote', done => {
+    const expectedResults = [
       {
         name: {firstName: 'Susan', lastName: 'Young'},
         occupation: ['teacher'],
@@ -86,6 +120,40 @@ describe('Parse REST stream array', () => {
         description: 'Escaping escape \\"Quotes',
         age: 50,
       },
+    ];
+    const inStream = createRandomChunkReadableStream(
+      JSON.stringify(expectedResults)
+    );
+    inStream.on('data', d => {
+      assert.notEqual(d, undefined);
+    });
+    const streamArrayParser = new StreamArrayParser(streamMethod);
+    pipeline(inStream, streamArrayParser, err => {
+      if (err) {
+        throw new Error(`should not be run with error ${err}`);
+      }
+      assert.strictEqual(err, undefined);
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const results: any[] = [];
+    streamArrayParser.on('data', data => {
+      assert.notEqual(data, undefined);
+      results.push(data);
+    });
+    streamArrayParser.on('end', () => {
+      for (const key in expectedResults) {
+        const expect = toProtobufJSON(User, expectedResults[key]);
+        assert.strictEqual(
+          JSON.stringify(results[key]),
+          JSON.stringify(expect)
+        );
+      }
+      done();
+    });
+  });
+
+  it('should successfully decode array of valid JSON with braces', done => {
+    const expectedResults = [
       {
         name: {firstName: 'Kiran', lastName: 'Mitchell'},
         occupation: ['accountant'],
@@ -117,6 +185,7 @@ describe('Parse REST stream array', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results: any[] = [];
     streamArrayParser.on('data', data => {
+      assert.notEqual(data, undefined);
       results.push(data);
     });
     streamArrayParser.on('end', () => {
@@ -130,6 +199,7 @@ describe('Parse REST stream array', () => {
       done();
     });
   });
+
   it('should assign defaul value if the service response is not valid protobuf specific JSON', done => {
     const expectedResults = [
       {
@@ -159,6 +229,7 @@ describe('Parse REST stream array', () => {
       done();
     });
   });
+
   it("should listen on error if input stream is not start '['", done => {
     const expectedResults = {};
     const inStream = createRandomChunkReadableStream(
@@ -170,10 +241,6 @@ describe('Parse REST stream array', () => {
     });
     streamArrayParser.once('error', err => {
       assert(err instanceof Error);
-      assert.deepStrictEqual(
-        err.message,
-        "Internal Error: API service stream data must start with a '[' and close with the corresponding ']'"
-      );
       done();
     });
   });
