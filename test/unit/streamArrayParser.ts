@@ -40,7 +40,7 @@ function createRandomChunkReadableStream(data: string) {
   const users = data.split('');
   let index = 0;
   while (index < users.length) {
-    const random = Math.floor(Math.random() * 20);
+    const random = 1 + Math.floor(Math.random() * 20);
     let str = '';
     for (let idx = 0; idx < random && index < users.length; ++idx) {
       str += users[index];
@@ -130,50 +130,8 @@ describe('Parse REST stream array', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results: any[] = [];
     streamArrayParser.on('error', err => {
-      console.log('-------errr: ', err);
       assert.equal(err, undefined);
     });
-    streamArrayParser.on('data', data => {
-      assert.notEqual(data, undefined);
-      results.push(data);
-    });
-    streamArrayParser.on('end', () => {
-      for (const key in expectedResults) {
-        const expect = toProtobufJSON(User, expectedResults[key]);
-        assert.strictEqual(
-          JSON.stringify(results[key]),
-          JSON.stringify(expect)
-        );
-      }
-      done();
-    });
-  });
-
-  it('should successfully decode array of valid JSON with Double escape', done => {
-    const expectedResults = [
-      {
-        name: {firstName: 'Sue', lastName: 'Young'},
-        occupation: ['teacher', 'worker'],
-        updateTime: '2021-07-21T07:37:33.038352Z',
-        description: 'Escaping \\" escape',
-        age: 50,
-      },
-    ];
-    const inStream = createRandomChunkReadableStream(
-      JSON.stringify(expectedResults)
-    );
-    inStream.on('data', d => {
-      assert.notEqual(d, undefined);
-    });
-    const streamArrayParser = new StreamArrayParser(streamMethod);
-    pipeline(inStream, streamArrayParser, err => {
-      if (err) {
-        throw new Error(`should not be run with error ${err}`);
-      }
-      assert.strictEqual(err, undefined);
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const results: any[] = [];
     streamArrayParser.on('data', data => {
       assert.notEqual(data, undefined);
       results.push(data);

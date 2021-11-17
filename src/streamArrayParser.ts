@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+import {AbortController as NodeAbortController} from 'abort-controller';
 import {Transform} from 'stream';
+
 import {decodeResponse} from './fallbackRest';
 import {hasAbortController} from './featureDetection';
-import {AbortController as NodeAbortController} from 'abort-controller';
 
 export class StreamArrayParser extends Transform {
   private _done: boolean;
@@ -29,23 +30,25 @@ export class StreamArrayParser extends Transform {
   cancelSignal: AbortSignal;
   cancelRequested: boolean;
   /**
-   * StreamArrayParser processes array of valid JSON objects in random chunks through
-   * readable stream, and produces a stream of plain Javascript objects where it
-   * converted from the corresponding protobuf message instance.
+   * StreamArrayParser processes array of valid JSON objects in random chunks
+   * through readable stream, and produces a stream of plain Javascript objects
+   * where it converted from the corresponding protobuf message instance.
    *
    * The default JSON parser decodes the input stream under the
    * following rules:
-   *  1. The stream represents a valid JSON array (must start with a "[" and close
-   *    with the corresponding "]"). Each element of this array is assumed to be
-   *    either an array or an object, and will be decoded as a JS object and
+   *  1. The stream represents a valid JSON array (must start with a "[" and
+   * close with the corresponding "]"). Each element of this array is assumed to
+   * be either an array or an object, and will be decoded as a JS object and
    *    delivered.
-   *  2. All JSON elements in the buffer will be decoded and delivered in a stream.
+   *  2. All JSON elements in the buffer will be decoded and delivered in a
+   * stream.
    *
    * @private
    * @constructor
    * @param {protobuf.Method} rpc - the protobuf method produce array of JSON.
    * @param {Object} options - the options pass to Transform Stream. See more
-   * details https://nodejs.org/api/stream.html#stream_new_stream_transform_options.
+   * details
+   * https://nodejs.org/api/stream.html#stream_new_stream_transform_options.
    */
   constructor(rpc: protobuf.Method, options?: {}) {
     super(Object.assign({}, options, {readableObjectMode: true}));
@@ -68,13 +71,10 @@ export class StreamArrayParser extends Transform {
     if (this._level === 0 && curIndex === 0) {
       if (String.fromCharCode(chunk[0]) !== '[') {
         this.emit(
-          'error',
-          new Error(
-            `Internal Error: API service stream data must start with a '[' and close with the corresponding ']', but it start with ${String.fromCharCode(
-              chunk[0]
-            )}`
-          )
-        );
+            'error',
+            new Error(
+                `Internal Error: API service stream data must start with a '[' and close with the corresponding ']', but it start with ${
+                    String.fromCharCode(chunk[0])}`));
       }
       curIndex++;
       this._level++;
