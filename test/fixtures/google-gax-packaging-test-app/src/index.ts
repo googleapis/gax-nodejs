@@ -74,9 +74,18 @@ async function testShowcase() {
     auth: fakeGoogleAuth,
   };
 
+  const restClientOpts = {
+    fallback: 'rest',
+    protocol: 'http',
+    port: 7469,
+    auth: fakeGoogleAuth,
+  };
+
   const grpcClient = new gapic.v1beta1.EchoClient(grpcClientOpts);
 
   const fallbackClient = new gapic.v1beta1.EchoClient(fallbackClientOpts);
+
+  const restClient = new gapic.v1beta1.EchoClient(restClientOpts);
 
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
@@ -93,6 +102,12 @@ async function testShowcase() {
   await testPagedExpand(fallbackClient);
   await testWait(fallbackClient);
   await testPagedExpandAsync(fallbackClient);
+
+  await testEcho(restClient);
+  await testExpand(restClient);
+  await testPagedExpand(restClient);
+  await testPagedExpandAsync(restClient);
+  await testWait(restClient);
 }
 
 async function testEcho(client: EchoClient) {
