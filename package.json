@@ -59,7 +59,7 @@
     "karma-remap-coverage": "^0.1.5",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^4.0.2",
-    "linkinator": "^2.0.0",
+    "linkinator": "^3.0.0",
     "mkdirp": "^1.0.0",
     "mocha": "^8.0.0",
     "ncp": "^2.0.0",
