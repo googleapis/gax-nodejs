@@ -4,10 +4,12 @@
   "product_documentation": "https://googleapis.github.io/gax-nodejs/",
   "client_documentation": "https://cloud.google.com/nodejs/docs/reference/google-gax/latest",
   "issue_tracker": "https://github.com/googleapis/gax-nodejs/issues/",
-  "release_level": "ga",
+  "release_level": "stable",
   "language": "nodejs",
   "repo": "googleapis/gax-nodejs",
   "distribution_name": "google-gax",
   "api_id": "",
-  "requires_billing": false
+  "requires_billing": false,
+  "api_shortname": "google-gax",
+  "library_type": ""
 }
