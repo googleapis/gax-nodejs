@@ -12,6 +12,7 @@
     "src/*/*.ts",
     "test/*.ts",
     "test/*/*.ts",
+    "test/fixtures/google-gax-packaging-test-app/**/*.ts",
     "tools/*.ts"
   ]
 }

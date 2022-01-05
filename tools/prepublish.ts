@@ -27,6 +27,7 @@ const subdirs = [
   'protobuf',
   'rpc',
   'type',
+  'cloud/location',
 ];
 
 async function main() {

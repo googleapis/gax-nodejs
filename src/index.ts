@@ -17,6 +17,7 @@
 import * as grpc from '@grpc/grpc-js';
 import {GrpcClient, GrpcClientOptions} from './grpc';
 import * as IamProtos from '../protos/iam_service';
+import * as LocationProtos from '../protos/locations';
 import * as operationsProtos from '../protos/operations';
 import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
@@ -70,14 +71,17 @@ function lro(options: GrpcClientOptions) {
 lro.SERVICE_ADDRESS = operationsClient.SERVICE_ADDRESS;
 lro.ALL_SCOPES = operationsClient.ALL_SCOPES;
 
-export {lro, operationsProtos, IamProtos};
+export {lro, operationsProtos, IamProtos, LocationProtos};
 export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
+export {LocationsClient} from './locationService';
+
 export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
 export const version = require('../../package.json').version;
 
 import * as protobuf from 'protobufjs';
 export {protobuf};
+export * as protobufMinimal from 'protobufjs/minimal';
 
 import * as fallback from './fallback';
 export {fallback};
@@ -104,3 +108,7 @@ export {
 } from './clientInterface';
 
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
+export {warn} from './warnings';
+
+import * as serializer from 'proto3-json-serializer';
+export {serializer};

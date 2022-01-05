@@ -72,30 +72,44 @@ export class PathTemplate {
           );
         } else {
           let segment = this.segments[index];
-          const variable = segment.match(/(?<={)[$0-9a-zA-Z_]+(?==.*})/g) || [];
-          if (this.segments[index].includes('**')) {
-            bindings[variable[0]] = pathSegments[0] + '/' + pathSegments[1];
+          const matches = segment.match(/\{[$0-9a-zA-Z_]+=.*?\}/g);
+          if (!matches) {
+            throw new Error(
+              `Error processing path template segment ${segment}`
+            );
+          }
+          const variables = matches.map(str =>
+            str.replace(/^\{/, '').replace(/=.*/, '')
+          );
+          if (segment.includes('**')) {
+            bindings[variables[0]] = pathSegments[0] + '/' + pathSegments[1];
             pathSegments = pathSegments.slice(2);
           } else {
-            // segment: {blurb_id=*}.{legacy_user=*} to match pathSegments: ['bar.user2']
-            // split the match pathSegments[0] -> value: ['bar', 'user2']
-            // compare the length of two arrays, and compare array items
-            const value = pathSegments[0].split(/[-_.~]/);
-            if (value.length !== variable!.length) {
-              throw new Error(
-                `segment ${segment} does not match ${pathSegments[0]}`
-              );
-            }
-            for (const v of variable) {
-              bindings[v] = value[0];
-              segment = segment.replace(`{${v}=*}`, `${value[0]}`);
-              value.shift();
-            }
-            // segment: {blurb_id=*}.{legacy_user=*} matching pathSegments: ['bar~user2'] should fail
-            if (variable.length > 1 && segment !== pathSegments[0]) {
-              throw new TypeError(
-                `non slash resource pattern ${this.segments[index]} and ${pathSegments[0]} should have same separator`
-              );
+            // atomic resource
+            if (variables.length === 1) {
+              bindings[variables[0]] = pathSegments[0];
+            } else {
+              // non-slash resource
+              // segment: {blurb_id=*}.{legacy_user=*} to match pathSegments: ['bar.user2']
+              // split the match pathSegments[0] -> value: ['bar', 'user2']
+              // compare the length of two arrays, and compare array items
+              const value = pathSegments[0].split(/[-_.~]/);
+              if (value.length !== variables.length) {
+                throw new Error(
+                  `segment ${segment} does not match ${pathSegments[0]}`
+                );
+              }
+              for (const v of variables) {
+                bindings[v] = value[0];
+                segment = segment.replace(`{${v}=*}`, `${value[0]}`);
+                value.shift();
+              }
+              // segment: {blurb_id=*}.{legacy_user=*} matching pathSegments: ['bar~user2'] should fail
+              if (segment !== pathSegments[0]) {
+                throw new TypeError(
+                  `non slash resource pattern ${this.segments[index]} and ${pathSegments[0]} should have same separator`
+                );
+              }
             }
             pathSegments.shift();
           }
@@ -167,6 +181,7 @@ export class PathTemplate {
     let index = 0;
     let wildCardCount = 0;
     const segments: string[] = [];
+    let matches: RegExpMatchArray | null;
     pathSegments.forEach(segment => {
       // * or ** -> segments.push('{$0=*}');
       //         -> bindings['$0'] = '*'
@@ -175,44 +190,39 @@ export class PathTemplate {
         segments.push(`{$${index}=${segment}}`);
         index = index + 1;
         if (segment === '**') {
-          wildCardCount = wildCardCount + 1;
-          if (wildCardCount > 1) {
-            throw new TypeError('Can not have more than one wildcard.');
+          ++wildCardCount;
+        }
+      } else if ((matches = segment.match(/\{[0-9a-zA-Z-.~_]+(?:=.*?)?\}/g))) {
+        for (const subsegment of matches) {
+          const pairMatch = subsegment.match(
+            /^\{([0-9a-zA-Z-.~_]+)(?:=(.*?))?\}$/
+          );
+          if (!pairMatch) {
+            throw new Error(
+              `Cannot process path template segment ${subsegment}`
+            );
+          }
+          const key = pairMatch[1];
+          let value = pairMatch[2];
+          if (!value) {
+            value = '*';
+            segment = segment.replace(key, key + '=*');
+            this.bindings[key] = value;
+          } else if (value === '*') {
+            this.bindings[key] = value;
+          } else if (value === '**') {
+            ++wildCardCount;
+            this.bindings[key] = value;
           }
         }
-      }
-      // {project}~{location} -> {project=*}~{location=*}
-      else if (
-        segment.match(
-          /(?<={)[0-9a-zA-Z-.~_]+(?:}[-._~]?{)[0-9a-zA-Z-.~_]+(?=})/
-        )
-      ) {
-        // [project, location]
-        const variable = segment.match(/(?<=\{).*?(?=(?:=.*?)?\})/g) || [];
-        for (const v of variable) {
-          this.bindings[v] = '*';
-          segment = segment.replace(v, v + '=*');
-        }
         segments.push(segment);
-      }
-      // {project} / {project=*} -> segments.push('{project=*}');
-      //           -> bindings['project'] = '*'
-      else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+(=\*)?(?=})/)) {
-        const variable = segment.match(/(?<={)[0-9a-zA-Z-.~_]+(=\*)?(?=})/);
-        this.bindings[variable![0]] = '*';
-        segments.push(`{${variable![0]}=*}`);
-      }
-      // {hello=/what} -> segments.push('{hello=/what}');
-      //              -> no binding in this case
-      else if (segment.match(/(?<={)[0-9a-zA-Z-.~_]+=[^*]+(?=})/)) {
-        segments.push(segment);
-      }
-      // helloazAZ09-.~_what -> segments.push('helloazAZ09-.~_what');
-      //              -> no binding in this case
-      else if (segment.match(/[0-9a-zA-Z-.~_]+/)) {
+      } else if (segment.match(/[0-9a-zA-Z-.~_]+/)) {
         segments.push(segment);
       }
     });
+    if (wildCardCount > 1) {
+      throw new TypeError('Can not have more than one wildcard.');
+    }
     return segments;
   }
 }

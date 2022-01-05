@@ -20,6 +20,7 @@ import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {BundleApiCaller} from './bundleApiCaller';
 import {BundleExecutor} from './bundleExecutor';
+import {snakeToCamelCase} from '../util';
 
 /**
  * A descriptor for calls that can be bundled into one call.
@@ -68,7 +69,8 @@ export class BundleDescriptor implements Descriptor {
       subresponseField = null;
     }
     this.bundledField = bundledField;
-    this.requestDiscriminatorFields = requestDiscriminatorFields;
+    this.requestDiscriminatorFields =
+      requestDiscriminatorFields.map(snakeToCamelCase);
     this.subresponseField = subresponseField;
     this.byteLengthFunction = byteLengthFunction;
   }

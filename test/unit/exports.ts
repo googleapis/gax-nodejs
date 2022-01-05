@@ -56,6 +56,12 @@ describe('exports', () => {
     it('exports fallback', () => {
       assert(typeof index.fallback === 'object');
     });
+    it('exports protobuf', () => {
+      assert(typeof index.protobuf === 'object');
+    });
+    it('exports protobufMinimal', () => {
+      assert(typeof index.protobufMinimal === 'object');
+    });
   });
 
   describe('fallback', () => {
@@ -86,6 +92,12 @@ describe('exports', () => {
     it('exports version', () => {
       assert(typeof fallback.version === 'string');
       assert.strictEqual(fallback.version, version + '-fallback');
+    });
+    it('exports protobuf', () => {
+      assert(typeof fallback.protobuf === 'object');
+    });
+    it('exports protobufMinimal', () => {
+      assert(typeof fallback.protobufMinimal === 'object');
     });
   });
 });

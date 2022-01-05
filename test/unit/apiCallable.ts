@@ -16,12 +16,13 @@
 
 import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';
-import {describe, it} from 'mocha';
+import {afterEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
 
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
 import * as utils from './utils';
+import * as retries from '../../src/normalCalls/retries';
 
 const fail = utils.fail;
 const createApiCall = utils.createApiCall;
@@ -29,6 +30,9 @@ const FAKE_STATUS_CODE_1 = utils.FAKE_STATUS_CODE_1;
 const FAKE_STATUS_CODE_2 = utils.FAKE_STATUS_CODE_1 + 1;
 
 describe('createApiCall', () => {
+  afterEach(() => {
+    sinon.restore();
+  });
   it('calls api call', done => {
     let deadlineArg: {};
     function func(
@@ -100,6 +104,113 @@ describe('createApiCall', () => {
       assert(Number(resp) - start <= 30100);
       done();
     });
+  });
+
+  it('default to `timeout` for idempotent API calls', done => {
+    function func(
+      argument: {},
+      metadata: {},
+      options: {deadline: {getTime: Function}},
+      callback: Function
+    ) {
+      callback(null, options.deadline.getTime());
+    }
+
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions([1], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      },
+    });
+
+    const start = new Date().getTime();
+    apiCall({}, undefined, (err, resp) => {
+      // The verifying value is slightly bigger than the expected number
+      // 2000 / 30000, because sometimes runtime can consume some time before
+      // the call starts.
+      assert(Number(resp) - start > 2100);
+      assert(Number(resp) - start <= 30100);
+      done();
+    });
+  });
+
+  it('override just custom retry.retrycodes', done => {
+    const initialRetryCodes = [1];
+    const overrideRetryCodes = [1, 2, 3];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
+      assert.strictEqual(retry.retryCodes, overrideRetryCodes);
+      return func;
+    });
+
+    function func() {
+      done();
+    }
+
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions(initialRetryCodes, {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      },
+    });
+
+    apiCall(
+      {},
+      {
+        retry: {
+          retryCodes: overrideRetryCodes,
+        },
+      }
+    );
+  });
+
+  it('override just custom retry.backoffSettings', done => {
+    const initialBackoffSettings = gax.createDefaultBackoffSettings();
+    const overriBackoffSettings = gax.createBackoffSettings(
+      100,
+      1.2,
+      1000,
+      null,
+      1.5,
+      3000,
+      4500
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
+      assert.strictEqual(retry.backoffSettings, overriBackoffSettings);
+      return func;
+    });
+
+    function func() {
+      done();
+    }
+
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions([1], initialBackoffSettings),
+      },
+    });
+
+    apiCall(
+      {},
+      {
+        retry: {
+          backoffSettings: overriBackoffSettings,
+        },
+      }
+    );
   });
 });
 
@@ -213,7 +324,9 @@ describe('Promise', () => {
 
 describe('retryable', () => {
   const retryOptions = utils.createRetryOptions(0, 0, 0, 0, 0, 0, 100);
-  const settings = {settings: {timeout: 0, retry: retryOptions}};
+  const settings = {
+    settings: {timeout: 0, retry: retryOptions, apiName: 'TestApi'},
+  };
 
   it('retries the API call', done => {
     let toAttempt = 3;
@@ -360,6 +473,20 @@ describe('retryable', () => {
       assert.ok(err instanceof GoogleError);
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       assert.strictEqual(spy.callCount, toAttempt);
+      done();
+    });
+  });
+
+  it('retry fails for exceeding total timeout', done => {
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, settings);
+    apiCall({}, undefined, err => {
+      assert.ok(err instanceof GoogleError);
+      assert.strictEqual(
+        err.message,
+        'Total timeout of API TestApi exceeded 100 milliseconds before any response was received.'
+      );
+      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       done();
     });
   });

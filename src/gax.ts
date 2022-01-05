@@ -77,6 +77,16 @@ export class RetryOptions {
   }
 }
 
+export interface RetryRequestOptions {
+  objectMode?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  request?: any;
+  retries?: number;
+  noResponseRetries?: number;
+  currentRetryAttempt?: number;
+  shouldRetryFn?: () => boolean;
+}
+
 /**
  * Parameters to the exponential backoff algorithm for retrying.
  * @typedef {Object} BackoffSettings
@@ -113,7 +123,7 @@ export interface BackoffSettings {
 
 export interface CallOptions {
   timeout?: number;
-  retry?: RetryOptions | null;
+  retry?: Partial<RetryOptions> | null;
   autoPaginate?: boolean;
   maxResults?: number;
   maxRetries?: number;
@@ -122,6 +132,8 @@ export interface CallOptions {
   bundleOptions?: BundleOptions | null;
   isBundling?: boolean;
   longrunning?: BackoffSettings;
+  apiName?: string;
+  retryRequestOptions?: RetryRequestOptions;
 }
 
 export class CallSettings {
@@ -136,6 +148,8 @@ export class CallSettings {
   bundleOptions?: BundleOptions | null;
   isBundling: boolean;
   longrunning?: BackoffSettings;
+  apiName?: string;
+  retryRequestOptions?: RetryRequestOptions;
 
   /**
    * @param {Object} settings - An object containing parameters of this settings.
@@ -158,7 +172,7 @@ export class CallSettings {
   constructor(settings?: CallOptions) {
     settings = settings || {};
     this.timeout = settings.timeout || 30 * 1000;
-    this.retry = settings.retry;
+    this.retry = settings.retry as RetryOptions;
     this.autoPaginate =
       'autoPaginate' in settings ? settings.autoPaginate : true;
     this.maxResults = settings.maxResults;
@@ -167,6 +181,8 @@ export class CallSettings {
     this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
     this.longrunning =
       'longrunning' in settings ? settings.longrunning : undefined;
+    this.apiName = settings.apiName ?? undefined;
+    this.retryRequestOptions = settings.retryRequestOptions;
   }
 
   /**
@@ -188,11 +204,37 @@ export class CallSettings {
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
+    let apiName = this.apiName;
+    let retryRequestOptions = this.retryRequestOptions;
+    // If a method-specific timeout is set in the service config, and the retry codes for that
+    // method are non-null, then that timeout value will be used to
+    // override backoff settings.
+    if (
+      retry !== undefined &&
+      retry !== null &&
+      retry.retryCodes !== null &&
+      retry.retryCodes.length > 0
+    ) {
+      retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+      retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+      retry.backoffSettings.totalTimeoutMillis = timeout;
+    }
+    // If the user provides a timeout to the method, that timeout value will be used
+    // to override the backoff settings.
     if ('timeout' in options) {
       timeout = options.timeout!;
+      if (
+        retry !== undefined &&
+        retry !== null &&
+        retry.retryCodes.length > 0
+      ) {
+        retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+        retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+        retry.backoffSettings.totalTimeoutMillis = timeout;
+      }
     }
     if ('retry' in options) {
-      retry = options.retry;
+      retry = mergeRetryOptions(retry || ({} as RetryOptions), options.retry!);
     }
 
     if ('autoPaginate' in options && !options.autoPaginate) {
@@ -225,6 +267,12 @@ export class CallSettings {
     if ('longrunning' in options) {
       longrunning = options.longrunning;
     }
+    if ('apiName' in options) {
+      apiName = options.apiName;
+    }
+    if ('retryRequestOptions' in options) {
+      retryRequestOptions = options.retryRequestOptions;
+    }
 
     return new CallSettings({
       timeout,
@@ -235,6 +283,8 @@ export class CallSettings {
       maxResults,
       otherArgs,
       isBundling,
+      apiName,
+      retryRequestOptions,
     });
   }
 }
@@ -467,7 +517,7 @@ function constructRetry(
  */
 function mergeRetryOptions(
   retry: RetryOptions,
-  overrides: RetryOptions
+  overrides: Partial<RetryOptions>
 ): RetryOptions | null {
   if (!overrides) {
     return null;
@@ -477,15 +527,12 @@ function mergeRetryOptions(
     return retry;
   }
 
-  let codes = retry.retryCodes;
-  if (overrides.retryCodes) {
-    codes = overrides.retryCodes;
-  }
-  let backoffSettings = retry.backoffSettings;
-  if (overrides.backoffSettings) {
-    backoffSettings = overrides.backoffSettings;
-  }
-  return createRetryOptions(codes, backoffSettings);
+  const codes = overrides.retryCodes ? overrides.retryCodes : retry.retryCodes;
+
+  const backoffSettings = overrides.backoffSettings
+    ? overrides.backoffSettings
+    : retry.backoffSettings;
+  return createRetryOptions(codes!, backoffSettings!);
 }
 
 export interface ServiceConfig {
@@ -598,6 +645,12 @@ export function constructSettings(
   if (!serviceConfig) {
     return null;
   }
+  // users can override the config from client side, like bundling options.
+  // The detailed structure of the clientConfig can be found here: https://github.com/googleapis/gax-nodejs/blob/main/src/gax.ts#L546
+  // The way to override bundling options:
+  //
+  // const customConfig = {"interfaces": {"service": {"methods": {"methodName": {"bundling": {..}}}}}}
+  // const client = new Client({ projectId, customConfig });
 
   const overrides = (configOverrides.interfaces || {})[serviceName] || {};
   const methods = serviceConfig.methods;
@@ -634,7 +687,7 @@ export function constructSettings(
         )!
       );
     }
-
+    const apiName = serviceName;
     defaults[jsName] = new CallSettings({
       timeout,
       retry,
@@ -642,6 +695,7 @@ export function constructSettings(
         ? createBundleOptions(bundlingConfig)
         : null,
       otherArgs,
+      apiName,
     });
   }
 

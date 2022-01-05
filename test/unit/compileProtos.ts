@@ -70,13 +70,11 @@ describe('compileProtos tool', () => {
     assert(
       js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
+    assert(js.toString().includes('require("google-gax").protobufMinimal'));
+    assert(!js.toString().includes('require("protobufjs/minimal")'));
 
     // check that it uses proper root object; it's taken from fixtures/package.json
-    assert(
-      js
-        .toString()
-        .includes('$protobuf.roots._org_fake_package_42_0_7_prealpha84')
-    );
+    assert(js.toString().includes('$protobuf.roots._org_fake_package'));
 
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
@@ -85,6 +83,45 @@ describe('compileProtos tool', () => {
     assert(
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
+    assert(
+      ts.toString().includes('import {protobuf as $protobuf} from "google-gax"')
+    );
+    assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
+  });
+
+  it('compiles protos to JS, TS, skips JSON if asked', async function () {
+    this.timeout(20000);
+    await compileProtos.main([
+      '--skip-json',
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
+    ]);
+    assert(!fs.existsSync(expectedJsonResultFile));
+    assert(fs.existsSync(expectedJSResultFile));
+    assert(fs.existsSync(expectedTSResultFile));
+
+    const js = await readFile(expectedJSResultFile);
+    assert(js.toString().includes('TestMessage'));
+    assert(js.toString().includes('LibraryService'));
+    assert(
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(js.toString().includes('require("google-gax").protobufMinimal'));
+    assert(!js.toString().includes('require("protobufjs/minimal")'));
+
+    // check that it uses proper root object; it's taken from fixtures/package.json
+    assert(js.toString().includes('$protobuf.roots._org_fake_package'));
+
+    const ts = await readFile(expectedTSResultFile);
+    assert(ts.toString().includes('TestMessage'));
+    assert(ts.toString().includes('LibraryService'));
+    assert(ts.toString().includes('import * as Long'));
+    assert(
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(
+      ts.toString().includes('import {protobuf as $protobuf} from "google-gax"')
+    );
+    assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
 
   it('writes an empty object if no protos are given', async () => {
@@ -151,7 +188,7 @@ describe('compileProtos tool', () => {
     const rootName = await compileProtos.generateRootName([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
     ]);
-    assert.strictEqual(rootName, '_org_fake_package_42_0_7_prealpha84_protos');
+    assert.strictEqual(rootName, '_org_fake_package_protos');
   });
 
   it('falls back to the default name for protobuf root if unable to guess', async () => {

@@ -156,6 +156,19 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
   return result.join('\n');
 }
 
+function fixJsFile(js: string): string {
+  // 1. fix protobufjs require: we don't want the libraries to
+  // depend on protobufjs, so we re-export it from google-gax
+  js = js.replace(
+    'require("protobufjs/minimal")',
+    'require("google-gax").protobufMinimal'
+  );
+
+  // 2. add Apache license to the generated .js file
+  js = apacheLicense + js;
+  return js;
+}
+
 function fixDtsFile(dts: string): string {
   // 1. fix for pbts output: the corresponding protobufjs PR
   // https://github.com/protobufjs/protobuf.js/pull/1166
@@ -164,10 +177,17 @@ function fixDtsFile(dts: string): string {
     dts = 'import * as Long from "long";\n' + dts;
   }
 
-  // 2. add Apache license to the generated .d.ts file
+  // 2. fix protobufjs import: we don't want the libraries to
+  // depend on protobufjs, so we re-export it from google-gax
+  dts = dts.replace(
+    'import * as $protobuf from "protobufjs"',
+    'import {protobuf as $protobuf} from "google-gax"'
+  );
+
+  // 3. add Apache license to the generated .d.ts file
   dts = apacheLicense + dts;
 
-  // 3. major hack: update types to allow passing strings
+  // 4. major hack: update types to allow passing strings
   // where enums, longs, or bytes are expected
   const enums = getAllEnums(dts);
   dts = updateDtsTypes(dts, enums);
@@ -203,27 +223,30 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
  */
 async function compileProtos(
   rootName: string,
-  protos: string[]
+  protos: string[],
+  skipJson = false
 ): Promise<void> {
-  // generate protos.json file from proto list
-  const jsonOutput = path.join('protos', 'protos.json');
-  if (protos.length === 0) {
-    // no input file, just emit an empty object
-    await writeFile(jsonOutput, '{}');
-    return;
+  if (!skipJson) {
+    // generate protos.json file from proto list
+    const jsonOutput = path.join('protos', 'protos.json');
+    if (protos.length === 0) {
+      // no input file, just emit an empty object
+      await writeFile(jsonOutput, '{}');
+      return;
+    }
+    const pbjsArgs4JSON = [
+      '--target',
+      'json',
+      '-p',
+      'protos',
+      '-p',
+      path.join(__dirname, '..', '..', 'protos'),
+      '-o',
+      jsonOutput,
+    ];
+    pbjsArgs4JSON.push(...protos);
+    await pbjsMain(pbjsArgs4JSON);
   }
-  const pbjsArgs4JSON = [
-    '--target',
-    'json',
-    '-p',
-    path.join(__dirname, '..', '..', 'protos'),
-    '-p',
-    'protos',
-    '-o',
-    jsonOutput,
-  ];
-  pbjsArgs4JSON.push(...protos);
-  await pbjsMain(pbjsArgs4JSON);
 
   // generate protos/protos.js from protos.json
   const jsOutput = path.join('protos', 'protos.js');
@@ -233,9 +256,9 @@ async function compileProtos(
     '--target',
     'static-module',
     '-p',
-    path.join(__dirname, '..', '..', 'protos'),
-    '-p',
     'protos',
+    '-p',
+    path.join(__dirname, '..', '..', 'protos'),
     '-o',
     jsOutput,
   ];
@@ -243,8 +266,7 @@ async function compileProtos(
   await pbjsMain(pbjsArgs4js);
 
   let jsResult = (await readFile(jsOutput)).toString();
-  // add Apache license to the generated .js file
-  jsResult = apacheLicense + jsResult;
+  jsResult = fixJsFile(jsResult);
   await writeFile(jsOutput, jsResult);
 
   // generate protos/protos.d.ts
@@ -267,18 +289,15 @@ export async function generateRootName(directories: string[]): Promise<string> {
   // We need to provide `-r root` option to `pbjs -t static-module`, otherwise
   // we'll have big problems if two different libraries are used together.
   // It's OK to play some guessing game here: if we locate `package.json`
-  // with a package name and version, we'll use it; otherwise, we'll fallback
-  // to 'default'.
+  // with a package name, we'll use it; otherwise, we'll fallback to 'default'.
   for (const directory of directories) {
     const packageJson = path.resolve(directory, '..', 'package.json');
     if (fs.existsSync(packageJson)) {
       const json = JSON.parse((await readFile(packageJson)).toString()) as {
         name: string;
-        version: string;
       };
       const name = json.name.replace(/[^\w\d]/g, '_');
-      const version = json.version.replace(/[^\w\d]/g, '_');
-      const hopefullyUniqueName = `${name}_${version}_protos`;
+      const hopefullyUniqueName = `${name}_protos`;
       return hopefullyUniqueName;
     }
   }
@@ -296,21 +315,30 @@ export async function generateRootName(directories: string[]): Promise<string> {
  * @param {string[]} directories List of directories to process. Normally, just the
  * `./src` folder of the given client library.
  */
-export async function main(directories: string[]): Promise<void> {
+export async function main(parameters: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
-  for (const directory of directories) {
+  let skipJson = false;
+  const directories: string[] = [];
+  for (const parameter of parameters) {
+    if (parameter === '--skip-json') {
+      skipJson = true;
+      continue;
+    }
+    // it's not an option so it's a directory
+    const directory = parameter;
+    directories.push(directory);
     protoJsonFiles.push(...(await findProtoJsonFiles(directory)));
   }
   const rootName = await generateRootName(directories);
   const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(rootName, protos);
+  await compileProtos(rootName, protos, skipJson);
 }
 
 /**
  * Shows the usage information.
  */
 function usage() {
-  console.log(`Usage: node ${process.argv[1]} directory ...`);
+  console.log(`Usage: node ${process.argv[1]} [--skip-json] directory ...`);
   console.log(
     `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
   );

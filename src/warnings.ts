@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-import {isBrowser} from './isbrowser';
+import {isNodeJS} from './featureDetection';
 
 const emittedWarnings = new Set<string>();
 
-export function warn(code: string, message: string) {
+// warnType is the type of warning (e.g. 'DeprecationWarning', 'ExperimentalWarning', etc.)
+export function warn(code: string, message: string, warnType?: string) {
   // Only show a given warning once
   if (emittedWarnings.has(code)) {
     return;
   }
   emittedWarnings.add(code);
 
-  if (isBrowser()) {
+  if (!isNodeJS()) {
     console.warn(message);
+  } else if (typeof warnType !== 'undefined') {
+    process.emitWarning(message, {
+      type: warnType,
+    });
   } else {
     process.emitWarning(message);
   }

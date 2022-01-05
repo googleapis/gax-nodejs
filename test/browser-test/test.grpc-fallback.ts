@@ -17,25 +17,32 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 import * as assert from 'assert';
-import {describe, it, beforeEach, before, afterEach, after} from 'mocha';
+import {GoogleAuth} from 'google-auth-library';
+import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as protobuf from 'protobufjs';
-import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
+
+import * as fallback from '../../src/fallback';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
-//@ts-ignore
-import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const statusJsonProto = require('../../protos/status.json');
 
 const authStub = {
-  getRequestHeaders() {
-    return {Authorization: 'Bearer SOME_TOKEN'};
+  getClient: async () => {
+    return {
+      getRequestHeaders: async () => {
+        return {
+          Authorization: 'Bearer zzzz',
+        };
+      },
+    };
   },
 };
 
 const opts = {
-  auth: authStub,
+  auth: authStub as unknown as GoogleAuth,
 };
 
 describe('loadProto', () => {
@@ -86,34 +93,32 @@ describe('createStub', () => {
   it('should create a stub', async () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
 
-    assert(echoStub instanceof protobuf.rpc.Service);
-
     // The stub should consist of service methods
     assert(echoStub.echo instanceof Function);
     assert(echoStub.pagedExpand instanceof Function);
     assert(echoStub.wait instanceof Function);
 
-    // There should be 6 methods for the echo service (and 4 other methods in the object)
-    assert.strictEqual(Object.keys(echoStub).length, 10);
+    // There should be 6 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 6);
 
-    // Each of the service methods should take 4 arguments (so that it works with createApiCall)
+    // Each of the service methods should take 4 arguments (so that it works
+    // with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
   });
 
   it('should support optional parameters', async () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubExtraOptions);
 
-    assert(echoStub instanceof protobuf.rpc.Service);
-
     // The stub should consist of methods
     assert(echoStub.echo instanceof Function);
     assert(echoStub.collect instanceof Function);
     assert(echoStub.chat instanceof Function);
 
-    // There should be 6 methods for the echo service (and 4 other members in the object)
-    assert.strictEqual(Object.keys(echoStub).length, 10);
+    // There should be 6 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 6);
 
-    // Each of the service methods should take 4 arguments (so that it works with createApiCall)
+    // Each of the service methods should take 4 arguments (so that it works
+    // with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
   });
 });
@@ -128,13 +133,19 @@ describe('grpc-fallback', () => {
   const savedAbortController = window.AbortController;
 
   const authStub = {
-    getRequestHeaders() {
-      return {Authorization: 'Bearer SOME_TOKEN'};
+    getClient: async () => {
+      return {
+        getRequestHeaders: async () => {
+          return {
+            Authorization: 'Bearer zzzz',
+          };
+        },
+      };
     },
   };
 
   const opts = {
-    auth: authStub,
+    auth: authStub as unknown as GoogleAuth,
     protocol: 'http',
     port: 1337,
   };
@@ -222,11 +233,10 @@ describe('grpc-fallback', () => {
     const options: any = {};
     options.otherArgs = {};
     options.otherArgs.headers = {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = fallback.routingHeader.fromParams({
-      abc: 'def',
-    });
+    options.otherArgs.headers['x-goog-request-params'] =
+      fallback.routingHeader.fromParams({
+        abc: 'def',
+      });
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject);
     // eslint-disable-next-line no-undef
@@ -251,12 +261,12 @@ describe('grpc-fallback', () => {
 
   it('should handle an error', done => {
     const requestObject = {content: 'test-content'};
-    // example of an actual google.rpc.Status error message returned by Language API
-    const expectedError = {
+    // example of an actual google.rpc.Status error message returned by Language
+    // API
+    const expectedError = Object.assign(new Error('Error message'), {
       code: 3,
-      message: 'Error message',
       details: [],
-    };
+    });
 
     const fakeFetch = sinon.fake.resolves({
       ok: false,
@@ -271,8 +281,10 @@ describe('grpc-fallback', () => {
     sinon.replace(window, 'fetch', fakeFetch);
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: Error) => {
-        assert.strictEqual(err.message, JSON.stringify(expectedError));
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.message, '3 INVALID_ARGUMENT: Error message');
+        assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
         done();
       });
     });
