@@ -26,6 +26,8 @@ describe('util.ts', () => {
     assert.strictEqual(camelToSnakeCase('testAbcDef'), 'test_abc_def');
     assert.strictEqual(camelToSnakeCase('IPProtocol'), 'I_p_protocol');
     assert.strictEqual(camelToSnakeCase('iPProtocol'), 'i_p_protocol');
+    assert.strictEqual(camelToSnakeCase('a.1'), 'a.1');
+    assert.strictEqual(camelToSnakeCase('abc.1Foo'), 'abc.1_foo');
   });
 
   it('snakeToCamelCase', () => {
@@ -34,5 +36,7 @@ describe('util.ts', () => {
     assert.strictEqual(snakeToCamelCase('test_abc'), 'testAbc');
     assert.strictEqual(snakeToCamelCase('test_abc_def'), 'testAbcDef');
     assert.strictEqual(snakeToCamelCase('I_p_protocol'), 'IPProtocol');
+    assert.strictEqual(snakeToCamelCase('a.1'), 'a.1');
+    assert.strictEqual(snakeToCamelCase('abc.1_foo'), 'abc.1Foo');
   });
 });
