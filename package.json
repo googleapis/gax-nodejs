@@ -112,7 +112,7 @@
   },
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
-    "node": ">=10"
+    "node": ">=12"
   },
   "browser": "build/src/fallback.js"
 }
