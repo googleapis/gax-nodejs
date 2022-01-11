@@ -242,7 +242,7 @@ async function testPagedExpandAsync(client: EchoClient) {
 
 async function testCollect(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const stream = await client.collect();
+  const stream = client.collect();
   for (const word of words) {
       const request = { content: word };
       stream.write(request);
