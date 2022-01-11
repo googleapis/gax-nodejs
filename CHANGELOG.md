@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.29.3](https://github.com/googleapis/gax-nodejs/compare/v2.29.2...v2.29.3) (2022-01-11)
+
+
+### Bug Fixes
+
+* refactor the showcase stream method collect ([#1162](https://github.com/googleapis/gax-nodejs/issues/1162)) ([19d3a5d](https://github.com/googleapis/gax-nodejs/commit/19d3a5dd61066ae662454e14cd9c340c500ffec0))
+
 ### [2.29.2](https://github.com/googleapis/gax-nodejs/compare/v2.29.1...v2.29.2) (2022-01-11)
 
 
