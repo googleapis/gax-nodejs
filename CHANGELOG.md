@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.29.4](https://github.com/googleapis/gax-nodejs/compare/v2.29.3...v2.29.4) (2022-01-19)
+
+
+### Bug Fixes
+
+* support non-alphanumeric field name ([#1165](https://github.com/googleapis/gax-nodejs/issues/1165)) ([4f53efa](https://github.com/googleapis/gax-nodejs/commit/4f53efaac9b112c4ee38145bd02a59a736e01308))
+
 ### [2.29.3](https://github.com/googleapis/gax-nodejs/compare/v2.29.2...v2.29.3) (2022-01-11)
 
 
