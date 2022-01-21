@@ -137,7 +137,10 @@ export function generateServiceStub(
                   (!cancelRequested ||
                     (err instanceof Error && err.name !== 'AbortError'))
                 ) {
-                  callback(err);
+                  if (callback) {
+                    callback(err);
+                  }
+                  streamArrayParser.emit('error', err);
                 }
               }
             );
