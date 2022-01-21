@@ -71,7 +71,7 @@ export class GoogleError extends Error {
         Status[rpcCode] !== json['error']['status']
       ) {
         console.warn(
-          `Internal Error: Recieved HTTP error status ${json['error']['status']} doesn't match gRPC status ${Status[rpcCode]}.`
+          `Internal Error: Received HTTP error status ${json['error']['status']} doesn't match gRPC status ${Status[rpcCode]}.`
         );
       }
       const rpcErrMsg = `${rpcCode} ${Status[rpcCode]}: ${json['error']['message']}`;
