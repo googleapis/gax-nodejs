@@ -325,70 +325,165 @@ describe('grpc-fallback', () => {
     });
   });
 
-  it('should promote ErrorInfo if exist in fallback-rest error', done => {
-    const requestObject = {content: 'test-content'};
-    // example of an actual google.rpc.Status error message returned by Translate API
-    const errorInfo = {
-      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
-      reason: 'SERVICE_DISABLED',
-      domain: 'googleapis.com',
-      metadata: {
-        service: 'translate.googleapis.com',
-        consumer: 'projects/123',
-      },
-    };
-    const serverError = {
-      error: {
-        code: 403,
-        message:
-          'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
-        status: 'PERMISSION_DENIED',
-        details: [
-          {
-            '@type': 'type.googleapis.com/google.rpc.Help',
-            links: [
-              {
-                description: 'Google developers console API activation',
-                url: 'https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361',
-              },
-            ],
-          },
-          errorInfo,
-        ],
-      },
-    };
+  describe('should handle an error in fallback-rest mode', () => {
     const opts = {
       auth: authStub,
       fallback: 'rest',
     };
     // @ts-ignore incomplete options
     gaxGrpc = new GrpcClient(opts);
-    //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(
-      Promise.resolve({
-        ok: false,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
+    const requestObject = {content: 'test-content'};
+
+    it('should match grpc error message pattern', done => {
+      const httpError = {
+        error: {
+          code: 400,
+          message: 'test',
+          status: 'INVALID_ARGUMENT',
         },
-      })
-    );
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof GoogleError);
-        assert.strictEqual(
-          JSON.stringify(err.statusDetails),
-          JSON.stringify(serverError['error']['details'])
-        );
-        assert.strictEqual(err.code, 7);
-        assert.strictEqual(err.message, serverError['error']['message']);
-        assert.strictEqual(err.reason, errorInfo.reason);
-        assert.strictEqual(err.domain, errorInfo.domain);
-        assert.strictEqual(
-          JSON.stringify(err.errorInfoMetadata),
-          JSON.stringify(errorInfo.metadata)
-        );
-        done();
+      };
+      //@ts-ignore
+      sinon.stub(nodeFetch, 'Promise').returns(
+        Promise.resolve({
+          ok: false,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(httpError)));
+          },
+        })
+      );
+      const expectedError = {
+        code: 3,
+        status: 'INVALID_ARGUMENT',
+        message: '3 INVALID_ARGUMENT: test',
+      };
+      gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+        echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+          assert(err instanceof GoogleError);
+          assert.equal(err, expectedError);
+        });
       });
+      done();
+    });
+
+    it("should call console.warn if http status doesn't match grcp status)", done => {
+      const httpError = {
+        error: {
+          code: 400,
+          message: 'test',
+          status: 'other http status',
+        },
+      };
+      //@ts-ignore
+      sinon.stub(nodeFetch, 'Promise').returns(
+        Promise.resolve({
+          ok: false,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(httpError)));
+          },
+        })
+      );
+      const warnspy = sinon.spy(console, 'warn');
+      const expectedError = {
+        code: 3,
+        status: 'INVALID_ARGUMENT',
+        message: '3 INVALID_ARGUMENT: test',
+      };
+      gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+        echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+          assert(err instanceof GoogleError);
+          assert.equal(err.code, 3);
+          assert.equal(err, expectedError);
+          assert(warnspy.calledOnce);
+        });
+      });
+      done();
+    });
+
+    it('should return error with http message if http error has no code', done => {
+      const httpError = {
+        error: {
+          message: 'test',
+        },
+      };
+      //@ts-ignore
+      sinon.stub(nodeFetch, 'Promise').returns(
+        Promise.resolve({
+          ok: false,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(httpError)));
+          },
+        })
+      );
+      gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+        echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+          assert(err instanceof GoogleError);
+          assert.equal(err, httpError);
+        });
+      });
+      done();
+    });
+
+    it('should promote ErrorInfo if exist in fallback-rest error', done => {
+      // example of an actual google.rpc.Status error message returned by Translate API
+      const errorInfo = {
+        '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+        reason: 'SERVICE_DISABLED',
+        domain: 'googleapis.com',
+        metadata: {
+          service: 'translate.googleapis.com',
+          consumer: 'projects/123',
+        },
+      };
+      const serverError = {
+        error: {
+          code: 403,
+          message:
+            'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+          status: 'PERMISSION_DENIED',
+          details: [
+            {
+              '@type': 'type.googleapis.com/google.rpc.Help',
+              links: [
+                {
+                  description: 'Google developers console API activation',
+                  url: 'https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361',
+                },
+              ],
+            },
+            errorInfo,
+          ],
+        },
+      };
+      //@ts-ignore
+      sinon.stub(nodeFetch, 'Promise').returns(
+        Promise.resolve({
+          ok: false,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
+          },
+        })
+      );
+      gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+        echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+          assert(err instanceof GoogleError);
+          assert.strictEqual(
+            JSON.stringify(err.statusDetails),
+            JSON.stringify(serverError['error']['details'])
+          );
+          assert.strictEqual(err.code, 7);
+          assert.strictEqual(
+            err.message,
+            `7 PERMISSION_DENIED: ${serverError['error']['message']}`
+          );
+          assert.strictEqual(err.reason, errorInfo.reason);
+          assert.strictEqual(err.domain, errorInfo.domain);
+          assert.strictEqual(
+            JSON.stringify(err.errorInfoMetadata),
+            JSON.stringify(errorInfo.metadata)
+          );
+        });
+      });
+      done();
     });
   });
 

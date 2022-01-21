@@ -65,7 +65,18 @@ export class GoogleError extends Error {
     );
     // Map Http Status Code to gRPC Status Code
     if (json['error']['code']) {
-      error.code = rpcCodeFromHttpStatusCode(json['error']['code']);
+      const rpcCode = rpcCodeFromHttpStatusCode(json['error']['code']);
+      if (
+        !json['error']['status'] ||
+        Status[rpcCode] !== json['error']['status']
+      ) {
+        console.warn(
+          `Internal Error: Recieved HTTP error status ${json['error']['status']} doesn't match gRPC status ${Status[rpcCode]}.`
+        );
+      }
+      const rpcErrMsg = `${rpcCode} ${Status[rpcCode]}: ${json['error']['message']}`;
+      error.message = rpcErrMsg;
+      error.code = rpcCode;
     }
 
     // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
