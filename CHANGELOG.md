@@ -4,6 +4,42 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.29.4](https://github.com/googleapis/gax-nodejs/compare/v2.29.3...v2.29.4) (2022-01-19)
+
+
+### Bug Fixes
+
+* support non-alphanumeric field name ([#1165](https://github.com/googleapis/gax-nodejs/issues/1165)) ([4f53efa](https://github.com/googleapis/gax-nodejs/commit/4f53efaac9b112c4ee38145bd02a59a736e01308))
+
+### [2.29.3](https://github.com/googleapis/gax-nodejs/compare/v2.29.2...v2.29.3) (2022-01-11)
+
+
+### Bug Fixes
+
+* refactor the showcase stream method collect ([#1162](https://github.com/googleapis/gax-nodejs/issues/1162)) ([19d3a5d](https://github.com/googleapis/gax-nodejs/commit/19d3a5dd61066ae662454e14cd9c340c500ffec0))
+
+### [2.29.2](https://github.com/googleapis/gax-nodejs/compare/v2.29.1...v2.29.2) (2022-01-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.5.0 ([#1152](https://github.com/googleapis/gax-nodejs/issues/1152)) ([775540b](https://github.com/googleapis/gax-nodejs/commit/775540bc81fc9096d96835f4089bf8c508bc23d4))
+
+### [2.29.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.29.0...v2.29.1) (2022-01-06)
+
+
+### Bug Fixes
+
+* support field name with period ([#1148](https://www.github.com/googleapis/gax-nodejs/issues/1148)) ([80c9146](https://www.github.com/googleapis/gax-nodejs/commit/80c914628c046392cf45527dc6456d3eb3bfa768))
+
+## [2.29.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.28.1...v2.29.0) (2022-01-05)
+
+
+### Features
+
+* map http status code to grpc status code ([#1135](https://www.github.com/googleapis/gax-nodejs/issues/1135)) ([772222f](https://www.github.com/googleapis/gax-nodejs/commit/772222f1d2e269ceb96bce71c0f18942507f3d4b))
+* support server stream for REST ([#1122](https://www.github.com/googleapis/gax-nodejs/issues/1122)) ([9f62723](https://www.github.com/googleapis/gax-nodejs/commit/9f62723762eb72566997e6c8518517e8efddd62d))
+
 ### [2.28.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.28.0...v2.28.1) (2021-11-10)
 
 
