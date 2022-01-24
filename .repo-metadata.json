@@ -10,6 +10,5 @@
   "distribution_name": "google-gax",
   "api_id": "",
   "requires_billing": false,
-  "api_shortname": "google-gax",
   "library_type": "CORE"
 }
