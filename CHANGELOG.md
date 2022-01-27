@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.29.5](https://github.com/googleapis/gax-nodejs/compare/v2.29.4...v2.29.5) (2022-01-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency proto3-json-serializer ([#1173](https://github.com/googleapis/gax-nodejs/issues/1173)) ([dbeb3f7](https://github.com/googleapis/gax-nodejs/commit/dbeb3f752f8a43a3f2984946adbeeea63f111044))
+* stream callback is undefined ([#1170](https://github.com/googleapis/gax-nodejs/issues/1170)) ([a693903](https://github.com/googleapis/gax-nodejs/commit/a693903149b804bddc690cc64f187a2f6186b671))
+
 ### [2.29.4](https://github.com/googleapis/gax-nodejs/compare/v2.29.3...v2.29.4) (2022-01-19)
 
 
