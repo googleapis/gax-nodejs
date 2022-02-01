@@ -16,7 +16,14 @@
 
 /* This file describes the gRPC-streaming. */
 
-import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
+import {
+  Duplex,
+  DuplexOptions,
+  PassThrough,
+  Readable,
+  Stream,
+  Writable,
+} from 'stream';
 import {Metadata} from '@grpc/grpc-js';
 
 import {
@@ -27,6 +34,7 @@ import {
 } from '../apitypes';
 import {RetryRequestOptions} from '../gax';
 import {StreamArrayParser} from '../streamArrayParser';
+import {GoogleError} from '..';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -185,6 +193,14 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             return;
           }
           const stream = apiCall(argument, this._callback) as CancellableStream;
+          if (stream instanceof Promise) {
+            const replace = new PassThrough();
+            stream.catch(err => {
+              replace.emit('error', new GoogleError(err)); // alternative: replace.emit('close', err);
+              replace.end(this._callback);
+            });
+            return replace;
+          }
           this.stream = stream;
           this.forwardEvents(stream);
           return stream;
@@ -199,6 +215,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
 
     const stream = apiCall(argument, this._callback) as CancellableStream;
+    if (stream instanceof Promise) {
+      return;
+    }
     this.stream = stream;
     this.forwardEvents(stream);
 
