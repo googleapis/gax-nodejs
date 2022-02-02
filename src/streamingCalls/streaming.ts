@@ -198,7 +198,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             if (stream instanceof Promise) {
               stream.catch(err => {
                 replace.emit('error', new GoogleError(err)); // alternative: replace.emit('close', err);
-                replace.end(this._callback);
               });
             }
             return replace;
