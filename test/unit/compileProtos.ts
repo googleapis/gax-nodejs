@@ -205,4 +205,18 @@ describe('compileProtos tool', () => {
     ]);
     assert.strictEqual(rootName, 'default');
   });
+
+  it('reformat the JSDOC link in the JS and TS file', async () => {
+    await compileProtos.main([
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
+    ]);
+    assert(fs.existsSync(expectedJSResultFile));
+    assert(fs.existsSync(expectedTSResultFile));
+    const js = await readFile(expectedJSResultFile);
+    const ts = await readFile(expectedTSResultFile);
+    assert.match(js.toString(), /{@link (.*?)|(.*?)}/);
+    assert.doesNotMatch(js.toString(), /{@link (.*?)#(.*?)}/);
+    assert.match(ts.toString(), /{@link (.*?)|(.*?)}/);
+    assert.doesNotMatch(ts.toString(), /{@link (.*?)#(.*?)}/);
+  });
 });
