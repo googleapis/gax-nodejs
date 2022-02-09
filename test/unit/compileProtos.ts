@@ -214,9 +214,10 @@ describe('compileProtos tool', () => {
     assert(fs.existsSync(expectedTSResultFile));
     const js = await readFile(expectedJSResultFile);
     const ts = await readFile(expectedTSResultFile);
+    // TODO: use assert.match and assert.doesnotmatch after node version > 13
     assert.ok(/{@link (.*?)|(.*?)}/.test(js.toString()));
-    assert.doesNotMatch(js.toString(), /{@link (.*?)#(.*?)}/);
+    assert.equal(/{@link (.*?)#(.*?)}/.test(js.toString()), false);
     assert.ok(/{@link (.*?)|(.*?)}/.test(ts.toString()));
-    assert.doesNotMatch(ts.toString(), /{@link (.*?)#(.*?)}/);
+    assert.equal(/{@link (.*?)#(.*?)}/.test(ts.toString()), false);
   });
 });
