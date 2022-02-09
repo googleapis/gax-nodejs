@@ -214,10 +214,24 @@ describe('compileProtos tool', () => {
     assert(fs.existsSync(expectedTSResultFile));
     const js = await readFile(expectedJSResultFile);
     const ts = await readFile(expectedTSResultFile);
-    // TODO: use assert.match and assert.doesnotmatch after node version > 13
-    assert.ok(/{@link (.*?)|(.*?)}/.test(js.toString()));
-    assert.equal(/{@link (.*?)#(.*?)}/.test(js.toString()), false);
-    assert.ok(/{@link (.*?)|(.*?)}/.test(ts.toString()));
-    assert.equal(/{@link (.*?)#(.*?)}/.test(ts.toString()), false);
+    const links = [
+      '{@link google.example.library.v1.LibraryService#createShelf}',
+      '{@link google.example.library.v1.LibraryService#getShelf}',
+      '{@link google.example.library.v1.LibraryService#listShelves}',
+      '{@link google.example.library.v1.LibraryService#deleteShelf}',
+      '{@link google.example.library.v1.LibraryService#mergeShelves}',
+      '{@link google.example.library.v1.LibraryService#createBook}',
+      '{@link google.example.library.v1.LibraryService#getBook}',
+      '{@link google.example.library.v1.LibraryService#listBooks}',
+      '{@link google.example.library.v1.LibraryService#deleteBook}',
+      '{@link google.example.library.v1.LibraryService#updateBook}',
+      '{@link google.example.library.v1.LibraryService#moveBook}',
+    ];
+    for (const link of links) {
+      const reformate = link.replace('#', '|');
+      assert(js.toString().includes(reformate));
+      assert(ts.toString().includes(reformate));
+      assert.equal(js.toString().includes(link), false);
+    }
   });
 });
