@@ -214,9 +214,9 @@ describe('compileProtos tool', () => {
     assert(fs.existsSync(expectedTSResultFile));
     const js = await readFile(expectedJSResultFile);
     const ts = await readFile(expectedTSResultFile);
-    assert.match(js.toString(), /{@link (.*?)|(.*?)}/);
+    assert.ok(/{@link (.*?)|(.*?)}/.test(js.toString()));
     assert.doesNotMatch(js.toString(), /{@link (.*?)#(.*?)}/);
-    assert.match(ts.toString(), /{@link (.*?)|(.*?)}/);
+    assert.ok(/{@link (.*?)|(.*?)}/.test(ts.toString()));
     assert.doesNotMatch(ts.toString(), /{@link (.*?)#(.*?)}/);
   });
 });
