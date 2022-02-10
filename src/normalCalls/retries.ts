@@ -126,6 +126,11 @@ export function retryable(
           }, toSleep);
         }
       });
+      if (canceller instanceof Promise) {
+        canceller.catch(err => {
+          callback(new GoogleError(err));
+        });
+      }
     }
 
     if (maxRetries && deadline!) {
