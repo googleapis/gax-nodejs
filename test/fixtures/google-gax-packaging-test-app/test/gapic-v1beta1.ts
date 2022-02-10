@@ -356,6 +356,20 @@ describe('v1beta1.EchoClient', () => {
           .calledWith(request, expectedOptions, undefined)
       );
     });
+
+    it.only('invokes echo with closed client', async () => {
+      const client = new echoModule.v1beta1.EchoClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.showcase.v1beta1.EchoRequest()
+      );
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      await assert.rejects(client.echo(request), expectedError);
+    });
   });
 
   describe('block', () => {
