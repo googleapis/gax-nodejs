@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.29.7](https://github.com/googleapis/gax-nodejs/compare/v2.29.6...v2.29.7) (2022-02-11)
+
+
+### Bug Fixes
+
+* add close method in fallbackServiceStub ([#1182](https://github.com/googleapis/gax-nodejs/issues/1182)) ([a1153e9](https://github.com/googleapis/gax-nodejs/commit/a1153e9efe4fe011405163aa2279b7a367359c0d))
+
 ### [2.29.6](https://github.com/googleapis/gax-nodejs/compare/v2.29.5...v2.29.6) (2022-02-10)
 
 
