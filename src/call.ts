@@ -90,6 +90,11 @@ export class OngoingCall {
         setImmediate(this.callback!, err, response, next, rawResponse);
       }
     );
+    if (canceller instanceof Promise) {
+      canceller.catch(err => {
+        setImmediate(this.callback!, new GoogleError(err), null, null, null);
+      });
+    }
     this.cancelFunc = () => canceller.cancel();
   }
 }

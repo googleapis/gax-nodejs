@@ -57,7 +57,12 @@ export function createApiCall(func: Function, opts?: Options) {
           },
         };
       }
-      func(argument, metadata, options, callback);
+      const conceller = func(argument, metadata, options, callback);
+      if (conceller instanceof Promise) {
+        conceller.catch((err: string) => {
+          callback(new GoogleError(err));
+        });
+      }
       return {
         cancel:
           (opts && opts.cancel) ||
