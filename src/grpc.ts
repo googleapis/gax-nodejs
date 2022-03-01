@@ -24,7 +24,7 @@ import {join} from 'path';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import * as objectHash from 'object-hash';
+import * as crypto from 'crypto';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -292,7 +292,10 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json).toString();
+    const hash = crypto
+      .createHash('md5')
+      .update(JSON.stringify(json))
+      .digest('hex');
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

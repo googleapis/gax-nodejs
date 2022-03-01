@@ -28,7 +28,7 @@ import {
   GoogleAuthOptions,
   BaseExternalAccountClient,
 } from 'google-auth-library';
-import * as objectHash from 'object-hash';
+import * as crypto from 'crypto';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -135,7 +135,10 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json).toString();
+    const hash = crypto
+      .createHash('md5')
+      .update(JSON.stringify(json))
+      .digest('hex');
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;
