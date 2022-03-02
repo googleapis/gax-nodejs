@@ -38,6 +38,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
 import * as commonProtoFiles from './protosList.json';
+import { createCrypto } from './crypto/crypto';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
   file.replace(/[/\\]/g, path.sep)
@@ -292,10 +293,8 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = crypto
-      .createHash('md5')
-      .update(JSON.stringify(json))
-      .digest('hex');
+    const crypto = createCrypto();
+    const hash = crypto.sha1digestHex(JSON.stringify(json));
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

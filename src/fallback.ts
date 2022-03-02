@@ -28,7 +28,6 @@ import {
   GoogleAuthOptions,
   BaseExternalAccountClient,
 } from 'google-auth-library';
-import * as crypto from 'crypto';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -40,6 +39,7 @@ import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
 import {StreamType} from '.';
+import { createCrypto } from './crypto/crypto';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -134,11 +134,9 @@ export class GrpcClient {
     return rootObject;
   }
 
-  loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = crypto
-      .createHash('md5')
-      .update(JSON.stringify(json))
-      .digest('hex');
+  async loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
+    const crypto = createCrypto();
+    const hash = await crypto.sha1digestHex(JSON.stringify(json));
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

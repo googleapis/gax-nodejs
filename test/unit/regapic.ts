@@ -55,7 +55,7 @@ describe('regapic', () => {
     libraryService: protobuf.Service,
     stubOptions: {};
 
-  before(() => {
+  before(async () => {
     stubOptions = {
       servicePath: 'foo.example.com',
       port: 443,
@@ -73,7 +73,7 @@ describe('regapic', () => {
       'library.json'
     );
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    libProtos = gaxGrpc.loadProtoJSON(require(TEST_JSON));
+    libProtos = await gaxGrpc.loadProtoJSON(require(TEST_JSON));
     libraryService = libProtos.lookupService('LibraryService');
     stubOptions = {
       servicePath: 'foo.example.com',
