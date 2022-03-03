@@ -23,6 +23,7 @@
     "google-auth-library": "^7.14.0",
     "is-stream-ended": "^0.1.4",
     "node-fetch": "^2.6.1",
+    "object-hash": "^3.0.0",
     "proto3-json-serializer": "^0.1.8",
     "protobufjs": "6.11.2",
     "retry-request": "^4.0.0"

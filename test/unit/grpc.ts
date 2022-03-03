@@ -320,11 +320,11 @@ describe('grpc', () => {
       );
     });
 
-    it('should load the test file as JSON', async () => {
+    it('should load the test file as JSON', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protos = await grpcClient.loadProtoJSON(require(TEST_JSON));
+      const protos = grpcClient.loadProtoJSON(require(TEST_JSON)) as any;
       assert.strictEqual(
         typeof protos.google.example.library.v1.LibraryService,
         'function'
@@ -388,9 +388,9 @@ describe('grpc', () => {
       assert.strictEqual(proto1, proto2);
     });
 
-    it.only('should cache the loaded JSON proto', async () => {
-      const proto1 = await grpcClient.loadProtoJSON(require(TEST_JSON));
-      const proto2 = await grpcClient.loadProtoJSON(require(TEST_JSON));
+    it('should cache the loaded JSON proto', () => {
+      const proto1 = grpcClient.loadProtoJSON(require(TEST_JSON));
+      const proto2 = grpcClient.loadProtoJSON(require(TEST_JSON));
       assert.strictEqual(proto1, proto2);
     });
 

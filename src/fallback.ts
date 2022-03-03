@@ -39,7 +39,7 @@ import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
 import {StreamType} from '.';
-import { createCrypto } from './crypto/crypto';
+import * as objectHash from 'object-hash';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -134,9 +134,8 @@ export class GrpcClient {
     return rootObject;
   }
 
-  async loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const crypto = createCrypto();
-    const hash = await crypto.sha1digestHex(JSON.stringify(json));
+  loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
+    const hash = objectHash(JSON.stringify(json)).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

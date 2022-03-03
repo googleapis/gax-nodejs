@@ -24,7 +24,7 @@ import {join} from 'path';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import * as crypto from 'crypto';
+import * as objectHash from 'object-hash';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -38,7 +38,6 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
 import * as commonProtoFiles from './protosList.json';
-import { createCrypto } from './crypto/crypto';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
   file.replace(/[/\\]/g, path.sep)
@@ -293,8 +292,7 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const crypto = createCrypto();
-    const hash = crypto.sha1digestHex(JSON.stringify(json));
+    const hash = objectHash(JSON.stringify(json)).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

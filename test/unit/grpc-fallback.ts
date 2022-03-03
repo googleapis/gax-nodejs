@@ -59,10 +59,10 @@ describe('loadProto', () => {
     assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
   });
 
-  it('should create a root object using loadProtoJSON', async () => {
+  it('should create a root object using loadProtoJSON', () => {
     // @ts-ignore incomplete options
     const gaxGrpc = new GrpcClient(opts);
-    const protos = await gaxGrpc.loadProtoJSON(echoProtoJson);
+    const protos = gaxGrpc.loadProtoJSON(echoProtoJson);
 
     assert(protos instanceof protobuf.Root);
     assert(protos.lookupService('Echo') instanceof protobuf.Service);
