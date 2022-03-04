@@ -38,7 +38,7 @@ import * as fallbackProto from './fallbackProto';
 import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
-import {StreamType} from '.';
+import {StreamType} from './streamingCalls/streaming';
 import * as objectHash from 'object-hash';
 
 export {FallbackServiceError};
