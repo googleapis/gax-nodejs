@@ -357,7 +357,7 @@ describe('v1beta1.EchoClient', () => {
       );
     });
 
-    it.only('invokes echo with closed client', async () => {
+    it('invokes echo with closed client', async () => {
       const client = new echoModule.v1beta1.EchoClient({
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
