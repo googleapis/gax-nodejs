@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.30.1](https://github.com/googleapis/gax-nodejs/compare/v2.30.0...v2.30.1) (2022-03-08)
+
+
+### Bug Fixes
+
+* do not depend on index.ts from fallback code ([#1201](https://github.com/googleapis/gax-nodejs/issues/1201)) ([5c7ca41](https://github.com/googleapis/gax-nodejs/commit/5c7ca41cc62ad4ea637c09f8c771e084c94ac3d4))
+* improve performance of loadProtoJSON ([#1196](https://github.com/googleapis/gax-nodejs/issues/1196)) ([df8eaf9](https://github.com/googleapis/gax-nodejs/commit/df8eaf94e29cff58fa5305e36441d663cb57bd31))
+
 ## [2.30.0](https://github.com/googleapis/gax-nodejs/compare/v2.29.7...v2.30.0) (2022-02-23)
 
 
