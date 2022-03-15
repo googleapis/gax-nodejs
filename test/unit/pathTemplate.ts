@@ -16,7 +16,7 @@
 
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
-import {PathTemplate} from '../../src/pathTemplate';
+import {extractReservedWord, PathTemplate} from '../../src/pathTemplate';
 
 describe('PathTemplate', () => {
   describe('constructor', () => {
@@ -226,6 +226,18 @@ describe('PathTemplate', () => {
       const want = 'user/foo/blurbs/legacy/bar.user2/project/pp';
       assert.strictEqual(template.render(params), want);
     });
+
+    it('should render param with reserved word', () => {
+      const template = new PathTemplate(
+        'projects/{project}/testExports/{export}'
+      );
+      const params = {
+        project: 'test',
+        exportParam: 'export_value',
+      };
+      const want = 'projects/test/testExports/export_value';
+      assert.strictEqual(template.render(params), want);
+    });
   });
 
   describe('method `inspect`', () => {
@@ -244,6 +256,24 @@ describe('PathTemplate', () => {
       it(`should render template ${template} ok`, () => {
         const t = new PathTemplate(template);
         assert.strictEqual(t.inspect(), want);
+      });
+    });
+  });
+
+  describe('method `extractReservedWord`', () => {
+    const matches = ['exportParam', 'packageParam', 'classParam'];
+    const notMatches = ['otherParam', 'other', '_Param'];
+
+    matches.forEach(word => {
+      const expect = word.replace('Param', '');
+      it(`should extract reserved word ${expect}`, () => {
+        assert.deepStrictEqual(extractReservedWord(word), expect);
+      });
+    });
+
+    notMatches.forEach(word => {
+      it(`can't extract reserved word from ${word}`, () => {
+        assert.deepStrictEqual(extractReservedWord(word), null);
       });
     });
   });

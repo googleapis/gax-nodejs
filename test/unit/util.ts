@@ -16,7 +16,11 @@
 
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
-import {snakeToCamelCase, camelToSnakeCase} from '../../src/util';
+import {
+  snakeToCamelCase,
+  camelToSnakeCase,
+  isReservedWord,
+} from '../../src/util';
 
 describe('util.ts', () => {
   it('camelToSnakeCase', () => {
@@ -48,5 +52,12 @@ describe('util.ts', () => {
     assert.strictEqual(snakeToCamelCase('!._\\`'), '!._\\`');
     assert.strictEqual(snakeToCamelCase('a!_b`'), 'a!B`');
     assert.strictEqual(snakeToCamelCase('a.1_b`'), 'a.1B`');
+  });
+
+  it('isReservedWord', () => {
+    assert.ok(isReservedWord('package'));
+    assert.ok(isReservedWord('export'));
+    assert.ok(isReservedWord('implements'));
+    assert.ok(isReservedWord('typeof'));
   });
 });

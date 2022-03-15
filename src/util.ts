@@ -13,6 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const STRICT_MODE_RESERVED_WORDS = new Set([
+  'as',
+  'implements',
+  'interface',
+  'let',
+  'package',
+  'private',
+  'protected',
+  'public',
+  'static',
+  'yield',
+]);
+
+const TYPESCRIPT_RESERVED_WORDS = new Set([
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'debugger',
+  'default',
+  'delete',
+  'do',
+  'else',
+  'enum',
+  'export',
+  'extends',
+  'false',
+  'finally',
+  'for',
+  'function',
+  'if',
+  'import',
+  'in',
+  'instanceof',
+  'new',
+  'null',
+  'return',
+  'super',
+  'switch',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'typeof',
+  'var',
+  'void',
+  'while',
+  'with',
+]);
 
 /**
  * Converts a given string from camelCase (used by protobuf.js and in JSON)
@@ -48,4 +99,13 @@ export function snakeToCamelCase(str: string) {
     return str;
   }
   return [splitted[0], ...splitted.slice(1).map(capitalize)].join('');
+}
+
+/**
+ * Check if the word is in reserved word list.
+ */
+export function isReservedWord(word: string) {
+  return (
+    STRICT_MODE_RESERVED_WORDS.has(word) || TYPESCRIPT_RESERVED_WORDS.has(word)
+  );
 }

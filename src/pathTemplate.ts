@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { isReservedWord } from "./util";
+
 /*
  * Path template utility.
  */
@@ -140,8 +142,11 @@ export class PathTemplate {
       );
     }
     let path = this.inspect();
-    for (const key of Object.keys(bindings)) {
+    for (let key of Object.keys(bindings)) {
       const b = bindings[key].toString();
+      if (extractReservedWord(key)) {
+        key = extractReservedWord(key) as string;
+      }
       if (!this.bindings[key]) {
         throw new TypeError(`render fails for not matching ${bindings[key]}`);
       }
@@ -262,4 +267,18 @@ function splitPathTemplate(data: string): string[] {
     right = right + 1;
   }
   return segments;
+}
+
+/**
+ * Extract the word that is end with 'Param'.
+ * Return extracted reserved word. Or return 'null' if it is not.
+ * For example: 'exportParam', 'packageParam' return 'export', 'package'.
+ * 'other', 'otherParam' return null.
+ */
+export function extractReservedWord(data: string): string | null {
+  const match = data.match(/\w+(?=Param)/);
+  if (match && isReservedWord(match[0])) {
+    return match[0];
+  }
+  return null;
 }
