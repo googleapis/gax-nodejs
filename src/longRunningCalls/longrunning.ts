@@ -24,6 +24,7 @@ import {GoogleError} from '../googleError';
 import {Metadata} from '../grpc';
 import {LongRunningDescriptor} from './longRunningDescriptor';
 import * as operationProtos from '../../protos/operations';
+import {decodeJSON} from '../fallbackRest';
 
 /**
  * @callback GetOperationCallback
@@ -57,6 +58,7 @@ export class Operation extends EventEmitter {
   done?: boolean;
   error?: GoogleError;
   response?: {};
+  rest?: boolean;
 
   /**
    * Wrapper for a google.longrunnung.Operation.
@@ -91,6 +93,7 @@ export class Operation extends EventEmitter {
     this._unpackResponse(grpcOp);
     this._listenForEvents();
     this._callOptions = callOptions;
+    this.rest = this.longrunningDescriptor.rest;
   }
 
   /**
@@ -203,6 +206,8 @@ export class Operation extends EventEmitter {
   _unpackResponse(op: LROOperation, callback?: GetOperationCallback) {
     const responseDecoder = this.longrunningDescriptor.responseDecoder;
     const metadataDecoder = this.longrunningDescriptor.metadataDecoder;
+    const responseType = this.longrunningDescriptor.responseType;
+    const metadataType = this.longrunningDescriptor.metadataType;
     let response: {};
     let metadata: Metadata;
 
@@ -219,14 +224,22 @@ export class Operation extends EventEmitter {
 
       if (responseDecoder && op.response) {
         this.response = op.response;
-        response = responseDecoder(op.response.value!);
+        if (this.rest && responseType) {
+          response = decodeJSON(responseType, op.response);
+        } else {
+          response = responseDecoder(op.response.value!);
+        }
         this.result = response;
         this.done = true;
       }
     }
 
     if (metadataDecoder && op.metadata) {
-      metadata = metadataDecoder(op.metadata.value!) as unknown as Metadata;
+      if (this.rest && metadataType) {
+        metadata = decodeJSON(metadataType, op.metadata) as unknown as Metadata;
+      } else {
+        metadata = metadataDecoder(op.metadata.value!) as unknown as Metadata;
+      }
       this.metadata = metadata;
     }
     if (callback) {

@@ -27,6 +27,9 @@ import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
+// import * as protosOp from '../../protos/operations';
+// import * as protosEcho from '../fixtures/google-gax-packaging-test-app/protos/protos';
+// import * as longrunning from '../../src/longRunningCalls/longrunning';
 
 const authClient = {
   async getRequestHeaders() {
@@ -47,12 +50,22 @@ const opts = {
   fallback?: boolean | 'rest' | 'proto';
 };
 
+function generateSampleMessage<T extends object>(instance: T) {
+  const filledObject = (
+    instance.constructor as typeof protobuf.Message
+  ).toObject(instance as protobuf.Message<T>, {defaults: true});
+  return (instance.constructor as typeof protobuf.Message).fromObject(
+    filledObject
+  ) as T;
+}
+
 describe('regapic', () => {
   let gaxGrpc: GrpcClient,
     protos: protobuf.NamespaceBase,
     libProtos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
     libraryService: protobuf.Service,
+    operationService: protobuf.Service,
     stubOptions: {};
 
   before(() => {
@@ -64,6 +77,7 @@ describe('regapic', () => {
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
+    operationService = protos.lookupService('Operations');
     const TEST_JSON = path.resolve(
       __dirname,
       '..',
@@ -351,4 +365,88 @@ describe('regapic', () => {
       }, /* catch: */ done);
     });
   });
+
+  // describe.skip('REGAPIC long running operation', () => {
+  //   function stubLongRunningCall<ResponseType>(
+  //     response?: ResponseType,
+  //     callError?: Error,
+  //     lroError?: Error
+  //   ) {
+  //     const innerStub = lroError
+  //       ? sinon.stub().rejects(lroError)
+  //       : sinon.stub().resolves([response]);
+  //     const mockOperation = {
+  //       promise: innerStub,
+  //     };
+  //     return callError
+  //       ? sinon.stub().rejects(callError)
+  //       : sinon.stub().resolves([mockOperation]);
+  //   }
+  //   it('success lro', async done => {
+  //     const request = generateSampleMessage(
+  //       new protosEcho.google.showcase.v1beta1.WaitRequest()
+  //     );
+  //     const expectedOperation = generateSampleMessage(
+  //       new protosOp.google.longrunning.Operation()
+  //     );
+  //     const expectedResponse = {
+  //       response: generateSampleMessage(
+  //         new protosEcho.google.showcase.v1beta1.WaitResponse()
+  //       ),
+  //       metadata: generateSampleMessage(
+  //         new protosEcho.google.showcase.v1beta1.WaitMetadata()
+  //       ),
+  //     };
+  //     // incomplete types for nodeFetch, so...
+  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  //     sinon.stub(nodeFetch, 'Promise' as any).returns(
+  //       Promise.resolve({
+  //         ok: true,
+  //         arrayBuffer: () => {
+  //           return Promise.resolve(
+  //             Buffer.from(JSON.stringify(expectedOperation))
+  //           );
+  //         },
+  //       })
+  //     );
+  //     sinon.stub(nodeFetch, 'Promise' as any).returns(
+  //       Promise.resolve({
+  //         ok: true,
+  //         arrayBuffer: () => {
+  //           return Promise.resolve(
+  //             Buffer.from(JSON.stringify(expectedResponse))
+  //           );
+  //         },
+  //       })
+  //     );
+  //     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
+  //     echoStub.wait(request, {}, {}, (err?: {}, response?: {}) => {
+  //       console.log('---operation:: ', response);
+  //       assert.strictEqual(err, null);
+  //       assert.strictEqual(response, expectedOperation);
+  //       const operation = response as unknown as longrunning.Operation;
+  //       console.log('--opeation:: ', operation);
+  //       return operation.promise();
+  //     });
+
+  //     const operationStub = await gaxGrpc.createStub(
+  //       operationService,
+  //       stubOptions
+  //     );
+  //     const opRequest = generateSampleMessage(
+  //       new protosOp.google.longrunning.GetOperationRequest()
+  //     );
+  //     operationStub.getOperation(
+  //       opRequest,
+  //       {},
+  //       {},
+  //       (err?: {}, results?: {}) => {
+  //         console.log('-----results:: ', results);
+  //         assert.strictEqual(err, null);
+  //         assert.strictEqual(results, expectedResponse);
+  //       }
+  //     );
+  //     done();
+  //   });
+  // });
 });

@@ -17,6 +17,7 @@
 // proto-over-HTTP request encoding and decoding
 
 import * as serializer from 'proto3-json-serializer';
+import { Type } from 'protobufjs';
 import {defaultToObjectOptions} from './fallback';
 import {FetchParameters} from './fallbackServiceStub';
 import {hasTextDecoder, hasTextEncoder, isNodeJS} from './featureDetection';
@@ -95,9 +96,20 @@ export function decodeResponse(
     const error = GoogleError.parseHttpError(json);
     throw error;
   }
+  if (rpc.name === 'GetOperation') {
+    return json;
+  }
   const message = serializer.fromProto3JSON(rpc.resolvedResponseType!, json);
   if (!message) {
     throw new Error(`Received null response from RPC ${rpc.name}`);
   }
   return rpc.resolvedResponseType!.toObject(message, defaultToObjectOptions);
+}
+
+export function decodeJSON(protoType: Type, json: any) {
+  const message = serializer.fromProto3JSON(protoType, json);
+  if (!message) {
+    throw new Error(`Received null for type ${protoType.fullName}`);
+  }
+  return protoType.toObject(message, defaultToObjectOptions);
 }

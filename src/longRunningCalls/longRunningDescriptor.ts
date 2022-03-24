@@ -15,6 +15,7 @@
  */
 
 import * as protobuf from 'protobufjs';
+import {Type} from 'protobufjs';
 import {Descriptor} from '../descriptor';
 import {OperationsClient} from '../operationsClient';
 import {LongrunningApiCaller} from './longRunningApiCaller';
@@ -33,15 +34,24 @@ export class LongRunningDescriptor implements Descriptor {
   operationsClient: OperationsClient;
   responseDecoder: AnyDecoder;
   metadataDecoder: AnyDecoder;
+  responseType?: Type;
+  metadataType?: Type;
+  rest?: boolean;
 
   constructor(
     operationsClient: OperationsClient,
     responseDecoder: AnyDecoder,
-    metadataDecoder: AnyDecoder
+    metadataDecoder: AnyDecoder,
+    responseType?: Type,
+    metadataType?: Type,
+    rest?: boolean
   ) {
     this.operationsClient = operationsClient;
     this.responseDecoder = responseDecoder;
     this.metadataDecoder = metadataDecoder;
+    this.responseType = responseType;
+    this.metadataType = metadataType;
+    this.rest = rest;
   }
 
   getApiCaller() {

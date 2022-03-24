@@ -226,7 +226,7 @@ export class EchoClient {
     this.descriptors.longrunning = {
       wait: new this._gaxModule.LongrunningDescriptor(
           this.operationsClient, waitResponse.decode.bind(waitResponse),
-          waitMetadata.decode.bind(waitMetadata)),
+          waitMetadata.decode.bind(waitMetadata), waitResponse, waitMetadata, opts.fallback === 'rest'),
     };
 
     // Put together the default options sent with requests.

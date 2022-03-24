@@ -30,6 +30,7 @@ import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
 import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
+import { Type } from 'protobufjs';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
@@ -81,11 +82,26 @@ const mockDecoder = (val: {}) => {
   return val.toString();
 };
 
+const responseType: Type = new Type('ResponseType');
+const metadataType: Type = new Type('MetadataType');
+
 function createApiCall(func: Function, client?: OperationsClient) {
   const descriptor = new LongrunningDescriptor(
     client!,
     mockDecoder as unknown as AnyDecoder,
     mockDecoder as unknown as AnyDecoder
+  );
+  return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
+}
+
+function createApiCallRest(func: Function, client?: OperationsClient) {
+  const descriptor = new LongrunningDescriptor(
+    client!,
+    mockDecoder as unknown as AnyDecoder,
+    mockDecoder as unknown as AnyDecoder,
+    responseType,
+    metadataType,
+    true
   );
   return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }

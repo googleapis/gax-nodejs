@@ -85,7 +85,9 @@ export class OperationsClient {
       googleApiClient.push(opts.libName + '/' + opts.libVersion);
     }
     googleApiClient.push(CODE_GEN_NAME_VERSION, 'gax/' + version);
-    if (opts.fallback) {
+    if (opts.fallback === 'rest') {
+      googleApiClient.push('rest/' + version);
+    } else if (opts.fallback) {
       googleApiClient.push('gl-web/' + version);
     } else {
       googleApiClient.push('grpc/' + gaxGrpc.grpcVersion);
@@ -581,7 +583,9 @@ export class OperationsClientBuilder {
      * @param {Object=} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
      */
     this.operationsClient = opts => {
-      if (gaxGrpc.fallback) {
+      if (gaxGrpc.fallback === 'rest') {
+        opts.fallback = 'rest';
+      } else if (gaxGrpc.fallback) {
         opts.fallback = true;
       }
       return new OperationsClient(gaxGrpc, operationsProtos, opts);

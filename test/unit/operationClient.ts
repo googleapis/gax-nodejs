@@ -23,6 +23,7 @@ import {describe, it} from 'mocha';
 import {OperationsClientBuilder} from '../../src/operationsClient';
 import * as protobuf from 'protobufjs';
 import {GrpcClient} from '../../src/grpc';
+import {GrpcClient as FallbackGrpcClient} from '../../src/fallback';
 import {PassThrough} from 'stream';
 import {ResultTuple} from '../../src/apitypes';
 
@@ -119,6 +120,32 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
+        clientOptions
+      );
+
+      const request = generateSampleMessage(
+        new protos.google.longrunning.GetOperationRequest()
+      );
+      const expectedResponse = generateSampleMessage(
+        new protos.google.longrunning.Operation()
+      );
+      client.innerApiCalls.getOperation = stubSimpleCall(expectedResponse);
+      const response = await client.getOperation(request);
+      assert.deepStrictEqual(response, [expectedResponse]);
+      assert(
+        (client.innerApiCalls.getOperation as SinonStub)
+          .getCall(0)
+          .calledWith(request)
+      );
+    });
+
+    it('invokes getOperation on rest operation client', async () => {
+      const restClient = new FallbackGrpcClient({fallback: 'rest'});
+      const clientOptions = {
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      };
+      const client = new OperationsClientBuilder(restClient).operationsClient(
         clientOptions
       );
 
