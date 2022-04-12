@@ -23,6 +23,8 @@ import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {hasWindowFetch, hasAbortController} from './featureDetection';
 import {AuthClient} from './fallback';
+import {StreamArrayParser} from './streamArrayParser';
+import {pipeline, PipelineSource} from 'stream';
 
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
@@ -35,7 +37,7 @@ export interface FallbackServiceStub {
     options: {},
     metadata: {},
     callback: (err?: Error, response?: {} | undefined) => void
-  ) => {cancel: () => void};
+  ) => StreamArrayParser | {cancel: () => void};
 }
 
 export interface FetchParameters {
@@ -68,7 +70,12 @@ export function generateServiceStub(
     ? window.fetch
     : (nodeFetch as unknown as NodeFetchType);
 
-  const serviceStub: FallbackServiceStub = {};
+  const serviceStub: FallbackServiceStub = {
+    // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
+    close: () => {
+      return {cancel: () => {}};
+    },
+  };
   for (const [rpcName, rpc] of Object.entries(rpcs)) {
     serviceStub[rpcName] = (
       request: {},
@@ -97,6 +104,7 @@ export function generateServiceStub(
       for (const key of Object.keys(options)) {
         headers[key] = options[key][0];
       }
+      const streamArrayParser = new StreamArrayParser(rpc);
 
       authClient
         .getRequestHeaders()
@@ -124,21 +132,44 @@ export function generateServiceStub(
           return fetch(url, fetchRequest);
         })
         .then((response: Response | NodeFetchResponse) => {
-          return Promise.all([
-            Promise.resolve(response.ok),
-            response.arrayBuffer(),
-          ]);
-        })
-        .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
-          const response = responseDecoder(rpc, ok, buffer);
-          callback(null, response);
-        })
-        .catch((err: Error) => {
-          if (!cancelRequested || err.name !== 'AbortError') {
-            callback(err);
+          if (response.ok && rpc.responseStream) {
+            pipeline(
+              response.body as PipelineSource<unknown>,
+              streamArrayParser,
+              (err: unknown) => {
+                if (
+                  err &&
+                  (!cancelRequested ||
+                    (err instanceof Error && err.name !== 'AbortError'))
+                ) {
+                  if (callback) {
+                    callback(err);
+                  }
+                  streamArrayParser.emit('error', err);
+                }
+              }
+            );
+            return;
+          } else {
+            return Promise.all([
+              Promise.resolve(response.ok),
+              response.arrayBuffer(),
+            ])
+              .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
+                const response = responseDecoder(rpc, ok, buffer);
+                callback(null, response);
+              })
+              .catch((err: Error) => {
+                if (!cancelRequested || err.name !== 'AbortError') {
+                  callback(err);
+                }
+              });
           }
         });
 
+      if (rpc.responseStream) {
+        return streamArrayParser;
+      }
       return {
         cancel: () => {
           cancelRequested = true;

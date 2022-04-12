@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Status} from './status';
+import {Status, rpcCodeFromHttpStatusCode} from './status';
 import * as protobuf from 'protobufjs';
 import {Metadata} from './grpc';
 
@@ -25,13 +25,80 @@ export class GoogleError extends Error {
   statusDetails?: string | protobuf.Message<{}>[];
   reason?: string;
   domain?: string;
+  errorInfoMetadata?: {string: string};
+
+  // Parse details field in google.rpc.status wire over gRPC medatadata.
+  // Promote google.rpc.ErrorInfo if exist.
+  static parseGRPCStatusDetails(err: GoogleError): GoogleError {
+    const decoder = new GoogleErrorDecoder();
+    try {
+      if (err.metadata && err.metadata.get('grpc-status-details-bin')) {
+        const statusDetailsObj: GRPCStatusDetailsObject =
+          decoder.decodeGRPCStatusDetails(
+            err.metadata.get('grpc-status-details-bin') as []
+          );
+        if (
+          statusDetailsObj &&
+          statusDetailsObj.details &&
+          statusDetailsObj.details.length > 0
+        ) {
+          err.statusDetails = statusDetailsObj.details;
+        }
+        if (statusDetailsObj && statusDetailsObj.errorInfo) {
+          err.reason = statusDetailsObj.errorInfo.reason;
+          err.domain = statusDetailsObj.errorInfo.domain;
+          err.errorInfoMetadata = statusDetailsObj.errorInfo.metadata;
+        }
+      }
+    } catch (decodeErr) {
+      // ignoring the error
+    }
+    return err;
+  }
+
+  // Parse http JSON error and promote google.rpc.ErrorInfo if exist.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static parseHttpError(json: any): GoogleError {
+    const error = Object.assign(
+      new GoogleError(json['error']['message']),
+      json.error
+    );
+    // Map Http Status Code to gRPC Status Code
+    if (json['error']['code']) {
+      error.code = rpcCodeFromHttpStatusCode(json['error']['code']);
+    }
+
+    // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
+    // Rename "detials" to "statusDetails".
+    error.statusDetails = json['error']['details'];
+    delete error.details;
+    // Promote the ErrorInfo fields as error's top-level.
+    const errorInfo = !json['error']['details']
+      ? undefined
+      : json['error']['details'].find(
+          (item: {[x: string]: string}) =>
+            item['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo'
+        );
+    if (errorInfo) {
+      error.reason = errorInfo.reason;
+      error.domain = errorInfo.domain;
+      // error.metadata has been occupied for gRPC metadata, so we use
+      // errorInfoMetadat to represent ErrorInfo' metadata field. Keep
+      // consistency with gRPC ErrorInfo metadata field name.
+      error.errorInfoMetadata = errorInfo.metadata;
+    }
+    return error;
+  }
 }
 
 export type FallbackServiceError = FallbackStatusObject & Error;
 interface FallbackStatusObject {
   code: Status;
   message: string;
-  details: Array<{}>;
+  statusDetails: Array<{}>;
+  reason?: string;
+  domain?: string;
+  errorInfoMetadata?: {string: string};
 }
 
 interface ProtobufAny {
@@ -45,6 +112,11 @@ interface RpcStatus {
   details: ProtobufAny[];
 }
 
+interface GRPCStatusDetailsObject {
+  details: protobuf.Message<{}>[];
+  errorInfo?: ErrorInfo;
+}
+
 interface ErrorInfo {
   reason: string;
   domain: string;
@@ -55,7 +127,6 @@ export class GoogleErrorDecoder {
   root: protobuf.Root;
   anyType: protobuf.Type;
   statusType: protobuf.Type;
-  errorInfoType: protobuf.Type;
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -63,7 +134,6 @@ export class GoogleErrorDecoder {
     this.root = protobuf.Root.fromJSON(errorProtoJson);
     this.anyType = this.root.lookupType('google.protobuf.Any');
     this.statusType = this.root.lookupType('google.rpc.Status');
-    this.errorInfoType = this.root.lookupType('google.rpc.ErrorInfo');
   }
 
   decodeProtobufAny(anyValue: ProtobufAny): protobuf.Message<{}> {
@@ -89,10 +159,14 @@ export class GoogleErrorDecoder {
     // google.rpc.Status contains an array of google.protobuf.Any
     // which need a special treatment
     const details: Array<protobuf.Message> = [];
+    let errorInfo;
     for (const detail of status.details) {
       try {
         const decodedDetail = this.decodeProtobufAny(detail);
         details.push(decodedDetail);
+        if (detail.type_url === 'type.googleapis.com/google.rpc.ErrorInfo') {
+          errorInfo = decodedDetail as unknown as ErrorInfo;
+        }
       } catch (err) {
         // cannot decode detail, likely because of the unknown type - just skip it
       }
@@ -100,7 +174,10 @@ export class GoogleErrorDecoder {
     const result = {
       code: status.code,
       message: status.message,
-      details,
+      statusDetails: details,
+      reason: errorInfo?.reason,
+      domain: errorInfo?.domain,
+      errorInfoMetadata: errorInfo?.metadata,
     };
     return result;
   }
@@ -109,7 +186,7 @@ export class GoogleErrorDecoder {
   // Adapted from https://github.com/grpc/grpc-node/blob/main/packages/grpc-js/src/call.ts#L79
   callErrorFromStatus(status: FallbackStatusObject): FallbackServiceError {
     status.message = `${status.code} ${Status[status.code]}: ${status.message}`;
-    return Object.assign(new Error(status.message), status);
+    return Object.assign(new GoogleError(status.message), status);
   }
 
   // Decodes gRPC-fallback error which is an instance of google.rpc.Status,
@@ -118,62 +195,33 @@ export class GoogleErrorDecoder {
     return this.callErrorFromStatus(this.decodeRpcStatus(buffer));
   }
 
-  // Decodes gRPC-fallback error which is an instance of google.rpc.Status.
-  decodeRpcStatusDetails(
+  // Decodes gRPC metadata error details which is an instance of google.rpc.Status.
+  decodeGRPCStatusDetails(
     bufferArr: Buffer[] | ArrayBuffer[]
-  ): protobuf.Message<{}>[] {
-    const status: protobuf.Message<{}>[] = [];
+  ): GRPCStatusDetailsObject {
+    const details: protobuf.Message<{}>[] = [];
+    let errorInfo;
     bufferArr.forEach(buffer => {
       const uint8array = new Uint8Array(buffer);
-      const error_status = this.statusType.decode(
+      const rpcStatus = this.statusType.decode(
         uint8array
       ) as unknown as RpcStatus;
-      for (const detail of error_status.details) {
+      for (const detail of rpcStatus.details) {
         try {
-          status.push(this.decodeProtobufAny(detail));
+          const decodedDetail = this.decodeProtobufAny(detail);
+          details.push(decodedDetail);
+          if (detail.type_url === 'type.googleapis.com/google.rpc.ErrorInfo') {
+            errorInfo = decodedDetail as unknown as ErrorInfo;
+          }
         } catch (err) {
           // cannot decode detail, likely because of the unknown type - just skip it
         }
       }
     });
-    return status;
-  }
-
-  decodeMetadata(err: GoogleError): GoogleError {
-    if (!err.metadata) {
-      return err;
-    }
-    if (err.metadata.get('grpc-status-details-bin')) {
-      err.statusDetails = this.decodeRpcStatusDetails(
-        err.metadata.get('grpc-status-details-bin') as Buffer[]
-      );
-    }
-    // Promote the ErrorInfo fields as first-class of error
-    if (err.metadata.get('google.rpc.errorinfo-bin')) {
-      const buffer = err.metadata.get('google.rpc.errorinfo-bin') as Buffer[];
-      if (buffer.length > 1) {
-        throw new GoogleError(
-          `Multiple ErrorInfo type encoded in err.metadata.get('google.rpc.errorinfo-bin'): ${err.metadata.get(
-            'google.rpc.errorinfo-bin'
-          )}`
-        );
-      }
-      const uint8array = new Uint8Array(buffer[0]);
-      const errorInfo = this.errorInfoType.decode(
-        uint8array
-      ) as unknown as ErrorInfo;
-      if (errorInfo.reason) {
-        err.reason = errorInfo.reason;
-      }
-      if (errorInfo.domain) {
-        err.domain = errorInfo.domain;
-      }
-      if (errorInfo.metadata) {
-        for (const [key, value] of Object.entries(errorInfo.metadata)) {
-          err.metadata.set(key, value);
-        }
-      }
-    }
-    return err;
+    const result = {
+      details,
+      errorInfo,
+    };
+    return result;
   }
 }

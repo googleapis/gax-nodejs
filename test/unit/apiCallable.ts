@@ -238,6 +238,15 @@ describe('Promise', () => {
       .catch(done);
   });
 
+  it('emits error on rejected promise', async () => {
+    const reason = 'reject reason';
+    function func() {
+      return Promise.reject(reason);
+    }
+    const apiCall = createApiCall(func);
+    await assert.rejects(apiCall({}, undefined), new Error(reason));
+  });
+
   it('emits error on failure', async () => {
     const apiCall = createApiCall(fail);
     await assert.rejects(apiCall({}, undefined));

@@ -30,7 +30,8 @@ const ncpp = util.promisify(ncp);
 
 const testDir = path.join(process.cwd(), '.kitchen-sink');
 const gaxDir = path.resolve(__dirname, '..', '..', '..');
-const fixturesDir = path.join(gaxDir, 'test', 'fixtures');
+const buildDir = path.join(process.cwd(), 'build');
+const fixturesDir = path.join(buildDir, 'test', 'fixtures');
 
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball

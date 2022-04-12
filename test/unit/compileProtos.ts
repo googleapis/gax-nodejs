@@ -205,4 +205,33 @@ describe('compileProtos tool', () => {
     ]);
     assert.strictEqual(rootName, 'default');
   });
+
+  it('reformat the JSDOC link in the JS and TS file', async () => {
+    await compileProtos.main([
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
+    ]);
+    assert(fs.existsSync(expectedJSResultFile));
+    assert(fs.existsSync(expectedTSResultFile));
+    const js = await readFile(expectedJSResultFile);
+    const ts = await readFile(expectedTSResultFile);
+    const links = [
+      '{@link google.example.library.v1.LibraryService#createShelf}',
+      '{@link google.example.library.v1.LibraryService#getShelf}',
+      '{@link google.example.library.v1.LibraryService#listShelves}',
+      '{@link google.example.library.v1.LibraryService#deleteShelf}',
+      '{@link google.example.library.v1.LibraryService#mergeShelves}',
+      '{@link google.example.library.v1.LibraryService#createBook}',
+      '{@link google.example.library.v1.LibraryService#getBook}',
+      '{@link google.example.library.v1.LibraryService#listBooks}',
+      '{@link google.example.library.v1.LibraryService#deleteBook}',
+      '{@link google.example.library.v1.LibraryService#updateBook}',
+      '{@link google.example.library.v1.LibraryService#moveBook}',
+    ];
+    for (const link of links) {
+      const reformate = link.replace('#', '|');
+      assert(js.toString().includes(reformate));
+      assert(ts.toString().includes(reformate));
+      assert.equal(js.toString().includes(link), false);
+    }
+  });
 });

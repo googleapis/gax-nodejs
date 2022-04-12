@@ -22,6 +22,7 @@ import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import {GoogleError, GoogleErrorDecoder} from '../../src/googleError';
 import {Metadata} from '@grpc/grpc-js';
+import {rpcCodeFromHttpStatusCode} from '../../src/status';
 
 interface MyObj {
   type: string;
@@ -50,31 +51,38 @@ describe('gRPC-google error decoding', () => {
 
   it('decodes multiple errors', async () => {
     // example of when there are multiple errors available to be decoded
-    const bufferArr = [] as Buffer[];
-    let decodedErrorArr = [] as protobuf.Message<{}>[];
     const expectedErrorArr = [] as protobuf.Message<{}>[];
     const decoder = new GoogleErrorDecoder();
     const readFile = util.promisify(fs.readFile);
 
     const data = await readFile(fixtureName, 'utf8');
     const objs = JSON.parse(data) as MyObj[];
+    const details = [];
     for (const obj of objs) {
       const MessageType = root.lookupType(obj.type);
       expectedErrorArr.push(obj.value);
       const buffer = MessageType.encode(obj.value).finish() as Buffer;
-      const any = {
+      const anyObj = {
         type_url: 'type.googleapis.com/' + obj.type,
         value: buffer,
       };
-      const status = {code: 3, message: 'test', details: [any]};
-      const Status = root.lookupType('google.rpc.Status');
-      const status_buffer = Status.encode(status).finish() as Buffer;
-      bufferArr.push(status_buffer);
+      details.push(anyObj);
     }
-    decodedErrorArr = decoder.decodeRpcStatusDetails(bufferArr);
+    const status = {code: 3, message: 'test', details: details};
+    const Status = root.lookupType('google.rpc.Status');
+    const statusBuffer = Status.encode(status).finish() as Buffer;
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
+      new Array(statusBuffer)
+    );
     assert.strictEqual(
       JSON.stringify(expectedErrorArr),
-      JSON.stringify(decodedErrorArr)
+      JSON.stringify(gRPCStatusDetailsObj.details)
+    );
+    assert.deepStrictEqual(
+      JSON.stringify(gRPCStatusDetailsObj.errorInfo),
+      JSON.stringify(
+        objs.find(item => item.type === 'google.rpc.ErrorInfo')?.value
+      )
     );
   });
 
@@ -83,10 +91,14 @@ describe('gRPC-google error decoding', () => {
     const emptyArr: Buffer[] = [];
     const decoder = new GoogleErrorDecoder();
 
-    const decodedError = decoder.decodeRpcStatusDetails(emptyArr);
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(emptyArr);
 
     // nested error messages have different types so we can't use deepStrictEqual here
-    assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
+    assert.strictEqual(
+      JSON.stringify(gRPCStatusDetailsObj.details),
+      JSON.stringify([])
+    );
+    assert.strictEqual(gRPCStatusDetailsObj.errorInfo, undefined);
   });
 
   it('DecodeRpcStatus does not fail when unknown type is encoded', () => {
@@ -100,7 +112,7 @@ describe('gRPC-google error decoding', () => {
 
     assert.strictEqual(
       JSON.stringify(decodedError),
-      '{"code":3,"message":"test","details":[]}'
+      '{"code":3,"message":"test","statusDetails":[]}'
     );
   });
 
@@ -111,9 +123,14 @@ describe('gRPC-google error decoding', () => {
     const status_buffer = Status.encode(status).finish();
     const decoder = new GoogleErrorDecoder();
 
-    const decodedError = decoder.decodeRpcStatusDetails([status_buffer]);
+    const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails([
+      status_buffer,
+    ]);
 
-    assert.strictEqual(JSON.stringify(decodedError), JSON.stringify([]));
+    assert.strictEqual(
+      JSON.stringify(gRPCStatusDetailsObj.details),
+      JSON.stringify([])
+    );
   });
 
   it('does not decode when unknown type is encoded in type_url', () => {
@@ -149,24 +166,30 @@ describe('gRPC-google error decoding', () => {
   });
 });
 
-describe('decode metadata for ErrorInfo', () => {
-  it('metadata contains key google.rpc.errorinfo-bin', async () => {
-    const errorInfoObj = {
-      metadata: {
-        consumer: 'projects/455411330361',
-        service: 'translate.googleapis.com',
-      },
-      reason: 'SERVICE_DISABLED',
-      domain: 'googleapis.com',
-    };
-
+describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
+  const errorInfoObj = {
+    reason: 'SERVICE_DISABLED',
+    domain: 'googleapis.com',
+    metadata: {
+      consumer: 'projects/455411330361',
+      service: 'translate.googleapis.com',
+    },
+  };
+  it('metadata contains key grpc-status-details-bin with ErrorInfo', async () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const errorProtoJson = require('../../protos/status.json');
     const root = protobuf.Root.fromJSON(errorProtoJson);
     const errorInfoType = root.lookupType('ErrorInfo');
     const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const any = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
     const metadata = new Metadata();
-    metadata.set('google.rpc.errorinfo-bin', buffer);
+    metadata.set('grpc-status-details-bin', status_buffer);
     const grpcError = Object.assign(
       new GoogleError('mock error with ErrorInfo'),
       {
@@ -174,17 +197,107 @@ describe('decode metadata for ErrorInfo', () => {
         metadata: metadata,
       }
     );
-    const decoder = new GoogleErrorDecoder();
-    const decodedError = decoder.decodeMetadata(grpcError);
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
-    for (const [key, value] of Object.entries(errorInfoObj.metadata)) {
-      assert.ok(decodedError.metadata);
-      assert.strictEqual(
-        (decodedError.metadata.get(key) as Array<string>).shift(),
-        value
-      );
-    }
+    assert.strictEqual(
+      JSON.stringify(decodedError.errorInfoMetadata),
+      JSON.stringify(errorInfoObj.metadata)
+    );
+  });
+
+  it('metadata contains key grpc-status-details-bin with ErrorInfo and other unknow type', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const anyObj = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const unknownObj = {
+      type_url: 'unknown_type',
+      value: Buffer.from(''),
+    };
+    const status = {code: 3, message: 'test', details: [anyObj, unknownObj]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('grpc-status-details-bin', status_buffer);
+    const grpcError = Object.assign(
+      new GoogleError('mock error with ErrorInfo'),
+      {
+        code: 7,
+        metadata: metadata,
+      }
+    );
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(
+      JSON.stringify(decodedError.statusDetails),
+      JSON.stringify([errorInfoObj])
+    );
+    assert.strictEqual(decodedError.domain, errorInfoObj.domain);
+    assert.strictEqual(decodedError.reason, errorInfoObj.reason);
+    assert.strictEqual(
+      JSON.stringify(decodedError.errorInfoMetadata),
+      JSON.stringify(errorInfoObj.metadata)
+    );
+  });
+
+  it('metadata has no key grpc-status-details-bin', async () => {
+    const metadata = new Metadata();
+    metadata.set('grpc-server-stats-bin', Buffer.from('AAKENLPQKNSALSDFJ'));
+    const grpcError = Object.assign(
+      new GoogleError('mock error with metadata'),
+      {
+        code: 7,
+        metadata: metadata,
+      }
+    );
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError, grpcError);
+  });
+
+  it('no grpc metadata', async () => {
+    const grpcError = Object.assign(
+      new GoogleError('mock error without metadata'),
+      {
+        code: 7,
+      }
+    );
+    const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
+    assert(decodedError instanceof GoogleError);
+    assert.strictEqual(decodedError, grpcError);
+  });
+});
+
+describe('map http status code to gRPC status code', () => {
+  it('error with http status code', () => {
+    const json = {
+      error: {
+        code: 403,
+        message:
+          'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+        status: 'PERMISSION_DENIED',
+      },
+    };
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+  });
+
+  it('error without http status code', () => {
+    const json = {
+      error: {
+        message:
+          'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+        status: 'PERMISSION_DENIED',
+      },
+    };
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, undefined);
   });
 });
