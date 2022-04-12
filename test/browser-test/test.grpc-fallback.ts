@@ -17,25 +17,32 @@
 /* eslint-disable @typescript-eslint/ban-ts-ignore */
 
 import * as assert from 'assert';
-import {describe, it, beforeEach, before, afterEach, after} from 'mocha';
+import {GoogleAuth} from 'google-auth-library';
+import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as protobuf from 'protobufjs';
-import * as fallback from '../../src/fallback';
 import * as sinon from 'sinon';
+
+import * as fallback from '../../src/fallback';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
-//@ts-ignore
-import * as EchoClient from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
+import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const statusJsonProto = require('../../protos/status.json');
 
 const authStub = {
-  async getRequestHeaders() {
-    return {Authorization: 'Bearer SOME_TOKEN'};
+  getClient: async () => {
+    return {
+      getRequestHeaders: async () => {
+        return {
+          Authorization: 'Bearer zzzz',
+        };
+      },
+    };
   },
 };
 
 const opts = {
-  auth: authStub,
+  auth: authStub as unknown as GoogleAuth,
 };
 
 describe('loadProto', () => {
@@ -94,7 +101,8 @@ describe('createStub', () => {
     // There should be 6 methods for the echo service
     assert.strictEqual(Object.keys(echoStub).length, 6);
 
-    // Each of the service methods should take 4 arguments (so that it works with createApiCall)
+    // Each of the service methods should take 4 arguments (so that it works
+    // with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
   });
 
@@ -109,7 +117,8 @@ describe('createStub', () => {
     // There should be 6 methods for the echo service
     assert.strictEqual(Object.keys(echoStub).length, 6);
 
-    // Each of the service methods should take 4 arguments (so that it works with createApiCall)
+    // Each of the service methods should take 4 arguments (so that it works
+    // with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
   });
 });
@@ -124,13 +133,19 @@ describe('grpc-fallback', () => {
   const savedAbortController = window.AbortController;
 
   const authStub = {
-    async getRequestHeaders() {
-      return {Authorization: 'Bearer SOME_TOKEN'};
+    getClient: async () => {
+      return {
+        getRequestHeaders: async () => {
+          return {
+            Authorization: 'Bearer zzzz',
+          };
+        },
+      };
     },
   };
 
   const opts = {
-    auth: authStub,
+    auth: authStub as unknown as GoogleAuth,
     protocol: 'http',
     port: 1337,
   };
@@ -246,7 +261,8 @@ describe('grpc-fallback', () => {
 
   it('should handle an error', done => {
     const requestObject = {content: 'test-content'};
-    // example of an actual google.rpc.Status error message returned by Language API
+    // example of an actual google.rpc.Status error message returned by Language
+    // API
     const expectedError = Object.assign(new Error('Error message'), {
       code: 3,
       details: [],

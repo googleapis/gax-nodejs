@@ -292,7 +292,7 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json);
+    const hash = objectHash(JSON.stringify(json)).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;
@@ -421,6 +421,9 @@ export class GrpcClient {
         if (grpcGcpOptions.includes(key)) {
           key = key.replace(/^grpc\./, '');
         }
+        grpcOptions[key] = value as string | number;
+      }
+      if (key.startsWith('grpc-node.')) {
         grpcOptions[key] = value as string | number;
       }
     });

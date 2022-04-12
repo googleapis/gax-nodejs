@@ -4,6 +4,139 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.30.1](https://github.com/googleapis/gax-nodejs/compare/v2.30.0...v2.30.1) (2022-03-08)
+
+
+### Bug Fixes
+
+* do not depend on index.ts from fallback code ([#1201](https://github.com/googleapis/gax-nodejs/issues/1201)) ([5c7ca41](https://github.com/googleapis/gax-nodejs/commit/5c7ca41cc62ad4ea637c09f8c771e084c94ac3d4))
+* improve performance of loadProtoJSON ([#1196](https://github.com/googleapis/gax-nodejs/issues/1196)) ([df8eaf9](https://github.com/googleapis/gax-nodejs/commit/df8eaf94e29cff58fa5305e36441d663cb57bd31))
+
+## [2.30.0](https://github.com/googleapis/gax-nodejs/compare/v2.29.7...v2.30.0) (2022-02-23)
+
+
+### Features
+
+* **deps:** Update `google-auth-library` ([#1190](https://github.com/googleapis/gax-nodejs/issues/1190)) ([7981dc5](https://github.com/googleapis/gax-nodejs/commit/7981dc5c17b509109cb00dda82f603bcb6a2d99c))
+
+
+### Bug Fixes
+
+* **deps:** update dependency object-hash to v3 ([#1188](https://github.com/googleapis/gax-nodejs/issues/1188)) ([797e69f](https://github.com/googleapis/gax-nodejs/commit/797e69f2dc05785b8a506ea8b91b9178a4db704d))
+
+### [2.29.7](https://github.com/googleapis/gax-nodejs/compare/v2.29.6...v2.29.7) (2022-02-11)
+
+
+### Bug Fixes
+
+* add close method in fallbackServiceStub ([#1182](https://github.com/googleapis/gax-nodejs/issues/1182)) ([a1153e9](https://github.com/googleapis/gax-nodejs/commit/a1153e9efe4fe011405163aa2279b7a367359c0d))
+
+### [2.29.6](https://github.com/googleapis/gax-nodejs/compare/v2.29.5...v2.29.6) (2022-02-10)
+
+
+### Bug Fixes
+
+* catch rejected promise from closed client ([#1180](https://github.com/googleapis/gax-nodejs/issues/1180)) ([9e63e65](https://github.com/googleapis/gax-nodejs/commit/9e63e65299b9424088b99cffccc58329c908b793))
+* post-process JSDoc link format in proto.d.ts ([#1178](https://github.com/googleapis/gax-nodejs/issues/1178)) ([98dcfcd](https://github.com/googleapis/gax-nodejs/commit/98dcfcd41871586fa5d4d1837a24a4fb4c7a469f))
+
+### [2.29.5](https://github.com/googleapis/gax-nodejs/compare/v2.29.4...v2.29.5) (2022-01-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency proto3-json-serializer ([#1173](https://github.com/googleapis/gax-nodejs/issues/1173)) ([dbeb3f7](https://github.com/googleapis/gax-nodejs/commit/dbeb3f752f8a43a3f2984946adbeeea63f111044))
+* stream callback is undefined ([#1170](https://github.com/googleapis/gax-nodejs/issues/1170)) ([a693903](https://github.com/googleapis/gax-nodejs/commit/a693903149b804bddc690cc64f187a2f6186b671))
+
+### [2.29.4](https://github.com/googleapis/gax-nodejs/compare/v2.29.3...v2.29.4) (2022-01-19)
+
+
+### Bug Fixes
+
+* support non-alphanumeric field name ([#1165](https://github.com/googleapis/gax-nodejs/issues/1165)) ([4f53efa](https://github.com/googleapis/gax-nodejs/commit/4f53efaac9b112c4ee38145bd02a59a736e01308))
+
+### [2.29.3](https://github.com/googleapis/gax-nodejs/compare/v2.29.2...v2.29.3) (2022-01-11)
+
+
+### Bug Fixes
+
+* refactor the showcase stream method collect ([#1162](https://github.com/googleapis/gax-nodejs/issues/1162)) ([19d3a5d](https://github.com/googleapis/gax-nodejs/commit/19d3a5dd61066ae662454e14cd9c340c500ffec0))
+
+### [2.29.2](https://github.com/googleapis/gax-nodejs/compare/v2.29.1...v2.29.2) (2022-01-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.5.0 ([#1152](https://github.com/googleapis/gax-nodejs/issues/1152)) ([775540b](https://github.com/googleapis/gax-nodejs/commit/775540bc81fc9096d96835f4089bf8c508bc23d4))
+
+### [2.29.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.29.0...v2.29.1) (2022-01-06)
+
+
+### Bug Fixes
+
+* support field name with period ([#1148](https://www.github.com/googleapis/gax-nodejs/issues/1148)) ([80c9146](https://www.github.com/googleapis/gax-nodejs/commit/80c914628c046392cf45527dc6456d3eb3bfa768))
+
+## [2.29.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.28.1...v2.29.0) (2022-01-05)
+
+
+### Features
+
+* map http status code to grpc status code ([#1135](https://www.github.com/googleapis/gax-nodejs/issues/1135)) ([772222f](https://www.github.com/googleapis/gax-nodejs/commit/772222f1d2e269ceb96bce71c0f18942507f3d4b))
+* support server stream for REST ([#1122](https://www.github.com/googleapis/gax-nodejs/issues/1122)) ([9f62723](https://www.github.com/googleapis/gax-nodejs/commit/9f62723762eb72566997e6c8518517e8efddd62d))
+
+### [2.28.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.28.0...v2.28.1) (2021-11-10)
+
+
+### Bug Fixes
+
+* handle stream has no metadata event ([#1132](https://www.github.com/googleapis/gax-nodejs/issues/1132)) ([ad29bc2](https://www.github.com/googleapis/gax-nodejs/commit/ad29bc26567b588d5d694350844bea5de40963d6))
+
+## [2.28.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.1...v2.28.0) (2021-10-19)
+
+
+### Features
+
+* export google/api/routing.proto ([#1126](https://www.github.com/googleapis/gax-nodejs/issues/1126)) ([c62667e](https://www.github.com/googleapis/gax-nodejs/commit/c62667ed6499b6529203b6d8d66debb854fe1376))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.4.0 ([#1123](https://www.github.com/googleapis/gax-nodejs/issues/1123)) ([d422711](https://www.github.com/googleapis/gax-nodejs/commit/d4227111154cc4dfee7849750b0eeb8841aa3512))
+
+### [2.27.1](https://www.github.com/googleapis/gax-nodejs/compare/v2.27.0...v2.27.1) (2021-10-01)
+
+
+### Bug Fixes
+
+* clean up grpc error handling and integration test for promote error info field ([#1110](https://www.github.com/googleapis/gax-nodejs/issues/1110)) ([966b596](https://www.github.com/googleapis/gax-nodejs/commit/966b5965419cdae555a8a6959e5c921f3d3a23c4))
+
+## [2.27.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.26.0...v2.27.0) (2021-09-30)
+
+
+### Features
+
+* promote error info field in http error ([#1111](https://www.github.com/googleapis/gax-nodejs/issues/1111)) ([a5702bd](https://www.github.com/googleapis/gax-nodejs/commit/a5702bd19ce7daae7fee5b60202bbf834e0621b0))
+
+## [2.26.0](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.4...v2.26.0) (2021-09-27)
+
+
+### Features
+
+* support customize options for grpc-node. ([#1115](https://www.github.com/googleapis/gax-nodejs/issues/1115)) ([82fb0cb](https://www.github.com/googleapis/gax-nodejs/commit/82fb0cb347211ffa511943febcb22c972f3407d3))
+
+### [2.25.4](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.3...v2.25.4) (2021-09-15)
+
+
+### Bug Fixes
+
+* editing retry logic ([#1100](https://www.github.com/googleapis/gax-nodejs/issues/1100)) ([05548d5](https://www.github.com/googleapis/gax-nodejs/commit/05548d5ba287af5a8833402108ac55d900889a38))
+
+### [2.25.3](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.2...v2.25.3) (2021-09-14)
+
+
+### Bug Fixes
+
+* protoCache map key support Buffer type ([#1106](https://www.github.com/googleapis/gax-nodejs/issues/1106)) ([a7ce8ab](https://www.github.com/googleapis/gax-nodejs/commit/a7ce8abc11be39722f6060f74b4d54ce6461dd40))
+
 ### [2.25.2](https://www.github.com/googleapis/gax-nodejs/compare/v2.25.1...v2.25.2) (2021-09-10)
 
 

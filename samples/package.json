@@ -14,10 +14,10 @@
     "*.js"
   ],
   "dependencies": {
-    "google-gax": "^2.25.2"
+    "google-gax": "^2.30.1"
   },
   "devDependencies": {
     "c8": "^7.0.0",
-    "mocha": "^8.0.0"
+    "mocha": "^9.0.0"
   }
 }

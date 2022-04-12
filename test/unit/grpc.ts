@@ -188,6 +188,7 @@ describe('grpc', () => {
         },
         'grpc.channelFactoryOverride': () => {},
         'grpc.gcpApiConfig': {},
+        'grpc-node.max_session_memory': 10,
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -201,6 +202,7 @@ describe('grpc', () => {
           'callInvocationTransformer', // note: no grpc. prefix for grpc-gcp options
           'channelFactoryOverride',
           'gcpApiConfig',
+          'grpc-node.max_session_memory',
         ].forEach(k => {
           assert(stub.options.hasOwnProperty(k));
         });
@@ -213,6 +215,10 @@ describe('grpc', () => {
         assert.strictEqual(
           (dummyStub.options['callInvocationTransformer'] as Function)(),
           42
+        );
+        assert.strictEqual(
+          dummyStub.options['grpc-node.max_session_memory'],
+          10
         );
         ['servicePath', 'port', 'other_dummy_options'].forEach(k => {
           assert.strictEqual(stub.options.hasOwnProperty(k), false);
