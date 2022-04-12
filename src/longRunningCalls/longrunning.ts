@@ -24,7 +24,7 @@ import {GoogleError} from '../googleError';
 import {Metadata} from '../grpc';
 import {LongRunningDescriptor} from './longRunningDescriptor';
 import * as operationProtos from '../../protos/operations';
-import {decodeJSON} from '../fallbackRest';
+import {deserializeProto3JSON} from '../fallbackRest';
 
 /**
  * @callback GetOperationCallback
@@ -225,7 +225,7 @@ export class Operation extends EventEmitter {
       if (responseDecoder && op.response) {
         this.response = op.response;
         if (this.rest && responseType) {
-          response = decodeJSON(responseType, op.response);
+          response = deserializeProto3JSON(responseType, op.response);
         } else {
           response = responseDecoder(op.response.value!);
         }
@@ -236,7 +236,10 @@ export class Operation extends EventEmitter {
 
     if (metadataDecoder && op.metadata) {
       if (this.rest && metadataType) {
-        metadata = decodeJSON(metadataType, op.metadata) as unknown as Metadata;
+        metadata = deserializeProto3JSON(
+          metadataType,
+          op.metadata
+        ) as unknown as Metadata;
       } else {
         metadata = metadataDecoder(op.metadata.value!) as unknown as Metadata;
       }

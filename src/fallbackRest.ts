@@ -106,7 +106,7 @@ export function decodeResponse(
   return rpc.resolvedResponseType!.toObject(message, defaultToObjectOptions);
 }
 
-export function decodeJSON(protoType: Type, json: any) {
+export function deserializeProto3JSON(protoType: Type, json: any) {
   const message = serializer.fromProto3JSON(protoType, json);
   if (!message) {
     throw new Error(`Received null for type ${protoType.fullName}`);

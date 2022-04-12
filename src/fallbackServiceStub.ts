@@ -156,9 +156,9 @@ export function generateServiceStub(
               response.arrayBuffer(),
             ])
               .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
-                console.log('-----buffer:: ', buffer)
+                console.log('-----buffer:: ', buffer);
                 const response = responseDecoder(rpc, ok, buffer);
-                console.log('====response:: ', response)
+                console.log('====response:: ', response);
                 callback(null, response);
               })
               .catch((err: Error) => {

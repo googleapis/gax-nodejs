@@ -65,7 +65,6 @@ describe('regapic', () => {
     libProtos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
     libraryService: protobuf.Service,
-    operationService: protobuf.Service,
     stubOptions: {};
 
   before(() => {
@@ -77,7 +76,6 @@ describe('regapic', () => {
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
-    operationService = protos.lookupService('Operations');
     const TEST_JSON = path.resolve(
       __dirname,
       '..',

@@ -30,7 +30,7 @@ import {OperationsClient} from '../../src/operationsClient';
 
 import * as utils from './utils';
 import {AnyDecoder} from '../../src/longRunningCalls/longRunningDescriptor';
-import { Type } from 'protobufjs';
+import {Type} from 'protobufjs';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FAKE_STATUS_CODE_1 = (utils as any).FAKE_STATUS_CODE_1;
 
