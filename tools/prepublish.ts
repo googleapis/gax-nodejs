@@ -20,6 +20,7 @@ import * as path from 'path';
 
 const subdirs = [
   'api',
+  'geo/type',
   'iam/v1',
   'logging/type',
   'monitoring/v3',

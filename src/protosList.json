@@ -56,6 +56,7 @@
   "google/api/usage.proto",
   "google/api/visibility.proto",
   "google/cloud/location/locations.proto",
+  "google/geo/type/viewport.proto",
   "google/iam/v1/iam_policy.proto",
   "google/iam/v1/logging/audit_data.proto",
   "google/iam/v1/options.proto",
