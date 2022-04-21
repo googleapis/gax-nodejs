@@ -133,6 +133,11 @@ export function generateServiceStub(
         })
         .then((response: Response | NodeFetchResponse) => {
           if (response.ok && rpc.responseStream) {
+            streamArrayParser.emit('response', {
+              code: response.status,
+              details: '',
+              message: 'OK',
+            });
             pipeline(
               response.body as PipelineSource<unknown>,
               streamArrayParser,
