@@ -36,14 +36,15 @@ function createApiCallStreaming(
   func:
     | Promise<GRPCCall>
     | sinon.SinonSpy<Array<{}>, internal.Transform | StreamArrayParser>,
-  type: streaming.StreamType
+  type: streaming.StreamType,
+  rest?: boolean
 ) {
   const settings = new gax.CallSettings();
   return createApiCall(
     //@ts-ignore
     Promise.resolve(func),
     settings,
-    new StreamDescriptor(type)
+    new StreamDescriptor(type, rest)
   ) as GaxCallStream;
 }
 
@@ -459,7 +460,7 @@ describe('streaming', () => {
   });
 });
 
-describe('apiCall return StreamArrayParser', () => {
+describe('REST streaming apiCall return StreamArrayParser', () => {
   const protos_path = path.resolve(__dirname, '..', 'fixtures', 'user.proto');
   const root = protobuf.loadSync(protos_path);
   const UserService = root.lookupService('UserService');
@@ -476,7 +477,8 @@ describe('apiCall return StreamArrayParser', () => {
     });
     const apiCall = createApiCallStreaming(
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      true
     );
     const s = apiCall({}, undefined);
     assert.strictEqual(s.readable, true);
@@ -505,7 +507,8 @@ describe('apiCall return StreamArrayParser', () => {
     });
     const apiCall = createApiCallStreaming(
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      true
     );
     const s = apiCall({}, undefined);
     assert.strictEqual(s.readable, true);
@@ -536,7 +539,8 @@ describe('apiCall return StreamArrayParser', () => {
     const apiCall = createApiCallStreaming(
       //@ts-ignore
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      true
     );
     const s = apiCall({}, undefined);
     let counter = 0;

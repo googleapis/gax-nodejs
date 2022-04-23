@@ -26,7 +26,7 @@ import {
   SimpleCallbackFunction,
 } from '../apitypes';
 import {RetryRequestOptions} from '../gax';
-import {StreamArrayParser} from '../streamArrayParser';
+import { StreamingApiCaller } from './streamingApiCaller';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -175,6 +175,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   ) {
     if (this.type === StreamType.SERVER_STREAMING) {
       const stream = apiCall(argument, this._callback) as CancellableStream;
+      this.stream = stream;
       if (this.rest) {
         this.setReadable(stream);
       } else {
@@ -187,7 +188,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               }
               return;
             }
-            this.stream = stream;
             this.forwardEvents(stream);
             return stream;
           },
