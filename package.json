@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "~1.6.0",
-    "@grpc/proto-loader": "^0.6.1",
+    "@grpc/proto-loader": "0.6.9",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
