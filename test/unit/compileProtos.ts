@@ -79,7 +79,7 @@ describe('compileProtos tool', () => {
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
     assert(ts.toString().includes('LibraryService'));
-    assert(ts.toString().includes('import * as Long'));
+    assert(ts.toString().includes('import Long = require'));
     assert(
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
@@ -114,7 +114,7 @@ describe('compileProtos tool', () => {
     const ts = await readFile(expectedTSResultFile);
     assert(ts.toString().includes('TestMessage'));
     assert(ts.toString().includes('LibraryService'));
-    assert(ts.toString().includes('import * as Long'));
+    assert(ts.toString().includes('import Long = require'));
     assert(
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
@@ -145,8 +145,7 @@ describe('compileProtos tool', () => {
     ]);
     assert(fs.existsSync(expectedTSResultFile));
     const ts = await readFile(expectedTSResultFile);
-
-    assert(ts.toString().includes('import * as Long'));
+    assert(ts.toString().includes('import Long = require'));
     assert(
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
