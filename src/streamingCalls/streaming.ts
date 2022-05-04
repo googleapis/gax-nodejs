@@ -17,7 +17,6 @@
 /* This file describes the gRPC-streaming. */
 
 import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
-import {Metadata} from '@grpc/grpc-js';
 
 import {
   APICallback,
@@ -75,13 +74,6 @@ export enum StreamType {
 
   /** Both client and server stream objects. */
   BIDI_STREAMING = 3,
-}
-
-interface Status {
-  code: number;
-  details: string;
-  message?: string;
-  metadata?: Metadata;
 }
 
 export class StreamProxy extends duplexify implements GRPCCallResult {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* xslint-disable @typescript-eslint/ban-ts-ignore */
+/* xslint-disable @typescript-eslint/ban-ts-comment */
 /* xslint-disable no-undef */
 
 import * as assert from 'assert';
