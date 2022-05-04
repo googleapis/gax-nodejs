@@ -17,6 +17,7 @@
 'use strict';
 import {EchoClient} from './v1beta1';
 import * as v1beta1 from './v1beta1';
+import { GoogleError } from '../../../../src';
 export {v1beta1}
 
 const assert = require('assert');
@@ -25,7 +26,6 @@ const util = require('util');
 const path = require('path');
 const protobuf = require('protobufjs');
 const grpc = require('@grpc/grpc-js');
-const { GoogleError } = require('google-gax');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -180,11 +180,14 @@ async function testEchoError(client: EchoClient) {
       await client.echo(request);
   } catch (err) {
       clearTimeout(timer);
-      assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
+      assert(err instanceof GoogleError);
+      const googleError = err as GoogleError;
+      assert.strictEqual(JSON.stringify(googleError.statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo!)
-      assert.strictEqual(err.domain, errorInfo!.domain)
-      assert.strictEqual(err.reason, errorInfo!.reason)
-      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
+      assert.strictEqual(googleError.domain, errorInfo!.domain)
+      assert.strictEqual(googleError.reason, errorInfo!.reason)
+      assert.strictEqual(JSON.stringify(googleError.errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
+
   }
 }
 

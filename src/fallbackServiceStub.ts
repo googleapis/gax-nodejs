@@ -161,7 +161,14 @@ export function generateServiceStub(
               })
               .catch((err: Error) => {
                 if (!cancelRequested || err.name !== 'AbortError') {
-                  callback(err);
+                  if (rpc.responseStream) {
+                    if (callback) {
+                      callback(err);
+                    }
+                    streamArrayParser.emit('error', err);
+                  } else {
+                    callback(err);
+                  }
                 }
               });
           }

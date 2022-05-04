@@ -141,6 +141,7 @@ describe('gRPC-google error decoding', () => {
     try {
       decoder.decodeProtobufAny(any);
     } catch (err) {
+      assert(err instanceof Error);
       assert.strictEqual(
         0,
         err
@@ -161,6 +162,7 @@ describe('gRPC-google error decoding', () => {
     try {
       decoder.decodeProtobufAny(any);
     } catch (err) {
+      assert(err instanceof Error);
       assert.strictEqual(0, err.toString().indexOf('Error: no such type'));
     }
   });

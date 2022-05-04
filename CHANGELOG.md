@@ -4,6 +4,22 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.30.3](https://github.com/googleapis/gax-nodejs/compare/v2.30.2...v2.30.3) (2022-05-03)
+
+
+### Bug Fixes
+
+* handle stream callback is undefined ([#1238](https://github.com/googleapis/gax-nodejs/issues/1238)) ([269f805](https://github.com/googleapis/gax-nodejs/commit/269f805e02039cfa537084f46a561fa527eba301))
+* isolate Rest Stream from retry logic to avoid backpressure ([#1226](https://github.com/googleapis/gax-nodejs/issues/1226)) ([485d5b2](https://github.com/googleapis/gax-nodejs/commit/485d5b2af79d389acf6cc613ce419830ccac6bef))
+* pin @grpc/proto-loader to v0.6.9 ([#1242](https://github.com/googleapis/gax-nodejs/issues/1242)) ([bca9a91](https://github.com/googleapis/gax-nodejs/commit/bca9a91f90795970d0bdc0c15ae8a3549d546eba))
+
+### [2.30.2](https://github.com/googleapis/gax-nodejs/compare/v2.30.1...v2.30.2) (2022-04-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.6.0 ([#1207](https://github.com/googleapis/gax-nodejs/issues/1207)) ([2a16b76](https://github.com/googleapis/gax-nodejs/commit/2a16b76237094b42f1afb4667c82adebb87402b8))
+
 ### [2.30.1](https://github.com/googleapis/gax-nodejs/compare/v2.30.0...v2.30.1) (2022-03-08)
 
 

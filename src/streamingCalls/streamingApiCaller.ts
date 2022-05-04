@@ -44,7 +44,11 @@ export class StreamingApiCaller implements APICaller {
   }
 
   init(callback: APICallback): StreamProxy {
-    return new StreamProxy(this.descriptor.type, callback);
+    return new StreamProxy(
+      this.descriptor.type,
+      callback,
+      this.descriptor.rest
+    );
   }
 
   wrap(func: GRPCCall): GRPCCall {

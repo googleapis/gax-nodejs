@@ -668,7 +668,7 @@ describe('longrunning', () => {
           finalOperation: PENDING_OP,
         });
         const apiCall = createApiCall(func, client);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore incomplete options
         apiCall(
           {},
