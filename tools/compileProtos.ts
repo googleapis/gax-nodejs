@@ -177,7 +177,7 @@ function fixDtsFile(dts: string): string {
   // https://github.com/protobufjs/protobuf.js/pull/1166
   // is merged but not yet released.
   if (!dts.match(/import \* as Long/)) {
-    dts = 'import * as Long from "long";\n' + dts;
+    dts = "import Long = require('long');\n" + dts;
   }
 
   // 2. fix protobufjs import: we don't want the libraries to
