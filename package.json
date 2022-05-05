@@ -7,7 +7,6 @@
   "files": [
     "build/src",
     "build/tools/compileProtos.js",
-    "protos",
     "build/protos/"
   ],
   "bin": {
