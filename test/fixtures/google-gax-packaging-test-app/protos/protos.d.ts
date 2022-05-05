@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as Long from "long";
+import Long = require('long');
 import {protobuf as $protobuf} from "../../../../src";
 /** Namespace google. */
 export namespace google {
