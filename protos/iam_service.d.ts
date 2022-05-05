@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as Long from 'long';
+import Long = require('long');
 import * as $protobuf from "protobufjs";
 /** Namespace google. */
 export namespace google {

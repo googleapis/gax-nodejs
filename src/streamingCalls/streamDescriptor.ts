@@ -27,10 +27,12 @@ import {StreamingApiCaller} from './streamingApiCaller';
 export class StreamDescriptor implements Descriptor {
   type: StreamType;
   streaming: boolean; // needed for browser support
+  rest?: boolean;
 
-  constructor(streamType: StreamType) {
+  constructor(streamType: StreamType, rest?: boolean) {
     this.type = streamType;
     this.streaming = true;
+    this.rest = rest;
   }
 
   getApiCaller(settings: CallSettings): APICaller {
