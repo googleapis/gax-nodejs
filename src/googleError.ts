@@ -130,7 +130,7 @@ export class GoogleErrorDecoder {
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const errorProtoJson = require('../../build/protos/status.json');
+    const errorProtoJson = require('../../protos/status.json');
     this.root = protobuf.Root.fromJSON(errorProtoJson);
     this.anyType = this.root.lookupType('google.protobuf.Any');
     this.statusType = this.root.lookupType('google.rpc.Status');
