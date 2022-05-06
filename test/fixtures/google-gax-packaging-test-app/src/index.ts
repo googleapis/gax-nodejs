@@ -25,6 +25,7 @@ const util = require('util');
 const path = require('path');
 const protobuf = require('protobufjs');
 const grpc = require('@grpc/grpc-js');
+const { GoogleError } = require('google-gax');
 
 // Import the clients for each version supported by this package.
 const gapic = Object.freeze({
@@ -178,19 +179,13 @@ async function testEchoError(client: EchoClient) {
     Error);
   try {
       await client.echo(request);
-  } catch (err) {
+  } catch (err: any) {
       clearTimeout(timer);
-      interface GoogleError {
-        statusDetails: string,
-        domain: string,
-        reason: string,
-        errorInfoMetadata: {string: string},
-      }
-      assert.strictEqual(JSON.stringify((err as GoogleError).statusDetails), JSON.stringify(expectedDetails));
+      assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo!)
-      assert.strictEqual((err as GoogleError).domain, errorInfo!.domain)
-      assert.strictEqual((err as GoogleError).reason, errorInfo!.reason)
-      assert.strictEqual(JSON.stringify((err as GoogleError).errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
+      assert.strictEqual(err.domain, errorInfo!.domain)
+      assert.strictEqual(err.reason, errorInfo!.reason)
+      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
   }
 }
 
