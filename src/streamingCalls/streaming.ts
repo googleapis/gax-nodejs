@@ -187,7 +187,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               }
               return;
             }
-            const stream = apiCall(argument, this._callback) as CancellableStream;
+            const stream = apiCall(
+              argument,
+              this._callback
+            ) as CancellableStream;
             this.stream = stream;
             this.forwardEvents(stream);
             return stream;
