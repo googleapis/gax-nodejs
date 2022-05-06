@@ -17,7 +17,6 @@
 'use strict';
 import {EchoClient} from './v1beta1';
 import * as v1beta1 from './v1beta1';
-import { GoogleError } from '../../../../src';
 export {v1beta1}
 
 const assert = require('assert');
@@ -181,14 +180,17 @@ async function testEchoError(client: EchoClient) {
       await client.echo(request);
   } catch (err) {
       clearTimeout(timer);
-      assert(err instanceof GoogleError);
-      const googleError = err as GoogleError;
-      assert.strictEqual(JSON.stringify(googleError.statusDetails), JSON.stringify(expectedDetails));
+      interface GoogleError {
+        statusDetails: string,
+        domain: string,
+        reason: string,
+        errorInfoMetadata: {string: string},
+      }
+      assert.strictEqual(JSON.stringify((err as GoogleError).statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo!)
-      assert.strictEqual(googleError.domain, errorInfo!.domain)
-      assert.strictEqual(googleError.reason, errorInfo!.reason)
-      assert.strictEqual(JSON.stringify(googleError.errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
-
+      assert.strictEqual((err as GoogleError).domain, errorInfo!.domain)
+      assert.strictEqual((err as GoogleError).reason, errorInfo!.reason)
+      assert.strictEqual(JSON.stringify((err as GoogleError).errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
   }
 }
 
