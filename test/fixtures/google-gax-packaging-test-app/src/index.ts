@@ -91,6 +91,7 @@ async function testShowcase() {
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
   await testExpand(grpcClient);
+  await testExpandWithClosedClient(grpcClient);
   await testPagedExpand(grpcClient);
   await testPagedExpandAsync(grpcClient);
   await testCollect(grpcClient);
@@ -204,6 +205,27 @@ async function testExpand(client: EchoClient) {
     stream.on('end', () => {
       assert.deepStrictEqual(words, result);
     });
+}
+
+async function testExpandWithClosedClient(client: EchoClient) {
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const request = {
+    content: words.join(' '),
+  };
+  await client.close();
+  const stream = client.expand(request);
+  const expectedError = new Error('The client has already been closed.');
+  const promise = new Promise((resolve, reject) => {
+    stream.on(
+      'data', (response: any) => {
+        resolve(response);
+      }
+    );
+    stream.on('error', (err: Error) => {
+      reject(err);
+    });
+  });
+  await assert.rejects(promise, expectedError);
 }
 
 async function testPagedExpand(client: EchoClient) {
