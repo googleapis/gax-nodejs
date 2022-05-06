@@ -70,7 +70,12 @@ export function generateServiceStub(
     ? window.fetch
     : (nodeFetch as unknown as NodeFetchType);
 
-  const serviceStub: FallbackServiceStub = {};
+  const serviceStub: FallbackServiceStub = {
+    // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
+    close: () => {
+      return {cancel: () => {}};
+    },
+  };
   for (const [rpcName, rpc] of Object.entries(rpcs)) {
     serviceStub[rpcName] = (
       request: {},
@@ -137,7 +142,10 @@ export function generateServiceStub(
                   (!cancelRequested ||
                     (err instanceof Error && err.name !== 'AbortError'))
                 ) {
-                  callback(err);
+                  if (callback) {
+                    callback(err);
+                  }
+                  streamArrayParser.emit('error', err);
                 }
               }
             );
@@ -153,7 +161,14 @@ export function generateServiceStub(
               })
               .catch((err: Error) => {
                 if (!cancelRequested || err.name !== 'AbortError') {
-                  callback(err);
+                  if (rpc.responseStream) {
+                    if (callback) {
+                      callback(err);
+                    }
+                    streamArrayParser.emit('error', err);
+                  } else {
+                    callback(err);
+                  }
                 }
               });
           }

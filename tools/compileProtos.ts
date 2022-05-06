@@ -166,6 +166,9 @@ function fixJsFile(js: string): string {
 
   // 2. add Apache license to the generated .js file
   js = apacheLicense + js;
+
+  // 3. reformat JSDoc reference link in the comments
+  js = js.replace(/{@link (.*?)#(.*?)}/g, '{@link $1|$2}');
   return js;
 }
 

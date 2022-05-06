@@ -28,7 +28,6 @@ import {
   GoogleAuthOptions,
   BaseExternalAccountClient,
 } from 'google-auth-library';
-import * as objectHash from 'object-hash';
 import {OperationsClientBuilder} from './operationsClient';
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -39,7 +38,8 @@ import * as fallbackProto from './fallbackProto';
 import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
-import {StreamType} from '.';
+import {StreamType} from './streamingCalls/streaming';
+import * as objectHash from 'object-hash';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -135,7 +135,7 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json).toString();
+    const hash = objectHash(JSON.stringify(json)).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;

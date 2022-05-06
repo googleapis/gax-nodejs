@@ -139,6 +139,7 @@ async function testEchoError(client: EchoClient) {
     '..',
     '..',
     '..',
+    'build',
     'protos',
     'google',
     'rpc'
@@ -178,7 +179,7 @@ async function testEchoError(client: EchoClient) {
     Error);
   try {
       await client.echo(request);
-  } catch (err) {
+  } catch (err: any) {
       clearTimeout(timer);
       assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo!)
@@ -195,7 +196,7 @@ async function testExpand(client: EchoClient) {
   const request = {
     content: words.join(' '),
   };
-  const stream = await client.expand(request);
+  const stream = client.expand(request);
   const result: string[] = [];
     stream.on('data', (response: {content: string}) => {
       result.push(response.content);
@@ -242,13 +243,14 @@ async function testPagedExpandAsync(client: EchoClient) {
 
 async function testCollect(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const stream = await client.collect((err: Error, result: {content: string}) => {
-    assert.deepStrictEqual(result.content, words.join(' '));
-  });
+  const stream = client.collect();
   for (const word of words) {
       const request = { content: word };
       stream.write(request);
-    }
+  }
+  stream.on('data', (result: { content: String; }) => {
+    assert.deepStrictEqual(result.content, words.join(' '))
+  })
   stream.end();
 }
 
