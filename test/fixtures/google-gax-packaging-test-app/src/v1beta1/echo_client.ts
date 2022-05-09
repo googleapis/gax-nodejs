@@ -23,7 +23,7 @@ import * as gax from 'google-gax';
 import {Callback, CallOptions, ClientOptions, Descriptors, GaxCall, LROperation, PaginationCallback,} from 'google-gax';
 // @ts-ignore
 import {RequestType} from 'google-gax/build/src/apitypes';
-import {Transform} from 'stream';
+import {PassThrough, Transform} from 'stream';
 
 import * as protos from '../../protos/protos';
 
@@ -36,7 +36,7 @@ import jsonProtos = require('../../protos/protos.json');
  */
 import * as gapicConfig from './echo_client_config.json';
 //@ts-ignore
-import {operationsProtos} from 'google-gax';
+import {operationsProtos, GoogleError} from 'google-gax';
 const version = require('../../package.json').version;
 
 /**
@@ -290,6 +290,16 @@ export class EchoClient {
       const callPromise = this.echoStub.then(
           stub => (...args: Array<{}>) => {
             if (this._terminated) {
+              if (methodName in this.descriptors.stream) {
+                const stream = new PassThrough();
+                setImmediate(() => {
+                  stream.emit(
+                    'error',
+                    new GoogleError('The client has already been closed.')
+                  );
+                });
+                return stream;
+              }
               return Promise.reject('The client has already been closed.');
             }
             const func = stub[methodName];
