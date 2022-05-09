@@ -179,7 +179,7 @@ async function testEchoError(client: EchoClient) {
     Error);
   try {
       await client.echo(request);
-  } catch (err) {
+  } catch (err: any) {
       clearTimeout(timer);
       assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo!)
