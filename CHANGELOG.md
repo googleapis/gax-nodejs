@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.30.4](https://github.com/googleapis/gax-nodejs/compare/v2.30.3...v2.30.4) (2022-05-09)
+
+
+### Bug Fixes
+
+* revert gRPC stream change in [#1226](https://github.com/googleapis/gax-nodejs/issues/1226) ([#1257](https://github.com/googleapis/gax-nodejs/issues/1257)) ([1c3a5a7](https://github.com/googleapis/gax-nodejs/commit/1c3a5a7ac54f8fd8e710fe4316c3d5a82072f8f1))
+* upgrade proto-loader and add long dev dependency ([#1253](https://github.com/googleapis/gax-nodejs/issues/1253)) ([5dea136](https://github.com/googleapis/gax-nodejs/commit/5dea13698c580283083f41d330a1a2faf37adc5d))
+
 ### [2.30.3](https://github.com/googleapis/gax-nodejs/compare/v2.30.2...v2.30.3) (2022-05-03)
 
 
