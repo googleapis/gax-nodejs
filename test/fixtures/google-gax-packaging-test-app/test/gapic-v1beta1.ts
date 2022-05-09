@@ -680,6 +680,32 @@ describe('v1beta1.EchoClient', () => {
           .calledWith(request, expectedOptions)
       );
     });
+
+    it('invokes expand with closed client', async () => {
+      const client = new echoModule.v1beta1.EchoClient({
+        credentials: {client_email: 'bogus', private_key: 'bogus'},
+        projectId: 'bogus',
+      });
+      client.initialize();
+      const request = generateSampleMessage(
+        new protos.google.showcase.v1beta1.ExpandRequest()
+      );
+      const expectedError = new Error('The client has already been closed.');
+      client.close();
+      const stream = client.expand(request);
+      const promise = new Promise((resolve, reject) => {
+        stream.on(
+          'data',
+          (response: protos.google.showcase.v1beta1.EchoResponse) => {
+            resolve(response);
+          }
+        );
+        stream.on('error', (err: Error) => {
+          reject(err);
+        });
+      });
+      await assert.rejects(promise, expectedError);
+    });
   });
 
   describe('chat', () => {
