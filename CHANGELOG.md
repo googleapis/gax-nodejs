@@ -4,6 +4,22 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.0.0](https://github.com/googleapis/gax-nodejs/compare/v2.30.3...v3.0.0) (2022-05-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* reduce module size by remove duplicate storage for protos files (#1249)
+
+### Bug Fixes
+
+* upgrade proto-loader and add long dev dependency ([#1253](https://github.com/googleapis/gax-nodejs/issues/1253)) ([5dea136](https://github.com/googleapis/gax-nodejs/commit/5dea13698c580283083f41d330a1a2faf37adc5d))
+
+
+### Build System
+
+* reduce module size by remove duplicate storage for protos files ([#1249](https://github.com/googleapis/gax-nodejs/issues/1249)) ([4d2a04d](https://github.com/googleapis/gax-nodejs/commit/4d2a04d472ce1a6ebfc5494742d95d05ec726a81))
+
 ### [2.30.3](https://github.com/googleapis/gax-nodejs/compare/v2.30.2...v2.30.3) (2022-05-03)
 
 
