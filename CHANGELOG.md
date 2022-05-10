@@ -4,6 +4,28 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.0.0](https://github.com/googleapis/gax-nodejs/compare/v2.30.3...v3.0.0) (2022-05-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove pageSize/pageToken from call settings (#1263)
+* drop Node 10 to support and update lastest Typescript (#1252)
+* reduce module size by remove duplicate storage for protos files (#1249)
+
+### Bug Fixes
+
+* **deps:** update dependency retry-request to v5 ([#1264](https://github.com/googleapis/gax-nodejs/issues/1264)) ([26fbac8](https://github.com/googleapis/gax-nodejs/commit/26fbac8d178336532a12ac5cb484f0832f4cf2f8))
+* remove pageSize/pageToken from call settings ([#1263](https://github.com/googleapis/gax-nodejs/issues/1263)) ([fbf43d2](https://github.com/googleapis/gax-nodejs/commit/fbf43d2247c6b6bbbdb4c5962283d5dacb96c402))
+* revert gRPC stream change in [#1226](https://github.com/googleapis/gax-nodejs/issues/1226) ([#1257](https://github.com/googleapis/gax-nodejs/issues/1257)) ([1c3a5a7](https://github.com/googleapis/gax-nodejs/commit/1c3a5a7ac54f8fd8e710fe4316c3d5a82072f8f1))
+* upgrade proto-loader and add long dev dependency ([#1253](https://github.com/googleapis/gax-nodejs/issues/1253)) ([5dea136](https://github.com/googleapis/gax-nodejs/commit/5dea13698c580283083f41d330a1a2faf37adc5d))
+
+
+### Build System
+
+* drop Node 10 to support and update lastest Typescript ([#1252](https://github.com/googleapis/gax-nodejs/issues/1252)) ([88a180f](https://github.com/googleapis/gax-nodejs/commit/88a180f541a542fb6483e8353f8bd02582283b98))
+* reduce module size by remove duplicate storage for protos files ([#1249](https://github.com/googleapis/gax-nodejs/issues/1249)) ([4d2a04d](https://github.com/googleapis/gax-nodejs/commit/4d2a04d472ce1a6ebfc5494742d95d05ec726a81))
+
 ### [2.30.3](https://github.com/googleapis/gax-nodejs/compare/v2.30.2...v2.30.3) (2022-05-03)
 
 
