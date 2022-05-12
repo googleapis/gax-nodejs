@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [3.0.1](https://github.com/googleapis/gax-nodejs/compare/v3.0.0...v3.0.1) (2022-05-11)
+
+
+### Bug Fixes
+
+* get protos from build/protos ([#1265](https://github.com/googleapis/gax-nodejs/issues/1265)) ([ea0d85c](https://github.com/googleapis/gax-nodejs/commit/ea0d85c0f25c734e62b5a11ef700cd81f04c587f))
+
 ## [3.0.0](https://github.com/googleapis/gax-nodejs/compare/v2.30.3...v3.0.0) (2022-05-10)
 
 
