@@ -44,7 +44,7 @@ describe('Run tests against gRPC server', () => {
     port: 1337,
   };
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   global.isBrowser = true;
   const client = new EchoClient(opts);

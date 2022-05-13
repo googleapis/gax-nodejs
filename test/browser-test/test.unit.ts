@@ -23,9 +23,7 @@ import {Transform} from 'stream';
 import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1';
 import {GoogleAuth} from 'google-auth-library';
 import {GoogleError} from '../../src';
-interface Operation {
-  promise(): Function;
-}
+
 describe('Run unit tests of echo client', () => {
   interface GoogleError extends Error {
     code: number;

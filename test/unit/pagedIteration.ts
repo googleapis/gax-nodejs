@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-prototype-builtins */
 
 import * as assert from 'assert';
@@ -339,18 +339,17 @@ describe('paged iteration', () => {
     });
 
     it('ignores autoPaginate options, but respects others', done => {
-      // Specifies autoPaginate: false, which will be ignored, and pageToken:
-      // pageSize which will be used so that the stream will start from the
-      // specified token.
-      const options = {pageToken: pageSize, autoPaginate: false};
+      // Specifies autoPaginate: false, which will be ignored, and maxResults:
+      // pageSize which will be used.
+      const options = {maxResults: pageSize, autoPaginate: false};
       streamChecker(
         // @ts-ignore incomplete options
         descriptor.createStream(apiCall, {}, options),
         () => {
-          assert.strictEqual(spy.callCount, pagesToStream);
+          assert.strictEqual(spy.callCount, 1);
         },
         done,
-        pageSize
+        0
       );
     });
 

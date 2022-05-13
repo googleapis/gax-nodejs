@@ -243,7 +243,7 @@ async function compileProtos(
       '-p',
       'protos',
       '-p',
-      path.join(__dirname, '..', '..', 'protos'),
+      path.join(__dirname, '..', '..', 'build', 'protos'),
       '-o',
       jsonOutput,
     ];
@@ -261,7 +261,7 @@ async function compileProtos(
     '-p',
     'protos',
     '-p',
-    path.join(__dirname, '..', '..', 'protos'),
+    path.join(__dirname, '..', '..', 'build', 'protos'),
     '-o',
     jsOutput,
   ];
