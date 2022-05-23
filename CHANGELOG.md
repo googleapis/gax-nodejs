@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [3.0.2](https://github.com/googleapis/gax-nodejs/compare/v3.0.1...v3.0.2) (2022-05-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency proto3-json-serializer to v1 ([#1268](https://github.com/googleapis/gax-nodejs/issues/1268)) ([cff5c5c](https://github.com/googleapis/gax-nodejs/commit/cff5c5ce9dec1e43db3842e9cc44510a2c8abc0b))
+* **deps:** update dependency protobufjs to v6.11.3 ([#1272](https://github.com/googleapis/gax-nodejs/issues/1272)) ([6492a2c](https://github.com/googleapis/gax-nodejs/commit/6492a2cc55086439518dcb20cb6001c28e1d2bda))
+* **deps:** use protobufjs v6.11.3 ([#1271](https://github.com/googleapis/gax-nodejs/issues/1271)) ([d650c15](https://github.com/googleapis/gax-nodejs/commit/d650c1510cd98958fc32be03b890970f6f321595))
+
 ### [3.0.1](https://github.com/googleapis/gax-nodejs/compare/v3.0.0...v3.0.1) (2022-05-11)
 
 
