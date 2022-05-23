@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [2.30.5](https://github.com/googleapis/gax-nodejs/compare/v2.30.4...v2.30.5) (2022-05-23)
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs to v6.11.3 ([#1272](https://github.com/googleapis/gax-nodejs/issues/1272)) ([6492a2c](https://github.com/googleapis/gax-nodejs/commit/6492a2cc55086439518dcb20cb6001c28e1d2bda))
+* **deps:** use protobufjs v6.11.3 ([#1271](https://github.com/googleapis/gax-nodejs/issues/1271)) ([d650c15](https://github.com/googleapis/gax-nodejs/commit/d650c1510cd98958fc32be03b890970f6f321595))
+
 ### [2.30.4](https://github.com/googleapis/gax-nodejs/compare/v2.30.3...v2.30.4) (2022-05-09)
 
 
