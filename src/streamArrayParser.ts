@@ -60,8 +60,7 @@ export class StreamArrayParser extends Transform {
     this._level = 0;
     this.rpc = rpc;
     this.cancelController = hasAbortController()
-      ? // eslint-disable-next-line no-undef
-        new AbortController()
+      ? new AbortController()
       : new NodeAbortController();
     this.cancelSignal = this.cancelController.signal;
     this.cancelRequested = false;
