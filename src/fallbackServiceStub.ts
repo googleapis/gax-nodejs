@@ -128,7 +128,8 @@ export function generateServiceStub(
           ) {
             delete fetchRequest['body'];
           }
-
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           return fetch(url, fetchRequest);
         })
         .then((response: Response | NodeFetchResponse) => {

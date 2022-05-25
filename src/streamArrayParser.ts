@@ -27,7 +27,7 @@ export class StreamArrayParser extends Transform {
   private _isSkipped: boolean;
   private _level: number;
   rpc: protobuf.Method;
-  cancelController: AbortController;
+  cancelController: AbortController | NodeAbortController;
   cancelSignal: AbortSignal;
   cancelRequested: boolean;
   /**
@@ -62,6 +62,8 @@ export class StreamArrayParser extends Transform {
     this.cancelController = hasAbortController()
       ? new AbortController()
       : new NodeAbortController();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     this.cancelSignal = this.cancelController.signal;
     this.cancelRequested = false;
   }
