@@ -93,7 +93,7 @@ export class GoogleError extends Error {
           error.reason = statusDetailsObj.errorInfo.reason;
           error.domain = statusDetailsObj.errorInfo.domain;
           // error.metadata has been occupied for gRPC metadata, so we use
-          // errorInfoMetadat to represent ErrorInfo' metadata field. Keep
+          // errorInfoMetadata to represent ErrorInfo' metadata field. Keep
           // consistency with gRPC ErrorInfo metadata field name.
           error.errorInfoMetadata = statusDetailsObj.errorInfo.metadata;
         }
