@@ -31,6 +31,9 @@ import internal = require('stream');
 import {StreamArrayParser} from '../../src/streamArrayParser';
 import path = require('path');
 import protobuf = require('protobufjs');
+import {GoogleError} from '../../src';
+import {CodeChallengeMethod} from 'google-auth-library';
+import {Metadata} from '@grpc/grpc-js';
 
 function createApiCallStreaming(
   func:
@@ -456,6 +459,62 @@ describe('streaming', () => {
       check();
       assert.strictEqual(dataCallback.callCount, 0);
       assert.strictEqual(responseCallback.callCount, 1);
+    });
+  });
+
+  it('emit parsed GoogleError', done => {
+    const errorInfoObj = {
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+      metadata: {
+        consumer: 'projects/455411330361',
+        service: 'translate.googleapis.com',
+      },
+    };
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const any = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('grpc-status-details-bin', status_buffer);
+    const error = Object.assign(new GoogleError('test error'), {
+      code: 5,
+      details: 'Failed to read',
+      metadata: metadata,
+    });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      setImmediate(() => {
+        s.emit('error', error);
+      });
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    s.on('error', err => {
+      assert(err instanceof GoogleError);
+      assert.deepStrictEqual(err.message, 'test error');
+      assert.strictEqual(err.domain, errorInfoObj.domain);
+      assert.strictEqual(err.reason, errorInfoObj.reason);
+      assert.strictEqual(
+        JSON.stringify(err.errorInfoMetadata),
+        JSON.stringify(errorInfoObj.metadata)
+      );
+      done();
     });
   });
 });
