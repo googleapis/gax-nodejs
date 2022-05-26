@@ -25,6 +25,7 @@ import {
   SimpleCallbackFunction,
 } from '../apitypes';
 import {RetryRequestOptions} from '../gax';
+import {GoogleError} from '../googleError';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -151,6 +152,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         metadata,
       });
       this._responseHasSent = true;
+    });
+    stream.on('error', error => {
+      GoogleError.parseGRPCStatusDetails(error);
     });
   }
 

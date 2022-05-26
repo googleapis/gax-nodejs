@@ -62,6 +62,12 @@ export class GoogleError extends Error {
   // Parse http JSON error and promote google.rpc.ErrorInfo if exist.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static parseHttpError(json: any): GoogleError {
+    if (Array.isArray(json)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      json = json.find((obj: any) => {
+        return 'error' in obj;
+      });
+    }
     const decoder = new GoogleErrorDecoder();
     const proto3Error = decoder.decodeHTTPError(json['error']);
     const error = Object.assign(
