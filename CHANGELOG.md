@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+### [3.0.3](https://github.com/googleapis/gax-nodejs/compare/v3.0.2...v3.0.3) (2022-05-26)
+
+
+### Bug Fixes
+
+* decode Http error using proto3-JSON-serializer ([#1273](https://github.com/googleapis/gax-nodejs/issues/1273)) ([17a790f](https://github.com/googleapis/gax-nodejs/commit/17a790f4d47bf588a6970052822f9fdb14acc321))
+* parse error from stream call ([#1275](https://github.com/googleapis/gax-nodejs/issues/1275)) ([141a587](https://github.com/googleapis/gax-nodejs/commit/141a58725c65ddd78003cbb94e56eb1d4f838067))
+
 ### [3.0.2](https://github.com/googleapis/gax-nodejs/compare/v3.0.1...v3.0.2) (2022-05-23)
 
 
