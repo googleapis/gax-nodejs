@@ -399,3 +399,47 @@ export function transcode(
   }
   return undefined;
 }
+
+// Override the protobuf json's the http rules.
+export function overrideHttpRules(
+  httpRules: Array<google.api.IHttpRule>,
+  protoJson: protobuf.Root
+) {
+  for (const rule of httpRules) {
+    if (!rule.selector) {
+      continue;
+    }
+    const rpc = protoJson.lookup(rule.selector) as protobuf.Method;
+    // Not support override on non-exist RPC or a RPC without an annotation.
+    // We could reconsider if we have the use case later.
+    if (!rpc || !rpc.parsedOptions) {
+      continue;
+    }
+    for (const item of rpc.parsedOptions) {
+      if (!(httpOptionName in item)) {
+        continue;
+      }
+      const httpOptions = item[httpOptionName];
+      for (const httpMethod in httpOptions) {
+        if (httpMethod in rule) {
+          if (httpMethod === 'additional_bindings') {
+            continue;
+          }
+          httpOptions[httpMethod] =
+            rule[httpMethod as keyof google.api.IHttpRule];
+        }
+        if (rule.additional_bindings) {
+          httpOptions['additional_bindings'] = !httpOptions[
+            'additional_bindings'
+          ]
+            ? []
+            : Array.isArray(httpOptions['additional_bindings'])
+            ? httpOptions['additional_bindings']
+            : [httpOptions['additional_bindings']];
+          // Make the additional_binding to be an array if it is not.
+          httpOptions['additional_bindings'].push(...rule.additional_bindings);
+        }
+      }
+    }
+  }
+}

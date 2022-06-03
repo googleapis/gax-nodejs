@@ -40,6 +40,7 @@ import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
 import {StreamType} from './streamingCalls/streaming';
 import * as objectHash from 'object-hash';
+import {google} from '../protos/http';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -83,6 +84,7 @@ export class GrpcClient {
   fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
   private static protoCache = new Map<string, protobuf.Root>();
+  httpRules?: Array<google.api.IHttpRule>;
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -121,6 +123,7 @@ export class GrpcClient {
     }
     this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
     this.grpcVersion = require('../../package.json').version;
+    this.httpRules = (options as GrpcClientOptions).httpRules;
   }
 
   /**
@@ -329,8 +332,11 @@ export class GrpcClient {
  */
 export function lro(options: GrpcClientOptions) {
   options = Object.assign({scopes: []}, options);
+  if (options.protoJson) {
+    options = Object.assign(options, {fallback: 'rest'});
+  }
   const gaxGrpc = new GrpcClient(options);
-  return new OperationsClientBuilder(gaxGrpc);
+  return new OperationsClientBuilder(gaxGrpc, options.protoJson);
 }
 
 /**

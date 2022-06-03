@@ -28,7 +28,8 @@ import * as protos from '../protos/operations';
 import configData = require('./operations_client_config.json');
 import {Transform} from 'stream';
 import {CancellablePromise} from './call';
-import protoJson = require('../protos/operations.json');
+import operationProtoJson = require('../protos/operations.json');
+import {overrideHttpRules} from './transcoding';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -567,9 +568,18 @@ export class OperationsClientBuilder {
    * Builds a new Operations Client
    * @param gaxGrpc {GrpcClient}
    */
-  constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
+  constructor(
+    gaxGrpc: GrpcClient | FallbackGrpcClient,
+    protoJson?: protobuf.Root
+  ) {
+    if (protoJson && gaxGrpc.httpRules) {
+      // overwrite the http rules if provide in service yaml.
+      overrideHttpRules(gaxGrpc.httpRules, protoJson);
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const operationsProtos = gaxGrpc.loadProtoJSON(protoJson);
+    const operationsProtos = protoJson
+      ? protoJson
+      : gaxGrpc.loadProtoJSON(operationProtoJson);
 
     /**
      * Build a new instance of {@link OperationsClient}.
@@ -581,7 +591,9 @@ export class OperationsClientBuilder {
      * @param {Object=} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
      */
     this.operationsClient = opts => {
-      if (gaxGrpc.fallback) {
+      if (gaxGrpc.fallback === 'rest') {
+        opts.fallback = 'rest';
+      } else if (gaxGrpc.fallback) {
         opts.fallback = true;
       }
       return new OperationsClient(gaxGrpc, operationsProtos, opts);

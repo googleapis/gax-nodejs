@@ -32,7 +32,6 @@ import {StreamArrayParser} from '../../src/streamArrayParser';
 import path = require('path');
 import protobuf = require('protobufjs');
 import {GoogleError} from '../../src';
-import {CodeChallengeMethod} from 'google-auth-library';
 import {Metadata} from '@grpc/grpc-js';
 
 function createApiCallStreaming(
