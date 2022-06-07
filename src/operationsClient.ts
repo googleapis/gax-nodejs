@@ -576,10 +576,8 @@ export class OperationsClientBuilder {
       // overwrite the http rules if provide in service yaml.
       overrideHttpRules(gaxGrpc.httpRules, protoJson);
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const operationsProtos = protoJson
-      ? protoJson
-      : gaxGrpc.loadProtoJSON(operationProtoJson);
+    const operationsProtos =
+      protoJson ?? gaxGrpc.loadProtoJSON(operationProtoJson);
 
     /**
      * Build a new instance of {@link OperationsClient}.
@@ -591,10 +589,8 @@ export class OperationsClientBuilder {
      * @param {Object=} opts.clientConfig - The customized config to build the call settings. See {@link gax.constructSettings} for the format.
      */
     this.operationsClient = opts => {
-      if (gaxGrpc.fallback === 'rest') {
-        opts.fallback = 'rest';
-      } else if (gaxGrpc.fallback) {
-        opts.fallback = true;
+      if (gaxGrpc.fallback) {
+        opts.fallback = gaxGrpc.fallback;
       }
       return new OperationsClient(gaxGrpc, operationsProtos, opts);
     };
