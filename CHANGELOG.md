@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.1.0](https://github.com/googleapis/gax-nodejs/compare/v3.0.3...v3.1.0) (2022-06-07)
+
+
+### Features
+
+* support regapic LRO ([#1276](https://github.com/googleapis/gax-nodejs/issues/1276)) ([b9beedb](https://github.com/googleapis/gax-nodejs/commit/b9beedbc09ff18e326851dc5007c90d89b404561))
+
 ### [3.0.3](https://github.com/googleapis/gax-nodejs/compare/v3.0.2...v3.0.3) (2022-05-26)
 
 
