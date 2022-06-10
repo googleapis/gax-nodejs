@@ -29,7 +29,7 @@ import * as objectHash from 'object-hash';
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
 
-const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
+const googleProtoFilesDir = path.join(__dirname, '..', '..', 'build', 'protos');
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
