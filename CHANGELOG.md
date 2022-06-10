@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.1.1](https://github.com/googleapis/gax-nodejs/compare/v3.1.0...v3.1.1) (2022-06-10)
+
+
+### Bug Fixes
+
+* update googlePRotoFilesDir ([#1280](https://github.com/googleapis/gax-nodejs/issues/1280)) ([e91f5ae](https://github.com/googleapis/gax-nodejs/commit/e91f5ae397868c742751fc537734e81d2293925b))
+
 ## [3.1.0](https://github.com/googleapis/gax-nodejs/compare/v3.0.3...v3.1.0) (2022-06-07)
 
 
