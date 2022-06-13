@@ -29,7 +29,7 @@ import * as objectHash from 'object-hash';
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
 
-const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
+const googleProtoFilesDir = path.join(__dirname, '..', '..', 'build', 'protos');
 
 // INCLUDE_DIRS is passed to @grpc/proto-loader
 const INCLUDE_DIRS: string[] = [];
@@ -38,6 +38,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
 import * as commonProtoFiles from './protosList.json';
+import {google} from '../protos/http';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
   file.replace(/[/\\]/g, path.sep)
@@ -46,6 +47,8 @@ const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;
   grpc?: GrpcModule;
+  protoJson?: protobuf.Root;
+  httpRules?: Array<google.api.IHttpRule>;
 }
 
 export interface MetadataValue {
@@ -112,6 +115,7 @@ export class GrpcClient {
   grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
+  httpRules?: Array<google.api.IHttpRule>;
 
   /**
    * Key for proto cache map. We are doing our best to make sure we respect

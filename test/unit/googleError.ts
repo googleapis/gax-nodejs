@@ -141,6 +141,7 @@ describe('gRPC-google error decoding', () => {
     try {
       decoder.decodeProtobufAny(any);
     } catch (err) {
+      assert(err instanceof Error);
       assert.strictEqual(
         0,
         err
@@ -161,6 +162,7 @@ describe('gRPC-google error decoding', () => {
     try {
       decoder.decodeProtobufAny(any);
     } catch (err) {
+      assert(err instanceof Error);
       assert.strictEqual(0, err.toString().indexOf('Error: no such type'));
     }
   });
@@ -299,5 +301,66 @@ describe('map http status code to gRPC status code', () => {
     };
     const error = GoogleError.parseHttpError(json);
     assert.deepStrictEqual(error.code, undefined);
+  });
+});
+
+describe('http error decoding', () => {
+  const errorInfo = {
+    '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    reason: 'SERVICE_DISABLED',
+    domain: 'googleapis.com',
+    metadata: {
+      service: 'translate.googleapis.com',
+      consumer: 'projects/123',
+    },
+  };
+  const help = {
+    '@type': 'type.googleapis.com/google.rpc.Help',
+    links: [
+      {
+        description: 'Google developers console API activation',
+        url: 'https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361',
+      },
+    ],
+  };
+  const json = {
+    error: {
+      code: 403,
+      message:
+        'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+      status: 'PERMISSION_DENIED',
+      details: [help, errorInfo],
+    },
+  };
+  it('should promote ErrorInfo if exist in http error', () => {
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length
+    );
+    assert.deepStrictEqual(error.message, json['error']['message']);
+    assert.deepStrictEqual(error.reason, errorInfo.reason);
+    assert.deepStrictEqual(error.domain, errorInfo.domain);
+    assert.deepStrictEqual(
+      JSON.stringify(error.errorInfoMetadata),
+      JSON.stringify(errorInfo.metadata)
+    );
+  });
+
+  it('should support http error in array', () => {
+    const error = GoogleError.parseHttpError([json]);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length
+    );
+    assert.deepStrictEqual(error.message, json['error']['message']);
+    assert.deepStrictEqual(error.reason, errorInfo.reason);
+    assert.deepStrictEqual(error.domain, errorInfo.domain);
+    assert.deepStrictEqual(
+      JSON.stringify(error.errorInfoMetadata),
+      JSON.stringify(errorInfo.metadata)
+    );
   });
 });

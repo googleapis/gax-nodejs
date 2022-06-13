@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-undef */
 
 import * as assert from 'assert';
@@ -378,8 +378,8 @@ describe('grpc-fallback', () => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
         assert.strictEqual(
-          JSON.stringify(err.statusDetails),
-          JSON.stringify(serverError['error']['details'])
+          JSON.stringify(err.statusDetails?.length),
+          JSON.stringify(serverError['error']['details'].length)
         );
         assert.strictEqual(err.code, 7);
         assert.strictEqual(err.message, serverError['error']['message']);

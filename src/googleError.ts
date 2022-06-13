@@ -17,6 +17,9 @@
 import {Status, rpcCodeFromHttpStatusCode} from './status';
 import * as protobuf from 'protobufjs';
 import {Metadata} from './grpc';
+import * as serializer from 'proto3-json-serializer';
+import {defaultToObjectOptions} from './fallback';
+import {JSONValue} from 'proto3-json-serializer';
 
 export class GoogleError extends Error {
   code?: Status;
@@ -59,33 +62,50 @@ export class GoogleError extends Error {
   // Parse http JSON error and promote google.rpc.ErrorInfo if exist.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static parseHttpError(json: any): GoogleError {
+    if (Array.isArray(json)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      json = json.find((obj: any) => {
+        return 'error' in obj;
+      });
+    }
+    const decoder = new GoogleErrorDecoder();
+    const proto3Error = decoder.decodeHTTPError(json['error']);
     const error = Object.assign(
       new GoogleError(json['error']['message']),
-      json.error
+      proto3Error
     );
     // Map Http Status Code to gRPC Status Code
     if (json['error']['code']) {
       error.code = rpcCodeFromHttpStatusCode(json['error']['code']);
+    } else {
+      // If error code is absent, proto3 message default value is 0. We should
+      // keep error code as undefined.
+      delete error.code;
     }
-
     // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
     // Rename "detials" to "statusDetails".
-    error.statusDetails = json['error']['details'];
-    delete error.details;
-    // Promote the ErrorInfo fields as error's top-level.
-    const errorInfo = !json['error']['details']
-      ? undefined
-      : json['error']['details'].find(
-          (item: {[x: string]: string}) =>
-            item['@type'] === 'type.googleapis.com/google.rpc.ErrorInfo'
-        );
-    if (errorInfo) {
-      error.reason = errorInfo.reason;
-      error.domain = errorInfo.domain;
-      // error.metadata has been occupied for gRPC metadata, so we use
-      // errorInfoMetadat to represent ErrorInfo' metadata field. Keep
-      // consistency with gRPC ErrorInfo metadata field name.
-      error.errorInfoMetadata = errorInfo.metadata;
+    if (error.details) {
+      try {
+        const statusDetailsObj: GRPCStatusDetailsObject =
+          decoder.decodeHttpStatusDetails(error.details);
+        if (
+          statusDetailsObj &&
+          statusDetailsObj.details &&
+          statusDetailsObj.details.length > 0
+        ) {
+          error.statusDetails = statusDetailsObj.details;
+        }
+        if (statusDetailsObj && statusDetailsObj.errorInfo) {
+          error.reason = statusDetailsObj.errorInfo.reason;
+          error.domain = statusDetailsObj.errorInfo.domain;
+          // error.metadata has been occupied for gRPC metadata, so we use
+          // errorInfoMetadata to represent ErrorInfo' metadata field. Keep
+          // consistency with gRPC ErrorInfo metadata field name.
+          error.errorInfoMetadata = statusDetailsObj.errorInfo.metadata;
+        }
+      } catch (decodeErr) {
+        // ignoring the error
+      }
     }
     return error;
   }
@@ -130,7 +150,7 @@ export class GoogleErrorDecoder {
 
   constructor() {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const errorProtoJson = require('../../protos/status.json');
+    const errorProtoJson = require('../../build/protos/status.json');
     this.root = protobuf.Root.fromJSON(errorProtoJson);
     this.anyType = this.root.lookupType('google.protobuf.Any');
     this.statusType = this.root.lookupType('google.rpc.Status');
@@ -223,5 +243,37 @@ export class GoogleErrorDecoder {
       errorInfo,
     };
     return result;
+  }
+
+  // Decodes http error which is an instance of google.rpc.Status.
+  decodeHTTPError(json: JSONValue) {
+    const errorMessage = serializer.fromProto3JSON(this.statusType, json);
+    if (!errorMessage) {
+      throw new Error(
+        `Received error message ${json}, but failed to serialize as proto3 message`
+      );
+    }
+    return this.statusType.toObject(errorMessage, defaultToObjectOptions);
+  }
+
+  // Decodes http error details which is an instance of Array<google.protobuf.Any>.
+  decodeHttpStatusDetails(
+    rawDetails: Array<ProtobufAny>
+  ): GRPCStatusDetailsObject {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const details: protobuf.Message<{}>[] = [];
+    let errorInfo;
+    for (const detail of rawDetails) {
+      try {
+        const decodedDetail = this.decodeProtobufAny(detail);
+        details.push(decodedDetail);
+        if (detail.type_url === 'type.googleapis.com/google.rpc.ErrorInfo') {
+          errorInfo = decodedDetail as unknown as ErrorInfo;
+        }
+      } catch (err) {
+        // cannot decode detail, likely because of the unknown type - just skip it
+      }
+    }
+    return {details, errorInfo};
   }
 }

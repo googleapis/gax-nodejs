@@ -20,7 +20,7 @@
  * allowing that causes another errors of non-camelcase symbols anyways.
  * Therefore quote-props is disabled explicitly only in this file. */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as assert from 'assert';
 import {describe, it} from 'mocha';

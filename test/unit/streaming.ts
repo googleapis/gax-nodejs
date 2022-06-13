@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as assert from 'assert';
 import * as sinon from 'sinon';
@@ -31,19 +31,22 @@ import internal = require('stream');
 import {StreamArrayParser} from '../../src/streamArrayParser';
 import path = require('path');
 import protobuf = require('protobufjs');
+import {GoogleError} from '../../src';
+import {Metadata} from '@grpc/grpc-js';
 
 function createApiCallStreaming(
   func:
     | Promise<GRPCCall>
     | sinon.SinonSpy<Array<{}>, internal.Transform | StreamArrayParser>,
-  type: streaming.StreamType
+  type: streaming.StreamType,
+  rest?: boolean
 ) {
   const settings = new gax.CallSettings();
   return createApiCall(
     //@ts-ignore
     Promise.resolve(func),
     settings,
-    new StreamDescriptor(type)
+    new StreamDescriptor(type, rest)
   ) as GaxCallStream;
 }
 
@@ -457,9 +460,65 @@ describe('streaming', () => {
       assert.strictEqual(responseCallback.callCount, 1);
     });
   });
+
+  it('emit parsed GoogleError', done => {
+    const errorInfoObj = {
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+      metadata: {
+        consumer: 'projects/455411330361',
+        service: 'translate.googleapis.com',
+      },
+    };
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const any = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('grpc-status-details-bin', status_buffer);
+    const error = Object.assign(new GoogleError('test error'), {
+      code: 5,
+      details: 'Failed to read',
+      metadata: metadata,
+    });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      setImmediate(() => {
+        s.emit('error', error);
+      });
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    s.on('error', err => {
+      assert(err instanceof GoogleError);
+      assert.deepStrictEqual(err.message, 'test error');
+      assert.strictEqual(err.domain, errorInfoObj.domain);
+      assert.strictEqual(err.reason, errorInfoObj.reason);
+      assert.strictEqual(
+        JSON.stringify(err.errorInfoMetadata),
+        JSON.stringify(errorInfoObj.metadata)
+      );
+      done();
+    });
+  });
 });
 
-describe('apiCall return StreamArrayParser', () => {
+describe('REST streaming apiCall return StreamArrayParser', () => {
   const protos_path = path.resolve(__dirname, '..', 'fixtures', 'user.proto');
   const root = protobuf.loadSync(protos_path);
   const UserService = root.lookupService('UserService');
@@ -476,7 +535,8 @@ describe('apiCall return StreamArrayParser', () => {
     });
     const apiCall = createApiCallStreaming(
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      true
     );
     const s = apiCall({}, undefined);
     assert.strictEqual(s.readable, true);
@@ -505,7 +565,8 @@ describe('apiCall return StreamArrayParser', () => {
     });
     const apiCall = createApiCallStreaming(
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      true
     );
     const s = apiCall({}, undefined);
     assert.strictEqual(s.readable, true);
@@ -536,7 +597,8 @@ describe('apiCall return StreamArrayParser', () => {
     const apiCall = createApiCallStreaming(
       //@ts-ignore
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      true
     );
     const s = apiCall({}, undefined);
     let counter = 0;

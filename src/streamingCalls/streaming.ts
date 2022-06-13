@@ -17,7 +17,6 @@
 /* This file describes the gRPC-streaming. */
 
 import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
-import {Metadata} from '@grpc/grpc-js';
 
 import {
   APICallback,
@@ -26,7 +25,7 @@ import {
   SimpleCallbackFunction,
 } from '../apitypes';
 import {RetryRequestOptions} from '../gax';
-import {StreamArrayParser} from '../streamArrayParser';
+import {GoogleError} from '../googleError';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -78,19 +77,13 @@ export enum StreamType {
   BIDI_STREAMING = 3,
 }
 
-interface Status {
-  code: number;
-  details: string;
-  message?: string;
-  metadata?: Metadata;
-}
-
 export class StreamProxy extends duplexify implements GRPCCallResult {
   type: StreamType;
   private _callback: APICallback;
   private _isCancelCalled: boolean;
   stream?: CancellableStream;
   private _responseHasSent: boolean;
+  rest?: boolean;
   /**
    * StreamProxy is a proxy to gRPC-streaming method.
    *
@@ -99,7 +92,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {StreamType} type - the type of gRPC stream.
    * @param {ApiCallback} callback - the callback for further API call.
    */
-  constructor(type: StreamType, callback: APICallback) {
+  constructor(type: StreamType, callback: APICallback, rest?: boolean) {
     super(undefined, undefined, {
       objectMode: true,
       readable: type !== StreamType.CLIENT_STREAMING,
@@ -109,6 +102,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     this._callback = callback;
     this._isCancelCalled = false;
     this._responseHasSent = false;
+    this.rest = rest;
   }
 
   cancel() {
@@ -125,9 +119,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
   forwardEvents(stream: Stream) {
     const eventsToForward = ['metadata', 'response', 'status'];
-    if (stream instanceof StreamArrayParser) {
-      eventsToForward.push('data', 'end', 'error');
-    }
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
     });
@@ -162,6 +153,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       });
       this._responseHasSent = true;
     });
+    stream.on('error', error => {
+      GoogleError.parseGRPCStatusDetails(error);
+    });
   }
 
   /**
@@ -175,26 +169,35 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     retryRequestOptions: RetryRequestOptions = {}
   ) {
     if (this.type === StreamType.SERVER_STREAMING) {
-      const retryStream = retryRequest(null, {
-        objectMode: true,
-        request: () => {
-          if (this._isCancelCalled) {
-            if (this.stream) {
-              this.stream.cancel();
+      if (this.rest) {
+        const stream = apiCall(argument, this._callback) as CancellableStream;
+        this.stream = stream;
+        this.setReadable(stream);
+      } else {
+        const retryStream = retryRequest(null, {
+          objectMode: true,
+          request: () => {
+            if (this._isCancelCalled) {
+              if (this.stream) {
+                this.stream.cancel();
+              }
+              return;
             }
-            return;
-          }
-          const stream = apiCall(argument, this._callback) as CancellableStream;
-          this.stream = stream;
-          this.forwardEvents(stream);
-          return stream;
-        },
-        retries: retryRequestOptions!.retries,
-        currentRetryAttempt: retryRequestOptions!.currentRetryAttempt,
-        noResponseRetries: retryRequestOptions!.noResponseRetries,
-        shouldRetryFn: retryRequestOptions!.shouldRetryFn,
-      });
-      this.setReadable(retryStream);
+            const stream = apiCall(
+              argument,
+              this._callback
+            ) as CancellableStream;
+            this.stream = stream;
+            this.forwardEvents(stream);
+            return stream;
+          },
+          retries: retryRequestOptions!.retries,
+          currentRetryAttempt: retryRequestOptions!.currentRetryAttempt,
+          noResponseRetries: retryRequestOptions!.noResponseRetries,
+          shouldRetryFn: retryRequestOptions!.shouldRetryFn,
+        });
+        this.setReadable(retryStream);
+      }
       return;
     }
 

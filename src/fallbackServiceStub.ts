@@ -89,7 +89,7 @@ export function generateServiceStub(
       const cancelController = hasAbortController()
         ? new AbortController()
         : new NodeAbortController();
-      const cancelSignal = cancelController.signal;
+      const cancelSignal = cancelController.signal as AbortSignal;
       let cancelRequested = false;
 
       const fetchParameters = requestEncoder(
@@ -109,7 +109,7 @@ export function generateServiceStub(
       authClient
         .getRequestHeaders()
         .then(authHeader => {
-          const fetchRequest = {
+          const fetchRequest: RequestInit = {
             headers: {
               ...authHeader,
               ...headers,
@@ -128,7 +128,6 @@ export function generateServiceStub(
           ) {
             delete fetchRequest['body'];
           }
-
           return fetch(url, fetchRequest);
         })
         .then((response: Response | NodeFetchResponse) => {
@@ -161,7 +160,14 @@ export function generateServiceStub(
               })
               .catch((err: Error) => {
                 if (!cancelRequested || err.name !== 'AbortError') {
-                  callback(err);
+                  if (rpc.responseStream) {
+                    if (callback) {
+                      callback(err);
+                    }
+                    streamArrayParser.emit('error', err);
+                  } else {
+                    callback(err);
+                  }
                 }
               });
           }

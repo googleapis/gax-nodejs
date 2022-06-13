@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {describe, it} from 'mocha';
 import {RequestType} from '../../src/apitypes';
@@ -31,11 +31,14 @@ import {
   match,
   buildQueryStringComponents,
   requestChangeCaseAndCleanup,
+  overrideHttpRules,
 } from '../../src/transcoding';
 import * as assert from 'assert';
 import {camelToSnakeCase, snakeToCamelCase} from '../../src/util';
 import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
+import {echoProtoJson} from '../fixtures/echoProtoJson';
+import {google} from '../../protos/http';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
@@ -694,6 +697,141 @@ describe('validate proto3 field with default value', () => {
       assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
       assert.deepStrictEqual(transcoded?.data, 'test-content');
       assert.deepStrictEqual(transcoded.queryString, '');
+    }
+  });
+});
+
+describe('override the HTTP rules in protoJson', () => {
+  const httpOptionName = '(google.api.http)';
+
+  it('override multiple http rules', () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'google.showcase.v1beta1.Messaging.GetRoom',
+        get: '/v1beta1/{name**}',
+      },
+      {
+        selector: 'google.showcase.v1beta1.Messaging.ListRooms',
+        get: '/fake/value',
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert(modifiedRpc.parsedOptions);
+      for (const item of modifiedRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName];
+        assert.deepStrictEqual(httpOptions.get, rule.get);
+      }
+    }
+  });
+
+  it("override additional bindings for a rpc doesn't has additional bindings", () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'google.showcase.v1beta1.Messaging.GetRoom',
+        get: 'v1beta1/room/{name=**}',
+        additional_bindings: [{get: 'v1beta1/room/{name}'}],
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert(modifiedRpc.parsedOptions);
+      for (const item of modifiedRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName];
+        assert.deepStrictEqual(httpOptions.get, rule.get);
+        assert.deepStrictEqual(
+          httpOptions.additional_bindings,
+          rule.additional_bindings
+        );
+      }
+    }
+  });
+
+  it('append additional bindings for a rpc has additional bindings', () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'google.showcase.v1beta1.Messaging.GetBlurb',
+        get: 'v1beta1/fake/value',
+        additional_bindings: [
+          {get: 'v1beta1/fake/value'},
+        ] as Array<google.api.IHttpRule>,
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    const originRpc = root.lookup(httpRules[0].selector!) as protobuf.Method;
+    const originAdditionalBindings = () => {
+      for (const item of originRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName] as google.api.IHttpRule;
+        return [httpOptions.additional_bindings];
+      }
+      return null;
+    };
+    assert(originAdditionalBindings());
+    const expectedAditionalBindings = originAdditionalBindings()!.concat(
+      httpRules[0].additional_bindings
+    );
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert(modifiedRpc.parsedOptions);
+      for (const item of modifiedRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName];
+        assert.deepStrictEqual(httpOptions.get, rule.get);
+        assert.deepStrictEqual(
+          httpOptions.additional_bindings,
+          expectedAditionalBindings
+        );
+      }
+    }
+  });
+
+  it("can't override a non-exist rpc", () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'not.a.valid.rpc',
+        get: 'v1/operations/{name=**}',
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert.equal(modifiedRpc, null);
+    }
+  });
+
+  it('not support a rpc has no parsedOption', () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'google.showcase.v1beta1.Messaging.Connect',
+        get: 'fake/url',
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert.equal(modifiedRpc.parsedOptions, null);
     }
   });
 });
