@@ -28,7 +28,7 @@ export class GoogleError extends Error {
   statusDetails?: string | protobuf.Message<{}>[];
   reason?: string;
   domain?: string;
-  errorInfoMetadata?: {string: string};
+  errorInfoMetadata?: {[propName: string]: string};
 
   // Parse details field in google.rpc.status wire over gRPC medatadata.
   // Promote google.rpc.ErrorInfo if exist.
