@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.1.2](https://github.com/googleapis/gax-nodejs/compare/v3.1.1...v3.1.2) (2022-06-17)
+
+
+### Bug Fixes
+
+* errorInfoMetadata should be a string->string object ([#1282](https://github.com/googleapis/gax-nodejs/issues/1282)) ([d1c4fec](https://github.com/googleapis/gax-nodejs/commit/d1c4fecbb17e90237692c26ec8b3a2d35d2a93e7))
+
 ## [3.1.1](https://github.com/googleapis/gax-nodejs/compare/v3.1.0...v3.1.1) (2022-06-10)
 
 
