@@ -19,6 +19,7 @@
  */
 
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
+import {toLowerCamelCase} from './util';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -657,7 +658,7 @@ export function constructSettings(
   const overridingMethods = overrides.methods || {};
   for (const methodName in methods) {
     const methodConfig = methods[methodName];
-    const jsName = methodName[0].toLowerCase() + methodName.slice(1);
+    const jsName = toLowerCamelCase(methodName);
 
     let retry = constructRetry(
       methodConfig,

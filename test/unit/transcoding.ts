@@ -34,7 +34,10 @@ import {
   overrideHttpRules,
 } from '../../src/transcoding';
 import * as assert from 'assert';
-import {camelToSnakeCase, snakeToCamelCase} from '../../src/util';
+import {
+  camelToSnakeCase,
+  toCamelCase as snakeToCamelCase,
+} from '../../src/util';
 import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
 import {echoProtoJson} from '../fixtures/echoProtoJson';

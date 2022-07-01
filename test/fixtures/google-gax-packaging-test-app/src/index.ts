@@ -179,13 +179,13 @@ async function testEchoError(client: EchoClient) {
     Error);
   try {
       await client.echo(request);
-  } catch (err: any) {
+  } catch (err) {
       clearTimeout(timer);
-      assert.strictEqual(JSON.stringify(err.statusDetails), JSON.stringify(expectedDetails));
+      assert.strictEqual(JSON.stringify((err as typeof GoogleError).statusDetails), JSON.stringify(expectedDetails));
       assert.ok(errorInfo!)
-      assert.strictEqual(err.domain, errorInfo!.domain)
-      assert.strictEqual(err.reason, errorInfo!.reason)
-      assert.strictEqual(JSON.stringify(err.errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
+      assert.strictEqual((err as typeof GoogleError).domain, errorInfo!.domain)
+      assert.strictEqual((err as typeof GoogleError).reason, errorInfo!.reason)
+      assert.strictEqual(JSON.stringify((err as typeof GoogleError).errorInfoMetadata), JSON.stringify(errorInfo!.metadata));
   }
 }
 

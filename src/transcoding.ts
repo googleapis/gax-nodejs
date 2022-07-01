@@ -20,7 +20,7 @@
 import {JSONObject, JSONValue} from 'proto3-json-serializer';
 import {Field} from 'protobufjs';
 import {google} from '../protos/http';
-import {camelToSnakeCase, snakeToCamelCase} from './util';
+import {camelToSnakeCase, toCamelCase as snakeToCamelCase} from './util';
 
 export interface TranscodedRequest {
   httpMethod: 'get' | 'post' | 'put' | 'patch' | 'delete';
