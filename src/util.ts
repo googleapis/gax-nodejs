@@ -14,13 +14,50 @@
  * limitations under the License.
  */
 
+function words(str: string, normalize = false) {
+  if (normalize) {
+    // strings like somethingABCSomething are special case for protobuf.js,
+    // they should be split as "something", "abc", "something".
+    // Deal with sequences of capital letters first.
+    str = str.replace(/([A-Z])([A-Z]+)([A-Z])/g, (str: string) => {
+      return (
+        str[0] +
+        str.slice(1, str.length - 1).toLowerCase() +
+        str[str.length - 1]
+      );
+    });
+  }
+  // split on spaces, non-alphanumeric, or capital letters
+  // note: we keep the capitalization of the first word (special case: IPProtocol)
+  return str
+    .split(/(?=[A-Z])|[^A-Za-z0-9.]+/)
+    .filter(w => w.length > 0)
+    .map((w, index) => (index === 0 ? w : w.toLowerCase()));
+}
+
+/**
+ * Converts the first character of the given string to lower case.
+ */
+function lowercase(str: string) {
+  if (str.length === 0) {
+    return str;
+  }
+  return str[0].toLowerCase() + str.slice(1);
+}
+
 /**
  * Converts a given string from camelCase (used by protobuf.js and in JSON)
  * to snake_case (normally used in proto definitions).
  */
 export function camelToSnakeCase(str: string) {
   // Keep the first position capitalization, otherwise decapitalize with underscore.
-  return str.replace(/(?!^)[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  const wordsList = words(str);
+  if (wordsList.length === 0) {
+    return str;
+  }
+  const result = [wordsList[0]];
+  result.push(...wordsList.slice(1).map(lowercase));
+  return result.join('_');
 }
 
 /**
@@ -34,18 +71,22 @@ function capitalize(str: string) {
 }
 
 /**
- * Converts a given string from snake_case (normally used in proto definitions) to
- * camelCase (used by protobuf.js)
+ * Converts a given string from snake_case (normally used in proto definitions) or
+ * PascalCase (also used in proto definitions) to camelCase (used by protobuf.js)
  */
-export function snakeToCamelCase(str: string) {
-  // split on spaces, underscore, or capital letters
-  const splitted = str
-    .split(/(?=[A-Z])|(?:(?!(_(\W+)))[\s_])+/)
-    .filter(w => w && w.length > 0)
-    // Keep the capitalization for the first split.
-    .map((word, index) => (index === 0 ? word : word.toLowerCase()));
-  if (splitted.length === 0) {
+export function toCamelCase(str: string) {
+  const wordsList = words(str, /*normalize:*/ true);
+  if (wordsList.length === 0) {
     return str;
   }
-  return [splitted[0], ...splitted.slice(1).map(capitalize)].join('');
+  const result = [wordsList[0]];
+  result.push(
+    ...wordsList.slice(1).map(w => {
+      if (w.match(/^\d+$/)) {
+        return '_' + w;
+      }
+      return capitalize(w);
+    })
+  );
+  return result.join('');
 }
