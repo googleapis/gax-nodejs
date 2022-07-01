@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
+import {OutgoingHttpHeaders} from 'http';
+import * as objectHash from 'object-hash';
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
 import {Status} from './status';
-import {OutgoingHttpHeaders} from 'http';
 import {
   GoogleAuth,
   OAuth2Client,
@@ -39,7 +40,7 @@ import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
 import {StreamType} from './streamingCalls/streaming';
-import * as objectHash from 'object-hash';
+import {toLowerCamelCase} from './util';
 import {google} from '../protos/http';
 
 export {FallbackServiceError};
@@ -151,8 +152,7 @@ export class GrpcClient {
   private static getServiceMethods(service: protobuf.Service): ServiceMethods {
     const methods: {[name: string]: protobuf.Method} = {};
     for (const [methodName, methodObject] of Object.entries(service.methods)) {
-      const methodNameLowerCamelCase =
-        methodName[0].toLowerCase() + methodName.substring(1);
+      const methodNameLowerCamelCase = toLowerCamelCase(methodName);
       methods[methodNameLowerCamelCase] = methodObject;
     }
 

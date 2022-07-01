@@ -72,7 +72,8 @@ function capitalize(str: string) {
 
 /**
  * Converts a given string from snake_case (normally used in proto definitions) or
- * PascalCase (also used in proto definitions) to camelCase (used by protobuf.js)
+ * PascalCase (also used in proto definitions) to camelCase (used by protobuf.js).
+ * Preserves capitalization of the first character.
  */
 export function toCamelCase(str: string) {
   const wordsList = words(str, /*normalize:*/ true);
@@ -89,4 +90,16 @@ export function toCamelCase(str: string) {
     })
   );
   return result.join('');
+}
+
+/**
+ * Converts a given string to lower camel case (forcing the first character to be
+ * in lower case).
+ */
+export function toLowerCamelCase(str: string) {
+  const camelCase = toCamelCase(str);
+  if (camelCase.length === 0) {
+    return camelCase;
+  }
+  return camelCase[0].toLowerCase() + camelCase.slice(1);
 }

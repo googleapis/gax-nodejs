@@ -19,6 +19,7 @@ import {describe, it} from 'mocha';
 import {
   toCamelCase as snakeToCamelCase,
   camelToSnakeCase,
+  toLowerCamelCase,
 } from '../../src/util';
 
 describe('util.ts', () => {
@@ -53,5 +54,23 @@ describe('util.ts', () => {
       snakeToCamelCase('something_abcde_value'),
       'somethingAbcdeValue'
     );
+  });
+
+  it('toLowerCamelCase', () => {
+    assert.strictEqual(toLowerCamelCase('test'), 'test');
+    assert.strictEqual(toLowerCamelCase('test123'), 'test123');
+    assert.strictEqual(toLowerCamelCase('test_abc'), 'testAbc');
+    assert.strictEqual(toLowerCamelCase('test_abc_def'), 'testAbcDef');
+    assert.strictEqual(toLowerCamelCase('I_p_protocol'), 'iPProtocol');
+    assert.strictEqual(toLowerCamelCase('a.1'), 'a.1');
+    assert.strictEqual(toLowerCamelCase('abc.1_foo'), 'abc.1Foo');
+    assert.strictEqual(toLowerCamelCase('abc.foo'), 'abc.foo');
+    assert.strictEqual(toLowerCamelCase('a.1_b'), 'a.1B');
+    assert.strictEqual(
+      toLowerCamelCase('something_abcde_value'),
+      'somethingAbcdeValue'
+    );
+    assert.strictEqual(toLowerCamelCase('PascalCaseString'), 'pascalCaseString');
+    assert.strictEqual(toLowerCamelCase('PascalCASEString'), 'pascalCaseString');
   });
 });
