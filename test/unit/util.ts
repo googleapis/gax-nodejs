@@ -70,7 +70,13 @@ describe('util.ts', () => {
       toLowerCamelCase('something_abcde_value'),
       'somethingAbcdeValue'
     );
-    assert.strictEqual(toLowerCamelCase('PascalCaseString'), 'pascalCaseString');
-    assert.strictEqual(toLowerCamelCase('PascalCASEString'), 'pascalCaseString');
+    assert.strictEqual(
+      toLowerCamelCase('PascalCaseString'),
+      'pascalCaseString'
+    );
+    assert.strictEqual(
+      toLowerCamelCase('PascalCASEString'),
+      'pascalCaseString'
+    );
   });
 });
