@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.1.3](https://github.com/googleapis/gax-nodejs/compare/v3.1.2...v3.1.3) (2022-07-01)
+
+
+### Bug Fixes
+
+* protobufjs-compatible camel case ([#1286](https://github.com/googleapis/gax-nodejs/issues/1286)) ([c751200](https://github.com/googleapis/gax-nodejs/commit/c75120061f0a65b7f3d3e5cddf32a68d318a4aad))
+
 ## [3.1.2](https://github.com/googleapis/gax-nodejs/compare/v3.1.1...v3.1.2) (2022-06-17)
 
 
