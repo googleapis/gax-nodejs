@@ -29,6 +29,7 @@ import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
 import {GoogleError} from '../../src';
 import {StreamArrayParser} from '../../src/streamArrayParser';
+import * as fallbackServiceStub from '../../src/fallbackServiceStub';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
@@ -334,18 +335,14 @@ describe('grpc-fallback', () => {
       'Required field ${requiredField} is not present in the request.';
 
     //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(
-      Promise.resolve({
-        ok: false,
-        arrayBuffer: () => {
-          return Promise.resolve(
-            Buffer.from(
-              'Required field ${requiredField} is not present in the request.'
-            )
-          );
-        },
-      })
-    );
+    sinon
+      .stub(fallbackServiceStub, 'generateServiceStub')
+      .throws(
+        new GoogleError(
+          'Required field ${requiredField} is not present in the request.'
+        )
+      );
+
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
