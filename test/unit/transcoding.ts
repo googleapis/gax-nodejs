@@ -145,14 +145,6 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.ok(
-      transcode(
-        {parent: 'get/project', field: 'value', a: 42},
-        parsedOptions,
-        undefined
-      ) instanceof GoogleError
-    );
-
     assert.deepStrictEqual(
       transcode({parent: 'get/project', field: 'value', a: 42}, parsedOptions),
       {
@@ -630,9 +622,9 @@ describe('validate proto3 field with default value', () => {
       },
     ];
     for (const request of requests) {
-      assert.throws(
-        () => transcode(request, parsedOptions, testMessageFields),
-        Error
+      assert.ok(
+        transcode(request, parsedOptions, testMessageFields) instanceof
+          GoogleError
       );
     }
   });
