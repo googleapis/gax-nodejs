@@ -61,12 +61,8 @@ export function encodeRequest(
     rpc.parsedOptions,
     rpc.resolvedRequestType!.fields
   );
-  if (!transcoded) {
-    throw new Error(
-      `Cannot build HTTP request for ${JSON.stringify(json)}, method: ${
-        rpc.name
-      }`
-    );
+  if (transcoded instanceof GoogleError) {
+    throw transcoded;
   }
   const method = transcoded.httpMethod;
   const body = JSON.stringify(transcoded.data);

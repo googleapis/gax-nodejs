@@ -91,14 +91,18 @@ export function generateServiceStub(
         : new NodeAbortController();
       const cancelSignal = cancelController.signal as AbortSignal;
       let cancelRequested = false;
-
-      const fetchParameters = requestEncoder(
-        rpc,
-        protocol,
-        servicePath,
-        servicePort,
-        request
-      );
+      let fetchParameters: FetchParameters;
+      try {
+        fetchParameters = requestEncoder(
+          rpc,
+          protocol,
+          servicePath,
+          servicePort,
+          request
+        );
+      } catch (err) {
+        return Promise.resolve(callback(err));
+      }
       const url = fetchParameters.url;
       const headers = fetchParameters.headers;
       for (const key of Object.keys(options)) {
