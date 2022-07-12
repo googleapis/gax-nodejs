@@ -328,7 +328,7 @@ describe('grpc-fallback', () => {
     });
   });
 
-  it.only('should handle an error occurring during encoding', done => {
+  it('should handle an error occurring during encoding', done => {
     const requestObject = {content: 'test-content'};
     const expectedMessage =
       'Required field ${requiredField} is not present in the request.';
