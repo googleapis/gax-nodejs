@@ -25,6 +25,7 @@ import {hasWindowFetch, hasAbortController} from './featureDetection';
 import {AuthClient} from './fallback';
 import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
+import {GoogleError} from './googleError';
 
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
@@ -37,7 +38,7 @@ export interface FallbackServiceStub {
     options: {},
     metadata: {},
     callback: (err?: Error, response?: {} | undefined) => void
-  ) => StreamArrayParser | {cancel: () => void};
+  ) => StreamArrayParser | {cancel: () => void} | Promise<GoogleError>;
 }
 
 export interface FetchParameters {

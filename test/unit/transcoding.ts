@@ -32,6 +32,7 @@ import {
   buildQueryStringComponents,
   requestChangeCaseAndCleanup,
   overrideHttpRules,
+  TranscodedRequest,
 } from '../../src/transcoding';
 import * as assert from 'assert';
 import {
@@ -594,7 +595,7 @@ describe('validate proto3 field with default value', () => {
     ];
     const transcoded = transcode(request, parsedOptions, badTestMessageFields);
     assert.deepStrictEqual(
-      transcoded?.url,
+      (transcoded as TranscodedRequest)?.url,
       'projects/test-project/contents/test-content'
     );
   });
@@ -640,8 +641,13 @@ describe('validate proto3 field with default value', () => {
       },
     ];
     const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
-    assert.deepStrictEqual(transcoded?.data, {content: 'test-content'});
+    assert.deepStrictEqual(
+      (transcoded as TranscodedRequest)?.url,
+      'projects/test-project'
+    );
+    assert.deepStrictEqual((transcoded as TranscodedRequest)?.data, {
+      content: 'test-content',
+    });
   });
   it('when body="*", unset optional field should remove from body', () => {
     const requests: RequestType[] = [
@@ -666,10 +672,10 @@ describe('validate proto3 field with default value', () => {
     for (const request of requests) {
       const transcoded = transcode(request, parsedOptions, testMessageFields);
       assert.deepStrictEqual(
-        transcoded?.url,
+        (transcoded as TranscodedRequest)?.url,
         'projects/test-project/contents/test-content'
       );
-      assert.deepStrictEqual(transcoded?.data, {});
+      assert.deepStrictEqual((transcoded as TranscodedRequest)?.data, {});
     }
   });
   it('unset optional fields should not appear in query params', () => {
@@ -697,9 +703,15 @@ describe('validate proto3 field with default value', () => {
     ];
     for (const request of requests) {
       const transcoded = transcode(request, parsedOptions, testMessageFields);
-      assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
-      assert.deepStrictEqual(transcoded?.data, 'test-content');
-      assert.deepStrictEqual(transcoded.queryString, '');
+      assert.deepStrictEqual(
+        (transcoded as TranscodedRequest)?.url,
+        'projects/test-project'
+      );
+      assert.deepStrictEqual(
+        (transcoded as TranscodedRequest)?.data,
+        'test-content'
+      );
+      assert.deepStrictEqual((transcoded as TranscodedRequest).queryString, '');
     }
   });
 });
