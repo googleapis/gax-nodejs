@@ -339,7 +339,9 @@ describe('grpc-fallback', () => {
         ok: false,
         arrayBuffer: () => {
           return Promise.resolve(
-            'Required field ${requiredField} is not present in the request.'
+            Buffer.from(
+              'Required field ${requiredField} is not present in the request.'
+            )
           );
         },
       })
