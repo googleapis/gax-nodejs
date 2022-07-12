@@ -23,7 +23,7 @@ import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 
 import * as fallback from '../../src/fallback';
-import { StreamArrayParser } from '../../src/streamArrayParser';
+import {StreamArrayParser} from '../../src/streamArrayParser';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
