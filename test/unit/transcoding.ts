@@ -43,6 +43,7 @@ import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {google} from '../../protos/http';
+import {GoogleError} from 'google-gax';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
@@ -142,6 +143,14 @@ describe('gRPC to HTTP transcoding', () => {
         queryString: 'a=42',
         data: 'value',
       }
+    );
+
+    assert.ok(
+      transcode(
+        {parent: 'get/project', field: 'value', a: 42},
+        parsedOptions,
+        undefined
+      ) instanceof GoogleError
     );
 
     assert.deepStrictEqual(
