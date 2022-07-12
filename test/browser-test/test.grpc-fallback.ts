@@ -23,6 +23,7 @@ import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 
 import * as fallback from '../../src/fallback';
+import { StreamArrayParser } from '../../src/streamArrayParser';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {EchoClient} from '../fixtures/google-gax-packaging-test-app/src/v1beta1/echo_client';
 
@@ -220,7 +221,7 @@ describe('grpc-fallback', () => {
     const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
-    call.cancel();
+    (call as StreamArrayParser).cancel();
 
     // @ts-ignore
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);
