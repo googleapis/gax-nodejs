@@ -298,7 +298,7 @@ export function transcode(
   request: JSONObject,
   parsedOptions: ParsedOptionsType,
   requestFields?: {[k: string]: Field}
-): TranscodedRequest | GoogleError {
+): TranscodedRequest | GoogleError | undefined {
   const {requiredFields, optionalFields} =
     getFieldNameOnBehavior(requestFields);
   // all fields annotated as REQUIRED MUST be emitted in the body.
