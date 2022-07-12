@@ -43,7 +43,7 @@ import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
 import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {google} from '../../protos/http';
-import {GoogleError} from 'google-gax';
+import {GoogleError} from '../../src';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
