@@ -304,7 +304,7 @@ export function transcode(
   // all fields annotated as REQUIRED MUST be emitted in the body.
   for (const requiredField of requiredFields) {
     if (!(requiredField in request) || request[requiredField] === 'undefined') {
-      return new GoogleError(
+      throw new GoogleError(
         `Required field ${requiredField} is not present in the request.`
       );
     }

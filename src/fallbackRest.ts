@@ -56,12 +56,15 @@ export function encodeRequest(
   if (typeof json !== 'object' || Array.isArray(json)) {
     throw new Error(`Request to RPC ${rpc.name} must be an object.`);
   }
-  const transcoded = transcode(
-    json,
-    rpc.parsedOptions,
-    rpc.resolvedRequestType!.fields
-  );
-  if (transcoded instanceof GoogleError) {
+
+  let transcoded;
+  try {
+    transcoded = transcode(
+      json,
+      rpc.parsedOptions,
+      rpc.resolvedRequestType!.fields
+    );
+  } catch (err) {
     throw transcoded;
   }
 
