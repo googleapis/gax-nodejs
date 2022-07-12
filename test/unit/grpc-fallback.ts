@@ -337,7 +337,7 @@ describe('grpc-fallback', () => {
     //@ts-ignore
     sinon
       .stub(fallbackServiceStub, 'generateServiceStub')
-      .throws(
+      .rejects(
         new GoogleError(
           'Required field ${requiredField} is not present in the request.'
         )
