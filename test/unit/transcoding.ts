@@ -622,9 +622,9 @@ describe('validate proto3 field with default value', () => {
       },
     ];
     for (const request of requests) {
-      assert.ok(
-        transcode(request, parsedOptions, testMessageFields) instanceof
-          GoogleError
+      assert.throws(
+        () => transcode(request, parsedOptions, testMessageFields),
+        /Error: Required field content is not present in the request/
       );
     }
   });
