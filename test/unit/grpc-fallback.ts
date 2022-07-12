@@ -328,6 +328,31 @@ describe('grpc-fallback', () => {
     });
   });
 
+  it.only('should handle an error occurring during encoding', done => {
+    const requestObject = {content: 'test-content'};
+    const expectedMessage =
+      'Required field ${requiredField} is not present in the request.';
+
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(
+            'Required field ${requiredField} is not present in the request.'
+          );
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err.message, expectedMessage);
+        done();
+      });
+    });
+  });
+
   it('should promote ErrorInfo if exist in fallback-rest error', done => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Translate API
