@@ -29,7 +29,6 @@ import {echoProtoJson} from '../fixtures/echoProtoJson';
 import {GrpcClient} from '../../src/fallback';
 import {GoogleError} from '../../src';
 import {StreamArrayParser} from '../../src/streamArrayParser';
-import * as fallbackServiceStub from '../../src/fallbackServiceStub';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
@@ -324,29 +323,6 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(expectedError.details)
         );
-        done();
-      });
-    });
-  });
-
-  it('should handle an error occurring during encoding', done => {
-    const requestObject = {content: 'test-content'};
-    const expectedMessage =
-      'Required field ${requiredField} is not present in the request.';
-
-    //@ts-ignore
-    sinon
-      .stub(fallbackServiceStub, 'generateServiceStub')
-      .rejects(
-        new GoogleError(
-          'Required field ${requiredField} is not present in the request.'
-        )
-      );
-
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof GoogleError);
-        assert.strictEqual(err.message, expectedMessage);
         done();
       });
     });
