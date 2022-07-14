@@ -284,7 +284,7 @@ describe('grpc-fallback', () => {
     });
   });
 
-  it('should handle an error', done => {
+  it('should handle an API error', done => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Language API
     const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
@@ -322,6 +322,18 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(expectedError.details)
         );
+        done();
+      });
+    });
+  });
+
+  it('should handle a fetch error', done => {
+    const requestObject = {content: 'test-content'};
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').rejects(new Error('fetch error'));
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert.strictEqual(err?.message, 'fetch error');
         done();
       });
     });
