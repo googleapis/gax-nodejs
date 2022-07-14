@@ -171,7 +171,8 @@ export function generateServiceStub(
                 }
               });
           }
-        });
+        })
+        .catch((err: unknown) => callback(err));
 
       if (rpc.responseStream) {
         return streamArrayParser;
