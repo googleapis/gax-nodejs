@@ -19,8 +19,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as util from 'util';
-import * as pbjs from 'protobufjs/cli/pbjs';
-import * as pbts from 'protobufjs/cli/pbts';
+import * as pbjs from 'protobufjs-cli/pbjs';
+import * as pbts from 'protobufjs-cli/pbts';
 
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
