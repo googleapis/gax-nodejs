@@ -252,6 +252,9 @@ export function requestChangeCaseAndCleanup(
     }
     let convertedField = caseChangeFunc(field);
 
+    // Here, we want to check if the fields in the proto match
+    // the fields we are changing; if not, we assume it's user
+    // input and revert back to its original form
     if (
       fieldsToChangeWithFunc &&
       !fieldsToChangeWithFunc?.includes(convertedField)
@@ -308,6 +311,7 @@ export function getFieldNameOnBehavior(
   return {requiredFields, optionalFields};
 }
 
+// This function gets all the fields recursively
 export function getAllFieldNames(
   fields: {[k: string]: Field} | undefined,
   fieldNames: string[]
