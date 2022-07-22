@@ -191,14 +191,14 @@ export function match(
     const [, before, field, pattern, after] = match;
     matchedFields.push(field);
     const fieldValue = getField(request, field);
-    if (typeof fieldValue === 'undefined') {
+    if (fieldValue === undefined) {
       return undefined;
     }
     const appliedPattern = applyPattern(
       pattern,
       fieldValue === null ? 'null' : fieldValue!.toString()
     );
-    if (typeof appliedPattern === 'undefined') {
+    if (appliedPattern === undefined) {
       return undefined;
     }
     url = before + appliedPattern + after;
@@ -210,7 +210,7 @@ export function match(
 export function flattenObject(request: JSONObject): JSONObject {
   const result: JSONObject = {};
   for (const key in request) {
-    if (typeof request[key] === 'undefined') {
+    if (request[key] === undefined) {
       continue;
     }
 
@@ -302,7 +302,7 @@ export function transcode(
     getFieldNameOnBehavior(requestFields);
   // all fields annotated as REQUIRED MUST be emitted in the body.
   for (const requiredField of requiredFields) {
-    if (!(requiredField in request) || request[requiredField] === 'undefined') {
+    if (!(requiredField in request) || request[requiredField] === undefined) {
       throw new Error(
         `Required field ${requiredField} is not present in the request.`
       );
@@ -336,7 +336,7 @@ export function transcode(
         httpMethod as keyof google.api.IHttpRule
       ] as string;
       const matchResult = match(snakeRequest, pathTemplate);
-      if (typeof matchResult === 'undefined') {
+      if (matchResult === undefined) {
         continue;
       }
       const {url, matchedFields} = matchResult;
@@ -351,7 +351,7 @@ export function transcode(
         for (const key in data) {
           if (
             optionalFields.has(snakeToCamelCase(key)) &&
-            (!(key in snakeRequest) || snakeRequest[key] === 'undefined')
+            (!(key in snakeRequest) || snakeRequest[key] === undefined)
           ) {
             delete data[key];
           }
@@ -372,7 +372,7 @@ export function transcode(
         deleteField(queryStringObject, snakeToCamelCase(body));
         // Unset optional field should not add in body request.
         data =
-          optionalFields.has(body) && snakeRequest[body] === 'undefined'
+          optionalFields.has(body) && snakeRequest[body] === undefined
             ? ''
             : (snakeRequest[body] as JSONObject);
       }
@@ -381,7 +381,7 @@ export function transcode(
       }
       // Unset proto3 optional field does not appear in the query params.
       for (const key in queryStringObject) {
-        if (optionalFields.has(key) && request[key] === 'undefined') {
+        if (optionalFields.has(key) && request[key] === undefined) {
           delete queryStringObject[key];
         }
       }
