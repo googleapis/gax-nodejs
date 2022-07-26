@@ -103,10 +103,11 @@ describe('longrunning', () => {
     let remainingCalls = opts.expectedCalls ? opts.expectedCalls : null;
     const cancelGetOperationSpy = sinon.spy();
     const getOperationSpy = sinon.spy(() => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let resolver: any;
-      const promise = new Promise(resolve => {
+      let resolver: (value: unknown) => void = () => {};
+      let rejecter: (value: unknown) => void = () => {};
+      const promise = new Promise((resolve, reject) => {
         resolver = resolve;
+        rejecter = reject;
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (promise as any).cancel = cancelGetOperationSpy;
@@ -114,6 +115,8 @@ describe('longrunning', () => {
       if (remainingCalls && remainingCalls > 1) {
         resolver([PENDING_OP]);
         --remainingCalls;
+      } else if (opts.reject) {
+        rejecter(opts.reject);
       } else if (!opts.dontResolve) {
         resolver([opts.finalOperation || SUCCESSFUL_OP]);
       }
@@ -594,6 +597,42 @@ describe('longrunning', () => {
               assert.strictEqual(client.getOperation.callCount, expectedCalls);
               assert.strictEqual(err.code, FAKE_STATUS_CODE_1);
               assert.strictEqual(err.message, 'operation error');
+              done();
+            });
+          })
+          .catch(err => {
+            done(err);
+          });
+      });
+
+      it('getOperation failure emits an error', done => {
+        const func = (
+          argument: {},
+          metadata: {},
+          options: {},
+          callback: Function
+        ) => {
+          callback(null, PENDING_OP);
+        };
+        const expectedCalls = 3;
+        const googleError = new GoogleError('GetOperation call failed');
+        googleError.code = 8;
+        googleError.statusDetails = 'Quota exceeded';
+        const client = mockOperationsClient({
+          expectedCalls,
+          reject: googleError,
+        });
+        const apiCall = createApiCall(func, client);
+        apiCall({})
+          .then(responses => {
+            const operation = responses[0] as longrunning.Operation;
+            operation.on('complete', () => {
+              done(new Error('Should not get here.'));
+            });
+            operation.on('error', err => {
+              assert.strictEqual(client.getOperation.callCount, expectedCalls);
+              assert.strictEqual(err.code, googleError.code);
+              assert.strictEqual(err.message, googleError.message);
               done();
             });
           })
