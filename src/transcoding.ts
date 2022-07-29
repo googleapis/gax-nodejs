@@ -243,7 +243,10 @@ export function requestChangeCaseAndCleanup(
   if (!request || typeof request !== 'object') {
     return request;
   }
-  const fieldsToChangeWithFunc = fieldsToChange?.map(x => caseChangeFunc(x));
+  const fieldsToChangeWithFunc = new Set(
+    fieldsToChange?.map(x => caseChangeFunc(x))
+  );
+
   const convertedRequest: JSONObject = {};
   for (const field in request) {
     // cleaning up inherited properties
@@ -255,10 +258,7 @@ export function requestChangeCaseAndCleanup(
     // Here, we want to check if the fields in the proto match
     // the fields we are changing; if not, we assume it's user
     // input and revert back to its original form
-    if (
-      fieldsToChangeWithFunc &&
-      !fieldsToChangeWithFunc?.includes(convertedField)
-    ) {
+    if (fieldsToChange && !fieldsToChangeWithFunc?.has(convertedField)) {
       convertedField = field;
     }
 
@@ -319,12 +319,7 @@ export function getAllFieldNames(
   if (fields) {
     for (const field in fields) {
       fieldNames.push(field);
-      if (
-        field &&
-        fields[field] &&
-        fields[field].resolvedType &&
-        (fields[field].resolvedType as Type).fields
-      ) {
+      if ((fields?.[field]?.resolvedType as Type)?.fields) {
         getAllFieldNames(
           (fields[field].resolvedType as Type).fields,
           fieldNames
