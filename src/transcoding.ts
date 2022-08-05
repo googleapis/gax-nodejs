@@ -355,6 +355,7 @@ export function transcode(
     camelToSnakeCase,
     fieldsToChange
   );
+  fieldsToChange = fieldsToChange?.map(x => camelToSnakeCase(x));
   const httpRules = [];
   for (const option of parsedOptions) {
     if (!(httpOptionName in option)) {
@@ -407,6 +408,7 @@ export function transcode(
           snakeToCamelCase,
           fieldsToChange
         );
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
         return {httpMethod, url, queryString: '', data: camelCaseData};
       }
 
@@ -443,6 +445,7 @@ export function transcode(
           snakeToCamelCase,
           fieldsToChange
         );
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
       }
       return {httpMethod, url, queryString, data: camelCaseData};
     }
