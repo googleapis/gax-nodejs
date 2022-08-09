@@ -99,7 +99,7 @@ export class GoogleError extends Error {
       delete error.code;
     }
     // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
-    // Rename "detials" to "statusDetails".
+    // Rename "details" to "statusDetails".
     if (error.details) {
       try {
         const statusDetailsObj: GRPCStatusDetailsObject =
