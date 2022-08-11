@@ -1,6 +1,7 @@
 **/node_modules
 **/coverage
 test/fixtures
+test/browser-test
 build/
 docs/
 protos/
