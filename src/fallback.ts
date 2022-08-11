@@ -46,7 +46,12 @@ import {google} from '../protos/http';
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
-export {CallSettings, constructSettings, RetryOptions} from './gax';
+export {
+  CallSettings,
+  constructSettings,
+  RetryOptions,
+  createDefaultBackoffSettings,
+} from './gax';
 export const version = require('../../package.json').version + '-fallback';
 
 export {
@@ -57,6 +62,10 @@ export {
 } from './descriptor';
 
 export {StreamType} from './streamingCalls/streaming';
+
+export {OperationsClient} from './operationsClient';
+export {IamClient} from './iamService';
+export {LocationsClient} from './locationService';
 
 export const defaultToObjectOptions = {
   keepCase: false,
@@ -365,16 +374,29 @@ export function lro(options: GrpcClientOptions) {
 export function createApiCall(
   func: Promise<GRPCCall> | GRPCCall,
   settings: gax.CallSettings,
-  descriptor?: Descriptor
+  descriptor?: Descriptor,
+  fallback?: boolean | 'proto' | 'rest'
 ): GaxCall {
   if (
+    (!fallback || fallback === 'rest') &&
     descriptor &&
     'streaming' in descriptor &&
     (descriptor as StreamDescriptor).type !== StreamType.SERVER_STREAMING
   ) {
     return () => {
       throw new Error(
-        'The gRPC-fallback client library (e.g. browser version of the library) currently does not support client-streaming or bidi-stream calls.'
+        'The REST transport currently does not support client-streaming or bidi-stream calls.'
+      );
+    };
+  }
+  if (
+    (fallback === 'proto' || fallback === true) && // for legacy reasons, fallback === true means 'proto'
+    descriptor &&
+    'streaming' in descriptor
+  ) {
+    return () => {
+      throw new Error(
+        'The gRPC-fallback (proto over HTTP) transport currently does not support streaming calls.'
       );
     };
   }
