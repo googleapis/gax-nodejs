@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,10 @@
  * limitations under the License.
  */
 
-const path = require('path');
-
 module.exports = {
-  entry: './src/fallback.ts',
-  output: {
-    library: 'Gax',
-    filename: './gax.js',
-  },
+  entry: './build/src/index.js',
   resolve: {
     extensions: ['.ts', '.js', '.json'],
-    alias: {
-      '../../package.json': path.resolve(__dirname, 'package.json'),
-      '../../protos/operations.json': path.resolve(
-        __dirname,
-        'protos/operations.json'
-      ),
-      '../../protos/status.json': path.resolve(__dirname, 'protos/status.json'),
-      '../../protos/iam_service.json': path.resolve(
-        __dirname,
-        'protos/iam_service.json'
-      ),
-    },
   },
   module: {
     rules: [
@@ -52,10 +34,19 @@ module.exports = {
         test: /node_modules[\\/]google-auth-library/,
         use: 'null-loader',
       },
+      {
+        test: /node_modules[\\/]@grpc[\\/]grpc-js/,
+        use: 'null-loader',
+      },
+      {
+        test: /build[\\/]src[\\/]grpc\.js$/,
+        use: 'null-loader',
+      },
     ],
   },
   node: {
     fs: 'empty',
+    child_process: 'empty',
   },
   mode: 'production',
 };

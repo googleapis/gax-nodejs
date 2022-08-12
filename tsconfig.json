@@ -10,9 +10,8 @@
   "include": [
     "src/*.ts",
     "src/*/*.ts",
-    "test/*.ts",
-    "test/*/*.ts",
-    "test/fixtures/google-gax-packaging-test-app/**/*.ts",
+    "test/system-test/*.ts",
+    "test/unit/*.ts",
     "tools/*.ts"
   ]
 }
