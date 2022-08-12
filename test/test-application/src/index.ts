@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,14 +71,19 @@ async function testShowcase() {
 
   await testEcho(fallbackClient);
   await testEchoError(fallbackClient);
+  await testExpandThrows(fallbackClient); // fallback does not support server streaming
   await testPagedExpand(fallbackClient);
-  await testWait(fallbackClient);
   await testPagedExpandAsync(fallbackClient);
+  await testCollectThrows(fallbackClient); // fallback does not support client streaming
+  await testChatThrows(fallbackClient); // fallback does not support bidi streaming
+  await testWait(fallbackClient);
 
   await testEcho(restClient);
-  await testExpand(restClient);
+  await testExpand(restClient); // REGAPIC supports server streaming
   await testPagedExpand(restClient);
   await testPagedExpandAsync(restClient);
+  await testCollectThrows(restClient); // REGAPIC does not support client streaming
+  await testChatThrows(restClient); // REGAPIC does not support bidi streaming
   await testWait(restClient);
 }
 
@@ -177,6 +182,23 @@ async function testExpand(client: EchoClient) {
   });
 }
 
+async function testExpandThrows(client: EchoClient) {
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const request = {
+    content: words.join(' '),
+  };
+  assert.throws(() => {
+    const stream = client.expand(request);
+    const result: string[] = [];
+    stream.on('data', (response: {content: string}) => {
+      result.push(response.content);
+    });
+    stream.on('end', () => {
+      assert.deepStrictEqual(words, result);
+    });
+  }, /currently does not support/);
+}
+
 async function testPagedExpand(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
@@ -215,25 +237,62 @@ async function testPagedExpandAsync(client: EchoClient) {
 async function testCollect(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const promise = new Promise<string>((resolve, reject) => {
-    const stream = client.collect((err, result) => {
-      console.log(err, result);
-      if (err || !result) {
-        reject(err);
-      } else {
-        resolve(result.content ?? '');
+    try {
+      const stream = client.collect((err, result) => {
+        if (err || !result) {
+          reject(err);
+        } else {
+          resolve(result.content ?? '');
+        }
+      });
+      for (const word of words) {
+        const request = {content: word};
+        stream.write(request);
       }
-    });
-    for (const word of words) {
-      const request = {content: word};
-      stream.write(request);
+      stream.on('data', (result: {content: String}) => {
+        assert.deepStrictEqual(result.content, words.join(' '));
+      });
+      stream.end();
+    } catch (err) {
+      reject(err);
     }
-    stream.on('data', (result: {content: String}) => {
-      assert.deepStrictEqual(result.content, words.join(' '));
-    });
-    stream.end();
   });
   const result = await promise;
   assert.strictEqual(result, words.join(' '));
+}
+
+async function testCollectThrows(client: EchoClient) {
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const promise = new Promise<string>((resolve, reject) => {
+    try {
+      const stream = client.collect((err, result) => {
+        if (err || !result) {
+          reject(err);
+        } else {
+          resolve(result.content ?? '');
+        }
+      });
+      for (const word of words) {
+        const request = {content: word};
+        stream.write(request);
+      }
+      stream.on('data', (result: {content: String}) => {
+        assert.deepStrictEqual(result.content, words.join(' '));
+      });
+      stream.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+  // We expect the promise to be rejected
+  promise.then(
+    () => {
+      assert(false);
+    },
+    (err: Error) => {
+      assert.match(err.message, /currently does not support/);
+    }
+  );
 }
 
 async function testChat(client: EchoClient) {
@@ -247,22 +306,68 @@ async function testChat(client: EchoClient) {
     'this',
     'one',
   ];
-  const result = await new Promise((resolve, reject) => {
-    const result: string[] = [];
-    const stream = client.chat();
-    stream.on('data', (response: {content: string}) => {
-      result.push(response.content);
-    });
-    stream.on('end', () => {
-      resolve(result);
-    });
-    stream.on('error', reject);
-    for (const word of words) {
-      stream.write({content: word});
+  const promise = new Promise((resolve, reject) => {
+    try {
+      const result: string[] = [];
+      const stream = client.chat();
+      stream.on('data', (response: {content: string}) => {
+        result.push(response.content);
+      });
+      stream.on('end', () => {
+        resolve(result);
+      });
+      stream.on('error', reject);
+      for (const word of words) {
+        stream.write({content: word});
+      }
+      stream.end();
+    } catch (err) {
+      reject(err);
     }
-    stream.end();
   });
+  const result = await promise;
   assert.deepStrictEqual(result, words);
+}
+
+async function testChatThrows(client: EchoClient) {
+  const words = [
+    'nobody',
+    'ever',
+    'reads',
+    'test',
+    'input',
+    'especially',
+    'this',
+    'one',
+  ];
+  const promise = new Promise((resolve, reject) => {
+    try {
+      const result: string[] = [];
+      const stream = client.chat();
+      stream.on('data', (response: {content: string}) => {
+        result.push(response.content);
+      });
+      stream.on('end', () => {
+        resolve(result);
+      });
+      stream.on('error', reject);
+      for (const word of words) {
+        stream.write({content: word});
+      }
+      stream.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+  // We expect the promise to be rejected
+  promise.then(
+    () => {
+      assert(false);
+    },
+    (err: Error) => {
+      assert.match(err.message, /currently does not support/);
+    }
+  );
 }
 
 async function testWait(client: EchoClient) {
