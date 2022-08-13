@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.1.4](https://github.com/googleapis/gax-nodejs/compare/v3.1.3...v3.1.4) (2022-07-20)
+
+
+### Bug Fixes
+
+* **deps:** do not depend on jsdoc ([#1298](https://github.com/googleapis/gax-nodejs/issues/1298)) ([a31b891](https://github.com/googleapis/gax-nodejs/commit/a31b891f75a3f933907f3f522b9d965f269dc7f1))
+* **deps:** update dependency protobufjs to v7 ([#1290](https://github.com/googleapis/gax-nodejs/issues/1290)) ([7d4a26b](https://github.com/googleapis/gax-nodejs/commit/7d4a26badc3776fd48ed4a65928f08c333a90482))
+* handle fetch errors ([#1294](https://github.com/googleapis/gax-nodejs/issues/1294)) ([39b06dd](https://github.com/googleapis/gax-nodejs/commit/39b06ddab10afdbe2b5af767f4798d51f94d805d))
+
 ## [3.1.3](https://github.com/googleapis/gax-nodejs/compare/v3.1.2...v3.1.3) (2022-07-01)
 
 
