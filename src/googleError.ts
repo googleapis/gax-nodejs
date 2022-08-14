@@ -110,7 +110,6 @@ export class GoogleError extends Error {
           statusDetailsObj.details.length > 0
         ) {
           error.statusDetails = statusDetailsObj.details;
-          delete error.details;
         }
         if (statusDetailsObj && statusDetailsObj.errorInfo) {
           error.reason = statusDetailsObj.errorInfo.reason;
