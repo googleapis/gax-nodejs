@@ -238,15 +238,11 @@ export function flattenObject(request: JSONObject): JSONObject {
 export function requestChangeCaseAndCleanup(
   request: JSONObject,
   caseChangeFunc: (key: string) => string,
-  fieldsToChange?: string[]
+  fieldsToChange?: Set<string>
 ) {
   if (!request || typeof request !== 'object') {
     return request;
   }
-  const fieldsToChangeWithFunc = new Set(
-    fieldsToChange?.map(x => caseChangeFunc(x))
-  );
-
   const convertedRequest: JSONObject = {};
   for (const field in request) {
     // cleaning up inherited properties
@@ -258,7 +254,7 @@ export function requestChangeCaseAndCleanup(
     // Here, we want to check if the fields in the proto match
     // the fields we are changing; if not, we assume it's user
     // input and revert back to its original form
-    if (fieldsToChange && !fieldsToChangeWithFunc?.has(convertedField)) {
+    if (!fieldsToChange?.has(convertedField)) {
       convertedField = field;
     }
 
@@ -349,13 +345,13 @@ export function transcode(
   let fieldsToChange = undefined;
   if (requestFields) {
     fieldsToChange = getAllFieldNames(requestFields, []);
+    fieldsToChange = fieldsToChange?.map(x => camelToSnakeCase(x));
   }
   const snakeRequest = requestChangeCaseAndCleanup(
     request,
     camelToSnakeCase,
-    fieldsToChange
+    new Set(fieldsToChange)
   );
-  fieldsToChange = fieldsToChange?.map(x => camelToSnakeCase(x));
   const httpRules = [];
   for (const option of parsedOptions) {
     if (!(httpOptionName in option)) {
@@ -403,12 +399,12 @@ export function transcode(
           }
         }
         // HTTP endpoint expects camelCase but we have snake_case at this point
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
         const camelCaseData = requestChangeCaseAndCleanup(
           data,
           snakeToCamelCase,
-          fieldsToChange
+          new Set(fieldsToChange)
         );
-        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
         return {httpMethod, url, queryString: '', data: camelCaseData};
       }
 
@@ -440,12 +436,12 @@ export function transcode(
       if (typeof data === 'string') {
         camelCaseData = data;
       } else {
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
         camelCaseData = requestChangeCaseAndCleanup(
           data,
           snakeToCamelCase,
-          fieldsToChange
+          new Set(fieldsToChange)
         );
-        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
       }
       return {httpMethod, url, queryString, data: camelCaseData};
     }
