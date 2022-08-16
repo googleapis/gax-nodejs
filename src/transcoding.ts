@@ -259,7 +259,6 @@ export function requestChangeCaseAndCleanup(
       fieldsToChange?.size !== 0 &&
       !fieldsToChange?.has(convertedField)
     ) {
-      console.log('do we even compare?');
       convertedField = field;
     }
 
