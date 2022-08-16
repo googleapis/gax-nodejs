@@ -254,7 +254,12 @@ export function requestChangeCaseAndCleanup(
     // Here, we want to check if the fields in the proto match
     // the fields we are changing; if not, we assume it's user
     // input and revert back to its original form
-    if (fieldsToChange && !fieldsToChange?.has(convertedField)) {
+    if (
+      fieldsToChange &&
+      fieldsToChange?.size !== 0 &&
+      !fieldsToChange?.has(convertedField)
+    ) {
+      console.log('do we even compare?');
       convertedField = field;
     }
 
