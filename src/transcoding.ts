@@ -18,7 +18,7 @@
 // https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#grpc-transcoding
 
 import {JSONObject, JSONValue} from 'proto3-json-serializer';
-import {Field} from 'protobufjs';
+import {Field, Type} from 'protobufjs';
 import {google} from '../protos/http';
 import {camelToSnakeCase, toCamelCase as snakeToCamelCase} from './util';
 
@@ -237,7 +237,8 @@ export function flattenObject(request: JSONObject): JSONObject {
 
 export function requestChangeCaseAndCleanup(
   request: JSONObject,
-  caseChangeFunc: (key: string) => string
+  caseChangeFunc: (key: string) => string,
+  fieldsToChange?: Set<string>
 ) {
   if (!request || typeof request !== 'object') {
     return request;
@@ -248,16 +249,33 @@ export function requestChangeCaseAndCleanup(
     if (!Object.prototype.hasOwnProperty.call(request, field)) {
       continue;
     }
-    const convertedField = caseChangeFunc(field);
+    let convertedField = caseChangeFunc(field);
+
+    // Here, we want to check if the fields in the proto match
+    // the fields we are changing; if not, we assume it's user
+    // input and revert back to its original form
+    if (
+      fieldsToChange &&
+      fieldsToChange?.size !== 0 &&
+      !fieldsToChange?.has(convertedField)
+    ) {
+      convertedField = field;
+    }
+
     const value = request[field];
     if (Array.isArray(value)) {
       convertedRequest[convertedField] = value.map(v =>
-        requestChangeCaseAndCleanup(v as JSONObject, caseChangeFunc)
+        requestChangeCaseAndCleanup(
+          v as JSONObject,
+          caseChangeFunc,
+          fieldsToChange
+        )
       );
     } else {
       convertedRequest[convertedField] = requestChangeCaseAndCleanup(
         value as JSONObject,
-        caseChangeFunc
+        caseChangeFunc,
+        fieldsToChange
       );
     }
   }
@@ -293,6 +311,25 @@ export function getFieldNameOnBehavior(
   return {requiredFields, optionalFields};
 }
 
+// This function gets all the fields recursively
+function getAllFieldNames(
+  fields: {[k: string]: Field} | undefined,
+  fieldNames: string[]
+) {
+  if (fields) {
+    for (const field in fields) {
+      fieldNames.push(field);
+      if ((fields?.[field]?.resolvedType as Type)?.fields) {
+        getAllFieldNames(
+          (fields[field].resolvedType as Type).fields,
+          fieldNames
+        );
+      }
+    }
+  }
+  return fieldNames;
+}
+
 export function transcode(
   request: JSONObject,
   parsedOptions: ParsedOptionsType,
@@ -309,7 +346,16 @@ export function transcode(
     }
   }
   // request is supposed to have keys in camelCase.
-  const snakeRequest = requestChangeCaseAndCleanup(request, camelToSnakeCase);
+  let fieldsToChange = undefined;
+  if (requestFields) {
+    fieldsToChange = getAllFieldNames(requestFields, []);
+    fieldsToChange = fieldsToChange?.map(x => camelToSnakeCase(x));
+  }
+  const snakeRequest = requestChangeCaseAndCleanup(
+    request,
+    camelToSnakeCase,
+    new Set(fieldsToChange)
+  );
   const httpRules = [];
   for (const option of parsedOptions) {
     if (!(httpOptionName in option)) {
@@ -357,9 +403,11 @@ export function transcode(
           }
         }
         // HTTP endpoint expects camelCase but we have snake_case at this point
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
         const camelCaseData = requestChangeCaseAndCleanup(
           data,
-          snakeToCamelCase
+          snakeToCamelCase,
+          new Set(fieldsToChange)
         );
         return {httpMethod, url, queryString: '', data: camelCaseData};
       }
@@ -392,7 +440,12 @@ export function transcode(
       if (typeof data === 'string') {
         camelCaseData = data;
       } else {
-        camelCaseData = requestChangeCaseAndCleanup(data, snakeToCamelCase);
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
+        camelCaseData = requestChangeCaseAndCleanup(
+          data,
+          snakeToCamelCase,
+          new Set(fieldsToChange)
+        );
       }
       return {httpMethod, url, queryString, data: camelCaseData};
     }
