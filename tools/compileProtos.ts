@@ -176,8 +176,12 @@ function fixDtsFile(dts: string): string {
   // 1. fix for pbts output: the corresponding protobufjs PR
   // https://github.com/protobufjs/protobuf.js/pull/1166
   // is merged but not yet released.
-  if (!dts.match(/import \* as Long/)) {
-    dts = 'import * as Long from "long";\n' + dts;
+  dts = dts.replace(
+    'import * as Long from "long";',
+    'import Long = require("long");'
+  );
+  if (!dts.match(/import Long = require/)) {
+    dts = 'import Long = require("long");' + dts;
   }
 
   // 2. fix protobufjs import: we don't want the libraries to
