@@ -25,7 +25,6 @@ import {hasWindowFetch, hasAbortController} from './featureDetection';
 import {AuthClient} from './fallback';
 import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
-import {GoogleError} from './googleError';
 
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
@@ -101,7 +100,7 @@ export function generateServiceStub(
         // and return a no-op canceler object.
         callback(err);
         return {
-          cancel() {}
+          cancel() {},
         };
       }
 
