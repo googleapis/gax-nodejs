@@ -41,9 +41,8 @@ import {
 } from '../../src/util';
 import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
-import {echoProtoJson} from '../fixtures/echoProtoJson';
+import echoProtoJson = require('../fixtures/echo.json');
 import {google} from '../../protos/http';
-import {GoogleError} from '../../src';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
@@ -194,6 +193,30 @@ describe('gRPC to HTTP transcoding', () => {
       transcode({unknownField: 'project'}, parsedOptions),
       undefined
     );
+  });
+
+  it('should not change user inputted fields to camel case', () => {
+    const root = protobuf.Root.fromJSON(testMessageJson);
+    const testMessageFields = root.lookupType('TestMessage').fields;
+    const request: RequestType = {
+      projectId: 'test-project',
+      content: 'test-content',
+      labels: {'i-am-vm': 'true'},
+    };
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'projects/{project_id}',
+          body: '*',
+        },
+      },
+    ];
+    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
+    assert.deepStrictEqual(transcoded?.data, {
+      content: 'test-content',
+      labels: {'i-am-vm': 'true'},
+    });
   });
 
   it('transcode should not decapitalize the first capital letter', () => {
@@ -590,9 +613,6 @@ describe('validate proto3 field with default value', () => {
           body: '*',
         },
       },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
     ];
     const transcoded = transcode(request, parsedOptions, badTestMessageFields);
     assert.deepStrictEqual(
@@ -600,16 +620,10 @@ describe('validate proto3 field with default value', () => {
       'projects/test-project/contents/test-content'
     );
   });
-  it('should throw error if required field has not been setted', () => {
-    const requests: RequestType[] = [
-      {
-        projectId: 'test-project',
-        content: 'undefined',
-      },
-      {
-        projectId: 'test-project',
-      },
-    ];
+  it('should throw error if required field has not been set', () => {
+    const request: RequestType = {
+      projectId: 'test-project',
+    };
     const parsedOptions: ParsedOptionsType = [
       {
         '(google.api.http)': {
@@ -617,16 +631,11 @@ describe('validate proto3 field with default value', () => {
           body: '*',
         },
       },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
     ];
-    for (const request of requests) {
-      assert.throws(
-        () => transcode(request, parsedOptions, testMessageFields),
-        /Error: Required field content is not present in the request/
-      );
-    }
+    assert.throws(
+      () => transcode(request, parsedOptions, testMessageFields),
+      /Error: Required field content is not present in the request/
+    );
   });
   it('when body="*", all required field should emitted in body', () => {
     const request: RequestType = {
@@ -651,17 +660,10 @@ describe('validate proto3 field with default value', () => {
     });
   });
   it('when body="*", unset optional field should remove from body', () => {
-    const requests: RequestType[] = [
-      {
-        projectId: 'test-project',
-        content: 'test-content',
-        optionalValue: 'undefined',
-      },
-      {
-        projectId: 'test-project',
-        content: 'test-content',
-      },
-    ];
+    const request: RequestType = {
+      projectId: 'test-project',
+      content: 'test-content',
+    };
     const parsedOptions: ParsedOptionsType = [
       {
         '(google.api.http)': {
@@ -670,27 +672,18 @@ describe('validate proto3 field with default value', () => {
         },
       },
     ];
-    for (const request of requests) {
-      const transcoded = transcode(request, parsedOptions, testMessageFields);
-      assert.deepStrictEqual(
-        (transcoded as TranscodedRequest)?.url,
-        'projects/test-project/contents/test-content'
-      );
-      assert.deepStrictEqual((transcoded as TranscodedRequest)?.data, {});
-    }
+    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    assert.deepStrictEqual(
+      (transcoded as TranscodedRequest)?.url,
+      'projects/test-project/contents/test-content'
+    );
+    assert.deepStrictEqual((transcoded as TranscodedRequest)?.data, {});
   });
   it('unset optional fields should not appear in query params', () => {
-    const requests: RequestType[] = [
-      {
-        projectId: 'test-project',
-        content: 'test-content',
-        optionalValue: 'undefined',
-      },
-      {
-        projectId: 'test-project',
-        content: 'test-content',
-      },
-    ];
+    const request: RequestType = {
+      projectId: 'test-project',
+      content: 'test-content',
+    };
     const parsedOptions: ParsedOptionsType = [
       {
         '(google.api.http)': {
@@ -702,18 +695,16 @@ describe('validate proto3 field with default value', () => {
         '(google.api.method_signature)': 'project_id, content',
       },
     ];
-    for (const request of requests) {
-      const transcoded = transcode(request, parsedOptions, testMessageFields);
-      assert.deepStrictEqual(
-        (transcoded as TranscodedRequest)?.url,
-        'projects/test-project'
-      );
-      assert.deepStrictEqual(
-        (transcoded as TranscodedRequest)?.data,
-        'test-content'
-      );
-      assert.deepStrictEqual((transcoded as TranscodedRequest).queryString, '');
-    }
+    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    assert.deepStrictEqual(
+      (transcoded as TranscodedRequest)?.url,
+      'projects/test-project'
+    );
+    assert.deepStrictEqual(
+      (transcoded as TranscodedRequest)?.data,
+      'test-content'
+    );
+    assert.deepStrictEqual((transcoded as TranscodedRequest).queryString, '');
   });
 });
 
