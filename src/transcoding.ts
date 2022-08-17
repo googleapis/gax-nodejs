@@ -312,7 +312,7 @@ export function getFieldNameOnBehavior(
 }
 
 // This function gets all the fields recursively
-export function getAllFieldNames(
+function getAllFieldNames(
   fields: {[k: string]: Field} | undefined,
   fieldNames: string[]
 ) {
