@@ -25,7 +25,7 @@ import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
-import {echoProtoJson} from '../fixtures/echoProtoJson';
+import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import {GoogleError} from '../../src';
 

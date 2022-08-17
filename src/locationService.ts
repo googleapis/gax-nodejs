@@ -47,8 +47,6 @@ export class LocationsClient {
   private _terminated = false;
   private _opts: ClientOptions;
   private _providedCustomServicePath: boolean;
-  private _gaxGrpc: GrpcClient | FallbackGrpcClient;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
   auth: GoogleAuth;
@@ -124,14 +122,11 @@ export class LocationsClient {
       opts['scopes'] = staticMembers.scopes;
     }
 
-    // Create a `gaxGrpc` object, with any grpc-specific options sent to the client.
-    this._gaxGrpc = new GrpcClient(opts);
-
     // Save options to use in initialize() method.
     this._opts = opts;
 
     // Save the auth object to the client, for use by other methods.
-    this.auth = this._gaxGrpc.auth as GoogleAuth;
+    this.auth = gaxGrpc.auth as GoogleAuth;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -146,15 +141,15 @@ export class LocationsClient {
       clientHeader.push(`gl-web/${version}`);
     }
     if (!opts.fallback) {
-      clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
+      clientHeader.push(`grpc/${gaxGrpc.grpcVersion}`);
     } else if (opts.fallback === 'rest') {
-      clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
+      clientHeader.push(`rest/${gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
     // Load the applicable protos.
-    this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
+    this._protos = gaxGrpc.loadProtoJSON(jsonProtos);
 
     // Some of the methods on this service return "paged" results,
     // (e.g. 50 results at a time, with tokens to get subsequent
@@ -168,7 +163,7 @@ export class LocationsClient {
     };
 
     // Put together the default options sent with requests.
-    this._defaults = this._gaxGrpc.constructSettings(
+    this._defaults = gaxGrpc.constructSettings(
       'google.cloud.location.Locations',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},

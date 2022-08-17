@@ -68,6 +68,22 @@ export class GoogleError extends Error {
         return 'error' in obj;
       });
     }
+
+    // fallback logic.
+    // related issue: https://github.com/googleapis/gax-nodejs/issues/1303
+    // google error mapping: https://cloud.google.com/apis/design/errors
+    // if input json doesn't have 'error' fields, wrap the whole object with 'error' field
+    if (!json['error']) {
+      json['error'] = {};
+
+      Object.keys(json)
+        .filter(key => key !== 'error')
+        .forEach(key => {
+          json['error'][key] = json[key];
+          delete json[key];
+        });
+    }
+
     const decoder = new GoogleErrorDecoder();
     const proto3Error = decoder.decodeHTTPError(json['error']);
     const error = Object.assign(
@@ -83,7 +99,7 @@ export class GoogleError extends Error {
       delete error.code;
     }
     // Keep consistency with gRPC statusDetails fields. gRPC details has been occupied before.
-    // Rename "detials" to "statusDetails".
+    // Rename "details" to "statusDetails".
     if (error.details) {
       try {
         const statusDetailsObj: GRPCStatusDetailsObject =
