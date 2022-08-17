@@ -28,7 +28,6 @@ import * as sinon from 'sinon';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import {GoogleError} from '../../src';
-import {StreamArrayParser} from '../../src/streamArrayParser';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
@@ -415,7 +414,7 @@ describe('grpc-fallback', () => {
     const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
-    (call as StreamArrayParser).cancel();
+    call.cancel();
 
     // @ts-ignore
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);

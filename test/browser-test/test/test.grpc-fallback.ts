@@ -19,7 +19,7 @@
 import * as assert from 'assert';
 import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
-import {protobuf, GoogleAuth, fallback, StreamArrayParser} from 'google-gax';
+import {protobuf, GoogleAuth, fallback} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 
 import echoProtoJson = require('showcase-echo-client/build/protos/protos.json');
@@ -216,7 +216,7 @@ describe('grpc-fallback', () => {
     const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
-    (call as StreamArrayParser).cancel();
+    call.cancel();
 
     // @ts-ignore
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);

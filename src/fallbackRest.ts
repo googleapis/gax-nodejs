@@ -46,16 +46,11 @@ export function encodeRequest(
     throw new Error(`Request to RPC ${rpc.name} must be an object.`);
   }
 
-  let transcoded;
-  try {
-    transcoded = transcode(
-      json,
-      rpc.parsedOptions,
-      rpc.resolvedRequestType!.fields
-    );
-  } catch (err) {
-    throw transcoded;
-  }
+  const transcoded = transcode(
+    json,
+    rpc.parsedOptions,
+    rpc.resolvedRequestType!.fields
+  );
 
   if (!transcoded) {
     throw new Error(

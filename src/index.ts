@@ -112,4 +112,3 @@ export {warn} from './warnings';
 
 import * as serializer from 'proto3-json-serializer';
 export {serializer};
-export {StreamArrayParser} from './streamArrayParser';

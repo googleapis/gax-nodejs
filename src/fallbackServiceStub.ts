@@ -38,7 +38,7 @@ export interface FallbackServiceStub {
     options: {},
     metadata: {},
     callback: (err?: Error, response?: {} | undefined) => void
-  ) => StreamArrayParser | {cancel: () => void} | Promise<GoogleError>;
+  ) => StreamArrayParser | {cancel: () => void};
 }
 
 export interface FetchParameters {
@@ -87,11 +87,6 @@ export function generateServiceStub(
       // We cannot use async-await in this function because we need to return the canceller object as soon as possible.
       // Using plain old promises instead.
 
-      const cancelController = hasAbortController()
-        ? new AbortController()
-        : new NodeAbortController();
-      const cancelSignal = cancelController.signal as AbortSignal;
-      let cancelRequested = false;
       let fetchParameters: FetchParameters;
       try {
         fetchParameters = requestEncoder(
@@ -102,8 +97,19 @@ export function generateServiceStub(
           request
         );
       } catch (err) {
-        return Promise.resolve(callback(err));
+        // we could not encode parameters; pass error to the callback
+        // and return a no-op canceler object.
+        callback(err);
+        return {
+          cancel() {}
+        };
       }
+
+      const cancelController = hasAbortController()
+        ? new AbortController()
+        : new NodeAbortController();
+      const cancelSignal = cancelController.signal as AbortSignal;
+      let cancelRequested = false;
       const url = fetchParameters.url;
       const headers = fetchParameters.headers;
       for (const key of Object.keys(options)) {
