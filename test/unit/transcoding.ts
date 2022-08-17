@@ -40,7 +40,7 @@ import {
 } from '../../src/util';
 import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
-import {echoProtoJson} from '../fixtures/echoProtoJson';
+import echoProtoJson = require('../fixtures/echo.json');
 import {google} from '../../protos/http';
 
 describe('gRPC to HTTP transcoding', () => {

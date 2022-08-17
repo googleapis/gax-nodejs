@@ -19,4 +19,6 @@ package-lock.json
 __pycache__
 doc/
 dist/
-google-gax-*.tgz
+*.tgz
+**/*.tgz
+test/showcase-echo-client/protos/protos.*

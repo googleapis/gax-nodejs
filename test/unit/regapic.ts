@@ -23,7 +23,7 @@ import * as nodeFetch from 'node-fetch';
 import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import {echoProtoJson} from '../fixtures/echoProtoJson';
+import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
