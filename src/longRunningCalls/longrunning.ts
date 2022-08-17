@@ -189,11 +189,20 @@ export class Operation extends EventEmitter {
       this._callOptions!
     );
 
-    const noCallbackPromise = this.currentCallPromise_!.then(responses => {
-      self.latestResponse = responses[0] as LROOperation;
-      self._unpackResponse(responses[0] as LROOperation, callback);
-      return promisifyResponse()!;
-    });
+    const noCallbackPromise = this.currentCallPromise_.then(
+      responses => {
+        self.latestResponse = responses[0] as LROOperation;
+        self._unpackResponse(responses[0] as LROOperation, callback);
+        return promisifyResponse()!;
+      },
+      (err: Error) => {
+        if (callback) {
+          callback(err);
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
 
     if (!callback) {
       return noCallbackPromise as Promise<{}>;
