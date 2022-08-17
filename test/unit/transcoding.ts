@@ -194,6 +194,30 @@ describe('gRPC to HTTP transcoding', () => {
     );
   });
 
+  it('should not change user inputted fields to camel case', () => {
+    const root = protobuf.Root.fromJSON(testMessageJson);
+    const testMessageFields = root.lookupType('TestMessage').fields;
+    const request: RequestType = {
+      projectId: 'test-project',
+      content: 'test-content',
+      labels: {'i-am-vm': 'true'},
+    };
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'projects/{project_id}',
+          body: '*',
+        },
+      },
+    ];
+    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
+    assert.deepStrictEqual(transcoded?.data, {
+      content: 'test-content',
+      labels: {'i-am-vm': 'true'},
+    });
+  });
+
   it('transcode should not decapitalize the first capital letter', () => {
     assert.deepStrictEqual(
       transcode(
