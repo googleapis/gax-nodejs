@@ -4,6 +4,23 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.2.0](https://github.com/googleapis/gax-nodejs/compare/v3.1.4...v3.2.0) (2022-08-17)
+
+
+### Features
+
+* add fallback logic in error handling ([#1309](https://github.com/googleapis/gax-nodejs/issues/1309)) ([6b12234](https://github.com/googleapis/gax-nodejs/commit/6b1223493a1a344bb1a0e77a0733388d7276be95))
+
+
+### Bug Fixes
+
+* do not use typeof when comparing to undefined ([#1300](https://github.com/googleapis/gax-nodejs/issues/1300)) ([b01bf8d](https://github.com/googleapis/gax-nodejs/commit/b01bf8d5b3dc3524f321474d87c41e82dc599950))
+* make browser and rest use case work ([#1311](https://github.com/googleapis/gax-nodejs/issues/1311)) ([adb7253](https://github.com/googleapis/gax-nodejs/commit/adb725364a3d5ba3e44ccea2f89c9e2c1142f570))
+* make sure we do not change casing for fields that are user inputs ([#1299](https://github.com/googleapis/gax-nodejs/issues/1299)) ([9b73ddd](https://github.com/googleapis/gax-nodejs/commit/9b73ddd7fcbfbe51cf642e93c1da5c4e4f5da19e))
+* require long instead of import ([#1313](https://github.com/googleapis/gax-nodejs/issues/1313)) ([325f497](https://github.com/googleapis/gax-nodejs/commit/325f497172409b7cf665a141c37dd6cf514dc45f))
+* return error if GetOperation call fails ([#1304](https://github.com/googleapis/gax-nodejs/issues/1304)) ([cb21ced](https://github.com/googleapis/gax-nodejs/commit/cb21cedd2568a003ec98ab7d73980a7b34d4f6ef))
+* return Google Error when there is a missing required parameter ([#1291](https://github.com/googleapis/gax-nodejs/issues/1291)) ([db73c27](https://github.com/googleapis/gax-nodejs/commit/db73c2794ea8ccf2a24f0b2dda6500a681ea3503))
+
 ## [3.1.4](https://github.com/googleapis/gax-nodejs/compare/v3.1.3...v3.1.4) (2022-07-20)
 
 
