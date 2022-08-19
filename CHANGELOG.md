@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.2.1](https://github.com/googleapis/gax-nodejs/compare/v3.2.0...v3.2.1) (2022-08-19)
+
+
+### Bug Fixes
+
+* add linebreak after require in the generated file ([#1317](https://github.com/googleapis/gax-nodejs/issues/1317)) ([fe354ac](https://github.com/googleapis/gax-nodejs/commit/fe354ac7c23c4b9dccd2d25ceb1e0bf8cd23ae54))
+
 ## [3.2.0](https://github.com/googleapis/gax-nodejs/compare/v3.1.4...v3.2.0) (2022-08-17)
 
 
