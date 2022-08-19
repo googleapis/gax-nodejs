@@ -181,7 +181,7 @@ function fixDtsFile(dts: string): string {
     'import Long = require("long");'
   );
   if (!dts.match(/import Long = require/)) {
-    dts = 'import Long = require("long");' + dts;
+    dts = 'import Long = require("long");\n' + dts;
   }
 
   // 2. fix protobufjs import: we don't want the libraries to
