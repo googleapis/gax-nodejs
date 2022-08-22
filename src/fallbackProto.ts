@@ -40,7 +40,7 @@ export function encodeRequest(
     'Content-Type': 'application/x-protobuf',
   };
 
-  const method = 'post';
+  const method = 'POST';
   const requestMessage = rpc.resolvedRequestType!.fromObject(request);
   const body = rpc.resolvedRequestType!.encode(requestMessage).finish();
   const url = `${protocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;

@@ -40,10 +40,12 @@ export interface FallbackServiceStub {
   ) => StreamArrayParser | {cancel: () => void};
 }
 
+export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
 export interface FetchParameters {
   headers: {[key: string]: string};
   body: Buffer | Uint8Array | string;
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
+  method: FetchParametersMethod;
   url: string;
 }
 
@@ -133,8 +135,8 @@ export function generateServiceStub(
             signal: cancelSignal,
           };
           if (
-            fetchParameters.method === 'get' ||
-            fetchParameters.method === 'delete'
+            fetchParameters.method === 'GET' ||
+            fetchParameters.method === 'DELETE'
           ) {
             delete fetchRequest['body'];
           }

@@ -18,7 +18,7 @@
 
 import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
-import {FetchParameters} from './fallbackServiceStub';
+import {FetchParameters, FetchParametersMethod} from './fallbackServiceStub';
 import {hasTextDecoder, hasTextEncoder} from './featureDetection';
 import {GoogleError} from './googleError';
 import {transcode} from './transcoding';
@@ -59,7 +59,7 @@ export function encodeRequest(
       }`
     );
   }
-  const method = transcoded.httpMethod;
+  const method = transcoded.httpMethod.toUpperCase() as FetchParametersMethod;
   const body = JSON.stringify(transcoded.data);
   const url = `${protocol}://${servicePath}:${servicePort}/${transcoded.url.replace(
     /^\//,
