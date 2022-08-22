@@ -59,6 +59,8 @@ export function encodeRequest(
       }`
     );
   }
+  // Converts httpMethod to method that permitted in standard Fetch API spec
+  // https://fetch.spec.whatwg.org/#methods
   const method = transcoded.httpMethod.toUpperCase() as FetchParametersMethod;
   const body = JSON.stringify(transcoded.data);
   const url = `${protocol}://${servicePath}:${servicePort}/${transcoded.url.replace(
