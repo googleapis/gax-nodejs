@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.2.2](https://github.com/googleapis/gax-nodejs/compare/v3.2.1...v3.2.2) (2022-08-25)
+
+
+### Bug Fixes
+
+* **deps:** set min version of node-fetch to 2.6.7 ([#1324](https://github.com/googleapis/gax-nodejs/issues/1324)) ([e52b6dc](https://github.com/googleapis/gax-nodejs/commit/e52b6dce300dd0bc55a3b693cf82219f425bce27))
+* remove pip install statements ([#1546](https://github.com/googleapis/gax-nodejs/issues/1546)) ([#1321](https://github.com/googleapis/gax-nodejs/issues/1321)) ([b7fee74](https://github.com/googleapis/gax-nodejs/commit/b7fee7480936380903f5c15ef96b257b19df4f7f))
+
 ## [3.2.1](https://github.com/googleapis/gax-nodejs/compare/v3.2.0...v3.2.1) (2022-08-19)
 
 
