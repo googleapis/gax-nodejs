@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-import {GoogleAuth, OAuth2Client} from 'google-auth-library';
+import type {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import {ClientOptions, Callback} from './clientInterface';
+import type {ClientOptions, Callback} from './clientInterface';
 
 import {GaxCall, ResultTuple, RequestType} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
-import {ClientStubOptions, GrpcClient} from './grpc';
-import {GrpcClient as FallbackGrpcClient} from './fallback';
+import type {ClientStubOptions, GrpcClient} from './grpc';
+import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import * as protos from '../protos/operations';
 import configData = require('./operations_client_config.json');
 import {Transform} from 'stream';
