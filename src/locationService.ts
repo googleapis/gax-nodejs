@@ -15,13 +15,13 @@
 /* global window */
 import * as gax from './gax';
 import {warn} from './warnings';
-import {GrpcClient} from './grpc';
-import {GrpcClient as FallbackGrpcClient} from './fallback';
+import type {GrpcClient} from './grpc';
+import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
-import {GoogleAuth} from 'google-auth-library';
+import type {GoogleAuth} from 'google-auth-library';
 import * as routingHeader from './routingHeader';
 import * as protos from '../protos/locations';
-import {
+import type {
   Descriptors,
   ClientOptions,
   Callback,

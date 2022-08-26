@@ -161,7 +161,7 @@ function fixJsFile(js: string): string {
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
     'require("protobufjs/minimal")',
-    'require("google-gax").protobufMinimal'
+    'require("google-gax/build/src/protobuf").protobufMinimal'
   );
 
   // 2. add Apache license to the generated .js file
@@ -173,9 +173,7 @@ function fixJsFile(js: string): string {
 }
 
 function fixDtsFile(dts: string): string {
-  // 1. fix for pbts output: the corresponding protobufjs PR
-  // https://github.com/protobufjs/protobuf.js/pull/1166
-  // is merged but not yet released.
+  // 1. fix for pbts output to make sure we import Long properly
   dts = dts.replace(
     'import * as Long from "long";',
     'import Long = require("long");'
@@ -188,7 +186,7 @@ function fixDtsFile(dts: string): string {
   // depend on protobufjs, so we re-export it from google-gax
   dts = dts.replace(
     'import * as $protobuf from "protobufjs"',
-    'import {protobuf as $protobuf} from "google-gax"'
+    'import type {protobuf as $protobuf} from "google-gax"'
   );
 
   // 3. add Apache license to the generated .d.ts file
