@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.3.0](https://github.com/googleapis/gax-nodejs/compare/v3.2.2...v3.3.0) (2022-08-26)
+
+
+### Features
+
+* export protobuf separately, avoid loading gRPC unless needed ([#1326](https://github.com/googleapis/gax-nodejs/issues/1326)) ([424df8e](https://github.com/googleapis/gax-nodejs/commit/424df8ef832d260a62700a90375819a60c6a463e))
+
+
+### Bug Fixes
+
+* Use uppercase method name when use fetch api ([#1320](https://github.com/googleapis/gax-nodejs/issues/1320)) ([a0360ef](https://github.com/googleapis/gax-nodejs/commit/a0360ef580dfcad3b8282225383eacd744e0df5c))
+
 ## [3.2.2](https://github.com/googleapis/gax-nodejs/compare/v3.2.1...v3.2.2) (2022-08-25)
 
 
