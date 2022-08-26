@@ -42,6 +42,9 @@ import {generateServiceStub} from './fallbackServiceStub';
 import {StreamType} from './streamingCalls/streaming';
 import {toLowerCamelCase} from './util';
 import {google} from '../protos/http';
+import * as IamProtos from '../protos/iam_service';
+import * as LocationProtos from '../protos/locations';
+import * as operationsProtos from '../protos/operations';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -347,6 +350,7 @@ export function lro(options: GrpcClientOptions) {
   const gaxGrpc = new GrpcClient(options);
   return new OperationsClientBuilder(gaxGrpc, options.protoJson);
 }
+export {operationsProtos, IamProtos, LocationProtos};
 
 /**
  * gRPC-fallback version of createApiCall
@@ -405,6 +409,9 @@ export function createApiCall(
 
 export {protobuf};
 export * as protobufMinimal from 'protobufjs/minimal';
+
+export {warn} from './warnings';
+export {Operation, operation} from './longRunningCalls/longrunning';
 
 // Different environments or bundlers may or may not respect "browser" field
 // in package.json (e.g. Electron does not respect it, but if you run the code
