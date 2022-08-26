@@ -70,7 +70,11 @@ describe('compileProtos tool', () => {
     assert(
       js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
-    assert(js.toString().includes('require("google-gax/build/src/protobuf").protobufMinimal'));
+    assert(
+      js
+        .toString()
+        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+    );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
     // check that it uses proper root object; it's taken from fixtures/package.json
@@ -85,7 +89,9 @@ describe('compileProtos tool', () => {
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
     assert(
-      ts.toString().includes('import type {protobuf as $protobuf} from "google-gax"')
+      ts
+        .toString()
+        .includes('import type {protobuf as $protobuf} from "google-gax"')
     );
     assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
@@ -106,7 +112,11 @@ describe('compileProtos tool', () => {
     assert(
       js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
-    assert(js.toString().includes('require("google-gax/build/src/protobuf").protobufMinimal'));
+    assert(
+      js
+        .toString()
+        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+    );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
     // check that it uses proper root object; it's taken from fixtures/package.json
@@ -121,7 +131,9 @@ describe('compileProtos tool', () => {
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
     assert(
-      ts.toString().includes('import type {protobuf as $protobuf} from "google-gax"')
+      ts
+        .toString()
+        .includes('import type {protobuf as $protobuf} from "google-gax"')
     );
     assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
