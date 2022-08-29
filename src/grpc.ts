@@ -531,14 +531,8 @@ export class GrpcClient {
    * @return {function(Object):number} - a function to compute the byte length
    *   for an object.
    */
-  static createByteLengthFunction(message: {
-    encode: (obj: {}) => {
-      finish: () => Array<{}>;
-    };
-  }) {
-    return function getByteLength(obj: {}) {
-      return message.encode(obj).finish().length;
-    };
+  static createByteLengthFunction(message: typeof protobuf.Message) {
+    return gax.createByteLengthFunction(message);
   }
 }
 
