@@ -18,8 +18,9 @@
 // https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#grpc-transcoding
 
 import {JSONObject, JSONValue} from 'proto3-json-serializer';
-import {Field} from 'protobufjs';
+import {Field, Type} from 'protobufjs';
 import {google} from '../protos/http';
+import {GoogleError} from './googleError';
 import {camelToSnakeCase, toCamelCase as snakeToCamelCase} from './util';
 
 export interface TranscodedRequest {
@@ -191,14 +192,14 @@ export function match(
     const [, before, field, pattern, after] = match;
     matchedFields.push(field);
     const fieldValue = getField(request, field);
-    if (typeof fieldValue === 'undefined') {
+    if (fieldValue === undefined) {
       return undefined;
     }
     const appliedPattern = applyPattern(
       pattern,
       fieldValue === null ? 'null' : fieldValue!.toString()
     );
-    if (typeof appliedPattern === 'undefined') {
+    if (appliedPattern === undefined) {
       return undefined;
     }
     url = before + appliedPattern + after;
@@ -210,7 +211,7 @@ export function match(
 export function flattenObject(request: JSONObject): JSONObject {
   const result: JSONObject = {};
   for (const key in request) {
-    if (typeof request[key] === 'undefined') {
+    if (request[key] === undefined) {
       continue;
     }
 
@@ -237,7 +238,8 @@ export function flattenObject(request: JSONObject): JSONObject {
 
 export function requestChangeCaseAndCleanup(
   request: JSONObject,
-  caseChangeFunc: (key: string) => string
+  caseChangeFunc: (key: string) => string,
+  fieldsToChange?: Set<string>
 ) {
   if (!request || typeof request !== 'object') {
     return request;
@@ -248,16 +250,33 @@ export function requestChangeCaseAndCleanup(
     if (!Object.prototype.hasOwnProperty.call(request, field)) {
       continue;
     }
-    const convertedField = caseChangeFunc(field);
+    let convertedField = caseChangeFunc(field);
+
+    // Here, we want to check if the fields in the proto match
+    // the fields we are changing; if not, we assume it's user
+    // input and revert back to its original form
+    if (
+      fieldsToChange &&
+      fieldsToChange?.size !== 0 &&
+      !fieldsToChange?.has(convertedField)
+    ) {
+      convertedField = field;
+    }
+
     const value = request[field];
     if (Array.isArray(value)) {
       convertedRequest[convertedField] = value.map(v =>
-        requestChangeCaseAndCleanup(v as JSONObject, caseChangeFunc)
+        requestChangeCaseAndCleanup(
+          v as JSONObject,
+          caseChangeFunc,
+          fieldsToChange
+        )
       );
     } else {
       convertedRequest[convertedField] = requestChangeCaseAndCleanup(
         value as JSONObject,
-        caseChangeFunc
+        caseChangeFunc,
+        fieldsToChange
       );
     }
   }
@@ -293,6 +312,25 @@ export function getFieldNameOnBehavior(
   return {requiredFields, optionalFields};
 }
 
+// This function gets all the fields recursively
+function getAllFieldNames(
+  fields: {[k: string]: Field} | undefined,
+  fieldNames: string[]
+) {
+  if (fields) {
+    for (const field in fields) {
+      fieldNames.push(field);
+      if ((fields?.[field]?.resolvedType as Type)?.fields) {
+        getAllFieldNames(
+          (fields[field].resolvedType as Type).fields,
+          fieldNames
+        );
+      }
+    }
+  }
+  return fieldNames;
+}
+
 export function transcode(
   request: JSONObject,
   parsedOptions: ParsedOptionsType,
@@ -302,14 +340,23 @@ export function transcode(
     getFieldNameOnBehavior(requestFields);
   // all fields annotated as REQUIRED MUST be emitted in the body.
   for (const requiredField of requiredFields) {
-    if (!(requiredField in request) || request[requiredField] === 'undefined') {
-      throw new Error(
+    if (!(requiredField in request) || request[requiredField] === undefined) {
+      throw new GoogleError(
         `Required field ${requiredField} is not present in the request.`
       );
     }
   }
   // request is supposed to have keys in camelCase.
-  const snakeRequest = requestChangeCaseAndCleanup(request, camelToSnakeCase);
+  let fieldsToChange = undefined;
+  if (requestFields) {
+    fieldsToChange = getAllFieldNames(requestFields, []);
+    fieldsToChange = fieldsToChange?.map(x => camelToSnakeCase(x));
+  }
+  const snakeRequest = requestChangeCaseAndCleanup(
+    request,
+    camelToSnakeCase,
+    new Set(fieldsToChange)
+  );
   const httpRules = [];
   for (const option of parsedOptions) {
     if (!(httpOptionName in option)) {
@@ -336,7 +383,7 @@ export function transcode(
         httpMethod as keyof google.api.IHttpRule
       ] as string;
       const matchResult = match(snakeRequest, pathTemplate);
-      if (typeof matchResult === 'undefined') {
+      if (matchResult === undefined) {
         continue;
       }
       const {url, matchedFields} = matchResult;
@@ -351,15 +398,17 @@ export function transcode(
         for (const key in data) {
           if (
             optionalFields.has(snakeToCamelCase(key)) &&
-            (!(key in snakeRequest) || snakeRequest[key] === 'undefined')
+            (!(key in snakeRequest) || snakeRequest[key] === undefined)
           ) {
             delete data[key];
           }
         }
         // HTTP endpoint expects camelCase but we have snake_case at this point
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
         const camelCaseData = requestChangeCaseAndCleanup(
           data,
-          snakeToCamelCase
+          snakeToCamelCase,
+          new Set(fieldsToChange)
         );
         return {httpMethod, url, queryString: '', data: camelCaseData};
       }
@@ -372,7 +421,7 @@ export function transcode(
         deleteField(queryStringObject, snakeToCamelCase(body));
         // Unset optional field should not add in body request.
         data =
-          optionalFields.has(body) && snakeRequest[body] === 'undefined'
+          optionalFields.has(body) && snakeRequest[body] === undefined
             ? ''
             : (snakeRequest[body] as JSONObject);
       }
@@ -381,7 +430,7 @@ export function transcode(
       }
       // Unset proto3 optional field does not appear in the query params.
       for (const key in queryStringObject) {
-        if (optionalFields.has(key) && request[key] === 'undefined') {
+        if (optionalFields.has(key) && request[key] === undefined) {
           delete queryStringObject[key];
         }
       }
@@ -392,7 +441,12 @@ export function transcode(
       if (typeof data === 'string') {
         camelCaseData = data;
       } else {
-        camelCaseData = requestChangeCaseAndCleanup(data, snakeToCamelCase);
+        fieldsToChange = fieldsToChange?.map(x => snakeToCamelCase(x));
+        camelCaseData = requestChangeCaseAndCleanup(
+          data,
+          snakeToCamelCase,
+          new Set(fieldsToChange)
+        );
       }
       return {httpMethod, url, queryString, data: camelCaseData};
     }

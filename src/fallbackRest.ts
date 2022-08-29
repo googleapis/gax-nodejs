@@ -18,24 +18,13 @@
 
 import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
-import {FetchParameters} from './fallbackServiceStub';
-import {hasTextDecoder, hasTextEncoder, isNodeJS} from './featureDetection';
+import {FetchParameters, FetchParametersMethod} from './fallbackServiceStub';
+import {hasTextDecoder, hasTextEncoder} from './featureDetection';
 import {GoogleError} from './googleError';
 import {transcode} from './transcoding';
 
 if (!hasTextEncoder() || !hasTextDecoder()) {
-  if (isNodeJS()) {
-    // Node.js 10 does not have global TextDecoder
-    // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const util = require('util');
-    Object.assign(global, {
-      TextDecoder: util.TextDecoder,
-      TextEncoder: util.TextEncoder,
-    });
-  } else {
-    require('fast-text-encoding');
-  }
+  require('fast-text-encoding');
 }
 
 export function encodeRequest(
@@ -56,11 +45,13 @@ export function encodeRequest(
   if (typeof json !== 'object' || Array.isArray(json)) {
     throw new Error(`Request to RPC ${rpc.name} must be an object.`);
   }
+
   const transcoded = transcode(
     json,
     rpc.parsedOptions,
     rpc.resolvedRequestType!.fields
   );
+
   if (!transcoded) {
     throw new Error(
       `Cannot build HTTP request for ${JSON.stringify(json)}, method: ${
@@ -68,7 +59,9 @@ export function encodeRequest(
       }`
     );
   }
-  const method = transcoded.httpMethod;
+  // Converts httpMethod to method that permitted in standard Fetch API spec
+  // https://fetch.spec.whatwg.org/#methods
+  const method = transcoded.httpMethod.toUpperCase() as FetchParametersMethod;
   const body = JSON.stringify(transcoded.data);
   const url = `${protocol}://${servicePath}:${servicePort}/${transcoded.url.replace(
     /^\//,

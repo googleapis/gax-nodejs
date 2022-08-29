@@ -4,6 +4,59 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.3.0](https://github.com/googleapis/gax-nodejs/compare/v3.2.2...v3.3.0) (2022-08-26)
+
+
+### Features
+
+* export protobuf separately, avoid loading gRPC unless needed ([#1326](https://github.com/googleapis/gax-nodejs/issues/1326)) ([424df8e](https://github.com/googleapis/gax-nodejs/commit/424df8ef832d260a62700a90375819a60c6a463e))
+
+
+### Bug Fixes
+
+* Use uppercase method name when use fetch api ([#1320](https://github.com/googleapis/gax-nodejs/issues/1320)) ([a0360ef](https://github.com/googleapis/gax-nodejs/commit/a0360ef580dfcad3b8282225383eacd744e0df5c))
+
+## [3.2.2](https://github.com/googleapis/gax-nodejs/compare/v3.2.1...v3.2.2) (2022-08-25)
+
+
+### Bug Fixes
+
+* **deps:** set min version of node-fetch to 2.6.7 ([#1324](https://github.com/googleapis/gax-nodejs/issues/1324)) ([e52b6dc](https://github.com/googleapis/gax-nodejs/commit/e52b6dce300dd0bc55a3b693cf82219f425bce27))
+* remove pip install statements ([#1546](https://github.com/googleapis/gax-nodejs/issues/1546)) ([#1321](https://github.com/googleapis/gax-nodejs/issues/1321)) ([b7fee74](https://github.com/googleapis/gax-nodejs/commit/b7fee7480936380903f5c15ef96b257b19df4f7f))
+
+## [3.2.1](https://github.com/googleapis/gax-nodejs/compare/v3.2.0...v3.2.1) (2022-08-19)
+
+
+### Bug Fixes
+
+* add linebreak after require in the generated file ([#1317](https://github.com/googleapis/gax-nodejs/issues/1317)) ([fe354ac](https://github.com/googleapis/gax-nodejs/commit/fe354ac7c23c4b9dccd2d25ceb1e0bf8cd23ae54))
+
+## [3.2.0](https://github.com/googleapis/gax-nodejs/compare/v3.1.4...v3.2.0) (2022-08-17)
+
+
+### Features
+
+* add fallback logic in error handling ([#1309](https://github.com/googleapis/gax-nodejs/issues/1309)) ([6b12234](https://github.com/googleapis/gax-nodejs/commit/6b1223493a1a344bb1a0e77a0733388d7276be95))
+
+
+### Bug Fixes
+
+* do not use typeof when comparing to undefined ([#1300](https://github.com/googleapis/gax-nodejs/issues/1300)) ([b01bf8d](https://github.com/googleapis/gax-nodejs/commit/b01bf8d5b3dc3524f321474d87c41e82dc599950))
+* make browser and rest use case work ([#1311](https://github.com/googleapis/gax-nodejs/issues/1311)) ([adb7253](https://github.com/googleapis/gax-nodejs/commit/adb725364a3d5ba3e44ccea2f89c9e2c1142f570))
+* make sure we do not change casing for fields that are user inputs ([#1299](https://github.com/googleapis/gax-nodejs/issues/1299)) ([9b73ddd](https://github.com/googleapis/gax-nodejs/commit/9b73ddd7fcbfbe51cf642e93c1da5c4e4f5da19e))
+* require long instead of import ([#1313](https://github.com/googleapis/gax-nodejs/issues/1313)) ([325f497](https://github.com/googleapis/gax-nodejs/commit/325f497172409b7cf665a141c37dd6cf514dc45f))
+* return error if GetOperation call fails ([#1304](https://github.com/googleapis/gax-nodejs/issues/1304)) ([cb21ced](https://github.com/googleapis/gax-nodejs/commit/cb21cedd2568a003ec98ab7d73980a7b34d4f6ef))
+* return Google Error when there is a missing required parameter ([#1291](https://github.com/googleapis/gax-nodejs/issues/1291)) ([db73c27](https://github.com/googleapis/gax-nodejs/commit/db73c2794ea8ccf2a24f0b2dda6500a681ea3503))
+
+## [3.1.4](https://github.com/googleapis/gax-nodejs/compare/v3.1.3...v3.1.4) (2022-07-20)
+
+
+### Bug Fixes
+
+* **deps:** do not depend on jsdoc ([#1298](https://github.com/googleapis/gax-nodejs/issues/1298)) ([a31b891](https://github.com/googleapis/gax-nodejs/commit/a31b891f75a3f933907f3f522b9d965f269dc7f1))
+* **deps:** update dependency protobufjs to v7 ([#1290](https://github.com/googleapis/gax-nodejs/issues/1290)) ([7d4a26b](https://github.com/googleapis/gax-nodejs/commit/7d4a26badc3776fd48ed4a65928f08c333a90482))
+* handle fetch errors ([#1294](https://github.com/googleapis/gax-nodejs/issues/1294)) ([39b06dd](https://github.com/googleapis/gax-nodejs/commit/39b06ddab10afdbe2b5af767f4798d51f94d805d))
+
 ## [3.1.3](https://github.com/googleapis/gax-nodejs/compare/v3.1.2...v3.1.3) (2022-07-01)
 
 

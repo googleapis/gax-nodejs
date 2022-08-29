@@ -55,7 +55,7 @@ module.exports = {
     ],
   },
   node: {
-    fs: 'empty', // TODO(@alexander-fenster) add util: 'empty' after Node.js 10 EOL
+    fs: 'empty',
   },
   mode: 'production',
 };

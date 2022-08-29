@@ -40,10 +40,12 @@ export interface FallbackServiceStub {
   ) => StreamArrayParser | {cancel: () => void};
 }
 
+export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
 export interface FetchParameters {
   headers: {[key: string]: string};
   body: Buffer | Uint8Array | string;
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
+  method: FetchParametersMethod;
   url: string;
 }
 
@@ -86,19 +88,29 @@ export function generateServiceStub(
       // We cannot use async-await in this function because we need to return the canceller object as soon as possible.
       // Using plain old promises instead.
 
+      let fetchParameters: FetchParameters;
+      try {
+        fetchParameters = requestEncoder(
+          rpc,
+          protocol,
+          servicePath,
+          servicePort,
+          request
+        );
+      } catch (err) {
+        // we could not encode parameters; pass error to the callback
+        // and return a no-op canceler object.
+        callback(err);
+        return {
+          cancel() {},
+        };
+      }
+
       const cancelController = hasAbortController()
         ? new AbortController()
         : new NodeAbortController();
       const cancelSignal = cancelController.signal as AbortSignal;
       let cancelRequested = false;
-
-      const fetchParameters = requestEncoder(
-        rpc,
-        protocol,
-        servicePath,
-        servicePort,
-        request
-      );
       const url = fetchParameters.url;
       const headers = fetchParameters.headers;
       for (const key of Object.keys(options)) {
@@ -123,8 +135,8 @@ export function generateServiceStub(
             signal: cancelSignal,
           };
           if (
-            fetchParameters.method === 'get' ||
-            fetchParameters.method === 'delete'
+            fetchParameters.method === 'GET' ||
+            fetchParameters.method === 'DELETE'
           ) {
             delete fetchRequest['body'];
           }

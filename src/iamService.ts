@@ -17,8 +17,8 @@
 // ** All changes to this file may be overwritten. **
 
 import * as gax from './gax';
-import {GrpcClient, ClientStubOptions} from './grpc';
-import {GrpcClient as FallbackGrpcClient} from './fallback';
+import type {GrpcClient, ClientStubOptions} from './grpc';
+import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
 import {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
@@ -26,7 +26,7 @@ import * as routingHeader from './routingHeader';
 import * as gapicConfig from './iam_policy_service_client_config.json';
 import * as protos from '../protos/iam_service';
 import * as fallback from './fallback';
-import {Descriptors, ClientOptions, Callback} from './clientInterface';
+import type {Descriptors, ClientOptions, Callback} from './clientInterface';
 let version = require('../../package.json').version;
 import jsonProtos = require('../protos/iam_service.json');
 
@@ -40,7 +40,6 @@ export class IamClient {
   private _defaults: {[method: string]: gax.CallSettings};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _protos: any;
-  private _gaxGrpc: GrpcClient | FallbackGrpcClient;
   auth?: GoogleAuth | OAuth2Client;
   descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}};
   innerApiCalls: {[name: string]: Function} = {};
@@ -65,9 +64,6 @@ export class IamClient {
       options
     ) as ClientOptions & ClientStubOptions;
     version = opts.fallback ? fallback.version : version;
-    this._gaxGrpc = opts.fallback
-      ? new FallbackGrpcClient(opts)
-      : new GrpcClient(opts);
     opts.scopes = (this.constructor as typeof IamClient).scopes;
     // Save options to use in initialize() method.
     this._opts = opts;
@@ -88,7 +84,7 @@ export class IamClient {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
     }
     // Load the applicable protos.
-    this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
+    this._protos = this.gaxGrpc.loadProtoJSON(jsonProtos);
     // Put together the default options sent with requests.
     this._defaults = gaxGrpc.constructSettings(
       'google.iam.v1.IAMPolicy',
