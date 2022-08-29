@@ -711,7 +711,10 @@ export function createByteLengthFunction(message: typeof Message) {
       return message.encode(obj).finish().length;
     } catch (err) {
       const stringified = JSON.stringify(obj);
-      warn('error_encoding_protobufjs_object', `Cannot encode protobuf.js object: ${stringified}: ${err}`);
+      warn(
+        'error_encoding_protobufjs_object',
+        `Cannot encode protobuf.js object: ${stringified}: ${err}`
+      );
       // We failed to encode the object properly, let's just return an upper boundary of its length.
       // It's only needed for calculating the size of the batch, so it's safe if it's bigger than needed.
       return stringified.length;
