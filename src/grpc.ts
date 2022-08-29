@@ -39,6 +39,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 // GoogleProtoFilesRoot below)
 import * as commonProtoFiles from './protosList.json';
 import {google} from '../protos/http';
+import {warn} from './warnings';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
   file.replace(/[/\\]/g, path.sep)
@@ -531,14 +532,8 @@ export class GrpcClient {
    * @return {function(Object):number} - a function to compute the byte length
    *   for an object.
    */
-  static createByteLengthFunction(message: {
-    encode: (obj: {}) => {
-      finish: () => Array<{}>;
-    };
-  }) {
-    return function getByteLength(obj: {}) {
-      return message.encode(obj).finish().length;
-    };
+  static createByteLengthFunction(message: typeof protobuf.Message) {
+    return gax.createByteLengthFunction(message);
   }
 }
 
