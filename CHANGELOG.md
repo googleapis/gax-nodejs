@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.3.1](https://github.com/googleapis/gax-nodejs/compare/v3.3.0...v3.3.1) (2022-08-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs to v7.1.0 ([#1329](https://github.com/googleapis/gax-nodejs/issues/1329)) ([fc5446e](https://github.com/googleapis/gax-nodejs/commit/fc5446ed35817a9dc70f311320cf458c04dcccb4))
+* **deps:** update dependency protobufjs-cli to v1.0.1 ([#1328](https://github.com/googleapis/gax-nodejs/issues/1328)) ([b810d37](https://github.com/googleapis/gax-nodejs/commit/b810d37acf8364a4b91f6ec778354d6d5101e7e1))
+* refactor createByteLengthFunction, warn if fails ([#1331](https://github.com/googleapis/gax-nodejs/issues/1331)) ([d27f7fa](https://github.com/googleapis/gax-nodejs/commit/d27f7fadb4afd619bb406f02be093b0997ea6190))
+
 ## [3.3.0](https://github.com/googleapis/gax-nodejs/compare/v3.2.2...v3.3.0) (2022-08-26)
 
 
