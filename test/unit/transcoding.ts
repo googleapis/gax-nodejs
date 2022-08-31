@@ -16,6 +16,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import * as path from 'path';
 import {describe, it} from 'mocha';
 import {RequestType} from '../../src/apitypes';
 import {
@@ -43,6 +44,12 @@ import * as protobuf from 'protobufjs';
 import {testMessageJson} from '../fixtures/fallbackOptional';
 import echoProtoJson = require('../fixtures/echo.json');
 import {google} from '../../protos/http';
+const recursiveProto = path.join(
+  __dirname,
+  '..',
+  'fixtures',
+  'recursive.proto'
+);
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
@@ -197,7 +204,7 @@ describe('gRPC to HTTP transcoding', () => {
 
   it('should not change user inputted fields to camel case', () => {
     const root = protobuf.Root.fromJSON(testMessageJson);
-    const testMessageFields = root.lookupType('TestMessage').fields;
+    const TestMessage = root.lookupType('TestMessage');
     const request: RequestType = {
       projectId: 'test-project',
       content: 'test-content',
@@ -211,11 +218,42 @@ describe('gRPC to HTTP transcoding', () => {
         },
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    const transcoded = transcode(request, parsedOptions, TestMessage);
     assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
     assert.deepStrictEqual(transcoded?.data, {
       content: 'test-content',
       labels: {'i-am-vm': 'true'},
+    });
+  });
+
+  it('should properly handle recursive messages', async () => {
+    const root = await new Promise<protobuf.Root>((resolve, reject) => {
+      protobuf.load(recursiveProto, (err, root) =>
+        err || !root ? reject(err) : resolve(root)
+      );
+    });
+    const Recursive = root.lookupType('Recursive');
+    const request = {
+      value: {
+        value: {
+          value: {},
+        },
+      },
+    };
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'url',
+          body: '*',
+        },
+      },
+    ];
+    const transcoded = transcode(request, parsedOptions, Recursive);
+    assert.deepEqual(transcoded, {
+      httpMethod: 'post',
+      url: 'url',
+      queryString: '',
+      data: request,
     });
   });
 
@@ -597,11 +635,10 @@ describe('gRPC to HTTP transcoding', () => {
 
 describe('validate proto3 field with default value', () => {
   const root = protobuf.Root.fromJSON(testMessageJson);
-  const testMessageFields = root.lookupType('TestMessage').fields;
+  const TestMessage = root.lookupType('TestMessage');
 
   // should we throw error?
   it('should required field if a field has both require annotation and optional', () => {
-    const badTestMessageFields = root.lookupType('TestMessage').fields;
     const request: RequestType = {
       projectId: 'test-project',
       content: 'test-content',
@@ -614,7 +651,7 @@ describe('validate proto3 field with default value', () => {
         },
       },
     ];
-    const transcoded = transcode(request, parsedOptions, badTestMessageFields);
+    const transcoded = transcode(request, parsedOptions, TestMessage);
     assert.deepStrictEqual(
       (transcoded as TranscodedRequest)?.url,
       'projects/test-project/contents/test-content'
@@ -633,7 +670,7 @@ describe('validate proto3 field with default value', () => {
       },
     ];
     assert.throws(
-      () => transcode(request, parsedOptions, testMessageFields),
+      () => transcode(request, parsedOptions, TestMessage),
       /Error: Required field content is not present in the request/
     );
   });
@@ -650,7 +687,7 @@ describe('validate proto3 field with default value', () => {
         },
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    const transcoded = transcode(request, parsedOptions, TestMessage);
     assert.deepStrictEqual(
       (transcoded as TranscodedRequest)?.url,
       'projects/test-project'
@@ -672,7 +709,7 @@ describe('validate proto3 field with default value', () => {
         },
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    const transcoded = transcode(request, parsedOptions, TestMessage);
     assert.deepStrictEqual(
       (transcoded as TranscodedRequest)?.url,
       'projects/test-project/contents/test-content'
@@ -695,7 +732,7 @@ describe('validate proto3 field with default value', () => {
         '(google.api.method_signature)': 'project_id, content',
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    const transcoded = transcode(request, parsedOptions, TestMessage);
     assert.deepStrictEqual(
       (transcoded as TranscodedRequest)?.url,
       'projects/test-project'

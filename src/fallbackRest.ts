@@ -49,7 +49,7 @@ export function encodeRequest(
   const transcoded = transcode(
     json,
     rpc.parsedOptions,
-    rpc.resolvedRequestType!.fields
+    rpc.resolvedRequestType
   );
 
   if (!transcoded) {

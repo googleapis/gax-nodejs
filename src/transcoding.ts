@@ -18,7 +18,7 @@
 // https://cloud.google.com/endpoints/docs/grpc-service-config/reference/rpc/google.api#grpc-transcoding
 
 import {JSONObject, JSONValue} from 'proto3-json-serializer';
-import {Field, Type} from 'protobufjs';
+import {Enum, Field, Namespace, Type} from 'protobufjs';
 import {google} from '../protos/http';
 import {GoogleError} from './googleError';
 import {camelToSnakeCase, toCamelCase as snakeToCamelCase} from './util';
@@ -295,36 +295,51 @@ export function isRequiredField(field: Field) {
   );
 }
 
-export function getFieldNameOnBehavior(
-  fields: {[k: string]: Field} | undefined
-) {
+export function getFieldNameOnBehavior(requestType?: Type) {
   const requiredFields = new Set<string>();
   const optionalFields = new Set<string>();
-  for (const fieldName in fields) {
-    const field = fields[fieldName];
-    if (isRequiredField(field)) {
+  for (const fieldName in requestType?.fields ?? []) {
+    const field = requestType?.fields[fieldName];
+    if (field && isRequiredField(field)) {
       requiredFields.add(fieldName);
     }
-    if (isProto3OptionalField(field)) {
+    if (field && isProto3OptionalField(field)) {
       optionalFields.add(fieldName);
     }
   }
   return {requiredFields, optionalFields};
 }
 
+// Get fully qualified protobuf type name
+function getFullyQualifiedTypeName(type: Type | Namespace | Enum | null) {
+  const parts = [];
+  while (type && type.name) {
+    parts.unshift(type.name);
+    type = type.parent;
+  }
+  return parts.join('.');
+}
+
 // This function gets all the fields recursively
 function getAllFieldNames(
-  fields: {[k: string]: Field} | undefined,
-  fieldNames: string[]
+  type: Type | Enum | null,
+  fieldNames: string[],
+  visited: Set<string>
 ) {
-  if (fields) {
-    for (const field in fields) {
+  if (!type) {
+    return fieldNames;
+  }
+  const name = getFullyQualifiedTypeName(type);
+  if (visited.has(name)) {
+    return fieldNames;
+  }
+  visited.add(name);
+
+  if ('fields' in type && type.fields) {
+    for (const field in type.fields) {
       fieldNames.push(field);
-      if ((fields?.[field]?.resolvedType as Type)?.fields) {
-        getAllFieldNames(
-          (fields[field].resolvedType as Type).fields,
-          fieldNames
-        );
+      if ((type.fields?.[field]?.resolvedType as Type)?.fields) {
+        getAllFieldNames(type.fields[field].resolvedType, fieldNames, visited);
       }
     }
   }
@@ -334,10 +349,11 @@ function getAllFieldNames(
 export function transcode(
   request: JSONObject,
   parsedOptions: ParsedOptionsType,
-  requestFields?: {[k: string]: Field}
+  requestType?: Type | null
 ): TranscodedRequest | undefined {
-  const {requiredFields, optionalFields} =
-    getFieldNameOnBehavior(requestFields);
+  const {requiredFields, optionalFields} = getFieldNameOnBehavior(
+    requestType ?? undefined
+  );
   // all fields annotated as REQUIRED MUST be emitted in the body.
   for (const requiredField of requiredFields) {
     if (!(requiredField in request) || request[requiredField] === undefined) {
@@ -348,8 +364,8 @@ export function transcode(
   }
   // request is supposed to have keys in camelCase.
   let fieldsToChange = undefined;
-  if (requestFields) {
-    fieldsToChange = getAllFieldNames(requestFields, []);
+  if (requestType?.fields) {
+    fieldsToChange = getAllFieldNames(requestType, [], new Set<string>());
     fieldsToChange = fieldsToChange?.map(x => camelToSnakeCase(x));
   }
   const snakeRequest = requestChangeCaseAndCleanup(
