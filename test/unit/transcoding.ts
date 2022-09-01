@@ -27,20 +27,13 @@ import {
   encodeWithoutSlashes,
   applyPattern,
   flattenObject,
-  deepCopy,
+  deepCopyWithoutMatchedFields,
   match,
   buildQueryStringComponents,
-  requestChangeCaseAndCleanup,
   overrideHttpRules,
-  TranscodedRequest,
 } from '../../src/transcoding';
 import * as assert from 'assert';
-import {
-  camelToSnakeCase,
-  toCamelCase as snakeToCamelCase,
-} from '../../src/util';
 import * as protobuf from 'protobufjs';
-import {testMessageJson} from '../fixtures/fallbackOptional';
 import echoProtoJson = require('../fixtures/echo.json');
 import {google} from '../../protos/http';
 
@@ -196,8 +189,6 @@ describe('gRPC to HTTP transcoding', () => {
   });
 
   it('should not change user inputted fields to camel case', () => {
-    const root = protobuf.Root.fromJSON(testMessageJson);
-    const testMessageFields = root.lookupType('TestMessage').fields;
     const request: RequestType = {
       projectId: 'test-project',
       content: 'test-content',
@@ -211,7 +202,7 @@ describe('gRPC to HTTP transcoding', () => {
         },
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
+    const transcoded = transcode(request, parsedOptions);
     assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
     assert.deepStrictEqual(transcoded?.data, {
       content: 'test-content',
@@ -502,7 +493,7 @@ describe('gRPC to HTTP transcoding', () => {
     );
   });
 
-  it('deepCopy', () => {
+  it('deepCopyWithoutMatchedFields', () => {
     const request = {
       field: {
         subfield: 42,
@@ -510,7 +501,10 @@ describe('gRPC to HTTP transcoding', () => {
       value: 'string',
       repeated: [1, 2, {a: 'b'}],
     };
-    const copy = deepCopy(request as RequestType);
+    const copy = deepCopyWithoutMatchedFields(
+      request as RequestType,
+      new Set()
+    );
     assert.deepStrictEqual(copy, request);
     request.field.subfield = 43;
     request.repeated[0] = -1;
@@ -518,6 +512,29 @@ describe('gRPC to HTTP transcoding', () => {
     assert.strictEqual((copy.field as RequestType).subfield, 42);
     assert.strictEqual((copy.repeated as RequestType[])[0], 1);
     assert.strictEqual((copy.repeated as RequestType[])[2].a, 'b');
+  });
+
+  it('deepCopyWithoutMatchedFields with some fields to skip', () => {
+    const request = {
+      field: {
+        subfield: 42,
+        another: 11,
+      },
+      value: 'string',
+      repeated: [1, 2, {a: 'b'}],
+    };
+    const expected = {
+      field: {
+        another: 11,
+      },
+      value: 'string',
+      repeated: [1, 2, {a: 'b'}],
+    };
+    const copy = deepCopyWithoutMatchedFields(
+      request as RequestType,
+      new Set(['field.subfield'])
+    );
+    assert.deepStrictEqual(copy, expected);
   });
 
   it('buildQueryStringComponents', () => {
@@ -543,168 +560,6 @@ describe('gRPC to HTTP transcoding', () => {
         'obj.y=z',
       ]
     );
-  });
-
-  it('requestChangeCaseAndCleanup', () => {
-    const request: RequestType = {
-      field: 'value',
-      listField: [
-        42,
-        {
-          field: 'value',
-          twoWords: {
-            nested: 'object',
-            threeWordsKeys: 42,
-            list: [1, 2, 3],
-          },
-        },
-        'string',
-      ],
-      objectField: {
-        field: 'value',
-        listField: [1, 2, 3],
-      },
-    };
-    const expectedSnakeCase = {
-      field: 'value',
-      list_field: [
-        42,
-        {
-          field: 'value',
-          two_words: {
-            nested: 'object',
-            three_words_keys: 42,
-            list: [1, 2, 3],
-          },
-        },
-        'string',
-      ],
-      object_field: {
-        field: 'value',
-        list_field: [1, 2, 3],
-      },
-    };
-    assert.deepStrictEqual(
-      requestChangeCaseAndCleanup(request, camelToSnakeCase),
-      expectedSnakeCase
-    );
-    assert.deepStrictEqual(
-      requestChangeCaseAndCleanup(expectedSnakeCase, snakeToCamelCase),
-      request
-    );
-  });
-});
-
-describe('validate proto3 field with default value', () => {
-  const root = protobuf.Root.fromJSON(testMessageJson);
-  const testMessageFields = root.lookupType('TestMessage').fields;
-
-  // should we throw error?
-  it('should required field if a field has both require annotation and optional', () => {
-    const badTestMessageFields = root.lookupType('TestMessage').fields;
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}/contents/{content}',
-          body: '*',
-        },
-      },
-    ];
-    const transcoded = transcode(request, parsedOptions, badTestMessageFields);
-    assert.deepStrictEqual(
-      (transcoded as TranscodedRequest)?.url,
-      'projects/test-project/contents/test-content'
-    );
-  });
-  it('should throw error if required field has not been set', () => {
-    const request: RequestType = {
-      projectId: 'test-project',
-    };
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: '*',
-        },
-      },
-    ];
-    assert.throws(
-      () => transcode(request, parsedOptions, testMessageFields),
-      /Error: Required field content is not present in the request/
-    );
-  });
-  it('when body="*", all required field should emitted in body', () => {
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: '*',
-        },
-      },
-    ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(
-      (transcoded as TranscodedRequest)?.url,
-      'projects/test-project'
-    );
-    assert.deepStrictEqual((transcoded as TranscodedRequest)?.data, {
-      content: 'test-content',
-    });
-  });
-  it('when body="*", unset optional field should remove from body', () => {
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}/contents/{content}',
-          body: '*',
-        },
-      },
-    ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(
-      (transcoded as TranscodedRequest)?.url,
-      'projects/test-project/contents/test-content'
-    );
-    assert.deepStrictEqual((transcoded as TranscodedRequest)?.data, {});
-  });
-  it('unset optional fields should not appear in query params', () => {
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: 'content',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(
-      (transcoded as TranscodedRequest)?.url,
-      'projects/test-project'
-    );
-    assert.deepStrictEqual(
-      (transcoded as TranscodedRequest)?.data,
-      'test-content'
-    );
-    assert.deepStrictEqual((transcoded as TranscodedRequest).queryString, '');
   });
 });
 
