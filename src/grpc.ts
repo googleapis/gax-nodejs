@@ -49,6 +49,7 @@ export interface GrpcClientOptions extends GoogleAuthOptions {
   grpc?: GrpcModule;
   protoJson?: protobuf.Root;
   httpRules?: Array<google.api.IHttpRule>;
+  numericEnums?: boolean;
 }
 
 export interface MetadataValue {

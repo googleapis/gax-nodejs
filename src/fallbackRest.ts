@@ -32,13 +32,16 @@ export function encodeRequest(
   protocol: string,
   servicePath: string,
   servicePort: number,
-  request: {}
+  request: {},
+  numericEnums: boolean
 ): FetchParameters {
   const headers: {[key: string]: string} = {
     'Content-Type': 'application/json',
   };
   const message = rpc.resolvedRequestType!.fromObject(request);
-  const json = serializer.toProto3JSON(message);
+  const json = serializer.toProto3JSON(message, {
+    numericEnums,
+  });
   if (!json) {
     throw new Error(`Cannot send null request to RPC ${rpc.name}.`);
   }
@@ -55,6 +58,13 @@ export function encodeRequest(
       }`
     );
   }
+
+  // If numeric enums feature is requested, add extra parameter to the query string
+  if (numericEnums) {
+    transcoded.queryString =
+      (transcoded.queryString ? '&' : '') + '$alt=json%3Benum-encoding=int';
+  }
+
   // Converts httpMethod to method that permitted in standard Fetch API spec
   // https://fetch.spec.whatwg.org/#methods
   const method = transcoded.httpMethod.toUpperCase() as FetchParametersMethod;
