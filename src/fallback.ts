@@ -30,7 +30,7 @@ import {
   BaseExternalAccountClient,
 } from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
-import {GrpcClientOptions, ClientStubOptions} from './grpc';
+import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor, StreamDescriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
@@ -98,6 +98,7 @@ export class GrpcClient {
   grpcVersion: string;
   private static protoCache = new Map<string, protobuf.Root>();
   httpRules?: Array<google.api.IHttpRule>;
+  numericEnums: boolean;
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -137,6 +138,7 @@ export class GrpcClient {
     this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
     this.grpcVersion = require('../../package.json').version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
+    this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
   }
 
   /**
@@ -329,7 +331,8 @@ export class GrpcClient {
       servicePort,
       this.authClient,
       encoder,
-      decoder
+      decoder,
+      this.numericEnums
     );
 
     return serviceStub;
