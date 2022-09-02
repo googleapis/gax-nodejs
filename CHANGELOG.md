@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.4.0](https://github.com/googleapis/gax-nodejs/compare/v3.3.1...v3.4.0) (2022-09-02)
+
+
+### Features
+
+* Numeric enums for REST transport ([#1335](https://github.com/googleapis/gax-nodejs/issues/1335)) ([c6286cb](https://github.com/googleapis/gax-nodejs/commit/c6286cb73b6cdb5afa4cdb5df51a3deb222b0113))
+
+
+### Bug Fixes
+
+* **REST:** Do not perform any runtime verification ([#1333](https://github.com/googleapis/gax-nodejs/issues/1333)) ([f655f42](https://github.com/googleapis/gax-nodejs/commit/f655f42805fcd9b1eb19ee0185e751a468618638))
+
 ## [3.3.1](https://github.com/googleapis/gax-nodejs/compare/v3.3.0...v3.3.1) (2022-08-29)
 
 
