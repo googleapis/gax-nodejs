@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.0](https://github.com/googleapis/gax-nodejs/compare/v3.4.0...v3.5.0) (2022-09-07)
+
+
+### Features
+
+* MinifyProtoJson script exported as a bin ([#1340](https://github.com/googleapis/gax-nodejs/issues/1340)) ([7956eb6](https://github.com/googleapis/gax-nodejs/commit/7956eb6922ed9b8a7916ab178e2d295ebf443ce9))
+
+
+### Bug Fixes
+
+* Minify all common proto JSON files ([#1338](https://github.com/googleapis/gax-nodejs/issues/1338)) ([7569cc8](https://github.com/googleapis/gax-nodejs/commit/7569cc8e388791495f860e72fdcd3a4c51d88f71))
+
 ## [3.4.0](https://github.com/googleapis/gax-nodejs/compare/v3.3.1...v3.4.0) (2022-09-02)
 
 
