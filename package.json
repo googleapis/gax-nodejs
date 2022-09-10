@@ -15,7 +15,7 @@
     "minifyProtoJson": "build/tools/minify.js"
   },
   "dependencies": {
-    "@grpc/grpc-js": "~1.6.0",
+    "@grpc/grpc-js": "~1.7.0",
     "@grpc/proto-loader": "^0.7.0",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
