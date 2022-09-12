@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.1](https://github.com/googleapis/gax-nodejs/compare/v3.5.0...v3.5.1) (2022-09-12)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @grpc/grpc-js to ~1.7.0 ([#1341](https://github.com/googleapis/gax-nodejs/issues/1341)) ([a1c2866](https://github.com/googleapis/gax-nodejs/commit/a1c286614e6c26889efab58000662f576dbac14a))
+* **deps:** Update dependency protobufjs to v7.1.1 ([#1343](https://github.com/googleapis/gax-nodejs/issues/1343)) ([e341743](https://github.com/googleapis/gax-nodejs/commit/e341743e4630faa86daf44454406c41762b6a6b5))
+* **deps:** Update dependency protobufjs-cli to v1.0.2 ([#1344](https://github.com/googleapis/gax-nodejs/issues/1344)) ([7f4db1d](https://github.com/googleapis/gax-nodejs/commit/7f4db1d2691cf1c24a75645e5d482ba0b55c5245))
+
 ## [3.5.0](https://github.com/googleapis/gax-nodejs/compare/v3.4.0...v3.5.0) (2022-09-07)
 
 
