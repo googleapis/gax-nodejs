@@ -9,5 +9,6 @@
   "repo": "googleapis/gax-nodejs",
   "distribution_name": "google-gax",
   "api_id": "",
-  "requires_billing": false
+  "requires_billing": false,
+  "codeowner_team": "@googleapis/actools"
 }

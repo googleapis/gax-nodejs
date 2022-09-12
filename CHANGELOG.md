@@ -4,6 +4,39 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.0](https://github.com/googleapis/gax-nodejs/compare/v3.4.0...v3.5.0) (2022-09-07)
+
+
+### Features
+
+* MinifyProtoJson script exported as a bin ([#1340](https://github.com/googleapis/gax-nodejs/issues/1340)) ([7956eb6](https://github.com/googleapis/gax-nodejs/commit/7956eb6922ed9b8a7916ab178e2d295ebf443ce9))
+
+
+### Bug Fixes
+
+* Minify all common proto JSON files ([#1338](https://github.com/googleapis/gax-nodejs/issues/1338)) ([7569cc8](https://github.com/googleapis/gax-nodejs/commit/7569cc8e388791495f860e72fdcd3a4c51d88f71))
+
+## [3.4.0](https://github.com/googleapis/gax-nodejs/compare/v3.3.1...v3.4.0) (2022-09-02)
+
+
+### Features
+
+* Numeric enums for REST transport ([#1335](https://github.com/googleapis/gax-nodejs/issues/1335)) ([c6286cb](https://github.com/googleapis/gax-nodejs/commit/c6286cb73b6cdb5afa4cdb5df51a3deb222b0113))
+
+
+### Bug Fixes
+
+* **REST:** Do not perform any runtime verification ([#1333](https://github.com/googleapis/gax-nodejs/issues/1333)) ([f655f42](https://github.com/googleapis/gax-nodejs/commit/f655f42805fcd9b1eb19ee0185e751a468618638))
+
+## [3.3.1](https://github.com/googleapis/gax-nodejs/compare/v3.3.0...v3.3.1) (2022-08-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs to v7.1.0 ([#1329](https://github.com/googleapis/gax-nodejs/issues/1329)) ([fc5446e](https://github.com/googleapis/gax-nodejs/commit/fc5446ed35817a9dc70f311320cf458c04dcccb4))
+* **deps:** update dependency protobufjs-cli to v1.0.1 ([#1328](https://github.com/googleapis/gax-nodejs/issues/1328)) ([b810d37](https://github.com/googleapis/gax-nodejs/commit/b810d37acf8364a4b91f6ec778354d6d5101e7e1))
+* refactor createByteLengthFunction, warn if fails ([#1331](https://github.com/googleapis/gax-nodejs/issues/1331)) ([d27f7fa](https://github.com/googleapis/gax-nodejs/commit/d27f7fadb4afd619bb406f02be093b0997ea6190))
+
 ## [3.3.0](https://github.com/googleapis/gax-nodejs/compare/v3.2.2...v3.3.0) (2022-08-26)
 
 
