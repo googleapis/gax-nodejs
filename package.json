@@ -21,11 +21,11 @@
     "fast-text-encoding": "^1.0.3",
     "google-auth-library": "^8.0.2",
     "is-stream-ended": "^0.1.4",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^1.0.0",
-    "protobufjs": "7.1.0",
-    "protobufjs-cli": "1.0.1",
+    "protobufjs": "7.1.1",
+    "protobufjs-cli": "1.0.2",
     "retry-request": "^5.0.0"
   },
   "devDependencies": {
