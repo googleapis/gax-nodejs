@@ -289,7 +289,7 @@ calls, the client library will perform the page polling for you by default.
 
 The recommended way of working with API that provides paging is to call `*Async`
 method that returns an asynchronous iterator that can be iterated using `for
-async` loop. E.g. for a method called `samplePaginatedMethod` the client library
+await` loop. E.g. for a method called `samplePaginatedMethod` the client library
 provides a method called `samplePaginatedMethodAsync` which can be used like this:
 ```ts
 const iterable = client.samplePaginagedMethodAsync(request);
