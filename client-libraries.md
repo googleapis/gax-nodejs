@@ -307,11 +307,13 @@ and those requests will hit your quota.
 ```ts
 const [resultArray] = await client.samplePaginatedMethod(request);
 ```
-
-The auto-pagination functionality can be disabled by passing `autoPaginate: false` as a
-request option (the second parameter). In this case, the resulting promise will resolve to
-an array:
+If you want to specify the `pageSize` parameter in the request, it should be done along
+with disabling auto-pagination. The auto-pagination functionality can be disabled by 
+passing `autoPaginate: false` as a request option (the second parameter). In this case, 
+the resulting promise will resolve to an array:
 ```ts
+
+const request = {request, pageSize: 50}
 const [resultArray, nextPageRequest, rawResponse] =
   await client.samplePaginatedMethod(request, {autoPaginate: false});
 ```
