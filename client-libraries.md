@@ -289,7 +289,7 @@ calls, the client library will perform the page polling for you by default.
 
 The recommended way of working with API that provides paging is to call `*Async`
 method that returns an asynchronous iterator that can be iterated using `for
-async` loop. E.g. for a method called `samplePaginatedMethod` the client library
+await` loop. E.g. for a method called `samplePaginatedMethod` the client library
 provides a method called `samplePaginatedMethodAsync` which can be used like this:
 ```ts
 const iterable = client.samplePaginagedMethodAsync(request);
@@ -307,11 +307,13 @@ and those requests will hit your quota.
 ```ts
 const [resultArray] = await client.samplePaginatedMethod(request);
 ```
-
-The auto-pagination functionality can be disabled by passing `autoPaginate: false` as a
-request option (the second parameter). In this case, the resulting promise will resolve to
-an array:
+If you want to specify the `pageSize` parameter in the request, it should be done along
+with disabling auto-pagination. The auto-pagination functionality can be disabled by 
+passing `autoPaginate: false` as a request option (the second parameter). In this case, 
+the resulting promise will resolve to an array:
 ```ts
+
+const request = {request, pageSize: 50}
 const [resultArray, nextPageRequest, rawResponse] =
   await client.samplePaginatedMethod(request, {autoPaginate: false});
 ```
