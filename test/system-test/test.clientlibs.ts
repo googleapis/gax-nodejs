@@ -54,7 +54,7 @@ async function latestRelease(
   // regex escape characters in template literal need to be escaped twice
   const filterPattern = inMonorepo
     ? new RegExp(`^${cwd}-v{0,1}(\\d+)\\.(\\d)+\\.(\\d+)$`)
-    : /^v(\d+)\.(\d+)\.(\d+)$/;
+    : new RegExp('^v(\\d+)\\.(\\d+)\\.(\\d+)$');
   const tags = stdout
     .split('\n')
     .filter(str => str.match(filterPattern))
@@ -164,16 +164,7 @@ describe('Run system tests for some libraries', () => {
     process.chdir(testDir);
     console.log(`Running tests in ${testDir}.`);
   });
-  // Video intelligence API has long running operations
-  // Video intelligence is in the google-cloud-node monorepo
-  describe('video-intelligence', () => {
-    before(async () => {
-      await preparePackage('video-intelligence', true);
-    });
-    it('should pass system tests', async () => {
-      await runSystemTest('video-intelligence', true);
-    });
-  });
+
   // Speech has unary, LRO, and streaming
   // Speech is not in the monorepo
   describe('speech', () => {
