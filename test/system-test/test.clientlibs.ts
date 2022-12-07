@@ -27,6 +27,9 @@ const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
 const baseRepoUrl = 'https://github.com/googleapis/';
+const monoRepoBaseRepoUrl = 'https://github.com/googleapis/google-cloud-node';
+const clonedRepos: Array<string> = []; // keeps track of already cloned repos
+const monoRepoDirectory = 'google-cloud-node';
 const testDir = path.join(process.cwd(), '.system-test-run');
 const gaxDir = path.resolve(__dirname, '..', '..', '..');
 
@@ -36,14 +39,28 @@ const gaxDir = path.resolve(__dirname, '..', '..', '..');
 const pkg = require('../../../package.json');
 const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
 
-async function latestRelease(cwd: string): Promise<string> {
-  const {stdout} = await execa('git', ['tag', '--list'], {cwd});
+async function latestRelease(
+  cwd: string,
+  inMonorepo: boolean
+): Promise<string> {
+  // tags in the monorepo follow the format <libraryname>-major.minor.patch e.g. batch-0.0.1
+  // or the format <libraryname>-vmajor.minor.patch e.g. batch-v0.0.1
+  // tags in individual repos follow the format vmajor.minor.patch e.g. v0.0.1
+  const {stdout} = inMonorepo
+    ? await execa('git', ['tag', '--list', `${cwd}-*`], {
+        cwd: monoRepoDirectory,
+      })
+    : await execa('git', ['tag', '--list'], {cwd});
+  // regex escape characters in template literal need to be escaped twice
+  const filterPattern = inMonorepo
+    ? new RegExp(`^${cwd}-v{0,1}(\\d+)\\.(\\d)+\\.(\\d+)$`)
+    : new RegExp('^v(\\d+)\\.(\\d+)\\.(\\d+)$');
   const tags = stdout
     .split('\n')
-    .filter(str => str.match(/^v\d+\.\d+\.\d+$/))
+    .filter(str => str.match(filterPattern))
     .sort((tag1: string, tag2: string): number => {
-      const match1 = tag1.match(/^v(\d+)\.(\d+)\.(\d+)$/);
-      const match2 = tag2.match(/^v(\d+)\.(\d+)\.(\d+)$/);
+      const match1 = tag1.match(filterPattern);
+      const match2 = tag2.match(filterPattern);
       if (!match1 || !match2) {
         throw new Error(`Cannot compare git tags ${tag1} and ${tag2}`);
       }
@@ -60,33 +77,75 @@ async function latestRelease(cwd: string): Promise<string> {
   return tags[tags.length - 1];
 }
 
-async function preparePackage(packageName: string): Promise<void> {
-  await execa(
-    'git',
-    ['clone', `${baseRepoUrl}${packageName}.git`, packageName],
-    {stdio: 'inherit'}
-  );
-  const tag = await latestRelease(packageName);
-  await execa('git', ['checkout', tag], {cwd: packageName, stdio: 'inherit'});
+// if a package in the monorepo has a hyphen in the name, its corresponding
+// directory in packages/ does not
+function monoRepoPackageSubdirectory(packageName: string): string {
+  return `${monoRepoDirectory}/packages/google-cloud-${packageName.replace(
+    '-',
+    ''
+  )}`;
+}
+async function preparePackage(
+  packageName: string,
+  inMonorepo: boolean
+): Promise<void> {
+  // clone googleapis/google-cloud node if monorepo, googleapis/nodejs-<package> if not
+  const repoUrl = inMonorepo
+    ? `${monoRepoBaseRepoUrl}.git`
+    : `${baseRepoUrl}${packageName}.git`;
+  // only clone a repo if we haven't done so already
+  if (!clonedRepos.includes(repoUrl)) {
+    try {
+      await execa(
+        'git',
+        ['clone', repoUrl, inMonorepo ? monoRepoDirectory : packageName],
+        {stdio: 'inherit'}
+      );
+      clonedRepos.push(repoUrl);
+    } catch (error: unknown) {
+      throw new Error(`Problem cloning monorepo: ${error}`);
+    }
+  }
 
-  const packageJson = path.join(packageName, 'package.json');
+  const tag = await latestRelease(packageName, inMonorepo);
+  await execa('git', ['checkout', tag], {
+    cwd: inMonorepo ? monoRepoDirectory : packageName,
+    stdio: 'inherit',
+  });
+
+  const packagePath = monoRepoPackageSubdirectory(packageName); // used if in monoRepo
+  const packageJson = path.join(
+    inMonorepo ? packagePath : packageName,
+    'package.json'
+  );
   const packageJsonStr = (await readFile(packageJson)).toString();
   const packageJsonObj = JSON.parse(packageJsonStr);
   packageJsonObj['dependencies']['google-gax'] = `file:${gaxTarball}`;
   await writeFile(packageJson, JSON.stringify(packageJsonObj, null, '  '));
-  await execa('npm', ['install'], {cwd: packageName, stdio: 'inherit'});
+  packageJsonObj['dependencies']['google-gax'] = `file:${gaxTarball}`;
+  await writeFile(packageJson, JSON.stringify(packageJsonObj, null, '  '));
+  await execa('npm', ['install'], {
+    cwd: inMonorepo ? packagePath : packageName,
+    stdio: 'inherit',
+  });
 }
 
-async function runSystemTest(packageName: string): Promise<void> {
+async function runSystemTest(
+  packageName: string,
+  inMonorepo: boolean
+): Promise<void> {
   await execa('npm', ['run', 'system-test'], {
-    cwd: packageName,
+    cwd: inMonorepo ? monoRepoPackageSubdirectory(packageName) : packageName,
     stdio: 'inherit',
   });
 }
 // nodejs-kms does not have system test.
-async function runSamplesTest(packageName: string): Promise<void> {
+async function runSamplesTest(
+  packageName: string,
+  inMonorepo: boolean
+): Promise<void> {
   await execa('npm', ['run', 'samples-test'], {
-    cwd: packageName,
+    cwd: inMonorepo ? monoRepoPackageSubdirectory(packageName) : packageName,
     stdio: 'inherit',
   });
 }
@@ -105,32 +164,26 @@ describe('Run system tests for some libraries', () => {
     process.chdir(testDir);
     console.log(`Running tests in ${testDir}.`);
   });
-  // Video intelligence API has long running operations
-  describe('video-intelligence', () => {
-    before(async () => {
-      await preparePackage('nodejs-video-intelligence');
-    });
-    it('should pass system tests', async () => {
-      await runSystemTest('nodejs-video-intelligence');
-    });
-  });
-  // Speech only has smoke tests, but still...
+
+  // Speech has unary, LRO, and streaming
+  // Speech is not in the monorepo
   describe('speech', () => {
     before(async () => {
-      await preparePackage('nodejs-speech');
+      await preparePackage('nodejs-speech', false);
     });
     it('should pass system tests', async () => {
-      await runSystemTest('nodejs-speech');
+      await runSystemTest('nodejs-speech', false);
     });
   });
 
   // KMS api has IAM service injected from gax. All its IAM related test are in samples-test.
+  // KMS is in the google-cloud-node monorepo
   describe('kms', () => {
     before(async () => {
-      await preparePackage('nodejs-kms');
+      await preparePackage('kms', true);
     });
     it('should pass samples tests', async () => {
-      await runSamplesTest('nodejs-kms');
+      await runSamplesTest('kms', true);
     });
   });
 });
