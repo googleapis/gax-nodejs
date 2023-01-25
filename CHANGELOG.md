@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.3](https://github.com/googleapis/gax-nodejs/compare/v3.5.2...v3.5.3) (2023-01-25)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency protobufjs-cli to v1.1.0 ([#1412](https://github.com/googleapis/gax-nodejs/issues/1412)) ([2f636c6](https://github.com/googleapis/gax-nodejs/commit/2f636c65c7175f4915b1118677f74005faefe7a2))
+* Update system test to use monorepo where appropriate ([#1387](https://github.com/googleapis/gax-nodejs/issues/1387)) ([3717cd2](https://github.com/googleapis/gax-nodejs/commit/3717cd2f538dc2c885756094ada1f1ef2c20ddcc))
+
 ## [3.5.2](https://github.com/googleapis/gax-nodejs/compare/v3.5.1...v3.5.2) (2022-09-22)
 
 
