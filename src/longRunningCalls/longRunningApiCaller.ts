@@ -84,12 +84,12 @@ export class LongrunningApiCaller implements APICaller {
           callback(err, null, null, rawResponse as Operation);
           return;
         }
-
         const operation = new Operation(
           rawResponse as operationProtos.google.longrunning.Operation,
           longrunningDescriptor,
           backoffSettings!,
-          settings
+          settings,
+          argument
         );
 
         callback(null, operation, rawResponse);

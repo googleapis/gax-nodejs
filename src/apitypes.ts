@@ -15,6 +15,7 @@
  */
 
 import {Duplex} from 'stream';
+import * as computeOperationProtos from '../protos/compute_operations';
 
 import {CancellablePromise} from './call';
 import {CallOptions} from './gax';
@@ -120,3 +121,5 @@ export interface GRPCCallOtherArgs {
   headers?: {};
   metadataBuilder: (abTests?: {}, headers?: {}) => {};
 }
+
+export type ComputeLROOperation = computeOperationProtos.Operation;
