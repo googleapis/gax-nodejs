@@ -279,6 +279,41 @@ describe('REGAPIC', () => {
         }, /* catch: */ done);
     });
 
+    it('should preserve query string when appending numeric enums parameter', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 'TYPEONE',
+      };
+      const requestObject = {
+        shelf: shelf,
+        queryStringParameter: 'must-be-preserved',
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpcNumericEnums
+        .createStub(libraryService, stubOptions)
+        .then(libStub => {
+          libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int'
+            );
+            assert.strictEqual(err, null);
+            done();
+          });
+        }, /* catch: */ done);
+    });
+
     it('should request numeric enums if passed as an unknown number', done => {
       const shelf = {
         name: 'shelf-name',

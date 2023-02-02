@@ -62,7 +62,8 @@ export function encodeRequest(
   // If numeric enums feature is requested, add extra parameter to the query string
   if (numericEnums) {
     transcoded.queryString =
-      (transcoded.queryString ? '&' : '') + '$alt=json%3Benum-encoding=int';
+      (transcoded.queryString ? `${transcoded.queryString}&` : '') +
+      '$alt=json%3Benum-encoding=int';
   }
 
   // Converts httpMethod to method that permitted in standard Fetch API spec
