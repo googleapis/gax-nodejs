@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.4](https://github.com/googleapis/gax-nodejs/compare/v3.5.3...v3.5.4) (2023-02-02)
+
+
+### Bug Fixes
+
+* Preserve existing query string parameters when adding enum encoding option ([#1414](https://github.com/googleapis/gax-nodejs/issues/1414)) ([24f5e81](https://github.com/googleapis/gax-nodejs/commit/24f5e817c4c28c106f7387a4ea108ed8b598252b))
+
 ## [3.5.3](https://github.com/googleapis/gax-nodejs/compare/v3.5.2...v3.5.3) (2023-01-25)
 
 
