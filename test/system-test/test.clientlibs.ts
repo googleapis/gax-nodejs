@@ -22,7 +22,6 @@ import * as util from 'util';
 import {describe, it, before} from 'mocha';
 
 const mkdir = util.promisify(fs.mkdir);
-const rmrf = util.promisify(rimraf);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
@@ -181,7 +180,7 @@ describe('Run system tests for some libraries', () => {
       throw new Error(`npm pack tarball ${gaxTarball} does not exist`);
     }
 
-    await rmrf(testDir);
+    await rimraf(testDir);
     await mkdir(testDir);
     process.chdir(testDir);
     console.log(`Running tests in ${testDir}.`);
