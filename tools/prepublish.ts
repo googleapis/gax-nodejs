@@ -24,6 +24,7 @@ import * as ncp from 'ncp';
 import {promisify} from 'util';
 
 const ncpp = promisify(ncp);
+const rmrf = promisify(rimraf);
 
 const subdirs = [
   'api',
@@ -38,7 +39,7 @@ const subdirs = [
 ];
 
 async function main() {
-  await rimraf(path.join('protos', 'google'));
+  await rmrf(path.join('protos', 'google'));
   await mkdirp(path.join('protos', 'google'));
 
   for (const subdir of subdirs) {

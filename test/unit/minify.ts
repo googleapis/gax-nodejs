@@ -19,14 +19,16 @@ import {promises as fsp} from 'fs';
 import * as rimraf from 'rimraf';
 import * as path from 'path';
 import * as minify from '../../tools/minify';
+import {promisify} from 'util';
 
+const rmrf = promisify(rimraf);
 const testDir = path.join(process.cwd(), '.minify-test');
 const fixturesDir = path.join(__dirname, '..', 'fixtures');
 
 describe('minify tool', () => {
   beforeEach(async () => {
     if (fs.existsSync(testDir)) {
-      await rimraf(testDir);
+      await rmrf(testDir);
     }
     await fsp.mkdir(testDir);
   });

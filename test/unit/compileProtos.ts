@@ -25,6 +25,7 @@ import * as compileProtos from '../../tools/compileProtos';
 
 const readFile = util.promisify(fs.readFile);
 const mkdir = util.promisify(fs.mkdir);
+const rmrf = util.promisify(rimraf);
 
 const testDir = path.join(process.cwd(), '.compileProtos-test');
 const resultDir = path.join(testDir, 'protos');
@@ -37,7 +38,7 @@ const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
 describe('compileProtos tool', () => {
   beforeEach(async () => {
     if (fs.existsSync(testDir)) {
-      await rimraf(testDir);
+      await rmrf(testDir);
     }
     await mkdir(testDir);
     await mkdir(resultDir);
