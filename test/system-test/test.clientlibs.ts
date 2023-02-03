@@ -130,24 +130,46 @@ async function preparePackage(
   });
 }
 
+enum TestResult {
+  PASS = 'PASS',
+  FAIL = 'FAIL',
+  SKIP = 'SKIP',
+}
+
+async function runScript(
+  packageName: string,
+  inMonorepo: boolean,
+  script: string
+): Promise<TestResult> {
+  try {
+    await execa('npm', ['run', script], {
+      cwd: inMonorepo ? monoRepoPackageSubdirectory(packageName) : packageName,
+      stdio: 'inherit',
+    });
+    return TestResult.PASS;
+  } catch (err) {
+    const error = err as {stdout?: string; stderr?: string};
+    const output = (error.stdout ?? '') + (error.stderr ?? '');
+    if (output.match(/RESOURCE_EXHAUSTED/)) {
+      return TestResult.SKIP;
+    }
+    return TestResult.FAIL;
+  }
+}
+
 async function runSystemTest(
   packageName: string,
   inMonorepo: boolean
-): Promise<void> {
-  await execa('npm', ['run', 'system-test'], {
-    cwd: inMonorepo ? monoRepoPackageSubdirectory(packageName) : packageName,
-    stdio: 'inherit',
-  });
+): Promise<TestResult> {
+  return await runScript(packageName, inMonorepo, 'system-test');
 }
+
 // nodejs-kms does not have system test.
 async function runSamplesTest(
   packageName: string,
   inMonorepo: boolean
-): Promise<void> {
-  await execa('npm', ['run', 'samples-test'], {
-    cwd: inMonorepo ? monoRepoPackageSubdirectory(packageName) : packageName,
-    stdio: 'inherit',
-  });
+): Promise<TestResult> {
+  return await runScript(packageName, inMonorepo, 'samples-test');
 }
 
 describe('Run system tests for some libraries', () => {
@@ -171,8 +193,13 @@ describe('Run system tests for some libraries', () => {
     before(async () => {
       await preparePackage('nodejs-speech', false);
     });
-    it('should pass system tests', async () => {
-      await runSystemTest('nodejs-speech', false);
+    it('should pass system tests', async function () {
+      const result = await runSystemTest('nodejs-speech', false);
+      if (result === TestResult.SKIP) {
+        this.skip();
+      } else if (result === TestResult.FAIL) {
+        throw new Error('Test failed');
+      }
     });
   });
 
@@ -182,8 +209,13 @@ describe('Run system tests for some libraries', () => {
     before(async () => {
       await preparePackage('kms', true);
     });
-    it('should pass samples tests', async () => {
-      await runSamplesTest('kms', true);
+    it('should pass samples tests', async function () {
+      const result = await runSamplesTest('kms', true);
+      if (result === TestResult.SKIP) {
+        this.skip();
+      } else if (result === TestResult.FAIL) {
+        throw new Error('Test failed');
+      }
     });
   });
 });
