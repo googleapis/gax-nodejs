@@ -4,6 +4,16 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.5](https://github.com/googleapis/gax-nodejs/compare/v3.5.4...v3.5.5) (2023-02-03)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @grpc/grpc-js to ~1.8.0 ([#1389](https://github.com/googleapis/gax-nodejs/issues/1389)) ([41ad17a](https://github.com/googleapis/gax-nodejs/commit/41ad17a0cc94388417704f929e56fe56498319f5))
+* **deps:** Update dependency protobufjs to v7.2.1 ([#1411](https://github.com/googleapis/gax-nodejs/issues/1411)) ([17c7372](https://github.com/googleapis/gax-nodejs/commit/17c7372a0601736227898495ad10fc61907667f8))
+* Get rid of fs-extra ([#1418](https://github.com/googleapis/gax-nodejs/issues/1418)) ([082e006](https://github.com/googleapis/gax-nodejs/commit/082e0063227d8f59a9c88416265fdf4acafe8f6f))
+* Include Long import in d.ts files ([#1379](https://github.com/googleapis/gax-nodejs/issues/1379)) ([8d9d684](https://github.com/googleapis/gax-nodejs/commit/8d9d6847ff6ee3de4ba4aed8540045cdc9bc6b64))
+
 ## [3.5.4](https://github.com/googleapis/gax-nodejs/compare/v3.5.3...v3.5.4) (2023-02-02)
 
 
