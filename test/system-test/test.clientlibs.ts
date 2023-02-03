@@ -21,8 +21,8 @@ import * as rimraf from 'rimraf';
 import * as util from 'util';
 import {describe, it, before} from 'mocha';
 
-const mkdir = util.promisify(fs.mkdir);
 const rmrf = util.promisify(rimraf);
+const mkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
