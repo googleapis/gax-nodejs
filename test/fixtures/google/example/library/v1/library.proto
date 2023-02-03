@@ -148,6 +148,9 @@ message Shelf {
 message CreateShelfRequest {
   // The shelf to create.
   Shelf shelf = 1;
+
+  // Some query string parameter
+  string query_string_parameter = 2;
 }
 
 // Request message for LibraryService.GetShelf.

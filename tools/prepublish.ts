@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-import * as fs from 'fs-extra';
 import {getProtoPath} from 'google-proto-files';
 import * as path from 'path';
+// Note: the following three imports will be all gone when we support Node.js 16+.
+// But until then, we'll use these modules.
+import * as rimraf from 'rimraf';
+import * as mkdirp from 'mkdirp';
+import * as ncp from 'ncp';
+import {promisify} from 'util';
+
+const ncpp = promisify(ncp);
+const rmrf = promisify(rimraf);
 
 const subdirs = [
   'api',
@@ -31,14 +39,17 @@ const subdirs = [
 ];
 
 async function main() {
-  await fs.remove(path.join('protos', 'google'));
-  await fs.ensureDir(path.join('protos', 'google'));
+  await rmrf(path.join('protos', 'google'));
+  await mkdirp(path.join('protos', 'google'));
 
-  subdirs.forEach(async subdir => {
+  for (const subdir of subdirs) {
     const src = getProtoPath(subdir);
     const target = path.join('protos', 'google', subdir);
-    await fs.copy(src, target);
-  });
+    console.log(`Copying protos from ${src} to ${target}`);
+    await mkdirp(target);
+    await ncpp(src, target);
+  }
+  console.log('Protos have been copied successfully');
 }
 
 main().catch(console.error);
