@@ -175,12 +175,7 @@ export function generateServiceStub(
             ])
               .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
                 const response = responseDecoder(rpc, ok, buffer);
-                if (!callback) {
-                  throw new Error(
-                    'Internal error: callback is not provided for non-streaming call.'
-                  );
-                }
-                callback(null, response);
+                callback!(null, response);
               })
               .catch((err: Error) => {
                 if (!cancelRequested || err.name !== 'AbortError') {
