@@ -132,7 +132,7 @@ describe('Parse REST stream array', () => {
     });
   });
 
-  it('should assign defaul value if the service response is not valid protobuf specific JSON', done => {
+  it('should assign default value if the service response is not valid protobuf specific JSON', done => {
     const expectedResults = [
       {
         name: 'Not Valid Name Message',

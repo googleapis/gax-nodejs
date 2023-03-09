@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-/* xslint-disable @typescript-eslint/ban-ts-comment */
-/* xslint-disable no-undef */
-
 import * as assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
 import * as nodeFetch from 'node-fetch';
 import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import * as sinon from 'sinon';
+import * as stream from 'stream';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import * as transcoding from '../../src/transcoding';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
+import {StreamArrayParser} from '../../src/streamArrayParser';
 
 const authClient = {
   async getRequestHeaders() {
@@ -107,6 +106,75 @@ describe('REGAPIC', () => {
           requestObject.content,
           (result as {content: string}).content
         );
+        done();
+      });
+    });
+  });
+
+  it('should make a streaming request', done => {
+    const requestObject = {content: 'test content'};
+    const responseObject = [{content: 'test'}, {content: 'content'}];
+    const responseObjectJson = JSON.stringify(responseObject, null, '  ');
+    const responseStream = new stream.Readable();
+    responseStream.push(responseObjectJson.slice(0, 10));
+    responseStream.push(responseObjectJson.slice(10));
+    responseStream.push(null);
+    // incomplete types for nodeFetch, so...
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(nodeFetch, 'Promise' as any).returns(
+      Promise.resolve({
+        ok: true,
+        body: responseStream,
+      })
+    );
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      const stream = echoStub.expand(
+        requestObject,
+        {},
+        {},
+        () => {}
+      ) as StreamArrayParser;
+      const results: {}[] = [];
+      stream.on('data', data => {
+        results.push(data);
+      });
+      stream.on('error', done);
+      stream.on('end', () => {
+        assert.deepStrictEqual(results, responseObject);
+        done();
+      });
+    });
+  });
+
+  it('should handle fetch failure', done => {
+    const requestObject = {content: 'test-content'};
+    sinon
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .stub(nodeFetch, 'Promise' as any)
+      .returns(Promise.reject(new Error('Fetch error')));
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: {}) => {
+        assert.strictEqual((err as Error).message, 'Fetch error');
+        done();
+      });
+    });
+  });
+
+  it('should handle streaming request failure', done => {
+    const requestObject = {content: 'test content'};
+    sinon
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .stub(nodeFetch, 'Promise' as any)
+      .returns(Promise.reject(new Error('Fetch error')));
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      const stream = echoStub.expand(requestObject) as StreamArrayParser;
+      stream.on('error', err => {
+        assert.strictEqual((err as Error).message, 'Fetch error');
         done();
       });
     });

@@ -34,9 +34,9 @@ export interface FallbackServiceStub {
   // Compatible with gRPC service stub
   [method: string]: (
     request: {},
-    options: {},
-    metadata: {},
-    callback: (err?: Error, response?: {} | undefined) => void
+    options?: {},
+    metadata?: {},
+    callback?: (err?: Error, response?: {} | undefined) => void
   ) => StreamArrayParser | {cancel: () => void};
 }
 
@@ -83,10 +83,12 @@ export function generateServiceStub(
   for (const [rpcName, rpc] of Object.entries(rpcs)) {
     serviceStub[rpcName] = (
       request: {},
-      options: {[name: string]: string},
-      _metadata: {},
-      callback: Function
+      options?: {[name: string]: string},
+      _metadata?: {} | Function,
+      callback?: Function
     ) => {
+      options ??= {};
+
       // We cannot use async-await in this function because we need to return the canceller object as soon as possible.
       // Using plain old promises instead.
 
@@ -103,7 +105,9 @@ export function generateServiceStub(
       } catch (err) {
         // we could not encode parameters; pass error to the callback
         // and return a no-op canceler object.
-        callback(err);
+        if (callback) {
+          callback(err);
+        }
         return {
           cancel() {},
         };
@@ -171,6 +175,11 @@ export function generateServiceStub(
             ])
               .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
                 const response = responseDecoder(rpc, ok, buffer);
+                if (!callback) {
+                  throw new Error(
+                    'Internal error: callback is not provided for non-streaming call.'
+                  );
+                }
                 callback(null, response);
               })
               .catch((err: Error) => {
@@ -180,14 +189,27 @@ export function generateServiceStub(
                       callback(err);
                     }
                     streamArrayParser.emit('error', err);
-                  } else {
+                  } else if (callback) {
                     callback(err);
+                  } else {
+                    throw err;
                   }
                 }
               });
           }
         })
-        .catch((err: unknown) => callback(err));
+        .catch((err: unknown) => {
+          if (rpc.responseStream) {
+            if (callback) {
+              callback(err);
+            }
+            streamArrayParser.emit('error', err);
+          } else if (callback) {
+            callback(err);
+          } else {
+            throw err;
+          }
+        });
 
       if (rpc.responseStream) {
         return streamArrayParser;
