@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "3.5.7",
+  "version": "3.5.8",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
