@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.5.8](https://github.com/googleapis/gax-nodejs/compare/v3.5.7...v3.5.8) (2023-03-10)
+
+
+### Bug Fixes
+
+* Better error handling for REST transport ([#1431](https://github.com/googleapis/gax-nodejs/issues/1431)) ([193b387](https://github.com/googleapis/gax-nodejs/commit/193b38754f84b78ed85bd7d3472b5358cb43af96))
+
 ## [3.5.7](https://github.com/googleapis/gax-nodejs/compare/v3.5.6...v3.5.7) (2023-02-08)
 
 
