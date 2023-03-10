@@ -19,7 +19,7 @@ import * as path from 'path';
 // Note: the following three imports will be all gone when we support Node.js 16+.
 // But until then, we'll use these modules.
 import * as rimraf from 'rimraf';
-import * as mkdirp from 'mkdirp';
+import mkdirp from 'mkdirp';
 import * as ncp from 'ncp';
 import {promisify} from 'util';
 
