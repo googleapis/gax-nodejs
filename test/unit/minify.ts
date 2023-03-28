@@ -48,4 +48,17 @@ describe('minify tool', () => {
     assert.deepEqual(objectBefore, objectAfter);
     assert.deepEqual(objectBefore, parsedObjectAfter);
   });
+
+  it('minifies the proto js file', async () => {
+    const echoProtoJsFixture = path.join(fixturesDir, 'echo.js');
+    const echoProtoJs = path.join(testDir, 'echo.js');
+    await fsp.copyFile(echoProtoJsFixture, echoProtoJs);
+    const statBefore = await fsp.stat(echoProtoJs);
+    const resultBefore = require(echoProtoJs);
+    await minify.main({directory: testDir, minifyJs: true});
+    const statAfter = await fsp.stat(echoProtoJs);
+    const resultAfter = require(echoProtoJs);
+    assert(statBefore.size > statAfter.size);
+    assert.deepEqual(resultBefore, resultAfter);
+  });
 });
