@@ -25,13 +25,13 @@ async function minifyFile(filename: string, isJs: boolean) {
   let options;
   if (isJs) {
     options = {
-      expression: true,
-      compress: false, // we need to keep it valid JSON
-      output: {quote_keys: true},
+      expression: false,
     };
   } else {
     options = {
-      expression: false,
+      expression: true,
+      compress: false, // we need to keep it valid JSON
+      output: {quote_keys: true},
     };
   }
   const output = uglify.minify(content, options as uglify.MinifyOptions);
