@@ -22,18 +22,19 @@ import * as uglify from 'uglify-js';
 
 async function minifyFile(filename: string, isJs: boolean) {
   const content = (await fsp.readFile(filename)).toString();
-  let output;
-  if (!isJs) {
-    output = uglify.minify(content, {
+  let options;
+  if (isJs) {
+    options = {
       expression: true,
       compress: false, // we need to keep it valid JSON
       output: {quote_keys: true},
-    });
+    };
   } else {
-    output = uglify.minify(content, {
+    options = {
       expression: false,
-    });
+    };
   }
+  const output = uglify.minify(content, options as uglify.MinifyOptions);
   if (output.error) {
     throw output.error;
   }
