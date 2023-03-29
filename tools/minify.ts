@@ -19,12 +19,7 @@
 import {promises as fsp} from 'fs';
 import * as path from 'path';
 import * as uglify from 'uglify-js';
-import * as yargs from 'yargs';
 
-interface CliArgs {
-  directory?: string;
-  minifyJs?: boolean;
-}
 async function minifyFile(filename: string, isJs: boolean) {
   const content = (await fsp.readFile(filename)).toString();
   let output;
@@ -45,44 +40,40 @@ async function minifyFile(filename: string, isJs: boolean) {
   await fsp.writeFile(filename, output.code);
 }
 
-export async function main(args?: CliArgs | string | undefined) {
-  let buildDir;
-  if (typeof args === 'object' && args.directory) {
-    buildDir = args.directory;
-  } else if (typeof args === 'string') {
-    buildDir = args;
-  } else {
-    buildDir = path.join(process.cwd(), 'build', 'protos');
-  }
+export async function main(directory?: string) {
+  const buildDir = directory ?? path.join(process.cwd(), 'build', 'protos');
   const files = await fsp.readdir(buildDir);
   const jsonFiles = files.filter(file => file.match(/\.json$/));
   for (const jsonFile of jsonFiles) {
     console.log(`Minifying ${jsonFile}...`);
     await minifyFile(path.join(buildDir, jsonFile), false);
   }
-  if (typeof args === 'object' && args?.minifyJs) {
-    const jsFiles = files.filter(file => file.match(/\.js$/));
-    for (const jsFile of jsFiles) {
-      console.log(`Minifying ${jsFile}...`);
-      await minifyFile(path.join(buildDir, jsFile), true);
-    }
+  const jsFiles = files.filter(file => file.match(/\.js$/));
+  for (const jsFile of jsFiles) {
+    console.log(`Minifying ${jsFile}...`);
+    await minifyFile(path.join(buildDir, jsFile), true);
   }
+  console.log('Minified all proto JS and JSON files successfully.');
+}
+
+function usage() {
+  console.log(`Usage: node ${process.argv[1]} [directory]`);
   console.log(
-    `Minified all proto ${
-      typeof args === 'object' && args?.minifyJs ? 'JS and JSON' : 'JSON'
-    } files successfully.`
+    'Minifies all JSON files in-place in the given directory (non-recursively).'
+  );
+  console.log(
+    'If no directory is given, minifies JSON files in ./build/protos.'
   );
 }
 
 if (require.main === module) {
-  let args;
-  if (process.argv.length === 3 && !process.argv[2].includes('--directory')) {
-    args = process.argv[2] as string;
-  } else {
-    args = yargs(process.argv.slice(2)).usage(
-      `Usage: node ${process.argv[1]} [--directory] [--minifyJs]\nMinifies all JSON files in-place in the given directory (non-recursively).\nIf no directory is given, minifies JSON files in ./build/protos.\nCan minify JS files as well using --minifyJS flag`
-    ).argv as unknown as CliArgs;
+  // argv[0] is node.js binary, argv[1] is script path
+
+  if (process.argv[2] === '--help') {
+    usage();
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
   }
 
-  main(args);
+  main(process.argv[2]);
 }

@@ -55,7 +55,7 @@ describe('minify tool', () => {
     await fsp.copyFile(echoProtoJsFixture, echoProtoJs);
     const statBefore = await fsp.stat(echoProtoJs);
     const resultBefore = require(echoProtoJs);
-    await minify.main({directory: testDir, minifyJs: true});
+    await minify.main(testDir);
     const statAfter = await fsp.stat(echoProtoJs);
     const resultAfter = require(echoProtoJs);
     assert(statBefore.size > statAfter.size);
