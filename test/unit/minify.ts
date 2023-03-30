@@ -41,11 +41,26 @@ describe('minify tool', () => {
     const objectBefore = require(echoProtoJson);
     await minify.main(testDir);
     const statAfter = await fsp.stat(echoProtoJson);
+    delete require.cache[require(echoProtoJson)];
     const objectAfter = require(echoProtoJson);
     const contentAfter = (await fsp.readFile(echoProtoJson)).toString();
     const parsedObjectAfter = JSON.parse(contentAfter);
     assert(statBefore.size > statAfter.size);
     assert.deepEqual(objectBefore, objectAfter);
     assert.deepEqual(objectBefore, parsedObjectAfter);
+  });
+
+  it('minifies the proto js file', async () => {
+    const echoProtoJsFixture = path.join(fixturesDir, 'echo.js');
+    const echoProtoJs = path.join(testDir, 'echo.js');
+    await fsp.copyFile(echoProtoJsFixture, echoProtoJs);
+    const statBefore = await fsp.stat(echoProtoJs);
+    const resultBefore = require(echoProtoJs);
+    await minify.main(testDir);
+    const statAfter = await fsp.stat(echoProtoJs);
+    delete require.cache[require(echoProtoJs)];
+    const resultAfter = require(echoProtoJs);
+    assert(statBefore.size > statAfter.size);
+    assert.deepEqual(resultBefore, resultAfter);
   });
 });
