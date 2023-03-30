@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [3.6.0](https://github.com/googleapis/gax-nodejs/compare/v3.5.8...v3.6.0) (2023-03-30)
+
+
+### Features
+
+* **tools:** Minify proto JS files ([#1435](https://github.com/googleapis/gax-nodejs/issues/1435)) ([014fa16](https://github.com/googleapis/gax-nodejs/commit/014fa16dba4835afcdd30307aebb833d95b25ec3))
+
+
+### Bug Fixes
+
+* **deps:** Update dependency protobufjs to v7.2.3 ([#1437](https://github.com/googleapis/gax-nodejs/issues/1437)) ([3cfb046](https://github.com/googleapis/gax-nodejs/commit/3cfb046ac132ee8735cdec6e7dc5088150bdcdf9))
+
 ## [3.5.8](https://github.com/googleapis/gax-nodejs/compare/v3.5.7...v3.5.8) (2023-03-10)
 
 
