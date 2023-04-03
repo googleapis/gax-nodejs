@@ -20,13 +20,21 @@ import {promises as fsp} from 'fs';
 import * as path from 'path';
 import * as uglify from 'uglify-js';
 
-async function minifyFile(filename: string) {
+async function minifyFile(filename: string, isJs: boolean) {
   const content = (await fsp.readFile(filename)).toString();
-  const output = uglify.minify(content, {
-    expression: true,
-    compress: false, // we need to keep it valid JSON
-    output: {quote_keys: true},
-  });
+  let options;
+  if (isJs) {
+    options = {
+      expression: false,
+    };
+  } else {
+    options = {
+      expression: true,
+      compress: false, // we need to keep it valid JSON
+      output: {quote_keys: true},
+    };
+  }
+  const output = uglify.minify(content, options as uglify.MinifyOptions);
   if (output.error) {
     throw output.error;
   }
@@ -39,9 +47,14 @@ export async function main(directory?: string) {
   const jsonFiles = files.filter(file => file.match(/\.json$/));
   for (const jsonFile of jsonFiles) {
     console.log(`Minifying ${jsonFile}...`);
-    await minifyFile(path.join(buildDir, jsonFile));
+    await minifyFile(path.join(buildDir, jsonFile), false);
   }
-  console.log('Minified all proto JSON files successfully.');
+  const jsFiles = files.filter(file => file.match(/\.js$/));
+  for (const jsFile of jsFiles) {
+    console.log(`Minifying ${jsFile}...`);
+    await minifyFile(path.join(buildDir, jsFile), true);
+  }
+  console.log('Minified all proto JS and JSON files successfully.');
 }
 
 function usage() {
