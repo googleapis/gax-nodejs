@@ -21,7 +21,7 @@ import * as rimraf from 'rimraf';
 import * as util from 'util';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import * as compileProtos from '../../tools/compileProtos';
+import * as compileProtos from '../compileProtos';
 
 const readFile = util.promisify(fs.readFile);
 const mkdir = util.promisify(fs.mkdir);
@@ -52,6 +52,7 @@ describe('compileProtos tool', () => {
 
   it('compiles protos to JSON, JS, TS', async function () {
     this.timeout(20000);
+    console.log(path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'))
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);

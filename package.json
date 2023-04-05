@@ -6,14 +6,8 @@
   "types": "build/src/index.d.ts",
   "files": [
     "build/src",
-    "build/tools/compileProtos.js",
-    "build/tools/minify.js",
     "build/protos/"
   ],
-  "bin": {
-    "compileProtos": "build/tools/compileProtos.js",
-    "minifyProtoJson": "build/tools/minify.js"
-  },
   "dependencies": {
     "@grpc/grpc-js": "~1.8.0",
     "@grpc/proto-loader": "^0.7.0",
