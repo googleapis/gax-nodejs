@@ -14,8 +14,10 @@
     "clean": "gts clean",
     "compile": "tsc -p . && cp -r test/fixtures build/test",
     "fix": "gts fix",
-    "prepare": "npm run compile && node ./build/src/prepublish.js",
-    "precompile": "gts clean"
+    "prepare": "npm run compile",
+    "precompile": "gts clean",
+    "system-test": "npm run compile && c8 mocha build/system-test",
+    "samples-test": "echo 'no samples'"
   },
   "bin": {
     "compileProtos": "./build/src/compileProtos.js",
