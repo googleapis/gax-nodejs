@@ -28,7 +28,7 @@
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/rimraf": "^4.0.5",
+    "@types/rimraf": "^3.0.2",
     "google-proto-files": "^3.0.0",
     "protobufjs-cli": "1.1.1",
     "uglify-js": "^3.17.0",
