@@ -20,7 +20,8 @@ import {getProtoPath} from 'google-proto-files';
 import * as path from 'path';
 // Note: the following three imports will be all gone when we support Node.js 16+.
 // But until then, we'll use these modules.
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
+const fsp = fs.promises;
 
 const subdirs = [
   'api',
@@ -34,18 +35,36 @@ const subdirs = [
   'cloud/location',
 ];
 
-async function main() {
-  await fs.rm(path.join('protos', 'google'), { recursive: true, force: true });
-  await fs.mkdir(path.join('protos', 'google'), { recursive: true });
+async function main(directory: string) {
+  await fsp.rm(path.join(directory, 'protos', 'google'), { recursive: true, force: true });
+  await fsp.mkdir(path.join(directory, 'protos', 'google'), { recursive: true });
 
   for (const subdir of subdirs) {
     const src = getProtoPath(subdir);
-    const target = path.join('protos', 'google', subdir);
+    const target = path.join(directory, 'protos', 'google', subdir);
     console.log(`Copying protos from ${src} to ${target}`);
-    await fs.mkdir(target,  { recursive: true });
-    await fs.cp(src, target, { recursive: true, force: true });
+    await fsp.mkdir(target,  { recursive: true });
+    await fsp.cp(src, target, { recursive: true, force: true });
   }
   console.log('Protos have been copied successfully');
 }
 
-main().catch(console.error);
+/**
+ * Shows the usage information.
+ */
+function usage() {
+  console.log(`Usage: node ${process.argv[1]} directory ...`);
+}
+
+if (require.main === module) {
+  // argv[0] is node.js binary, argv[1] is script path
+
+  if (process.argv[2] === '--help') {
+    usage();
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
+  }
+
+  main(process.argv[2]);
+}
+
