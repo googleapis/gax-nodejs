@@ -64,7 +64,7 @@
     "docs": "compodoc src/",
     "pretest": "npm run prepare",
     "test": "c8 mocha build/test/unit",
-    "lint": "gts check",
+    "lint": "gts check src samples test",
     "clean": "gts clean",
     "compile": "tsc -p . && cp src/*.json build/src && cp -r test/fixtures build/test && cp -r protos build/",
     "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
