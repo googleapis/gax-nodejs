@@ -52,7 +52,6 @@ describe('compileProtos tool', () => {
 
   it('compiles protos to JSON, JS, TS', async function () {
     this.timeout(20000);
-    console.log(path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'))
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);
