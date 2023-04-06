@@ -20,6 +20,7 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^1.0.0",
+    "protobufjs": "^7.2.3",
     "retry-request": "^5.0.0"
   },
   "devDependencies": {
@@ -46,7 +47,6 @@
     "mocha": "^9.0.0",
     "ncp": "^2.0.0",
     "null-loader": "^4.0.0",
-    "protobufjs": "7.2.3",
     "protobufjs-cli": "1.1.1",
     "proxyquire": "^2.0.1",
     "pumpify": "^2.0.0",
