@@ -2,10 +2,9 @@
   "name": "@google-cloud/gapic-tools",
   "version": "0.1.0",
   "description": "compiles, updates, and minifies protos",
-  "main": "build/tools/compileProtos.js",
+  "main": "build/src/compileProtos.js",
   "files": [
-    "build/tools/compileProtos.js",
-    "build/tools/minify.js"
+    "build/tools/src"
   ],
   "scripts": {
     "pretest": "npm run prepare",
@@ -14,22 +13,20 @@
     "clean": "gts clean",
     "compile": "tsc -p . && cp -r test/fixtures build/test",
     "fix": "gts fix",
-    "prepare": "npm run compile && node ./build/prepublish.js",
+    "prepare": "npm run compile && node ./build/src/prepublish.js",
     "precompile": "gts clean"
   },
   "bin": {
-    "compileProtos": "build/tools/compileProtos.js",
-    "minifyProtoJson": "build/tools/minify.js"
+    "compileProtos": "./build/src/compileProtos.js",
+    "minifyProtoJson": "./build/src/minify.js",
+    "prepublishProtos": "./build/src/prepublish.js",
+    "listProtos": "./build/src/listProtos.js"
   },
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/rimraf": "^3.0.2",
     "google-proto-files": "^3.0.0",
-    "mkdirp": "^2.0.0",
-    "ncp": "^2.0.0",
     "protobufjs-cli": "1.1.1",
-    "rimraf": "^3.0.2",
     "uglify-js": "^3.17.0",
     "walkdir": "^0.4.0"
   },

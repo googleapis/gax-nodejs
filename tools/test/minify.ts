@@ -18,7 +18,7 @@ import * as fs from 'fs';
 import {promises as fsp} from 'fs';
 import * as rimraf from 'rimraf';
 import * as path from 'path';
-import * as minify from '../minify';
+import * as minify from '../src/minify';
 import {promisify} from 'util';
 
 const rmrf = promisify(rimraf);

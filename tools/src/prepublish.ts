@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * Copyright 2020 Google LLC
  *
@@ -18,13 +20,7 @@ import {getProtoPath} from 'google-proto-files';
 import * as path from 'path';
 // Note: the following three imports will be all gone when we support Node.js 16+.
 // But until then, we'll use these modules.
-import * as rimraf from 'rimraf';
-import mkdirp from 'mkdirp';
-import * as ncp from 'ncp';
-import {promisify} from 'util';
-
-const ncpp = promisify(ncp);
-const rmrf = promisify(rimraf);
+import * as fs from 'fs/promises';
 
 const subdirs = [
   'api',
@@ -39,15 +35,15 @@ const subdirs = [
 ];
 
 async function main() {
-  await rmrf(path.join('protos', 'google'));
-  await mkdirp(path.join('protos', 'google'));
+  await fs.rm(path.join('protos', 'google'), { recursive: true, force: true });
+  await fs.mkdir(path.join('protos', 'google'), { recursive: true });
 
   for (const subdir of subdirs) {
     const src = getProtoPath(subdir);
     const target = path.join('protos', 'google', subdir);
     console.log(`Copying protos from ${src} to ${target}`);
-    await mkdirp(target);
-    await ncpp(src, target);
+    await fs.mkdir(target,  { recursive: true });
+    await fs.cp(src, target, { recursive: true, force: true });
   }
   console.log('Protos have been copied successfully');
 }

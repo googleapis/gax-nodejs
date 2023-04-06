@@ -22,8 +22,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as walk from 'walkdir';
 
-const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
-const outputFile = path.join(__dirname, '..', '..', 'src', 'protosList.json');
+const googleProtoFilesDir = path.join(__dirname, '..', '..', '..', 'protos');
+const outputFile = path.join(__dirname, '..', '..', '..', 'src', 'protosList.json');
 
 const commonProtoFiles = walk
   .sync(googleProtoFilesDir)
