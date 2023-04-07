@@ -21,8 +21,11 @@ import * as path from 'path';
 // Note: the following three imports will be all gone when we support Node.js 16+.
 // But until then, we'll use these modules.
 import * as fs from 'fs';
-const fsp = fs.promises;
+import * as ncp from 'ncp';
+import {promisify} from 'util';
 
+const fsp = fs.promises;
+const ncpp = promisify(ncp);
 const subdirs = [
   'api',
   'iam/v1',
@@ -44,7 +47,7 @@ async function main(directory: string) {
     const target = path.join(directory, 'protos', 'google', subdir);
     console.log(`Copying protos from ${src} to ${target}`);
     await fsp.mkdir(target,  { recursive: true });
-    await fsp.cp(src, target, { recursive: true, force: true });
+    await ncpp(src, target);
   }
   console.log('Protos have been copied successfully');
 }
