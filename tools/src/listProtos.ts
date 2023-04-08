@@ -30,7 +30,10 @@ async function main(directory: string) {
     .filter(f => path.extname(f) === '.proto')
     .map(f => f.match(/protos\/(.*)/)![1]);
 
-  fs.writeFileSync(outputFile, JSON.stringify(commonProtoFiles, null, 2) + '\n');
+  fs.writeFileSync(
+    outputFile,
+    JSON.stringify(commonProtoFiles, null, 2) + '\n'
+  );
 }
 /**
  * Shows the usage information.
@@ -42,4 +45,3 @@ function usage() {
 if (require.main === module) {
   main(process.argv[2]);
 }
-

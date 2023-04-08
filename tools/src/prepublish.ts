@@ -39,14 +39,17 @@ const subdirs = [
 ];
 
 async function main(directory: string) {
-  await fsp.rm(path.join(directory, 'protos', 'google'), { recursive: true, force: true });
-  await fsp.mkdir(path.join(directory, 'protos', 'google'), { recursive: true });
+  await fsp.rm(path.join(directory, 'protos', 'google'), {
+    recursive: true,
+    force: true,
+  });
+  await fsp.mkdir(path.join(directory, 'protos', 'google'), {recursive: true});
 
   for (const subdir of subdirs) {
     const src = getProtoPath(subdir);
     const target = path.join(directory, 'protos', 'google', subdir);
     console.log(`Copying protos from ${src} to ${target}`);
-    await fsp.mkdir(target,  { recursive: true });
+    await fsp.mkdir(target, {recursive: true});
     await ncpp(src, target);
   }
   console.log('Protos have been copied successfully');
@@ -70,4 +73,3 @@ if (require.main === module) {
 
   main(process.argv[2]);
 }
-
