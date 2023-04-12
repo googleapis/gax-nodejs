@@ -7,7 +7,7 @@
   "files": [
     "build/src",
     "build/protos/",
-    "!build/src/**/*.map",
+    "!build/src/**/*.map"
   ],
   "dependencies": {
     "@grpc/grpc-js": "~1.8.0",
