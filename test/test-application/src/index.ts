@@ -78,13 +78,76 @@ async function testShowcase() {
   await testChatThrows(fallbackClient); // fallback does not support bidi streaming
   await testWait(fallbackClient);
 
-  await testEcho(restClient);
-  await testExpand(restClient); // REGAPIC supports server streaming
-  await testPagedExpand(restClient);
-  await testPagedExpandAsync(restClient);
-  await testCollectThrows(restClient); // REGAPIC does not support client streaming
-  await testChatThrows(restClient); // REGAPIC does not support bidi streaming
-  await testWait(restClient);
+  // await testEcho(fallbackClient);
+  // await testEchoError(fallbackClient);
+  // await testExpandThrows(fallbackClient); // fallback does not support server streaming
+  // await testPagedExpand(fallbackClient);
+  // await testPagedExpandAsync(fallbackClient);
+  // await testCollectThrows(fallbackClient); // fallback does not support client streaming
+  // await testChatThrows(fallbackClient); // fallback does not support bidi streaming
+  // await testWait(fallbackClient);
+
+  // await testEcho(restClient);
+  // await testExpand(restClient); // REGAPIC supports server streaming
+  // await testPagedExpand(restClient);
+  // await testPagedExpandAsync(restClient);
+  // await testCollectThrows(restClient); // REGAPIC does not support client streaming
+  // await testChatThrows(restClient); // REGAPIC does not support bidi streaming
+  // await testWait(restClient);
+}
+
+function getStreamingSequenceRequest(){
+  const request = new protos.google.showcase.v1beta1.CreateStreamingSequenceRequest()
+
+  let firstDelay = new protos.google.protobuf.Duration();
+  firstDelay.nanos=150;
+
+  let firstStatus = new protos.google.rpc.Status();
+  firstStatus.code=14;
+  firstStatus.message="UNAVAILABLE";
+
+  let firstResponse = new protos.google.showcase.v1beta1.StreamingSequence.Response();
+  firstResponse.delay=firstDelay;
+  firstResponse.status=firstStatus;
+
+  // The Index you want the stream to fail or send the status 
+  // This  should be index + 1 so if you want to send status at index 0 
+  // you would provide firstResponse.sendStatusAtIndex=1
+
+  firstResponse.sendStatusAtIndex=1;
+  
+  let secondDelay = new protos.google.protobuf.Duration();
+  secondDelay.nanos=150;
+
+  let secondStatus = new protos.google.rpc.Status();
+  secondStatus.code=	4;
+  secondStatus.message="DEADLINE_EXCEEDED";
+
+  let secondResponse = new protos.google.showcase.v1beta1.StreamingSequence.Response();
+  secondResponse.delay=secondDelay;
+  secondResponse.status=secondStatus;
+  secondResponse.sendStatusAtIndex=2
+
+  let thirdDelay = new protos.google.protobuf.Duration();
+  thirdDelay.nanos=500000;
+
+  let thirdStatus = new protos.google.rpc.Status();
+  thirdStatus.code=0;
+  thirdStatus.message="OK";
+
+  let thirdResponse = new protos.google.showcase.v1beta1.StreamingSequence.Response();
+  thirdResponse.delay=thirdDelay;
+  thirdResponse.status=thirdStatus;
+  thirdResponse.sendStatusAtIndex=11;
+
+  let streamingSequence = new protos.google.showcase.v1beta1.StreamingSequence()
+  streamingSequence.responses = [firstResponse,secondResponse,thirdResponse];
+  // streamingSequence.responses = [];
+
+  streamingSequence.content = "This is testing the brand new and shiny StreamingSequence server 3";
+  request.streamingsequence = streamingSequence
+
+  return request
 }
 
 async function testEcho(client: EchoClient) {
@@ -245,6 +308,7 @@ async function testCollect(client: EchoClient) {
           resolve(result.content ?? '');
         }
       });
+<<<<<<< Updated upstream
       for (const word of words) {
         const request = {content: word};
         stream.write(request);
@@ -259,6 +323,22 @@ async function testCollect(client: EchoClient) {
   });
   const result = await promise;
   assert.strictEqual(result, words.join(' '));
+=======
+      return attemptStream
+  }
+  let attemptStream;
+  //TODO(coleleah): handle this more elegantly
+  if (sequence.responses){
+    const numResponses = sequence.responses.length
+    console.log(numResponses);
+
+     attemptStream = await multipleSequenceAttempts(numResponses) 
+  }else{
+    const numResponses = 3
+    attemptStream = await multipleSequenceAttempts(numResponses) 
+
+  }
+>>>>>>> Stashed changes
 }
 
 async function testCollectThrows(client: EchoClient) {
