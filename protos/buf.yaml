@@ -1,0 +1,7 @@
+version: v1
+name: ""
+deps: []
+build:
+  excludes:
+    - google/protobuf/compiler
+    - google/protobuf/util

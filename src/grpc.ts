@@ -256,6 +256,12 @@ export class GrpcClient {
     return grpcPackage;
   }
 
+  loadFromPackageDefinition(packageDef: grpcProtoLoader.PackageDefinition) {
+    const grpcPackage = this.grpc.loadPackageDefinition(packageDef);
+    console.log('loaded:', grpcPackage);
+    return grpcPackage;
+  }
+
   /**
    * Load gRPC proto service from a filename looking in googleapis common protos
    * when necessary. Caches the loaded protos so the subsequent loads don't do
