@@ -43,5 +43,8 @@ function usage() {
 }
 
 if (require.main === module) {
+  if (process.argv.length < 3 || process.argv[2] === '--help') {
+    usage();
+  }
   main(process.argv[2]);
 }
