@@ -277,7 +277,7 @@ export class GrpcClient {
   ) {
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
-        this.authClient = await this.auth.getClient();
+        this.authClient = (await this.auth.getClient()) as AuthClient;
       } else if (this.auth && 'getRequestHeaders' in this.auth) {
         this.authClient = this.auth;
       }
