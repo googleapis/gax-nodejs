@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
 import {APICaller} from '../apiCaller';
@@ -82,7 +81,7 @@ export class PageDescriptor implements Descriptor {
       // emit full api response with every page.
       stream.emit('response', apiResp);
       for (let i = 0; i < resources.length; ++i) {
-        if (ended(stream)) {
+        if ((stream as any)._readableState.ended) {
           return;
         }
         if (resources[i] === null) {
@@ -94,7 +93,7 @@ export class PageDescriptor implements Descriptor {
           stream.end();
         }
       }
-      if (ended(stream)) {
+      if ((stream as any)._readableState.ended) {
         return;
       }
       if (!next) {
