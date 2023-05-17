@@ -18,12 +18,12 @@ import * as fs from 'fs';
 import {promises as fsp} from 'fs';
 import * as rimraf from 'rimraf';
 import * as path from 'path';
-import * as minify from '../../tools/minify';
+import * as minify from '../src/minify';
 import {promisify} from 'util';
 
 const rmrf = promisify(rimraf);
 const testDir = path.join(process.cwd(), '.minify-test');
-const fixturesDir = path.join(__dirname, '..', 'fixtures');
+const fixturesDir = path.join(__dirname, '..', 'test', 'fixtures');
 
 describe('minify tool', () => {
   beforeEach(async () => {
