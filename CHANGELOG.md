@@ -4,6 +4,28 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.0.0](https://github.com/googleapis/gax-nodejs/compare/v3.6.0...v4.0.0) (2023-05-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* remove is-stream & fast-text-encoding dependencies ([#1442](https://github.com/googleapis/gax-nodejs/issues/1442))
+* drop Node 12 & decouple development dependencies ([#1439](https://github.com/googleapis/gax-nodejs/issues/1439))
+
+### Features
+
+* Drop Node 12 & decouple development dependencies ([#1439](https://github.com/googleapis/gax-nodejs/issues/1439)) ([61a7143](https://github.com/googleapis/gax-nodejs/commit/61a71436e9428c8118831a05fb5c7a3b2b3f99a5))
+
+
+### Bug Fixes
+
+* Compilation error in fallback.ts ([#1444](https://github.com/googleapis/gax-nodejs/issues/1444)) ([8e6888f](https://github.com/googleapis/gax-nodejs/commit/8e6888f469845a0a68dbab3047b3a6843e58da22))
+
+
+### Build System
+
+* Remove is-stream & fast-text-encoding dependencies ([#1442](https://github.com/googleapis/gax-nodejs/issues/1442)) ([111133c](https://github.com/googleapis/gax-nodejs/commit/111133c5a2bd5a54ebe99a337de9a5a58ee67d2e))
+
 ## [3.6.0](https://github.com/googleapis/gax-nodejs/compare/v3.5.8...v3.6.0) (2023-03-30)
 
 
