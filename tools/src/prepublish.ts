@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * Copyright 2020 Google LLC
  *
@@ -18,14 +20,12 @@ import {getProtoPath} from 'google-proto-files';
 import * as path from 'path';
 // Note: the following three imports will be all gone when we support Node.js 16+.
 // But until then, we'll use these modules.
-import * as rimraf from 'rimraf';
-import mkdirp from 'mkdirp';
+import * as fs from 'fs';
 import * as ncp from 'ncp';
 import {promisify} from 'util';
 
+const fsp = fs.promises;
 const ncpp = promisify(ncp);
-const rmrf = promisify(rimraf);
-
 const subdirs = [
   'api',
   'iam/v1',
@@ -38,18 +38,38 @@ const subdirs = [
   'cloud/location',
 ];
 
-async function main() {
-  await rmrf(path.join('protos', 'google'));
-  await mkdirp(path.join('protos', 'google'));
+async function main(directory: string) {
+  await fsp.rm(path.join(directory, 'protos', 'google'), {
+    recursive: true,
+    force: true,
+  });
+  await fsp.mkdir(path.join(directory, 'protos', 'google'), {recursive: true});
 
   for (const subdir of subdirs) {
     const src = getProtoPath(subdir);
-    const target = path.join('protos', 'google', subdir);
+    const target = path.join(directory, 'protos', 'google', subdir);
     console.log(`Copying protos from ${src} to ${target}`);
-    await mkdirp(target);
+    await fsp.mkdir(target, {recursive: true});
     await ncpp(src, target);
   }
   console.log('Protos have been copied successfully');
 }
 
-main().catch(console.error);
+/**
+ * Shows the usage information.
+ */
+function usage() {
+  console.log(`Usage: node ${process.argv[1]} directory ...`);
+}
+
+if (require.main === module) {
+  // argv[0] is node.js binary, argv[1] is script path
+
+  if (process.argv[2] === '--help') {
+    usage();
+    // eslint-disable-next-line no-process-exit
+    process.exit(1);
+  }
+
+  main(process.argv[2]);
+}

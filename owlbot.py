@@ -14,4 +14,4 @@
 
 import synthtool.languages.node as node
 
-node.owlbot_main(templates_excludes=["LICENSE", "README.md", ".github/sync-repo-settings.yaml"])
+node.owlbot_main(templates_excludes=["LICENSE", "README.md", ".github/sync-repo-settings.yaml", ".github/workflows/ci.yaml",".kokoro/", ".kokoro/continuous/node12/common.cfg", ".kokoro/presubmit/node12/common.cfg", ".kokoro/release/docs.cfg", ".kokoro/release/publish.cfg"])

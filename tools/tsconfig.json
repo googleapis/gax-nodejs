@@ -5,12 +5,7 @@
     "rootDir": ".",
     "outDir": "build",
     "noImplicitAny": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
-  "include": [
-    "src/*.ts",
-    "src/*/*.ts",
-    "test/system-test/*.ts",
-    "test/unit/*.ts",
-  ]
+  "include": ["src/*.ts","test/minify.ts", "test/compileProtos.ts"]
 }
