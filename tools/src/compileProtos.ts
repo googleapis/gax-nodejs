@@ -215,6 +215,7 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
     );
     result.push(...list);
   }
+
   return result;
 }
 
@@ -245,7 +246,7 @@ async function compileProtos(
       '-p',
       'protos',
       '-p',
-      path.join(__dirname, '..', '..', 'build', 'protos'),
+      path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
       '-o',
       jsonOutput,
     ];
@@ -263,7 +264,7 @@ async function compileProtos(
     '-p',
     'protos',
     '-p',
-    path.join(__dirname, '..', '..', 'build', 'protos'),
+    path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
     '-o',
     jsOutput,
   ];

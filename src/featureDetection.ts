@@ -33,14 +33,6 @@ export function hasWindowFetch() {
   return features.windowFetch;
 }
 
-export function hasTextEncoder() {
-  return features.textEncoder;
-}
-
-export function hasTextDecoder() {
-  return features.textDecoder;
-}
-
 export function isNodeJS() {
   return features.nodeJS;
 }

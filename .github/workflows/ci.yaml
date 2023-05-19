@@ -5,11 +5,11 @@ on:
   pull_request:
 name: ci
 jobs:
-  test:
+  test-gax:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [12, 14, 16]
+        node: [14, 16]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
@@ -26,7 +26,28 @@ jobs:
       - run: npm test
         env:
           MOCHA_THROW_DEPRECATION: false
-  windows:
+  test-tools:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --version
+      # The first installation step ensures that all of our production
+      # dependencies work on the given Node.js version, this helps us find
+      # dependencies that don't match our engines field:
+      - run: cd tools; npm install --engine-strict --no-package-lock
+      # Clean up the production install, before installing dev/production:
+      - run: cd tools; rm -rf node_modules
+      - run: cd tools; npm install
+      - run: cd tools; npm test
+        env:
+          MOCHA_THROW_DEPRECATION: false
+  windows-gax:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
@@ -37,7 +58,18 @@ jobs:
       - run: npm test
         env:
           MOCHA_THROW_DEPRECATION: false
-  lint:
+  windows-tools:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - run: cd tools; npm install
+      - run: cd tools; npm test
+        env:
+          MOCHA_THROW_DEPRECATION: false
+  lint-gax:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -46,6 +78,15 @@ jobs:
           node-version: 14
       - run: npm install
       - run: npm run lint
+  lint-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+      - run: cd tools; npm install
+      - run: cd tools; npm run lint
   docs:
     runs-on: ubuntu-latest
     steps:

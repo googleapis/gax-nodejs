@@ -9,12 +9,15 @@ branchProtectionRules:
       - "ci/kokoro: System test"
       - "ci/kokoro: Browser test"
       - docs
-      - lint
-      - test (12)
-      - test (14)
-      - test (16)
+      - lint-gax
+      - lint-tools
+      - test-gax (14)
+      - test-gax (16)
+      - test-tools (14)
+      - test-tools (16)
       - cla/google
-      - windows
+      - windows-gax
+      - windows-tools
       - OwlBot Post Processor
 permissionRules:
   - team: yoshi-admins

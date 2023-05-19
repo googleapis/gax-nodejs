@@ -22,12 +22,29 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as walk from 'walkdir';
 
-const googleProtoFilesDir = path.join(__dirname, '..', '..', 'protos');
-const outputFile = path.join(__dirname, '..', '..', 'src', 'protosList.json');
+async function main(directory: string) {
+  const googleProtoFilesDir = path.join(directory, 'protos');
+  const outputFile = path.join(directory, 'src', 'protosList.json');
+  const commonProtoFiles = walk
+    .sync(googleProtoFilesDir)
+    .filter(f => path.extname(f) === '.proto')
+    .map(f => f.match(/protos\/(.*)/)![1]);
 
-const commonProtoFiles = walk
-  .sync(googleProtoFilesDir)
-  .filter(f => path.extname(f) === '.proto')
-  .map(f => path.normalize(f).substring(googleProtoFilesDir.length + 1));
+  fs.writeFileSync(
+    outputFile,
+    JSON.stringify(commonProtoFiles, null, 2) + '\n'
+  );
+}
+/**
+ * Shows the usage information.
+ */
+function usage() {
+  console.log(`Usage: node ${process.argv[1]} directory ...`);
+}
 
-fs.writeFileSync(outputFile, JSON.stringify(commonProtoFiles, null, 2) + '\n');
+if (require.main === module) {
+  if (process.argv.length < 3 || process.argv[2] === '--help') {
+    usage();
+  }
+  main(process.argv[2]);
+}

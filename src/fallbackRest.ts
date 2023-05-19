@@ -19,13 +19,8 @@
 import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
 import {FetchParameters, FetchParametersMethod} from './fallbackServiceStub';
-import {hasTextDecoder, hasTextEncoder} from './featureDetection';
 import {GoogleError} from './googleError';
 import {transcode} from './transcoding';
-
-if (!hasTextEncoder() || !hasTextDecoder()) {
-  require('fast-text-encoding');
-}
 
 export function encodeRequest(
   rpc: protobuf.Method,
