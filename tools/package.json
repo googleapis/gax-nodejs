@@ -32,11 +32,18 @@
     "google-proto-files": "^4.0.0",
     "protobufjs-cli": "1.1.2",
     "rimraf": "^5.0.1",
+    "@babel/core": "^7.22.5",
+    "@babel/traverse": "^7.22.5",
+    "@types/rimraf": "^3.0.2",
     "uglify-js": "^3.17.0",
     "walkdir": "^0.4.0"
   },
   "repository": "googleapis/gax-nodejs",
   "devDependencies": {
+    "@babel/cli": "^7.22.5",
+    "@babel/types": "^7.22.5",
+    "@types/babel__core": "^7.20.1",
+    "@types/babel__traverse": "^7.20.1",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
     "@types/uglify-js": "^3.17.0",
