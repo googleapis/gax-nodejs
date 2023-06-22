@@ -47,8 +47,6 @@ describe('replace import.meta.url', () => {
     const program = 'console.log(import.meta.url)';
     const expected = 'console.log(foo.bar);';
     const result = await babel.transformAsync(program, {
-      babelrc: false,
-      filename: 'replaceImportMetaUrl.ts',
       plugins: [[replaceImportMetaUrl, {replacementValue: 'foo.bar'}]],
     });
     assert.strictEqual(result?.code, expected);
