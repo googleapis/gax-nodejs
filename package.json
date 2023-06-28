@@ -19,7 +19,7 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^1.0.0",
-    "protobufjs": "7.2.3",
+    "protobufjs": "7.2.4",
     "retry-request": "^5.0.0"
   },
   "devDependencies": {
