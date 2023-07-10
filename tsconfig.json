@@ -5,7 +5,8 @@
     "rootDir": ".",
     "outDir": "build",
     "noImplicitAny": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/*.ts",
