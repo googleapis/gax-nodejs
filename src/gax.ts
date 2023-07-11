@@ -18,7 +18,10 @@
  * Google API Extensions
  */
 
+import type {Message} from 'protobufjs';
+import {warn} from './warnings';
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
+import {toLowerCamelCase} from './util';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -125,8 +128,6 @@ export interface CallOptions {
   timeout?: number;
   retry?: Partial<RetryOptions> | null;
   autoPaginate?: boolean;
-  pageToken?: string;
-  pageSize?: number;
   maxResults?: number;
   maxRetries?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -177,7 +178,6 @@ export class CallSettings {
     this.retry = settings.retry as RetryOptions;
     this.autoPaginate =
       'autoPaginate' in settings ? settings.autoPaginate : true;
-    this.pageToken = settings.pageToken;
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
     this.bundleOptions = settings.bundleOptions;
@@ -203,16 +203,38 @@ export class CallSettings {
     let timeout = this.timeout;
     let retry = this.retry;
     let autoPaginate = this.autoPaginate;
-    let pageToken = this.pageToken;
-    let pageSize = this.pageSize;
     let maxResults = this.maxResults;
     let otherArgs = this.otherArgs;
     let isBundling = this.isBundling;
     let longrunning = this.longrunning;
     let apiName = this.apiName;
     let retryRequestOptions = this.retryRequestOptions;
+    // If a method-specific timeout is set in the service config, and the retry codes for that
+    // method are non-null, then that timeout value will be used to
+    // override backoff settings.
+    if (
+      retry !== undefined &&
+      retry !== null &&
+      retry.retryCodes !== null &&
+      retry.retryCodes.length > 0
+    ) {
+      retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+      retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+      retry.backoffSettings.totalTimeoutMillis = timeout;
+    }
+    // If the user provides a timeout to the method, that timeout value will be used
+    // to override the backoff settings.
     if ('timeout' in options) {
       timeout = options.timeout!;
+      if (
+        retry !== undefined &&
+        retry !== null &&
+        retry.retryCodes.length > 0
+      ) {
+        retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+        retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+        retry.backoffSettings.totalTimeoutMillis = timeout;
+      }
     }
     if ('retry' in options) {
       retry = mergeRetryOptions(retry || ({} as RetryOptions), options.retry!);
@@ -220,15 +242,6 @@ export class CallSettings {
 
     if ('autoPaginate' in options && !options.autoPaginate) {
       autoPaginate = false;
-    }
-
-    if ('pageToken' in options) {
-      autoPaginate = false;
-      pageToken = options.pageToken;
-    }
-
-    if ('pageSize' in options) {
-      pageSize = options.pageSize;
     }
 
     if ('maxResults' in options) {
@@ -270,8 +283,6 @@ export class CallSettings {
       bundleOptions: this.bundleOptions,
       longrunning,
       autoPaginate,
-      pageToken,
-      pageSize,
       maxResults,
       otherArgs,
       isBundling,
@@ -638,7 +649,7 @@ export function constructSettings(
     return null;
   }
   // users can override the config from client side, like bundling options.
-  // The detailed structure of the clientConfig can be found here: https://github.com/googleapis/gax-nodejs/blob/master/src/gax.ts#L546
+  // The detailed structure of the clientConfig can be found here: https://github.com/googleapis/gax-nodejs/blob/main/src/gax.ts#L546
   // The way to override bundling options:
   //
   // const customConfig = {"interfaces": {"service": {"methods": {"methodName": {"bundling": {..}}}}}}
@@ -649,7 +660,7 @@ export function constructSettings(
   const overridingMethods = overrides.methods || {};
   for (const methodName in methods) {
     const methodConfig = methods[methodName];
-    const jsName = methodName[0].toLowerCase() + methodName.slice(1);
+    const jsName = toLowerCamelCase(methodName);
 
     let retry = constructRetry(
       methodConfig,
@@ -692,4 +703,21 @@ export function constructSettings(
   }
 
   return defaults;
+}
+
+export function createByteLengthFunction(message: typeof Message) {
+  return function getByteLength(obj: {}) {
+    try {
+      return message.encode(obj).finish().length;
+    } catch (err) {
+      const stringified = JSON.stringify(obj);
+      warn(
+        'error_encoding_protobufjs_object',
+        `Cannot encode protobuf.js object: ${stringified}: ${err}`
+      );
+      // We failed to encode the object properly, let's just return an upper boundary of its length.
+      // It's only needed for calculating the size of the batch, so it's safe if it's bigger than needed.
+      return stringified.length;
+    }
+  };
 }

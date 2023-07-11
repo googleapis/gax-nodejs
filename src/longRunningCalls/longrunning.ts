@@ -189,11 +189,20 @@ export class Operation extends EventEmitter {
       this._callOptions!
     );
 
-    const noCallbackPromise = this.currentCallPromise_!.then(responses => {
-      self.latestResponse = responses[0] as LROOperation;
-      self._unpackResponse(responses[0] as LROOperation, callback);
-      return promisifyResponse()!;
-    });
+    const noCallbackPromise = this.currentCallPromise_.then(
+      responses => {
+        self.latestResponse = responses[0] as LROOperation;
+        self._unpackResponse(responses[0] as LROOperation, callback);
+        return promisifyResponse()!;
+      },
+      (err: Error) => {
+        if (callback) {
+          callback(err);
+          return;
+        }
+        return Promise.reject(err);
+      }
+    );
 
     if (!callback) {
       return noCallbackPromise as Promise<{}>;
@@ -311,13 +320,11 @@ export class Operation extends EventEmitter {
           }
           // special case: some APIs fail to set either result or error
           // but set done = true (e.g. speech with silent file).
-          // Don't hang forever in this case.
+          // Some APIs just use this for the normal completion
+          // (e.g. nodejs-contact-center-insights), so let's just return
+          // an empty response in this case.
           if (rawResponse!.done) {
-            const error = new GoogleError(
-              'Long running operation has finished but there was no result'
-            );
-            error.code = Status.UNKNOWN;
-            setImmediate(emit, 'error', error);
+            setImmediate(emit, 'complete', {}, metadata, rawResponse);
             return;
           }
           setTimeout(() => {

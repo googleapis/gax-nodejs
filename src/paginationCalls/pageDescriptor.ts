@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-import * as ended from 'is-stream-ended';
 import {PassThrough, Transform} from 'stream';
 
 import {APICaller} from '../apiCaller';
-import {GaxCall, APICallback, RequestType, ResultTuple} from '../apitypes';
+import {
+  GaxCall,
+  APICallback,
+  RequestType,
+  ResultTuple,
+  NextPageRequestType,
+  RawResponseType,
+} from '../apitypes';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {PagedApiCaller} from './pagedApiCaller';
+
+const maxAttemptsEmptyResponse = 10;
 
 export interface ResponseType {
   [index: string]: string;
@@ -62,9 +70,9 @@ export class PageDescriptor implements Descriptor {
     let started = false;
     function callback(
       err: Error | null,
-      resources: Array<{}>,
-      next: {},
-      apiResp: {}
+      resources: Array<ResponseType>,
+      next: NextPageRequestType,
+      apiResp: RawResponseType
     ) {
       if (err) {
         stream.emit('error', err);
@@ -73,7 +81,7 @@ export class PageDescriptor implements Descriptor {
       // emit full api response with every page.
       stream.emit('response', apiResp);
       for (let i = 0; i < resources.length; ++i) {
-        if (ended(stream)) {
+        if ((stream as any)._readableState.ended) {
           return;
         }
         if (resources[i] === null) {
@@ -85,7 +93,7 @@ export class PageDescriptor implements Descriptor {
           stream.end();
         }
       }
-      if (ended(stream)) {
+      if ((stream as any)._readableState.ended) {
         return;
       }
       if (!next) {
@@ -101,7 +109,7 @@ export class PageDescriptor implements Descriptor {
         request = next;
         started = false;
       } else {
-        setImmediate(apiCall, next, options, callback);
+        setImmediate(apiCall, next, options, callback as APICallback);
       }
     }
     stream.on('resume', () => {
@@ -134,7 +142,7 @@ export class PageDescriptor implements Descriptor {
     const asyncIterable = {
       [Symbol.asyncIterator]() {
         let nextPageRequest: RequestType | null | undefined = request;
-        const cache: {}[] = [];
+        const cache: Array<ResponseType | [string, ResponseType]> = [];
         return {
           async next() {
             if (cache.length > 0) {
@@ -143,13 +151,27 @@ export class PageDescriptor implements Descriptor {
                 value: cache.shift(),
               });
             }
-            if (nextPageRequest) {
+            let attempts = 0;
+            while (cache.length === 0 && nextPageRequest) {
               let result: {} | [ResponseType] | null;
               [result, nextPageRequest] = (await apiCall(
                 nextPageRequest!,
                 options
               )) as ResultTuple;
-              cache.push(...(result as ResponseType[]));
+              // For pagination response with protobuf map type, use tuple as representation.
+              if (result && !Array.isArray(result)) {
+                for (const [key, value] of Object.entries(result)) {
+                  cache.push([key, value as ResponseType]);
+                }
+              } else {
+                cache.push(...(result as ResponseType[]));
+              }
+              if (cache.length === 0) {
+                ++attempts;
+                if (attempts > maxAttemptsEmptyResponse) {
+                  break;
+                }
+              }
             }
             if (cache.length === 0) {
               return Promise.resolve({done: true, value: undefined});

@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-import {GoogleAuth, OAuth2Client} from 'google-auth-library';
+import type {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
-import {ClientOptions, Callback} from './clientInterface';
+import type {ClientOptions, Callback} from './clientInterface';
 
 import {GaxCall, ResultTuple, RequestType} from './apitypes';
 import {createApiCall} from './createApiCall';
 import {PageDescriptor} from './descriptor';
 import * as gax from './gax';
-import {ClientStubOptions, GrpcClient} from './grpc';
-import {GrpcClient as FallbackGrpcClient} from './fallback';
+import type {ClientStubOptions, GrpcClient} from './grpc';
+import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import * as protos from '../protos/operations';
 import configData = require('./operations_client_config.json');
 import {Transform} from 'stream';
 import {CancellablePromise} from './call';
-import protoJson = require('../protos/operations.json');
+import operationProtoJson = require('../protos/operations.json');
+import {overrideHttpRules} from './transcoding';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 const version = require('../../package.json').version;
@@ -64,6 +65,7 @@ export class OperationsClient {
   auth?: GoogleAuth | OAuth2Client;
   innerApiCalls: {[name: string]: Function};
   descriptor: {[method: string]: PageDescriptor};
+  operationsStub: Promise<{[method: string]: Function}>;
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -112,7 +114,7 @@ export class OperationsClient {
     };
     // Put together the "service stub" for
     // google.longrunning.Operations.
-    const operationsStub = gaxGrpc.createStub(
+    this.operationsStub = gaxGrpc.createStub(
       opts.fallback
         ? operationsProtos.lookupService('google.longrunning.Operations')
         : operationsProtos.google.longrunning.Operations,
@@ -126,7 +128,7 @@ export class OperationsClient {
     ];
 
     for (const methodName of operationsStubMethods) {
-      const innerCallPromise = operationsStub.then(
+      const innerCallPromise = this.operationsStub.then(
         stub =>
           (...args: Array<{}>) => {
             const func = stub[methodName];
@@ -142,6 +144,11 @@ export class OperationsClient {
         this.descriptor[methodName]
       );
     }
+  }
+
+  /** Closes this operations client. */
+  close() {
+    this.operationsStub.then(stub => stub.close());
   }
 
   /**
@@ -561,9 +568,16 @@ export class OperationsClientBuilder {
    * Builds a new Operations Client
    * @param gaxGrpc {GrpcClient}
    */
-  constructor(gaxGrpc: GrpcClient | FallbackGrpcClient) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const operationsProtos = gaxGrpc.loadProtoJSON(protoJson);
+  constructor(
+    gaxGrpc: GrpcClient | FallbackGrpcClient,
+    protoJson?: protobuf.Root
+  ) {
+    if (protoJson && gaxGrpc.httpRules) {
+      // overwrite the http rules if provide in service yaml.
+      overrideHttpRules(gaxGrpc.httpRules, protoJson);
+    }
+    const operationsProtos =
+      protoJson ?? gaxGrpc.loadProtoJSON(operationProtoJson);
 
     /**
      * Build a new instance of {@link OperationsClient}.
@@ -576,7 +590,7 @@ export class OperationsClientBuilder {
      */
     this.operationsClient = opts => {
       if (gaxGrpc.fallback) {
-        opts.fallback = true;
+        opts.fallback = gaxGrpc.fallback;
       }
       return new OperationsClient(gaxGrpc, operationsProtos, opts);
     };

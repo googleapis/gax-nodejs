@@ -14,45 +14,12 @@
  * limitations under the License.
  */
 
-// Not all browsers support `TextEncoder`. The following `require` will
-// provide a fast UTF8-only replacement for those browsers that don't support
-// text encoding natively.
-import {isBrowser} from './isbrowser';
-let needTextEncoderPolyfill = false;
-
-if (
-  isBrowser() &&
-  // eslint-disable-next-line node/no-unsupported-features/node-builtins
-  (typeof TextEncoder === 'undefined' || typeof TextDecoder === 'undefined')
-) {
-  needTextEncoderPolyfill = true;
-}
-if (
-  typeof process !== 'undefined' &&
-  process?.versions?.node &&
-  process?.versions?.node.match(/^10\./)
-) {
-  // Node.js 10 does not have global TextDecoder
-  // TODO(@alexander-fenster): remove this logic after Node.js 10 is EOL.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const util = require('util');
-  Object.assign(global, {
-    TextDecoder: util.TextDecoder,
-    TextEncoder: util.TextEncoder,
-  });
-}
-if (needTextEncoderPolyfill) {
-  require('fast-text-encoding');
-}
-
+import {OutgoingHttpHeaders} from 'http';
+import * as objectHash from 'object-hash';
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
-import nodeFetch from 'node-fetch';
-import {Response as NodeFetchResponse} from 'node-fetch';
 import * as routingHeader from './routingHeader';
-import {AbortController as NodeAbortController} from 'abort-controller';
 import {Status} from './status';
-import {OutgoingHttpHeaders} from 'http';
 import {
   GoogleAuth,
   OAuth2Client,
@@ -62,18 +29,32 @@ import {
   GoogleAuthOptions,
   BaseExternalAccountClient,
 } from 'google-auth-library';
-import * as objectHash from 'object-hash';
 import {OperationsClientBuilder} from './operationsClient';
-import {GrpcClientOptions, ClientStubOptions} from './grpc';
+import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
-import {Descriptor} from './descriptor';
+import {Descriptor, StreamDescriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
-import {FallbackErrorDecoder, FallbackServiceError} from './fallbackError';
-import {transcode} from './transcoding';
+import {FallbackServiceError} from './googleError';
+import * as fallbackProto from './fallbackProto';
+import * as fallbackRest from './fallbackRest';
+import {isNodeJS} from './featureDetection';
+import {generateServiceStub} from './fallbackServiceStub';
+import {StreamType} from './streamingCalls/streaming';
+import {toLowerCamelCase} from './util';
+import {google} from '../protos/http';
+import * as IamProtos from '../protos/iam_service';
+import * as LocationProtos from '../protos/locations';
+import * as operationsProtos from '../protos/operations';
+
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
-export {CallSettings, constructSettings, RetryOptions} from './gax';
+export {
+  CallSettings,
+  constructSettings,
+  RetryOptions,
+  createDefaultBackoffSettings,
+} from './gax';
 export const version = require('../../package.json').version + '-fallback';
 
 export {
@@ -85,27 +66,39 @@ export {
 
 export {StreamType} from './streamingCalls/streaming';
 
-interface NodeFetchType {
-  (url: RequestInfo, init?: RequestInit): Promise<Response>;
-}
+export {OperationsClient} from './operationsClient';
+export {IamClient} from './iamService';
+export {LocationsClient} from './locationService';
+
+export const defaultToObjectOptions = {
+  keepCase: false,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+};
 
 const CLIENT_VERSION_HEADER = 'x-goog-api-client';
 
-interface FallbackServiceStub {
-  [method: string]: Function;
+export interface ServiceMethods {
+  [name: string]: protobuf.Method;
 }
+
+export type AuthClient =
+  | OAuth2Client
+  | Compute
+  | JWT
+  | UserRefreshClient
+  | BaseExternalAccountClient;
 
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
-  authClient?:
-    | OAuth2Client
-    | Compute
-    | JWT
-    | UserRefreshClient
-    | BaseExternalAccountClient;
+  authClient?: AuthClient;
   fallback: boolean | 'rest' | 'proto';
   grpcVersion: string;
   private static protoCache = new Map<string, protobuf.Root>();
+  httpRules?: Array<google.api.IHttpRule>;
+  numericEnums: boolean;
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -129,11 +122,11 @@ export class GrpcClient {
       fallback?: boolean | 'rest' | 'proto';
     } = {}
   ) {
-    if (isBrowser()) {
+    if (!isNodeJS()) {
       if (!options.auth) {
         throw new Error(
           JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser. Use OAuth2Client from google-auth-library.'
+            'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Use OAuth2Client from google-auth-library.'
         );
       }
       this.auth = options.auth as OAuth2Client;
@@ -144,6 +137,8 @@ export class GrpcClient {
     }
     this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
     this.grpcVersion = require('../../package.json').version;
+    this.httpRules = (options as GrpcClientOptions).httpRules;
+    this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
   }
 
   /**
@@ -158,7 +153,7 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
-    const hash = objectHash(json);
+    const hash = objectHash(JSON.stringify(json)).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
       return cached;
@@ -168,11 +163,10 @@ export class GrpcClient {
     return root;
   }
 
-  private static getServiceMethods(service: protobuf.Service) {
+  private static getServiceMethods(service: protobuf.Service): ServiceMethods {
     const methods: {[name: string]: protobuf.Method} = {};
     for (const [methodName, methodObject] of Object.entries(service.methods)) {
-      const methodNameLowerCamelCase =
-        methodName[0].toLowerCase() + methodName.substring(1);
+      const methodNameLowerCamelCase = toLowerCamelCase(methodName);
       methods[methodNameLowerCamelCase] = methodObject;
     }
 
@@ -274,27 +268,16 @@ export class GrpcClient {
    * @param {number} opts.port - The port of the service.
    * @return {Promise} A promise which resolves to a gRPC-fallback service stub, which is a protobuf.js service stub instance modified to match the gRPC stub API
    */
-  async createStub(service: protobuf.Service, opts: ClientStubOptions) {
-    // an RPC function to be passed to protobufjs RPC API
-    function serviceClientImpl(
-      method:
-        | protobuf.Method
-        | protobuf.rpc.ServiceMethod<
-            protobuf.Message<{}>,
-            protobuf.Message<{}>
-          >,
-      requestData: Uint8Array,
-      callback: protobuf.RPCImplCallback
-    ) {
-      return [requestData, callback];
-    }
-
-    // decoder for google.rpc.Status messages
-    const statusDecoder = new FallbackErrorDecoder();
-
+  async createStub(
+    service: protobuf.Service,
+    opts: ClientStubOptions,
+    // For consistency with createStub in grpc.ts, customServicePath is defined:
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    customServicePath?: boolean
+  ) {
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
-        this.authClient = await this.auth.getClient();
+        this.authClient = (await this.auth.getClient()) as AuthClient;
       } else if (this.auth && 'getRequestHeaders' in this.auth) {
         this.authClient = this.auth;
       }
@@ -302,223 +285,71 @@ export class GrpcClient {
     if (!this.authClient) {
       throw new Error('No authentication was provided');
     }
-    const authHeader = await this.authClient.getRequestHeaders();
-    const serviceStub = service.create(
-      serviceClientImpl,
-      false,
-      false
-    ) as unknown as FallbackServiceStub;
-
+    service.resolveAll();
     const methods = GrpcClient.getServiceMethods(service);
 
-    // grpcCompatibleServiceStub methods accept four parameters:
-    // request, options, metadata, and callback - similar to
-    // the stub returned by grpc.ts
-    const grpcCompatibleServiceStub = service.create(
-      serviceClientImpl,
-      false,
-      false
-    ) as unknown as FallbackServiceStub;
-    for (const [methodName, methodObject] of Object.entries(methods)) {
-      grpcCompatibleServiceStub[methodName] = (
-        req: {},
-        options: {[name: string]: string},
-        metadata: {},
-        callback: Function
-      ) => {
-        const [requestData, serviceCallback] = serviceStub[methodName].apply(
-          serviceStub,
-          [
-            methodObject.resolvedRequestType!.fromObject(req),
-            (err: Error | null, response: protobuf.Message<{}>) => {
-              if (!err) {
-                // converts a protobuf message instance to a plain JavaScript object
-                // with enum and long conversion options specified
-                const responseObject =
-                  methodObject.resolvedResponseType!.toObject(response, {
-                    enums: String,
-                    longs: String,
-                  });
-                callback(null, responseObject);
-              } else {
-                callback(err);
-              }
-            },
-          ]
-        );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let cancelController: AbortController, cancelSignal: any;
-        if (isBrowser() || typeof AbortController !== 'undefined') {
-          // eslint-disable-next-line no-undef
-          cancelController = new AbortController();
-        } else {
-          cancelController = new NodeAbortController();
-        }
-        if (cancelController) {
-          cancelSignal = cancelController.signal;
-        }
-        let cancelRequested = false;
+    const protocol = opts.protocol || 'https';
 
-        const headers = Object.assign({}, authHeader);
-        for (const key of Object.keys(options)) {
-          headers[key] = options[key][0];
-        }
-
-        const grpcFallbackProtocol = opts.protocol || 'https';
-        let servicePath = opts.servicePath;
-        if (
-          !servicePath &&
-          service.options &&
-          service.options['(google.api.default_host)']
-        ) {
-          servicePath = service.options['(google.api.default_host)'];
-        }
-        if (!servicePath) {
-          serviceCallback(new Error('Service path is undefined'));
-          return;
-        }
-
-        let servicePort;
-        const match = servicePath!.match(/^(.*):(\d+)$/);
-        if (match) {
-          servicePath = match[1];
-          servicePort = match[2];
-        }
-        if (opts.port) {
-          servicePort = opts.port;
-        } else if (!servicePort) {
-          servicePort = 443;
-        }
-
-        const protoNamespaces: string[] = [];
-        let currNamespace = methodObject.parent!;
-        while (currNamespace.name !== '') {
-          protoNamespaces.unshift(currNamespace.name);
-          currNamespace = currNamespace.parent!;
-        }
-        const protoServiceName = protoNamespaces.join('.');
-        const rpcName = methodObject.name;
-
-        let url: string;
-        let data: string;
-        let httpMethod: string;
-
-        // TODO(@alexander-fenster): refactor this into separate function that prepares
-        // request object for `fetch`.
-        if (this.fallback === 'rest') {
-          // REGAPIC: JSON over HTTP/1 with gRPC trancoding
-          headers['Content-Type'] = 'application/json';
-          const decodedRequest =
-            methodObject.resolvedRequestType!.decode(requestData);
-          const requestJSON = methodObject.resolvedRequestType!.toObject(
-            // TODO: use toJSON instead of toObject
-            decodedRequest,
-            {
-              enums: String,
-              longs: String,
-            }
-          );
-          const transcoded = transcode(
-            requestJSON,
-            methodObject.parsedOptions,
-            methodObject.resolvedRequestType!.fields
-          );
-          if (!transcoded) {
-            throw new Error(
-              `Cannot build HTTP request for ${JSON.stringify(
-                requestJSON
-              )}, method: ${methodObject.name}`
-            );
-          }
-          httpMethod = transcoded.httpMethod;
-          data = JSON.stringify(transcoded.data);
-          url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/${transcoded.url.replace(
-            /^\//,
-            ''
-          )}?${transcoded.queryString}`;
-        } else {
-          // gRPC-fallback: proto over HTTP/1
-          headers['Content-Type'] = 'application/x-protobuf';
-          httpMethod = 'post';
-          data = requestData;
-          url = `${grpcFallbackProtocol}://${servicePath}:${servicePort}/$rpc/${protoServiceName}/${rpcName}`;
-        }
-
-        const fetch = isBrowser()
-          ? // eslint-disable-next-line no-undef
-            window.fetch
-          : (nodeFetch as unknown as NodeFetchType);
-        const fetchRequest = {
-          headers,
-          body: data as string | undefined,
-          method: httpMethod,
-          signal: cancelSignal,
-        };
-        if (
-          httpMethod === 'get' ||
-          httpMethod === 'delete' ||
-          httpMethod === 'head'
-        ) {
-          delete fetchRequest['body'];
-        }
-        fetch(url, fetchRequest)
-          .then((response: Response | NodeFetchResponse) => {
-            return Promise.all([
-              Promise.resolve(response.ok),
-              response.arrayBuffer(),
-            ]);
-          })
-          .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
-            // TODO(@alexander-fenster): response processing to be moved
-            // to a separate function.
-            if (this.fallback === 'rest') {
-              // REGAPIC: JSON over HTTP/1
-              // eslint-disable-next-line node/no-unsupported-features/node-builtins
-              const decodedString = new TextDecoder().decode(buffer);
-              const response = JSON.parse(decodedString);
-              if (!ok) {
-                const error = Object.assign(
-                  new Error(response['error']['message']),
-                  response.error
-                );
-                throw error;
-              }
-              const message =
-                methodObject.resolvedResponseType!.fromObject(response);
-              const encoded = methodObject
-                .resolvedResponseType!.encode(message)
-                .finish();
-              serviceCallback(null, encoded);
-            } else {
-              // gRPC-fallback: proto over HTTP/1
-              if (!ok) {
-                const error = statusDecoder.decodeErrorFromBuffer(buffer);
-                throw error;
-              }
-              serviceCallback(null, new Uint8Array(buffer));
-            }
-          })
-          .catch((err: Error) => {
-            if (!cancelRequested || err.name !== 'AbortError') {
-              serviceCallback(err);
-            }
-          });
-
-        return {
-          cancel: () => {
-            if (!cancelController) {
-              console.warn(
-                'AbortController not found: Cancellation is not supported in this environment'
-              );
-              return;
-            }
-            cancelRequested = true;
-            cancelController.abort();
-          },
-        };
-      };
+    let servicePath = opts.servicePath;
+    if (
+      !servicePath &&
+      service.options &&
+      service.options['(google.api.default_host)']
+    ) {
+      servicePath = service.options['(google.api.default_host)'];
     }
-    return grpcCompatibleServiceStub;
+    if (!servicePath) {
+      throw new Error(
+        `Cannot determine service API path for service ${service.name}.`
+      );
+    }
+
+    let servicePort;
+    const match = servicePath!.match(/^(.*):(\d+)$/);
+    if (match) {
+      servicePath = match[1];
+      servicePort = parseInt(match[2]);
+    }
+    if (opts.port) {
+      servicePort = opts.port;
+    } else if (!servicePort) {
+      servicePort = 443;
+    }
+
+    const encoder =
+      this.fallback === 'rest'
+        ? fallbackRest.encodeRequest
+        : fallbackProto.encodeRequest;
+    const decoder =
+      this.fallback === 'rest'
+        ? fallbackRest.decodeResponse
+        : fallbackProto.decodeResponse;
+    const serviceStub = generateServiceStub(
+      methods,
+      protocol,
+      servicePath,
+      servicePort,
+      this.authClient,
+      encoder,
+      decoder,
+      this.numericEnums
+    );
+
+    return serviceStub;
+  }
+
+  /**
+   * Creates a 'bytelength' function for a given proto message class.
+   *
+   * See {@link BundleDescriptor} about the meaning of the return value.
+   *
+   * @param {function} message - a constructor function that is generated by
+   *   protobuf.js. Assumes 'encoder' field in the message.
+   * @return {function(Object):number} - a function to compute the byte length
+   *   for an object.
+   */
+  static createByteLengthFunction(message: typeof protobuf.Message) {
+    return gax.createByteLengthFunction(message);
   }
 }
 
@@ -530,9 +361,13 @@ export class GrpcClient {
  */
 export function lro(options: GrpcClientOptions) {
   options = Object.assign({scopes: []}, options);
+  if (options.protoJson) {
+    options = Object.assign(options, {fallback: 'rest'});
+  }
   const gaxGrpc = new GrpcClient(options);
-  return new OperationsClientBuilder(gaxGrpc);
+  return new OperationsClientBuilder(gaxGrpc, options.protoJson);
 }
+export {operationsProtos, IamProtos, LocationProtos};
 
 /**
  * gRPC-fallback version of createApiCall
@@ -560,12 +395,29 @@ export function lro(options: GrpcClientOptions) {
 export function createApiCall(
   func: Promise<GRPCCall> | GRPCCall,
   settings: gax.CallSettings,
-  descriptor?: Descriptor
+  descriptor?: Descriptor,
+  fallback?: boolean | 'proto' | 'rest'
 ): GaxCall {
-  if (descriptor && 'streaming' in descriptor) {
+  if (
+    (!fallback || fallback === 'rest') &&
+    descriptor &&
+    'streaming' in descriptor &&
+    (descriptor as StreamDescriptor).type !== StreamType.SERVER_STREAMING
+  ) {
     return () => {
       throw new Error(
-        'The gRPC-fallback client library (e.g. browser version of the library) currently does not support streaming calls.'
+        'The REST transport currently does not support client-streaming or bidi-stream calls.'
+      );
+    };
+  }
+  if (
+    (fallback === 'proto' || fallback === true) && // for legacy reasons, fallback === true means 'proto'
+    descriptor &&
+    'streaming' in descriptor
+  ) {
+    return () => {
+      throw new Error(
+        'The gRPC-fallback (proto over HTTP) transport currently does not support streaming calls.'
       );
     };
   }
@@ -574,6 +426,10 @@ export function createApiCall(
 
 export {protobuf};
 export * as protobufMinimal from 'protobufjs/minimal';
+
+export {warn} from './warnings';
+export {Operation, operation} from './longRunningCalls/longrunning';
+export {GoogleError} from './googleError';
 
 // Different environments or bundlers may or may not respect "browser" field
 // in package.json (e.g. Electron does not respect it, but if you run the code

@@ -1,0 +1,11 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "lib": ["es2018", "dom"],
+    "rootDir": ".",
+    "outDir": "build",
+    "noImplicitAny": true,
+    "resolveJsonModule": true,
+  },
+  "include": ["src/*.ts","test/minify.ts", "test/compileProtos.ts"]
+}

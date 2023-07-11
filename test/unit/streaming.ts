@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import * as assert from 'assert';
 import * as sinon from 'sinon';
@@ -28,17 +28,25 @@ import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
 import {APICallback} from '../../src/apitypes';
 import internal = require('stream');
+import {StreamArrayParser} from '../../src/streamArrayParser';
+import path = require('path');
+import protobuf = require('protobufjs');
+import {GoogleError} from '../../src';
+import {Metadata} from '@grpc/grpc-js';
 
 function createApiCallStreaming(
-  func: Promise<GRPCCall> | sinon.SinonSpy<Array<{}>, internal.Transform>,
-  type: streaming.StreamType
+  func:
+    | Promise<GRPCCall>
+    | sinon.SinonSpy<Array<{}>, internal.Transform | StreamArrayParser>,
+  type: streaming.StreamType,
+  rest?: boolean
 ) {
   const settings = new gax.CallSettings();
   return createApiCall(
     //@ts-ignore
     Promise.resolve(func),
     settings,
-    new StreamDescriptor(type)
+    new StreamDescriptor(type, rest)
   ) as GaxCallStream;
 }
 
@@ -303,6 +311,308 @@ describe('streaming', () => {
     });
     s.on('error', err => {
       assert.strictEqual(err, cancelError);
+      done();
+    });
+  });
+
+  it('emit response when stream received metadata event', done => {
+    const responseMetadata = {metadata: true};
+    const expectedStatus = {code: 0, metadata: responseMetadata};
+    const expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+      metadata: responseMetadata,
+    };
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      setImmediate(() => {
+        s.emit('metadata', responseMetadata);
+      });
+      s.on('end', () => {
+        setTimeout(() => {
+          s.emit('status', expectedStatus);
+        }, 10);
+      });
+      return s;
+    });
+
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    let receivedMetadata: {};
+    let receivedStatus: {};
+    let receivedResponse: {};
+    let ended = false;
+
+    function check() {
+      if (
+        typeof receivedMetadata !== 'undefined' &&
+        typeof receivedStatus !== 'undefined' &&
+        typeof receivedResponse !== 'undefined' &&
+        ended
+      ) {
+        assert.deepStrictEqual(receivedMetadata, responseMetadata);
+        assert.deepStrictEqual(receivedStatus, expectedStatus);
+        assert.deepStrictEqual(receivedResponse, expectedResponse);
+        done();
+      }
+    }
+
+    const dataCallback = sinon.spy(data => {
+      assert.deepStrictEqual(data, undefined);
+    });
+    const responseCallback = sinon.spy();
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
+    s.on('data', dataCallback);
+    s.on('metadata', data => {
+      receivedMetadata = data;
+      check();
+    });
+    s.on('response', data => {
+      receivedResponse = data;
+      responseCallback();
+      check();
+    });
+    s.on('status', data => {
+      receivedStatus = data;
+      check();
+    });
+    s.on('end', () => {
+      ended = true;
+      check();
+      assert.strictEqual(dataCallback.callCount, 0);
+      assert.strictEqual(responseCallback.callCount, 1);
+    });
+  });
+
+  it('emit response when stream received no metadata event', done => {
+    const responseMetadata = {metadata: true};
+    const expectedStatus = {code: 0, metadata: responseMetadata};
+    const expectedResponse = {
+      code: 200,
+      message: 'OK',
+      details: '',
+    };
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      s.on('end', () => {
+        setTimeout(() => {
+          console.log('emit status event');
+          s.emit('status', expectedStatus);
+        }, 10);
+      });
+      return s;
+    });
+
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    let receivedStatus: {};
+    let receivedResponse: {};
+    let ended = false;
+
+    function check() {
+      if (
+        typeof receivedStatus !== 'undefined' &&
+        typeof receivedResponse !== 'undefined' &&
+        ended
+      ) {
+        assert.deepStrictEqual(receivedStatus, expectedStatus);
+        assert.deepStrictEqual(receivedResponse, expectedResponse);
+        done();
+      }
+    }
+
+    const dataCallback = sinon.spy(data => {
+      assert.deepStrictEqual(data, undefined);
+    });
+    const responseCallback = sinon.spy();
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
+    s.on('data', dataCallback);
+    s.on('response', data => {
+      receivedResponse = data;
+      responseCallback();
+      check();
+    });
+    s.on('status', data => {
+      receivedStatus = data;
+      check();
+    });
+    s.on('end', () => {
+      ended = true;
+      check();
+      assert.strictEqual(dataCallback.callCount, 0);
+      assert.strictEqual(responseCallback.callCount, 1);
+    });
+  });
+
+  it('emit parsed GoogleError', done => {
+    const errorInfoObj = {
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+      metadata: {
+        consumer: 'projects/455411330361',
+        service: 'translate.googleapis.com',
+      },
+    };
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const any = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('grpc-status-details-bin', status_buffer);
+    const error = Object.assign(new GoogleError('test error'), {
+      code: 5,
+      details: 'Failed to read',
+      metadata: metadata,
+    });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      setImmediate(() => {
+        s.emit('error', error);
+      });
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING
+    );
+    const s = apiCall({}, undefined);
+    s.on('error', err => {
+      assert(err instanceof GoogleError);
+      assert.deepStrictEqual(err.message, 'test error');
+      assert.strictEqual(err.domain, errorInfoObj.domain);
+      assert.strictEqual(err.reason, errorInfoObj.reason);
+      assert.strictEqual(
+        JSON.stringify(err.errorInfoMetadata),
+        JSON.stringify(errorInfoObj.metadata)
+      );
+      done();
+    });
+  });
+});
+
+describe('REST streaming apiCall return StreamArrayParser', () => {
+  const protos_path = path.resolve(__dirname, '..', 'fixtures', 'user.proto');
+  const root = protobuf.loadSync(protos_path);
+  const UserService = root.lookupService('UserService');
+  UserService.resolveAll();
+  const streamMethod = UserService.methods['RunQuery'];
+  it('forwards data, end event', done => {
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new StreamArrayParser(streamMethod);
+      s.push({resources: [1, 2]});
+      s.push({resources: [3, 4, 5]});
+      s.push(null);
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      true
+    );
+    const s = apiCall({}, undefined);
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
+    const actualResults: Array<{resources: Array<number>}> = [];
+    s.on('data', data => {
+      actualResults.push(data);
+    });
+    s.on('end', () => {
+      assert.strictEqual(
+        JSON.stringify(actualResults),
+        JSON.stringify([{resources: [1, 2]}, {resources: [3, 4, 5]}])
+      );
+      done();
+    });
+  });
+
+  it('forwards error event', done => {
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new StreamArrayParser(streamMethod);
+      s.push({resources: [1, 2]});
+      s.push(null);
+      s.emit('error', new Error('test error'));
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      true
+    );
+    const s = apiCall({}, undefined);
+    assert.strictEqual(s.readable, true);
+    assert.strictEqual(s.writable, false);
+    s.on('error', err => {
+      assert(err instanceof Error);
+      assert.deepStrictEqual(err.message, 'test error');
+      done();
+    });
+  });
+
+  it('cancels StreamArrayParser in the middle', done => {
+    function schedulePush(s: StreamArrayParser, c: number) {
+      const intervalId = setInterval(() => {
+        s.push(c);
+        c++;
+      }, 10);
+      s.on('finish', () => {
+        clearInterval(intervalId);
+      });
+    }
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new StreamArrayParser(streamMethod);
+      schedulePush(s, 0);
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      //@ts-ignore
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      true
+    );
+    const s = apiCall({}, undefined);
+    let counter = 0;
+    const expectedCount = 5;
+    s.on('data', data => {
+      assert.strictEqual(data, counter);
+      counter++;
+      if (counter === expectedCount) {
+        s.cancel();
+      } else if (counter > expectedCount) {
+        done(new Error('should not reach'));
+      }
+    });
+    s.on('end', () => {
       done();
     });
   });

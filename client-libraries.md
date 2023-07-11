@@ -97,17 +97,32 @@ binary tranport based on HTTP/2. It's Node.js implementation,
 [`@grpc/grpc-js`](https://www.npmjs.com/package/@grpc/grpc-js), uses Node.js
 `http2` module.
 
+#### HTTP/1.1 REST API mode
+
+- `options.fallback`: `true`, `"rest"`, or `false`, use HTTP fallback mode.
+  Default value is `false`, unless the `window` object is defined.
+
 If you need to use the client library in non-Node.js environment or when gRPC
-cannot be used for any reason, you can use the HTTP/1 fallback mode. In this
+cannot be used for any reason, you can use the HTTP/1.1 fallback mode. In this
 mode, a special browser-compatible transport implementation is used instead of
 gRPC transport.
+
+There are two supported gRPC fallback modes:
+
+- set `options.fallback` to `"rest"`: the library will send and receive JSON
+  payload, HTTP/1.1 REST API endpoints will be used. This mode is recommended
+  for fallback.
+  
+- set `options.fallback` to `true`: the library will send and receive serialized
+  protobuf payload to special endpoints accepting serialized protobufs over
+  HTTP/1.1.
 
 In browser context (if the `window` object is defined) the fallback mode is
 enabled automatically; set `options.fallback` to `false` if you need to override
 this behavior.
 
-- `options.fallback`: `true` or `false`, use HTTP fallback mode. Default value
-  is `false`, unless the `window` object is defined.
+Note that `options.fallback` accepts boolean values (`true` and `false`) for
+compatibility only. We recommend using `"rest"` to use HTTP/1.1 instead of gRPC.
 
 ## Calling API methods
 
@@ -274,7 +289,7 @@ calls, the client library will perform the page polling for you by default.
 
 The recommended way of working with API that provides paging is to call `*Async`
 method that returns an asynchronous iterator that can be iterated using `for
-async` loop. E.g. for a method called `samplePaginatedMethod` the client library
+await` loop. E.g. for a method called `samplePaginatedMethod` the client library
 provides a method called `samplePaginatedMethodAsync` which can be used like this:
 ```ts
 const iterable = client.samplePaginagedMethodAsync(request);
@@ -292,11 +307,13 @@ and those requests will hit your quota.
 ```ts
 const [resultArray] = await client.samplePaginatedMethod(request);
 ```
-
-The auto-pagination functionality can be disabled by passing `autoPaginate: false` as a
-request option (the second parameter). In this case, the resulting promise will resolve to
-an array:
+If you want to specify the `pageSize` parameter in the request, it should be done along
+with disabling auto-pagination. The auto-pagination functionality can be disabled by 
+passing `autoPaginate: false` as a request option (the second parameter). In this case, 
+the resulting promise will resolve to an array:
 ```ts
+
+const request = {request, pageSize: 50}
 const [resultArray, nextPageRequest, rawResponse] =
   await client.samplePaginatedMethod(request, {autoPaginate: false});
 ```

@@ -32,7 +32,7 @@ Before running the samples, make sure you've followed the steps outlined in
 
 ### Pagination
 
-View the [source code](https://github.com/googleapis/gax-nodejs/blob/master/samples/pagination.js).
+View the [source code](https://github.com/googleapis/gax-nodejs/blob/main/samples/pagination.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/gax-nodejs&page=editor&open_in_editor=samples/pagination.js,samples/README.md)
 
@@ -49,7 +49,7 @@ __Usage:__
 
 ### Quickstart
 
-View the [source code](https://github.com/googleapis/gax-nodejs/blob/master/samples/quickstart.js).
+View the [source code](https://github.com/googleapis/gax-nodejs/blob/main/samples/quickstart.js).
 
 [![Open in Cloud Shell][shell_img]](https://console.cloud.google.com/cloudshell/open?git_repo=https://github.com/googleapis/gax-nodejs&page=editor&open_in_editor=samples/quickstart.js,samples/README.md)
 

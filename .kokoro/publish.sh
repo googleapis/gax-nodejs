@@ -1,12 +1,11 @@
 #!/bin/bash
-
-# Copyright 2018 Google LLC
+# Copyright 2022 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     https://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+# `-e` enables the script to automatically fail when a command fails
+# `-o pipefail` sets the exit code to the rightmost comment to exit
+# with a non-zero
 set -eo pipefail
 
-export NPM_CONFIG_PREFIX=${HOME}/.npm-global
+if [ -z "${AUTORELEASE_PR}" ]
+then
+  echo "Need to provide URL to release PR via AUTORELEASE_PR environment variable"
+  exit 1
+fi
+
+export NPM_CONFIG_PREFIX=/home/node/.npm-global
 
 # Start the releasetool reporter
-python3 -m pip install gcp-releasetool
 python3 -m releasetool publish-reporter-script > /tmp/publisher-script; source /tmp/publisher-script
 
-cd $(dirname $0)/..
-
-NPM_TOKEN=$(cat $KOKORO_GFILE_DIR/secret_manager/npm_publish_token)
+NPM_TOKEN=$(cat $KOKORO_KEYSTORE_DIR/73713_google-cloud-npm-token-1)
 echo "//wombat-dressing-room.appspot.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
 
-npm install
-npm publish --access=public --registry=https://wombat-dressing-room.appspot.com
+SCRIPT=$(realpath $(dirname $0)/./publish-single.sh)
+npx @google-cloud/mono-repo-publish custom --script="${SCRIPT}" --pr-url="${AUTORELEASE_PR}" --exclude-files=**/samples/*

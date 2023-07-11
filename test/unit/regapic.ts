@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-/* xslint-disable @typescript-eslint/ban-ts-ignore */
-/* xslint-disable no-undef */
-
 import * as assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
 import * as nodeFetch from 'node-fetch';
 import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import * as sinon from 'sinon';
-import {echoProtoJson} from '../fixtures/echoProtoJson';
+import * as stream from 'stream';
+import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
+import * as transcoding from '../../src/transcoding';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
+import {StreamArrayParser} from '../../src/streamArrayParser';
 
 const authClient = {
-  getRequestHeaders() {
+  async getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
   },
 };
 
 const authStub = {
-  getClient() {
-    return Promise.resolve(authClient);
+  async getClient() {
+    return authClient;
   },
 };
 
@@ -47,8 +47,9 @@ const opts = {
   fallback?: boolean | 'rest' | 'proto';
 };
 
-describe('regapic', () => {
+describe('REGAPIC', () => {
   let gaxGrpc: GrpcClient,
+    gaxGrpcNumericEnums: GrpcClient,
     protos: protobuf.NamespaceBase,
     libProtos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
@@ -62,6 +63,10 @@ describe('regapic', () => {
     };
 
     gaxGrpc = new GrpcClient(opts);
+    gaxGrpcNumericEnums = new GrpcClient({
+      ...opts,
+      numericEnums: true,
+    });
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
     const TEST_JSON = path.resolve(
@@ -75,10 +80,6 @@ describe('regapic', () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     libProtos = gaxGrpc.loadProtoJSON(require(TEST_JSON));
     libraryService = libProtos.lookupService('LibraryService');
-    stubOptions = {
-      servicePath: 'foo.example.com',
-      port: 443,
-    };
   });
 
   afterEach(() => {
@@ -99,44 +100,319 @@ describe('regapic', () => {
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err: {}, result: {content: {}}) => {
+      echoStub.echo(requestObject, {}, {}, (err?: {}, result?: {}) => {
         assert.strictEqual(err, null);
-        assert.strictEqual(requestObject.content, result.content);
+        assert.strictEqual(
+          requestObject.content,
+          (result as {content: string}).content
+        );
         done();
       });
     });
   });
 
-  it('should support enum conversion in proto message response', done => {
-    const requestObject = {name: 'shelves/shelf-name'};
-    const responseObject = {
-      name: 'shelf-name',
-      theme: 'shelf-theme',
-      type: 1,
-    };
+  it('should make a streaming request', done => {
+    const requestObject = {content: 'test content'};
+    const responseObject = [{content: 'test'}, {content: 'content'}];
+    const responseObjectJson = JSON.stringify(responseObject, null, '  ');
+    const responseStream = new stream.Readable();
+    responseStream.push(responseObjectJson.slice(0, 10));
+    responseStream.push(responseObjectJson.slice(10));
+    responseStream.push(null);
     // incomplete types for nodeFetch, so...
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(nodeFetch, 'Promise' as any).returns(
       Promise.resolve({
         ok: true,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
-        },
+        body: responseStream,
       })
     );
 
-    gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-      libStub.getShelf(
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      const stream = echoStub.expand(
         requestObject,
         {},
         {},
-        (err: {}, result: {name: {}; theme: {}; type: {}}) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual('shelf-name', result.name);
-          assert.strictEqual('TYPEONE', result.type);
-          done();
-        }
+        () => {}
+      ) as StreamArrayParser;
+      const results: {}[] = [];
+      stream.on('data', data => {
+        results.push(data);
+      });
+      stream.on('error', done);
+      stream.on('end', () => {
+        assert.deepStrictEqual(results, responseObject);
+        done();
+      });
+    });
+  });
+
+  it('should handle fetch failure', done => {
+    const requestObject = {content: 'test-content'};
+    sinon
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .stub(nodeFetch, 'Promise' as any)
+      .returns(Promise.reject(new Error('Fetch error')));
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: {}) => {
+        assert.strictEqual((err as Error).message, 'Fetch error');
+        done();
+      });
+    });
+  });
+
+  it('should handle streaming request failure', done => {
+    const requestObject = {content: 'test content'};
+    sinon
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .stub(nodeFetch, 'Promise' as any)
+      .returns(Promise.reject(new Error('Fetch error')));
+
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      const stream = echoStub.expand(requestObject) as StreamArrayParser;
+      stream.on('error', err => {
+        assert.strictEqual((err as Error).message, 'Fetch error');
+        done();
+      });
+    });
+  });
+
+  describe('should support enum conversion in proto message', () => {
+    it('should support enum conversion in proto message response', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 1,
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
       );
+
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'shelf-name',
+            (result as {name: {}; theme: {}; type: {}}).name
+          );
+          assert.strictEqual(
+            'TYPEONE',
+            (result as {name: {}; theme: {}; type: {}}).type
+          );
+          done();
+        });
+      }, /* catch: */ done);
+    });
+
+    it('should support enum conversion in proto message request using symbolic name', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 'TYPEONE',
+      };
+      const requestObject = {shelf: shelf};
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
+          assert.strictEqual(err, null);
+          done();
+        });
+      }, /* catch: */ done);
+    });
+
+    it('should support enum conversion in proto message request using type value', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 1,
+      };
+      const requestObject = {shelf: shelf};
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
+          assert.strictEqual(err, null);
+          done();
+        });
+      }, /* catch: */ done);
+    });
+  });
+
+  describe('should support enum conversion in proto message with numeric enums enabled', () => {
+    it('should support enum conversion in proto message response', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 100, // unknown enum value
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
+      );
+
+      gaxGrpcNumericEnums
+        .createStub(libraryService, stubOptions)
+        .then(libStub => {
+          libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              '$alt=json%3Benum-encoding=int'
+            );
+            assert.strictEqual(err, null);
+            assert.strictEqual(
+              'shelf-name',
+              (result as {name: {}; theme: {}; type: {}}).name
+            );
+            assert.strictEqual(
+              100,
+              (result as {name: {}; theme: {}; type: {}}).type
+            );
+            done();
+          });
+        }, /* catch: */ done);
+    });
+
+    it('should request numeric enums if passed as symbolic name', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 'TYPEONE',
+      };
+      const requestObject = {shelf: shelf};
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpcNumericEnums
+        .createStub(libraryService, stubOptions)
+        .then(libStub => {
+          console.log(requestObject);
+          libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              '$alt=json%3Benum-encoding=int'
+            );
+            assert.strictEqual(err, null);
+            done();
+          });
+        }, /* catch: */ done);
+    });
+
+    it('should preserve query string when appending numeric enums parameter', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 'TYPEONE',
+      };
+      const requestObject = {
+        shelf: shelf,
+        queryStringParameter: 'must-be-preserved',
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpcNumericEnums
+        .createStub(libraryService, stubOptions)
+        .then(libStub => {
+          libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int'
+            );
+            assert.strictEqual(err, null);
+            done();
+          });
+        }, /* catch: */ done);
+    });
+
+    it('should request numeric enums if passed as an unknown number', done => {
+      const shelf = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 100,
+      };
+      const requestObject = {shelf: shelf};
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+          },
+        })
+      );
+      gaxGrpcNumericEnums
+        .createStub(libraryService, stubOptions)
+        .then(libStub => {
+          console.log(requestObject);
+          libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              '$alt=json%3Benum-encoding=int'
+            );
+            assert.strictEqual(err, null);
+            done();
+          });
+        }, /* catch: */ done);
     });
   });
 
@@ -161,21 +437,35 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getBook(
-          requestObject,
-          {},
-          {},
-          (
-            err: {},
-            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
-          ) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('book-name', result.name);
-            assert.strictEqual('9007199254740992', result.bookId);
-            done();
-          }
-        );
-      });
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name
+          );
+          assert.strictEqual(
+            '9007199254740992',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
 
     it('small number long data type conversion in proto message response', done => {
@@ -198,21 +488,35 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getBook(
-          requestObject,
-          {},
-          {},
-          (
-            err: {},
-            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
-          ) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('book-name', result.name);
-            assert.strictEqual('42', result.bookId);
-            done();
-          }
-        );
-      });
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name
+          );
+          assert.strictEqual(
+            '42',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
 
     it('long data type conversion in proto message request', done => {
@@ -236,21 +540,35 @@ describe('regapic', () => {
         })
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
-        libStub.getBook(
-          requestObject,
-          {},
-          {},
-          (
-            err: {},
-            result: {name: {}; author: {}; title: {}; read: false; bookId: {}}
-          ) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual('book-name', result.name);
-            assert.strictEqual(bookId.toString(), result.bookId);
-            done();
-          }
-        );
-      });
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name
+          );
+          assert.strictEqual(
+            bookId.toString(),
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
     });
   });
 });

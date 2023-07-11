@@ -1,0 +1,28 @@
+branchProtectionRules:
+  - pattern: main
+    isAdminEnforced: true
+    requiredApprovingReviewCount: 1
+    requiresCodeOwnerReviews: true
+    requiresStrictStatusChecks: true
+    requiredStatusCheckContexts:
+      - "ci/kokoro: Samples test"
+      - "ci/kokoro: System test"
+      - "ci/kokoro: Browser test"
+      - docs
+      - lint-gax
+      - lint-tools
+      - test-gax (14)
+      - test-gax (16)
+      - test-tools (14)
+      - test-tools (16)
+      - cla/google
+      - windows-gax
+      - windows-tools
+      - OwlBot Post Processor
+permissionRules:
+  - team: yoshi-admins
+    permission: admin
+  - team: jsteam-admins
+    permission: admin
+  - team: jsteam
+    permission: push

@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 import * as assert from 'assert';
+import * as os from 'os';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {describe, it, beforeEach} from 'mocha';
+import {mkdirSync, writeFileSync} from 'fs';
+import {sync as rimrafSync} from 'rimraf';
+import {afterEach, describe, it, beforeEach} from 'mocha';
 
 import {protobuf} from '../../src/index';
 import {
@@ -185,6 +188,7 @@ describe('grpc', () => {
         },
         'grpc.channelFactoryOverride': () => {},
         'grpc.gcpApiConfig': {},
+        'grpc-node.max_session_memory': 10,
       };
       // @ts-ignore
       return grpcClient.createStub(DummyStub, opts).then(stub => {
@@ -198,6 +202,7 @@ describe('grpc', () => {
           'callInvocationTransformer', // note: no grpc. prefix for grpc-gcp options
           'channelFactoryOverride',
           'gcpApiConfig',
+          'grpc-node.max_session_memory',
         ].forEach(k => {
           assert(stub.options.hasOwnProperty(k));
         });
@@ -210,6 +215,10 @@ describe('grpc', () => {
         assert.strictEqual(
           (dummyStub.options['callInvocationTransformer'] as Function)(),
           42
+        );
+        assert.strictEqual(
+          dummyStub.options['grpc-node.max_session_memory'],
+          10
         );
         ['servicePath', 'port', 'other_dummy_options'].forEach(k => {
           assert.strictEqual(stub.options.hasOwnProperty(k), false);
@@ -564,6 +573,86 @@ describe('grpc', () => {
           correctPath
         );
       });
+    });
+  });
+
+  describe('_mtlsServicePath', () => {
+    afterEach(() => {
+      delete process.env.GOOGLE_API_USE_MTLS_ENDPOINT;
+    });
+    it('returns custom service path if one provided', () => {
+      const expected = 'https://foo.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(expected, true, true);
+      assert.strictEqual(servicePath, expected);
+    });
+    it('returns original service path if GOOGLE_API_USE_MTLS_ENDPOINT=never', () => {
+      process.env.GOOGLE_API_USE_MTLS_ENDPOINT = 'never';
+      const expected = 'https://foo.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(expected, false, true);
+      assert.strictEqual(servicePath, expected);
+    });
+    it('returns mTLS service path if certificate found, and discovery is auto', () => {
+      const expected = 'https://foo.mtls.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(
+        'https://foo.googleapis.com',
+        false,
+        true
+      );
+      assert.strictEqual(servicePath, expected);
+    });
+    it('returns mTLS service path if certificate found, and GOOGLE_API_USE_MTLS_ENDPOINT=always', () => {
+      process.env.GOOGLE_API_USE_MTLS_ENDPOINT = 'always';
+      const expected = 'https://foo.mtls.googleapis.com';
+      const client = gaxGrpc();
+      const servicePath = client._mtlsServicePath(
+        'https://foo.googleapis.com',
+        false,
+        false
+      );
+      assert.strictEqual(servicePath, expected);
+    });
+  });
+  describe('_detectClientCertificate', () => {
+    const tmpFolder = 'tmp-secure-context';
+    const sandbox = sinon.createSandbox();
+    const certExpected = `-----BEGIN CERTIFICATE-----
+qwerty
+-----END CERTIFICATE-----`;
+    const keyExpected = `-----BEGIN PRIVATE KEY-----
+dvorak
+-----END PRIVATE KEY-----`;
+    const metadataFileContents = {
+      cert_provider_command: ['echo', certExpected, keyExpected],
+    };
+    afterEach(() => {
+      sandbox.restore();
+      delete process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE;
+    });
+    it('does not read certificate if GOOGLE_API_USE_CLIENT_CERTIFICATE not set', async () => {
+      const client = gaxGrpc();
+      const [cert, key] = await client._detectClientCertificate();
+      assert.strictEqual(cert, undefined);
+      assert.strictEqual(key, undefined);
+    });
+    it('reads certificate and key from command in metadata file', async () => {
+      // Pretend that "tmp-secure-context" in the current folder is the
+      // home directory, so that we can test logic for loading
+      // context_aware_metadata.json from well known location:
+      const tmpdir = path.join(tmpFolder, '.secureConnect');
+      mkdirSync(tmpdir, {recursive: true});
+      const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
+      writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
+      sandbox.stub(os, 'homedir').returns(tmpFolder);
+      // Create a client and test the certificate detection flow:
+      process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
+      const client = gaxGrpc();
+      const [cert, key] = await client._detectClientCertificate();
+      assert.ok(cert.includes('qwerty'));
+      assert.ok(key.includes('dvorak'));
+      rimrafSync(tmpFolder); // Cleanup.
     });
   });
 });

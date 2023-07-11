@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {describe, it} from 'mocha';
 import {RequestType} from '../../src/apitypes';
@@ -27,15 +27,15 @@ import {
   encodeWithoutSlashes,
   applyPattern,
   flattenObject,
-  deepCopy,
+  deepCopyWithoutMatchedFields,
   match,
   buildQueryStringComponents,
-  requestChangeCaseAndCleanup,
+  overrideHttpRules,
 } from '../../src/transcoding';
 import * as assert from 'assert';
-import {camelToSnakeCase, snakeToCamelCase} from '../../src/util';
 import * as protobuf from 'protobufjs';
-import {testMessageJson} from '../fixtures/fallbackOptional';
+import echoProtoJson = require('../fixtures/echo.json');
+import {google} from '../../protos/http';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [
@@ -78,14 +78,17 @@ describe('gRPC to HTTP transcoding', () => {
 
   // Main transcode() function
   it('transcode', () => {
-    assert.deepEqual(transcode({parent: 'projects/project'}, parsedOptions), {
-      httpMethod: 'get',
-      url: '/v3/projects/project/supportedLanguages',
-      queryString: '',
-      data: '',
-    });
+    assert.deepStrictEqual(
+      transcode({parent: 'projects/project'}, parsedOptions),
+      {
+        httpMethod: 'get',
+        url: '/v3/projects/project/supportedLanguages',
+        queryString: '',
+        data: '',
+      }
+    );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode({parent: 'projects/project', field: 'value'}, parsedOptions),
       {
         httpMethod: 'get',
@@ -95,7 +98,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {parent: 'projects/project', field: 'value', a: 42},
         parsedOptions
@@ -108,7 +111,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {parent: 'post1/project', field: 'value', a: 42},
         parsedOptions
@@ -121,7 +124,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {parent: 'post2/project', field: 'value', a: 42},
         parsedOptions
@@ -134,7 +137,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode({parent: 'get/project', field: 'value', a: 42}, parsedOptions),
       {
         httpMethod: 'get',
@@ -145,7 +148,7 @@ describe('gRPC to HTTP transcoding', () => {
     );
 
     // Checking camel-snake-case conversions
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {
           snakeCaseFirst: 'first',
@@ -162,7 +165,7 @@ describe('gRPC to HTTP transcoding', () => {
       }
     );
 
-    assert.deepEqual(
+    assert.deepStrictEqual(
       transcode(
         {
           snakeCaseSecond: 'second',
@@ -182,6 +185,81 @@ describe('gRPC to HTTP transcoding', () => {
     assert.strictEqual(
       transcode({unknownField: 'project'}, parsedOptions),
       undefined
+    );
+  });
+
+  it('should not change user inputted fields to camel case', () => {
+    const request: RequestType = {
+      projectId: 'test-project',
+      content: 'test-content',
+      labels: {'i-am-vm': 'true'},
+    };
+    const parsedOptions: ParsedOptionsType = [
+      {
+        '(google.api.http)': {
+          post: 'projects/{project_id}',
+          body: '*',
+        },
+      },
+    ];
+    const transcoded = transcode(request, parsedOptions);
+    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
+    assert.deepStrictEqual(transcoded?.data, {
+      content: 'test-content',
+      labels: {'i-am-vm': 'true'},
+    });
+  });
+
+  it('transcode should not decapitalize the first capital letter', () => {
+    assert.deepStrictEqual(
+      transcode(
+        {
+          parent: 'post1/project',
+          IPProtocol: 'tcp',
+        },
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        queryString: '',
+        url: '/v3/post1/project/supportedLanguages',
+        data: {
+          IPProtocol: 'tcp',
+        },
+      }
+    );
+    assert.deepStrictEqual(
+      transcode(
+        {
+          parent: 'post2/project',
+          IPProtocol: 'tcp',
+          field: 'value',
+        },
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        queryString: 'IPProtocol=tcp',
+        url: '/v3/post2/project/supportedLanguages',
+        data: 'value',
+      }
+    );
+    assert.deepStrictEqual(
+      transcode(
+        {
+          parent: 'post1/project',
+          iPProtocol: 'tcp',
+        },
+        parsedOptions
+      ),
+      {
+        httpMethod: 'post',
+        queryString: '',
+        url: '/v3/post1/project/supportedLanguages',
+        data: {
+          iPProtocol: 'tcp',
+        },
+      }
     );
   });
 
@@ -226,7 +304,7 @@ describe('gRPC to HTTP transcoding', () => {
       getField({field: {subfield: 'stringValue'}}, 'field.subfield'),
       'stringValue'
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       getField({field: {subfield: [1, 2, 3]}}, 'field.subfield'),
       [1, 2, 3]
     );
@@ -250,35 +328,35 @@ describe('gRPC to HTTP transcoding', () => {
   it('deleteField', () => {
     const request1 = {field: 'stringValue'};
     deleteField(request1, 'field');
-    assert.deepEqual(request1, {});
+    assert.deepStrictEqual(request1, {});
 
     const request2 = {field: 'stringValue'};
     deleteField(request2, 'nosuchfield');
-    assert.deepEqual(request2, {
+    assert.deepStrictEqual(request2, {
       field: 'stringValue',
     });
 
     const request3 = {field: 'stringValue'};
     deleteField(request3, 'field.subfield');
-    assert.deepEqual(request3, {
+    assert.deepStrictEqual(request3, {
       field: 'stringValue',
     });
 
     const request4 = {field: {subfield: 'stringValue'}};
     deleteField(request4, 'field.subfield');
-    assert.deepEqual(request4, {field: {}});
+    assert.deepStrictEqual(request4, {field: {}});
 
     const request5 = {field: {subfield: 'stringValue', q: 'w'}, e: 'f'};
     deleteField(request5, 'field.subfield');
-    assert.deepEqual(request5, {field: {q: 'w'}, e: 'f'});
+    assert.deepStrictEqual(request5, {field: {q: 'w'}, e: 'f'});
 
     const request6 = {field: {subfield: 'stringValue'}};
     deleteField(request6, 'field.nosuchfield');
-    assert.deepEqual(request6, {field: {subfield: 'stringValue'}});
+    assert.deepStrictEqual(request6, {field: {subfield: 'stringValue'}});
 
     const request7 = {field: {subfield: {subsubfield: 'stringValue', q: 'w'}}};
     deleteField(request7, 'field.subfield.subsubfield');
-    assert.deepEqual(request7, {field: {subfield: {q: 'w'}}});
+    assert.deepStrictEqual(request7, {field: {subfield: {q: 'w'}}});
   });
 
   it('encodeWithSlashes', () => {
@@ -334,16 +412,16 @@ describe('gRPC to HTTP transcoding', () => {
   });
 
   it('flattenObject', () => {
-    assert.deepEqual(flattenObject({}), {});
-    assert.deepEqual(flattenObject({field: 'value'}), {field: 'value'});
-    assert.deepEqual(
+    assert.deepStrictEqual(flattenObject({}), {});
+    assert.deepStrictEqual(flattenObject({field: 'value'}), {field: 'value'});
+    assert.deepStrictEqual(
       flattenObject({field: 'value', nested: {subfield: 'subvalue'}}),
       {field: 'value', 'nested.subfield': 'subvalue'}
     );
   });
 
   it('match', () => {
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value'},
         '/v3/{parent=projects/*}/supportedLanguages'
@@ -353,14 +431,14 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st/locations/location', test: 'value'},
         '/v3/{parent=projects/*}/supportedLanguages'
       ),
       undefined
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st/locations/location', test: 'value'},
         '/v3/{parent=projects/*/locations/*}/supportedLanguages'
@@ -370,14 +448,14 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/locations/location/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value'},
         '/v3/{parent=projects/*}/{field=*}/supportedLanguages'
       ),
       undefined
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value', field: 42},
         '/v3/{parent=projects/*}/{field=*}/supportedLanguages'
@@ -387,7 +465,7 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/42/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match(
         {
           parent: 'projects/te st',
@@ -402,11 +480,11 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/te%20st/fields/field42/a/b%2Cc/d/supportedLanguages',
       }
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match({}, '/v3/{field.subfield}/supportedLanguages'),
       undefined
     );
-    assert.deepEqual(
+    assert.deepStrictEqual(
       match({field: {subfield: 42}}, '/v3/{field.subfield}/supportedLanguages'),
       {
         matchedFields: ['field.subfield'],
@@ -415,7 +493,7 @@ describe('gRPC to HTTP transcoding', () => {
     );
   });
 
-  it('deepCopy', () => {
+  it('deepCopyWithoutMatchedFields', () => {
     const request = {
       field: {
         subfield: 42,
@@ -423,8 +501,11 @@ describe('gRPC to HTTP transcoding', () => {
       value: 'string',
       repeated: [1, 2, {a: 'b'}],
     };
-    const copy = deepCopy(request as RequestType);
-    assert.deepEqual(copy, request);
+    const copy = deepCopyWithoutMatchedFields(
+      request as RequestType,
+      new Set()
+    );
+    assert.deepStrictEqual(copy, request);
     request.field.subfield = 43;
     request.repeated[0] = -1;
     (request.repeated[2] as RequestType).a = 'c';
@@ -433,15 +514,38 @@ describe('gRPC to HTTP transcoding', () => {
     assert.strictEqual((copy.repeated as RequestType[])[2].a, 'b');
   });
 
+  it('deepCopyWithoutMatchedFields with some fields to skip', () => {
+    const request = {
+      field: {
+        subfield: 42,
+        another: 11,
+      },
+      value: 'string',
+      repeated: [1, 2, {a: 'b'}],
+    };
+    const expected = {
+      field: {
+        another: 11,
+      },
+      value: 'string',
+      repeated: [1, 2, {a: 'b'}],
+    };
+    const copy = deepCopyWithoutMatchedFields(
+      request as RequestType,
+      new Set(['field.subfield'])
+    );
+    assert.deepStrictEqual(copy, expected);
+  });
+
   it('buildQueryStringComponents', () => {
-    assert.deepEqual(buildQueryStringComponents({field: 'value'}), [
+    assert.deepStrictEqual(buildQueryStringComponents({field: 'value'}), [
       'field=value',
     ]);
-    assert.deepEqual(buildQueryStringComponents({field: 'value', a: 42}), [
-      'field=value',
-      'a=42',
-    ]);
-    assert.deepEqual(
+    assert.deepStrictEqual(
+      buildQueryStringComponents({field: 'value', a: 42}),
+      ['field=value', 'a=42']
+    );
+    assert.deepStrictEqual(
       buildQueryStringComponents({
         field: 'value',
         repeated: [1, 2, 'z z z'],
@@ -457,187 +561,139 @@ describe('gRPC to HTTP transcoding', () => {
       ]
     );
   });
-
-  it('requestChangeCaseAndCleanup', () => {
-    const request: RequestType = {
-      field: 'value',
-      listField: [
-        42,
-        {
-          field: 'value',
-          twoWords: {
-            nested: 'object',
-            threeWordsKeys: 42,
-            list: [1, 2, 3],
-          },
-        },
-        'string',
-      ],
-      objectField: {
-        field: 'value',
-        listField: [1, 2, 3],
-      },
-    };
-    const expectedSnakeCase = {
-      field: 'value',
-      list_field: [
-        42,
-        {
-          field: 'value',
-          two_words: {
-            nested: 'object',
-            three_words_keys: 42,
-            list: [1, 2, 3],
-          },
-        },
-        'string',
-      ],
-      object_field: {
-        field: 'value',
-        list_field: [1, 2, 3],
-      },
-    };
-    assert.deepEqual(
-      requestChangeCaseAndCleanup(request, camelToSnakeCase),
-      expectedSnakeCase
-    );
-    assert.deepEqual(
-      requestChangeCaseAndCleanup(expectedSnakeCase, snakeToCamelCase),
-      request
-    );
-  });
 });
 
-describe('validate proto3 field with default value', () => {
-  const root = protobuf.Root.fromJSON(testMessageJson);
-  const testMessageFields = root.lookupType('TestMessage').fields;
+describe('override the HTTP rules in protoJson', () => {
+  const httpOptionName = '(google.api.http)';
 
-  // should we throw error?
-  it('should required field if a field has both require annotation and optional', () => {
-    const badTestMessageFields = root.lookupType('TestMessage').fields;
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const parsedOptions: ParsedOptionsType = [
+  it('override multiple http rules', () => {
+    const httpRules: Array<google.api.IHttpRule> = [
       {
-        '(google.api.http)': {
-          post: 'projects/{project_id}/contents/{content}',
-          body: '*',
-        },
+        selector: 'google.showcase.v1beta1.Messaging.GetRoom',
+        get: '/v1beta1/{name**}',
       },
       {
-        '(google.api.method_signature)': 'project_id, content',
+        selector: 'google.showcase.v1beta1.Messaging.ListRooms',
+        get: '/fake/value',
       },
     ];
-    const transcoded = transcode(request, parsedOptions, badTestMessageFields);
-    assert.deepStrictEqual(
-      transcoded?.url,
-      'projects/test-project/contents/test-content'
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert(modifiedRpc.parsedOptions);
+      for (const item of modifiedRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName];
+        assert.deepStrictEqual(httpOptions.get, rule.get);
+      }
+    }
+  });
+
+  it("override additional bindings for a rpc doesn't has additional bindings", () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'google.showcase.v1beta1.Messaging.GetRoom',
+        get: 'v1beta1/room/{name=**}',
+        additional_bindings: [{get: 'v1beta1/room/{name}'}],
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert(modifiedRpc.parsedOptions);
+      for (const item of modifiedRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName];
+        assert.deepStrictEqual(httpOptions.get, rule.get);
+        assert.deepStrictEqual(
+          httpOptions.additional_bindings,
+          rule.additional_bindings
+        );
+      }
+    }
+  });
+
+  it('append additional bindings for a rpc has additional bindings', () => {
+    const httpRules: Array<google.api.IHttpRule> = [
+      {
+        selector: 'google.showcase.v1beta1.Messaging.GetBlurb',
+        get: 'v1beta1/fake/value',
+        additional_bindings: [
+          {get: 'v1beta1/fake/value'},
+        ] as Array<google.api.IHttpRule>,
+      },
+    ];
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    const originRpc = root.lookup(httpRules[0].selector!) as protobuf.Method;
+    const originAdditionalBindings = () => {
+      for (const item of originRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName] as google.api.IHttpRule;
+        return [httpOptions.additional_bindings];
+      }
+      return null;
+    };
+    assert(originAdditionalBindings());
+    const expectedAditionalBindings = originAdditionalBindings()!.concat(
+      httpRules[0].additional_bindings
     );
-  });
-  it('should throw error if required field has not been setted', () => {
-    const requests: RequestType[] = [
-      {
-        projectId: 'test-project',
-        content: 'undefined',
-      },
-      {
-        projectId: 'test-project',
-      },
-    ];
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: '*',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    for (const request of requests) {
-      assert.throws(
-        () => transcode(request, parsedOptions, testMessageFields),
-        Error
-      );
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert(modifiedRpc.parsedOptions);
+      for (const item of modifiedRpc!.parsedOptions) {
+        if (!(httpOptionName in item)) {
+          continue;
+        }
+        const httpOptions = item[httpOptionName];
+        assert.deepStrictEqual(httpOptions.get, rule.get);
+        assert.deepStrictEqual(
+          httpOptions.additional_bindings,
+          expectedAditionalBindings
+        );
+      }
     }
   });
-  it('when body="*", all required field should emitted in body', () => {
-    const request: RequestType = {
-      projectId: 'test-project',
-      content: 'test-content',
-    };
-    const parsedOptions: ParsedOptionsType = [
+
+  it("can't override a non-exist rpc", () => {
+    const httpRules: Array<google.api.IHttpRule> = [
       {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: '*',
-        },
+        selector: 'not.a.valid.rpc',
+        get: 'v1/operations/{name=**}',
       },
     ];
-    const transcoded = transcode(request, parsedOptions, testMessageFields);
-    assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
-    assert.deepStrictEqual(transcoded?.data, {content: 'test-content'});
-  });
-  it('when body="*", unset optional field should remove from body', () => {
-    const requests: RequestType[] = [
-      {
-        projectId: 'test-project',
-        content: 'test-content',
-        optionalValue: 'undefined',
-      },
-      {
-        projectId: 'test-project',
-        content: 'test-content',
-      },
-    ];
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}/contents/{content}',
-          body: '*',
-        },
-      },
-    ];
-    for (const request of requests) {
-      const transcoded = transcode(request, parsedOptions, testMessageFields);
-      assert.deepStrictEqual(
-        transcoded?.url,
-        'projects/test-project/contents/test-content'
-      );
-      assert.deepStrictEqual(transcoded?.data, {});
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert.equal(modifiedRpc, null);
     }
   });
-  it('unset optional fields should not appear in query params', () => {
-    const requests: RequestType[] = [
+
+  it('not support a rpc has no parsedOption', () => {
+    const httpRules: Array<google.api.IHttpRule> = [
       {
-        projectId: 'test-project',
-        content: 'test-content',
-        optionalValue: 'undefined',
-      },
-      {
-        projectId: 'test-project',
-        content: 'test-content',
+        selector: 'google.showcase.v1beta1.Messaging.Connect',
+        get: 'fake/url',
       },
     ];
-    const parsedOptions: ParsedOptionsType = [
-      {
-        '(google.api.http)': {
-          post: 'projects/{project_id}',
-          body: 'content',
-        },
-      },
-      {
-        '(google.api.method_signature)': 'project_id, content',
-      },
-    ];
-    for (const request of requests) {
-      const transcoded = transcode(request, parsedOptions, testMessageFields);
-      assert.deepStrictEqual(transcoded?.url, 'projects/test-project');
-      assert.deepStrictEqual(transcoded?.data, 'test-content');
-      assert.deepStrictEqual(transcoded.queryString, '');
+    const root = protobuf.Root.fromJSON(echoProtoJson);
+    overrideHttpRules(httpRules, root);
+    for (const rule of httpRules) {
+      const modifiedRpc = root.lookup(rule.selector!) as protobuf.Method;
+      assert(modifiedRpc);
+      assert.equal(modifiedRpc.parsedOptions, null);
     }
   });
 });

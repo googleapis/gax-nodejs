@@ -38,3 +38,38 @@ export enum Status {
   DATA_LOSS,
   UNAUTHENTICATED,
 }
+
+export const HttpCodeToRpcCodeMap = new Map([
+  [400, Status.INVALID_ARGUMENT],
+  [401, Status.UNAUTHENTICATED],
+  [403, Status.PERMISSION_DENIED],
+  [404, Status.NOT_FOUND],
+  [409, Status.ABORTED],
+  [416, Status.OUT_OF_RANGE],
+  [429, Status.RESOURCE_EXHAUSTED],
+  [499, Status.CANCELLED],
+  [501, Status.UNIMPLEMENTED],
+  [503, Status.UNAVAILABLE],
+  [504, Status.DEADLINE_EXCEEDED],
+]);
+
+// Maps HTTP status codes to gRPC status codes above.
+export function rpcCodeFromHttpStatusCode(httpStatusCode: number): number {
+  if (HttpCodeToRpcCodeMap.has(httpStatusCode)) {
+    return HttpCodeToRpcCodeMap.get(httpStatusCode)!;
+  }
+  // All 2xx
+  if (httpStatusCode >= 200 && httpStatusCode < 300) {
+    return Status.OK;
+  }
+  // All other 4xx
+  if (httpStatusCode >= 400 && httpStatusCode < 500) {
+    return Status.FAILED_PRECONDITION;
+  }
+  // All other 5xx
+  if (httpStatusCode >= 500 && httpStatusCode < 600) {
+    return Status.INTERNAL;
+  }
+  // Everything else
+  return Status.UNKNOWN;
+}

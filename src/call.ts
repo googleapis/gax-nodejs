@@ -78,11 +78,23 @@ export class OngoingCall {
     if (this.completed) {
       return;
     }
-    // eslint-disable-next-line
-    const canceller = func(argument, (...args: any[]) => {
-      this.completed = true;
-      setImmediate(this.callback!, ...args);
-    });
+    const canceller = func(
+      argument,
+      (
+        err: GoogleError | null,
+        response?: ResponseType,
+        next?: NextPageRequestType,
+        rawResponse?: RawResponseType
+      ) => {
+        this.completed = true;
+        setImmediate(this.callback!, err, response, next, rawResponse);
+      }
+    );
+    if (canceller instanceof Promise) {
+      canceller.catch(err => {
+        setImmediate(this.callback!, new GoogleError(err), null, null, null);
+      });
+    }
     this.cancelFunc = () => canceller.cancel();
   }
 }
@@ -111,7 +123,12 @@ export class OngoingCallPromise extends OngoingCall {
       rawResponse?: RawResponseType
     ) => {
       if (err) {
-        rejectCallback(err);
+        // If gRPC metadata exist, parsed google.rpc.status details.
+        if (err.metadata) {
+          rejectCallback(GoogleError.parseGRPCStatusDetails(err));
+        } else {
+          rejectCallback(err);
+        }
       } else if (response !== undefined) {
         resolveCallback([response, next || null, rawResponse || null]);
       } else {

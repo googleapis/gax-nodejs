@@ -20,7 +20,7 @@ import {NormalApiCaller} from '../normalCalls/normalApiCaller';
 
 import {BundleApiCaller} from './bundleApiCaller';
 import {BundleExecutor} from './bundleExecutor';
-import {snakeToCamelCase} from '../util';
+import {toCamelCase as snakeToCamelCase} from '../util';
 
 /**
  * A descriptor for calls that can be bundled into one call.

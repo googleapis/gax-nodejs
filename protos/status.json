@@ -32,6 +32,7 @@
         },
         "rpc": {
           "options": {
+            "cc_enable_arenas": true,
             "go_package": "google.golang.org/genproto/googleapis/rpc/errdetails;errdetails",
             "java_multiple_files": true,
             "java_outer_classname": "ErrorDetailsProto",
@@ -97,6 +98,23 @@
                       "id": 2
                     }
                   }
+                }
+              }
+            },
+            "ErrorInfo": {
+              "fields": {
+                "reason": {
+                  "type": "string",
+                  "id": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "id": 2
+                },
+                "metadata": {
+                  "keyType": "string",
+                  "type": "string",
+                  "id": 3
                 }
               }
             },
