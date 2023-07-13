@@ -81,7 +81,11 @@ export class PageDescriptor implements Descriptor {
       // emit full api response with every page.
       stream.emit('response', apiResp);
       for (let i = 0; i < resources.length; ++i) {
-        if ((stream as any)._readableState.ended) {
+        // TODO: rewrite without accessing stream internals
+        if (
+          (stream as unknown as {_readableState: {ended: boolean}})
+            ._readableState.ended
+        ) {
           return;
         }
         if (resources[i] === null) {
@@ -93,7 +97,11 @@ export class PageDescriptor implements Descriptor {
           stream.end();
         }
       }
-      if ((stream as any)._readableState.ended) {
+      // TODO: rewrite without accessing stream internals
+      if (
+        (stream as unknown as {_readableState: {ended: boolean}})._readableState
+          .ended
+      ) {
         return;
       }
       if (!next) {

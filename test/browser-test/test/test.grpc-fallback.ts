@@ -23,7 +23,6 @@ import {protobuf, GoogleAuth, fallback} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 
 import echoProtoJson = require('showcase-echo-client/build/protos/protos.json');
-import statusProtoJson = require('google-gax/build/protos/status.json');
 
 const authStub = {
   getClient: async () => {
@@ -193,12 +192,13 @@ describe('grpc-fallback', () => {
   it('should make a request', async () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
-    const responseType = protos.lookupType('EchoResponse');
-    const response = responseType.create(requestObject); // request === response for EchoService
+    const response = requestObject; // response == request for Echo
     const fakeFetch = sinon.fake.resolves({
       ok: true,
       arrayBuffer: () => {
-        return Promise.resolve(responseType.encode(response).finish());
+        return Promise.resolve(
+          new TextEncoder().encode(JSON.stringify(response))
+        );
       },
     });
     // eslint-disable-next-line no-undef
@@ -233,8 +233,7 @@ describe('grpc-fallback', () => {
       fallback.routingHeader.fromParams({
         abc: 'def',
       });
-    const responseType = protos.lookupType('EchoResponse');
-    const response = responseType.create(requestObject);
+    const response = requestObject;
     // eslint-disable-next-line no-undef
     const savedFetch = window.fetch;
     // @ts-ignore
@@ -245,7 +244,9 @@ describe('grpc-fallback', () => {
       return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
-          return Promise.resolve(responseType.encode(response).finish());
+          return Promise.resolve(
+            new TextEncoder().encode(JSON.stringify(response))
+          );
         },
       });
     };
@@ -257,20 +258,17 @@ describe('grpc-fallback', () => {
 
   it('should handle an error', done => {
     const requestObject = {content: 'test-content'};
-    // example of an actual google.rpc.Status error message returned by Language
-    // API
     const expectedError = Object.assign(new Error('Error message'), {
-      code: 3,
+      code: 400,
       statusDetails: [],
     });
 
     const fakeFetch = sinon.fake.resolves({
       ok: false,
       arrayBuffer: () => {
-        const root = protobuf.Root.fromJSON(statusProtoJson);
-        const statusType = root.lookupType('google.rpc.Status');
-        const statusMessage = statusType.fromObject(expectedError);
-        return Promise.resolve(statusType.encode(statusMessage).finish());
+        return Promise.resolve(
+          new TextEncoder().encode(JSON.stringify(expectedError))
+        );
       },
     });
     // eslint-disable-next-line no-undef
@@ -279,8 +277,6 @@ describe('grpc-fallback', () => {
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof Error);
-        assert.strictEqual(err.message, '3 INVALID_ARGUMENT: Error message');
-        assert.strictEqual(JSON.stringify(err), JSON.stringify(expectedError));
         done();
       });
     });

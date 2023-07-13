@@ -166,10 +166,10 @@ export class EchoClient {
     } else {
       clientHeader.push(`gl-web/${this._gaxModule.version}`);
     }
-    if (!opts.fallback) {
-      clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
-    } else if (opts.fallback === 'rest') {
+    if (opts.fallback) {
       clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
+    } else {
+      clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
@@ -224,15 +224,18 @@ export class EchoClient {
     this.descriptors.stream = {
       expand: new this._gaxModule.StreamDescriptor(
         gax.StreamType.SERVER_STREAMING,
-        opts.fallback === 'rest'
+        // legacy: opts.fallback can be a string or a boolean
+        opts.fallback ? true : false
       ),
       collect: new this._gaxModule.StreamDescriptor(
         gax.StreamType.CLIENT_STREAMING,
-        opts.fallback === 'rest'
+        // legacy: opts.fallback can be a string or a boolean
+        opts.fallback ? true : false
       ),
       chat: new this._gaxModule.StreamDescriptor(
         gax.StreamType.BIDI_STREAMING,
-        opts.fallback === 'rest'
+        // legacy: opts.fallback can be a string or a boolean
+        opts.fallback ? true : false
       ),
     };
 
@@ -244,7 +247,7 @@ export class EchoClient {
       auth: this.auth,
       grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined,
     };
-    if (opts.fallback === 'rest') {
+    if (opts.fallback) {
       lroOptions.protoJson = protoFilesRoot;
       lroOptions.httpRules = [
         {
