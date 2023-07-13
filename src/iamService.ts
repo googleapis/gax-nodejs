@@ -408,7 +408,7 @@ export interface IamClient {
       protos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<Array<protos.google.iam.v1.Policy>>;
+  ): Promise<[protos.google.iam.v1.Policy]>;
   setIamPolicy(request: protos.google.iam.v1.SetIamPolicyRequest): void;
   setIamPolicy(
     request: protos.google.iam.v1.SetIamPolicyRequest,
@@ -424,7 +424,7 @@ export interface IamClient {
       protos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<Array<protos.google.iam.v1.Policy>>;
+  ): Promise<[protos.google.iam.v1.Policy]>;
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest
   ): void;
@@ -442,5 +442,5 @@ export interface IamClient {
       protos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<Array<protos.google.iam.v1.TestIamPermissionsResponse>>;
+  ): Promise<[protos.google.iam.v1.TestIamPermissionsResponse]>;
 }
