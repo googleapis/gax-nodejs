@@ -19,8 +19,6 @@
 
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
-import * as path from 'path';
-import * as fs from 'fs';
 import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
@@ -267,7 +265,7 @@ describe('grpc-fallback', () => {
       Promise.resolve({
         ok: true,
         arrayBuffer: () => {
-          return Promise.resolve(responseType.encode(response).finish());
+          return Promise.resolve(Buffer.from(JSON.stringify(response)));
         },
       })
     );
@@ -287,10 +285,23 @@ describe('grpc-fallback', () => {
   it('should handle an API error', done => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Language API
-    const fixtureName = path.resolve(__dirname, '..', 'fixtures', 'error.bin');
-    const errorBin = fs.readFileSync(fixtureName);
     const expectedMessage =
       '3 INVALID_ARGUMENT: One of content, or gcs_content_uri must be set.';
+    const jsonError = {
+      code: 400, // Bad request
+      message: expectedMessage,
+      details: [
+        {
+          '@type': 'type.googleapis.com/google.rpc.BadRequest',
+          fieldViolations: [
+            {
+              field: 'document.content',
+              description: 'Must have some text content to annotate.',
+            },
+          ],
+        },
+      ],
+    };
     const expectedError = {
       code: 3,
       details: [
@@ -309,7 +320,7 @@ describe('grpc-fallback', () => {
       Promise.resolve({
         ok: false,
         arrayBuffer: () => {
-          return Promise.resolve(errorBin);
+          return Promise.resolve(Buffer.from(JSON.stringify(jsonError)));
         },
       })
     );
