@@ -28,12 +28,11 @@
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/rimraf": "^3.0.2",
     "google-proto-files": "^3.0.0",
     "protobufjs-cli": "1.1.1",
+    "rimraf": "^5.0.1",
     "uglify-js": "^3.17.0",
-    "walkdir": "^0.4.0",
-    "rimraf": "^3.0.2"
+    "walkdir": "^0.4.0"
   },
   "repository": "googleapis/gax-nodejs",
   "devDependencies": {

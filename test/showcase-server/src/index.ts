@@ -23,7 +23,6 @@ import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
 
-const rmrf = util.promisify(rimraf);
 const timeout = 5000; // wait after the server launches
 
 function sleep(timeoutMs: number) {
@@ -42,7 +41,7 @@ export class ShowcaseServer {
     const fallbackServerUrl = `https://github.com/googleapis/gapic-showcase/releases/download/v${showcaseVersion}/${tarballFilename}`;
     const binaryName = './gapic-showcase';
 
-    await rmrf(testDir);
+    await rimraf(testDir);
     await mkdir(testDir);
     process.chdir(testDir);
     console.log(`Server will be run from ${testDir}.`);
