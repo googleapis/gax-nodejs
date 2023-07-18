@@ -17,11 +17,10 @@
 import * as execa from 'execa';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import * as util from 'util';
 import {describe, it, before} from 'mocha';
 
-const rmrf = util.promisify(rimraf);
 const mkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -198,7 +197,7 @@ describe('Run system tests for some libraries', () => {
       throw new Error(`npm pack tarball ${toolsTarball} does not exist`);
     }
 
-    await rmrf(testDir);
+    await rimraf(testDir);
     await mkdir(testDir);
     process.chdir(testDir);
     console.log(`Running tests in ${testDir}.`);
