@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach} from 'mocha';
 import * as fs from 'fs';
-import * as rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import * as util from 'util';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';

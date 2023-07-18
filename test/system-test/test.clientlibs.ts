@@ -17,7 +17,7 @@
 import * as execa from 'execa';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import * as util from 'util';
 import {describe, it, before} from 'mocha';
 

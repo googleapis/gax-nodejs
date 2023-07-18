@@ -18,10 +18,11 @@ import * as execa from 'execa';
 import * as download from 'download';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
+
 const rmrf = util.promisify(rimraf);
 const timeout = 5000; // wait after the server launches
 
