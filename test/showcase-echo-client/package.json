@@ -30,7 +30,7 @@
   "scripts": {
     "compile": "tsc -p . && cp -r protos build/",
     "compile-protos": "compileProtos src",
-    "prefetch": "rm -rf node_modules package-lock.json google-gax*.tgz && cd ../.. && npm pack && mv google-gax*.tgz test/showcase-echo-client/google-gax.tgz",
+    "prefetch": "rm -rf node_modules package-lock.json google-gax*.tgz gapic-tools*.tgz && cd ../.. && npm pack && mv google-gax*.tgz test/showcase-echo-client/google-gax.tgz && cd tools && npm install && npm pack && mv gapic-tools*.tgz ../test/showcase-echo-client/gapic-tools.tgz",
     "prepare": "npm run compile-protos && npm run compile"
   },
   "dependencies": {
@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^16.0.0",
-    "gapic-tools": "^0.1.7",
+    "gapic-tools": "./gapic-tools.tgz",
     "typescript": "^4.5.5"
   },
   "engines": {

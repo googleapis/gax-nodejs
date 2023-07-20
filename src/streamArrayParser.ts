@@ -116,7 +116,7 @@ export class StreamArrayParser extends Transform {
                 chunk.slice(objectStart, curIndex + 1),
               ]);
               try {
-                // HTTP reponse.ok is true.
+                // HTTP response.ok is true.
                 const msgObj = decodeResponse(this.rpc, true, objBuff);
                 this.push(msgObj);
               } catch (err) {

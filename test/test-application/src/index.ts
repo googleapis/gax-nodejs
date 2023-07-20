@@ -41,14 +41,14 @@ async function testShowcase() {
     },
   } as unknown as GoogleAuth;
 
-  const fallbackClientOpts = {
+  const restClientOpts = {
     fallback: true,
     protocol: 'http',
-    port: 1337,
+    port: 7469,
     auth: fakeGoogleAuth,
   };
 
-  const restClientOpts = {
+  const restClientOptsCompat = {
     fallback: 'rest' as const,
     protocol: 'http',
     port: 7469,
@@ -56,8 +56,8 @@ async function testShowcase() {
   };
 
   const grpcClient = new EchoClient(grpcClientOpts);
-  const fallbackClient = new EchoClient(fallbackClientOpts);
   const restClient = new EchoClient(restClientOpts);
+  const restClientCompat = new EchoClient(restClientOptsCompat);
 
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
@@ -69,15 +69,6 @@ async function testShowcase() {
   await testChat(grpcClient);
   await testWait(grpcClient);
 
-  await testEcho(fallbackClient);
-  await testEchoError(fallbackClient);
-  await testExpandThrows(fallbackClient); // fallback does not support server streaming
-  await testPagedExpand(fallbackClient);
-  await testPagedExpandAsync(fallbackClient);
-  await testCollectThrows(fallbackClient); // fallback does not support client streaming
-  await testChatThrows(fallbackClient); // fallback does not support bidi streaming
-  await testWait(fallbackClient);
-
   await testEcho(restClient);
   await testExpand(restClient); // REGAPIC supports server streaming
   await testPagedExpand(restClient);
@@ -85,6 +76,14 @@ async function testShowcase() {
   await testCollectThrows(restClient); // REGAPIC does not support client streaming
   await testChatThrows(restClient); // REGAPIC does not support bidi streaming
   await testWait(restClient);
+
+  await testEcho(restClientCompat);
+  await testExpand(restClientCompat); // REGAPIC supports server streaming
+  await testPagedExpand(restClientCompat);
+  await testPagedExpandAsync(restClientCompat);
+  await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
+  await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
+  await testWait(restClientCompat);
 }
 
 async function testEcho(client: EchoClient) {
@@ -180,23 +179,6 @@ async function testExpand(client: EchoClient) {
   stream.on('end', () => {
     assert.deepStrictEqual(words, result);
   });
-}
-
-async function testExpandThrows(client: EchoClient) {
-  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const request = {
-    content: words.join(' '),
-  };
-  assert.throws(() => {
-    const stream = client.expand(request);
-    const result: string[] = [];
-    stream.on('data', (response: {content: string}) => {
-      result.push(response.content);
-    });
-    stream.on('end', () => {
-      assert.deepStrictEqual(words, result);
-    });
-  }, /currently does not support/);
 }
 
 async function testPagedExpand(client: EchoClient) {

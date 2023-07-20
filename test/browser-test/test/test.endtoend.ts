@@ -41,7 +41,7 @@ describe('Run tests against gRPC server', () => {
   const opts = {
     auth: authStub as unknown as GoogleAuth,
     protocol: 'http',
-    port: 1337,
+    port: 7469,
   };
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -87,8 +87,11 @@ describe('Run tests against gRPC server', () => {
     const words = ['nobody', 'ever', 'reads', 'test', 'input'];
     const request = {
       content: words.join(' '),
+      pageSize: 2,
     };
-    assert.throws(() => client.expand(request));
+    assert.throws(() => {
+      client.expand(request);
+    });
   });
 
   it('should be able to call paging calls', async () => {
