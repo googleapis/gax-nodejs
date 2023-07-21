@@ -15,7 +15,7 @@
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
-    "google-auth-library": "^8.0.2",
+    "google-auth-library": "^9.0.0",
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^1.0.0",
