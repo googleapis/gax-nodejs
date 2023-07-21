@@ -20,7 +20,7 @@
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^1.0.0",
     "protobufjs": "7.2.4",
-    "retry-request": "^5.0.0"
+    "retry-request": "^6.0.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-methods": "^7.18.6",
