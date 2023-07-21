@@ -4,6 +4,19 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.0.1](https://github.com/googleapis/gax-nodejs/compare/v4.0.0...v4.0.1) (2023-07-21)
+
+
+### Bug Fixes
+
+* `rimraf` version + remove conflicting types ([#1475](https://github.com/googleapis/gax-nodejs/issues/1475)) ([f9f8b13](https://github.com/googleapis/gax-nodejs/commit/f9f8b1328c38718bf621b92338b3d81297525aa6))
+* Add missing devDependency for compodoc ([#1470](https://github.com/googleapis/gax-nodejs/issues/1470)) ([115e317](https://github.com/googleapis/gax-nodejs/commit/115e317728c8ae6fa0e61f54d0087e26382d8230))
+* **deps:** Update dependency google-auth-library to v9 ([#1476](https://github.com/googleapis/gax-nodejs/issues/1476)) ([8afdd59](https://github.com/googleapis/gax-nodejs/commit/8afdd591646a190fde38728f0df14c604643f5cc))
+* **deps:** Update dependency retry-request to v6 ([#1477](https://github.com/googleapis/gax-nodejs/issues/1477)) ([6401a88](https://github.com/googleapis/gax-nodejs/commit/6401a88c50fa0eb3eb8a73cefc830896369c3330))
+* **deps:** Update protobufjs ([#1467](https://github.com/googleapis/gax-nodejs/issues/1467)) ([0a7dd94](https://github.com/googleapis/gax-nodejs/commit/0a7dd948573bd9553a0e9548e9ab92dbcfcb7414))
+* Replace proto-over-HTTP with REGAPIC ([#1471](https://github.com/googleapis/gax-nodejs/issues/1471)) ([4266f43](https://github.com/googleapis/gax-nodejs/commit/4266f43922d0d582b8eced11f4a21c98a8b451fe))
+* The return types for IAM service methods should be arrays, to match ReturnTuple ([#1001](https://github.com/googleapis/gax-nodejs/issues/1001)) ([48eed95](https://github.com/googleapis/gax-nodejs/commit/48eed955e7329f55f9427a7bc0656cfe2af395e8))
+
 ## [4.0.0](https://github.com/googleapis/gax-nodejs/compare/v3.6.0...v4.0.0) (2023-05-17)
 
 
