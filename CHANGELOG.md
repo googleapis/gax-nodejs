@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.0.2](https://github.com/googleapis/gax-nodejs/compare/v4.0.1...v4.0.2) (2023-07-25)
+
+
+### Bug Fixes
+
+* Update some pnpm deps ([#1478](https://github.com/googleapis/gax-nodejs/issues/1478)) ([39583d5](https://github.com/googleapis/gax-nodejs/commit/39583d5f4faab89b511fe317bd1ec3334c2ea3f5))
+
 ## [4.0.1](https://github.com/googleapis/gax-nodejs/compare/v4.0.0...v4.0.1) (2023-07-21)
 
 
