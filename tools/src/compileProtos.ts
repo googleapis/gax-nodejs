@@ -246,7 +246,7 @@ async function compileProtos(
       '-p',
       'protos',
       '-p',
-      path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
+      path.join('node_modules', 'google-gax', 'protos'),
       '-o',
       jsonOutput,
     ];
@@ -264,7 +264,7 @@ async function compileProtos(
     '-p',
     'protos',
     '-p',
-    path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
+    path.join('node_modules', 'google-gax', 'protos'),
     '-o',
     jsOutput,
   ];
