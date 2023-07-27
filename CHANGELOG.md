@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.0.3](https://github.com/googleapis/gax-nodejs/compare/v4.0.2...v4.0.3) (2023-07-27)
+
+
+### Bug Fixes
+
+* Make gapic-tools depend on gax-nodejs ([#1480](https://github.com/googleapis/gax-nodejs/issues/1480)) ([d0f410d](https://github.com/googleapis/gax-nodejs/commit/d0f410d2e08f393f2661c8c92568a0b518fddf99))
+
 ## [4.0.2](https://github.com/googleapis/gax-nodejs/compare/v4.0.1...v4.0.2) (2023-07-25)
 
 
