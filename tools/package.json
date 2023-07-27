@@ -4,7 +4,7 @@
   "description": "compiles, updates, and minifies protos",
   "main": "build/src/compileProtos.js",
   "files": [
-    "build/tools/src",
+    "build/src",
     "!build/src/**/*.map"
   ],
   "scripts": {
@@ -28,6 +28,7 @@
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "dependencies": {
+    "google-gax": "^4.0.2",
     "google-proto-files": "^3.0.3",
     "protobufjs-cli": "1.1.1",
     "rimraf": "^5.0.1",
