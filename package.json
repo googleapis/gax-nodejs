@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.0.0",
+  "version": "4.0.3",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -10,7 +10,7 @@
     "!build/src/**/*.map"
   ],
   "dependencies": {
-    "@grpc/grpc-js": "~1.8.0",
+    "@grpc/grpc-js": "~1.9.0",
     "@grpc/proto-loader": "^0.7.0",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
@@ -18,13 +18,13 @@
     "google-auth-library": "^9.0.0",
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
-    "proto3-json-serializer": "^1.0.0",
+    "proto3-json-serializer": "^1.1.1",
     "protobufjs": "7.2.4",
     "retry-request": "^6.0.0"
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-methods": "^7.18.6",
-    "@compodoc/compodoc": "1.1.19",
+    "@compodoc/compodoc": "1.1.21",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
     "@types/node": "^18.0.0",
@@ -37,8 +37,7 @@
     "c8": "^8.0.0",
     "codecov": "^3.1.0",
     "execa": "^5.0.0",
-    "gapic-tools": "^0.1.7",
-    "google-proto-files": "^3.0.0",
+    "google-proto-files": "^3.0.3",
     "gts": "^3.1.0",
     "linkinator": "^4.0.0",
     "long": "^4.0.0",
@@ -74,7 +73,7 @@
     "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
     "compile-showcase-proto": "pbjs -t json google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.json && pbjs -t static-module -r showcase_protos google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.js && pbts test/fixtures/google-gax-packaging-test-app/protos/protos.js -o test/fixtures/google-gax-packaging-test-app/protos/protos.d.ts",
     "fix": "gts fix",
-    "prepare": "npm run compile && prepublishProtos . && mkdirp build/protos && cp -r protos/* build/protos/ && npm run minify-proto-json",
+    "prepare": "npm run compile && node ./build/tools/src/prepublish.js . && mkdirp build/protos && cp -r protos/* build/protos/ && npm run minify-proto-json",
     "system-test": "c8 mocha build/test/system-test --timeout 600000 && npm run test-application",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "docs-test": "linkinator docs",
@@ -83,8 +82,8 @@
     "test-application": "cd test/test-application && npm run prefetch && npm install && npm start",
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
-    "update-protos": "listProtos .",
-    "minify-proto-json": "minifyProtoJson"
+    "update-protos": "node ./build/tools/src/listProtos.js .",
+    "minify-proto-json": "node ./build/tools/src/minify.js"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [

@@ -49,6 +49,26 @@ describe('compileProtos tool', () => {
     process.chdir(cwd);
   });
 
+  it('fetches gax from the appropriate place', async () => {
+    assert.deepStrictEqual(fs.readdirSync(compileProtos.gaxProtos), [
+      'compute_operations.d.ts',
+      'compute_operations.js',
+      'compute_operations.json',
+      'google',
+      'http.d.ts',
+      'http.js',
+      'iam_service.d.ts',
+      'iam_service.js',
+      'iam_service.json',
+      'locations.d.ts',
+      'locations.js',
+      'locations.json',
+      'operations.d.ts',
+      'operations.js',
+      'operations.json',
+      'status.json',
+    ]);
+  });
   it('compiles protos to JSON, JS, TS', async function () {
     this.timeout(20000);
     await compileProtos.main([
