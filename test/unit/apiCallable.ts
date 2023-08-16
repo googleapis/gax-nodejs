@@ -66,8 +66,8 @@ describe('createApiCall', () => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
-      assert(resp! > originalDeadline);
-      assert(resp! <= expectedDeadline);
+      assert((resp as any)! > originalDeadline);
+      assert((resp as any)! <= expectedDeadline);
       done();
     });
   });
