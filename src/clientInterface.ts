@@ -49,7 +49,7 @@ export interface Descriptors {
 export interface Callback<
   ResponseObject,
   NextRequestObject,
-  RawResponseObject
+  RawResponseObject,
 > {
   (
     err: Error | null | undefined,
@@ -69,7 +69,7 @@ export interface LROperation<ResultType, MetadataType>
 export interface PaginationCallback<
   RequestObject,
   ResponseObject,
-  ResponseType
+  ResponseType,
 > {
   (
     err: Error | null,
@@ -82,7 +82,7 @@ export interface PaginationCallback<
 export interface PaginationResponse<
   RequestObject,
   ResponseObject,
-  ResponseType
+  ResponseType,
 > {
   values?: ResponseType[];
   nextPageRequest?: RequestObject;

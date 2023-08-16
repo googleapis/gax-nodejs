@@ -510,7 +510,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IEchoResponse,
       protos.google.showcase.v1beta1.IEchoRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   echo(
@@ -548,7 +548,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IEchoResponse,
       protos.google.showcase.v1beta1.IEchoRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -596,7 +596,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IBlockResponse,
       protos.google.showcase.v1beta1.IBlockRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   block(
@@ -634,7 +634,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IBlockResponse,
       protos.google.showcase.v1beta1.IBlockRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -796,7 +796,7 @@ export class EchoClient {
         protos.google.showcase.v1beta1.IWaitMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   wait(
@@ -849,7 +849,7 @@ export class EchoClient {
         protos.google.showcase.v1beta1.IWaitMetadata
       >,
       protos.google.longrunning.IOperation | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -932,7 +932,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IEchoResponse[],
       protos.google.showcase.v1beta1.IPagedExpandRequest | null,
-      protos.google.showcase.v1beta1.IPagedExpandResponse
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
     ]
   >;
   pagedExpand(
@@ -972,7 +972,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IEchoResponse[],
       protos.google.showcase.v1beta1.IPagedExpandRequest | null,
-      protos.google.showcase.v1beta1.IPagedExpandResponse
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
     ]
   > | void {
     request = request || {};
