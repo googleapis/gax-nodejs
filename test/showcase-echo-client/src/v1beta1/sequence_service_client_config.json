@@ -1,6 +1,6 @@
 {
   "interfaces": {
-    "google.showcase.v1beta1.Echo": {
+    "google.showcase.v1beta1.SequenceService": {
       "retry_codes": {
         "non_idempotent": [],
         "idempotent": [
@@ -20,39 +20,27 @@
         }
       },
       "methods": {
-        "Echo": {
+        "CreateSequence": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "Expand": {
+        "CreateStreamingSequence": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "Collect": {
+        "GetSequenceReport": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "Chat": {
+        "GetStreamingSequenceReport": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "PagedExpand": {
+        "AttemptSequence": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "PagedExpandLegacy": {
-          "retry_codes_name": "non_idempotent",
-          "retry_params_name": "default"
-        },
-        "PagedExpandLegacyMapped": {
-          "retry_codes_name": "non_idempotent",
-          "retry_params_name": "default"
-        },
-        "Wait": {
-          "retry_codes_name": "non_idempotent",
-          "retry_params_name": "default"
-        },
-        "Block": {
+        "AttemptStreamingSequence": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         }

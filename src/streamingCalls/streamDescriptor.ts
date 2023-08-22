@@ -17,7 +17,6 @@
 import {APICaller} from '../apiCaller';
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
-
 import {StreamType} from './streaming';
 import {StreamingApiCaller} from './streamingApiCaller';
 
@@ -28,19 +27,23 @@ export class StreamDescriptor implements Descriptor {
   type: StreamType;
   streaming: boolean; // needed for browser support
   rest?: boolean;
+  gaxStreamingRetries?: boolean;
 
-  constructor(streamType: StreamType, rest?: boolean) {
+  constructor(
+    streamType: StreamType,
+    rest?: boolean,
+    gaxStreamingRetries?: boolean
+  ) {
     this.type = streamType;
     this.streaming = true;
     this.rest = rest;
+    this.gaxStreamingRetries = gaxStreamingRetries;
   }
 
   getApiCaller(settings: CallSettings): APICaller {
     // Right now retrying does not work with gRPC-streaming, because retryable
     // assumes an API call returns an event emitter while gRPC-streaming methods
     // return Stream.
-    // TODO: support retrying.
-    settings.retry = null;
     return new StreamingApiCaller(this);
   }
 }

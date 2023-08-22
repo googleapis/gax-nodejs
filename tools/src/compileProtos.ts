@@ -22,6 +22,12 @@ import * as util from 'util';
 import * as pbjs from 'protobufjs-cli/pbjs';
 import * as pbts from 'protobufjs-cli/pbts';
 
+export const gaxProtos = path.join(
+  require.resolve('google-gax'),
+  '..',
+  '..',
+  'protos'
+);
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -246,7 +252,7 @@ async function compileProtos(
       '-p',
       'protos',
       '-p',
-      path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
+      gaxProtos,
       '-o',
       jsonOutput,
     ];
@@ -264,7 +270,7 @@ async function compileProtos(
     '-p',
     'protos',
     '-p',
-    path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
+    gaxProtos,
     '-o',
     jsOutput,
   ];

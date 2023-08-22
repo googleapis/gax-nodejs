@@ -19,6 +19,7 @@ import {status} from '@grpc/grpc-js';
 import {afterEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
 
+import {RequestType} from '../../src/apitypes';
 import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
 import * as utils from './utils';
@@ -66,8 +67,8 @@ describe('createApiCall', () => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
-      assert(resp! > originalDeadline);
-      assert(resp! <= expectedDeadline);
+      assert((resp as any)! > originalDeadline);
+      assert((resp as any)! <= expectedDeadline);
       done();
     });
   });
@@ -139,20 +140,23 @@ describe('createApiCall', () => {
       done();
     });
   });
-
-  it('override just custom retry.retrycodes', done => {
+  it('override just custom retry.retryCodesOrShouldRetryFn with retry codes', done => {
     const initialRetryCodes = [1];
     const overrideRetryCodes = [1, 2, 3];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
-      assert.strictEqual(retry.retryCodes, overrideRetryCodes);
+      try {
+        assert.strictEqual(retry.retryCodesOrShouldRetryFn, overrideRetryCodes);
+        return func;
+      } catch (err) {
+        done(err);
+      }
       return func;
     });
 
     function func() {
       done();
     }
-
     const apiCall = createApiCall(func, {
       settings: {
         retry: gax.createRetryOptions(initialRetryCodes, {
@@ -170,10 +174,49 @@ describe('createApiCall', () => {
       {},
       {
         retry: {
-          retryCodes: overrideRetryCodes,
+          retryCodesOrShouldRetryFn: overrideRetryCodes,
         },
       }
     );
+  });
+  it('errors when you override just custom retry.retryCodesOrShouldRetryFn with a function on a non streaming call', async () => {
+    function neverRetry() {
+      return false;
+    }
+    const initialRetryCodes = [1];
+    const overrideRetryCodes = neverRetry;
+
+    function func() {
+      return Promise.resolve();
+    }
+
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions(initialRetryCodes, {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      },
+    });
+    try {
+      await apiCall(
+        {},
+        {
+          retry: {
+            retryCodesOrShouldRetryFn: overrideRetryCodes,
+          },
+        }
+      );
+    } catch (err: any) {
+      assert.strictEqual(
+        err.message,
+        'Using a function to determine retry eligibility is only supported with server streaming calls'
+      );
+    }
   });
 
   it('override just custom retry.backoffSettings', done => {
@@ -211,6 +254,53 @@ describe('createApiCall', () => {
         },
       }
     );
+  });
+
+  it('errors when a resumption strategy is passed for a non streaming call', async () => {
+    const initialBackoffSettings = gax.createDefaultBackoffSettings();
+    const overriBackoffSettings = gax.createBackoffSettings(
+      100,
+      1.2,
+      1000,
+      null,
+      1.5,
+      3000,
+      4500
+    );
+    // "resumption" strategy is to just return the original request
+    const getResumptionRequestFn = (originalRequest: RequestType) => {
+      return originalRequest;
+    };
+
+    function func() {
+      Promise.resolve();
+    }
+    const apiCall = createApiCall(func, {
+      settings: {
+        retry: gax.createRetryOptions(
+          [1],
+          initialBackoffSettings,
+          getResumptionRequestFn
+        ),
+      },
+    });
+
+    try {
+      await apiCall(
+        {},
+        {
+          retry: {
+            backoffSettings: overriBackoffSettings,
+          },
+        }
+      );
+    } catch (err) {
+      assert(err instanceof Error);
+      assert.strictEqual(
+        err.message,
+        'Resumption strategy can only be used with server streaming retries'
+      );
+    }
   });
 });
 
@@ -500,7 +590,8 @@ describe('retryable', () => {
     });
   });
 
-  // maxRetries is unsupported, and intended for internal use only.
+  // maxRetries is unsupported, and intended for internal use only or
+  // use with retry-request backwards compatibility
   it('errors when totalTimeoutMillis and maxRetries set', done => {
     const maxRetries = 5;
     const backoff = gax.createMaxRetriesBackoffSettings(

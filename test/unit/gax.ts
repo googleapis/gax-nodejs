@@ -74,11 +74,14 @@ const RETRY_DICT = {
 
 function expectRetryOptions(obj: gax.RetryOptions) {
   assert.ok(obj instanceof Object);
-  ['retryCodes', 'backoffSettings'].forEach(k =>
+  ['retryCodesOrShouldRetryFn', 'backoffSettings'].forEach(k =>
     // eslint-disable-next-line no-prototype-builtins
     assert.ok(obj.hasOwnProperty(k))
   );
-  assert.ok(obj.retryCodes instanceof Array);
+  assert.ok(
+    obj.retryCodesOrShouldRetryFn instanceof Array ||
+      obj.retryCodesOrShouldRetryFn instanceof Function
+  );
   expectBackoffSettings(obj.backoffSettings);
 }
 
@@ -112,13 +115,13 @@ describe('gax construct settings', () => {
     assert.strictEqual(settings.timeout, 40000);
     assert.strictEqual(settings.apiName, SERVICE_NAME);
     expectRetryOptions(settings.retry);
-    assert.deepStrictEqual(settings.retry.retryCodes, [1, 2]);
+    assert.deepStrictEqual(settings.retry.retryCodesOrShouldRetryFn, [1, 2]);
     assert.strictEqual(settings.otherArgs, otherArgs);
 
     settings = defaults.pageStreamingMethod;
     assert.strictEqual(settings.timeout, 30000);
     expectRetryOptions(settings.retry);
-    assert.deepStrictEqual(settings.retry.retryCodes, [3]);
+    assert.deepStrictEqual(settings.retry.retryCodesOrShouldRetryFn, [3]);
     assert.strictEqual(settings.otherArgs, otherArgs);
   });
 
@@ -185,7 +188,9 @@ describe('gax construct settings', () => {
     let settings = defaults.bundlingMethod;
     let backoff = settings.retry.backoffSettings;
     assert.strictEqual(backoff.initialRetryDelayMillis, 1000);
-    assert.deepStrictEqual(settings.retry.retryCodes, [RETRY_DICT.code_a]);
+    assert.deepStrictEqual(settings.retry.retryCodesOrShouldRetryFn, [
+      RETRY_DICT.code_a,
+    ]);
     assert.strictEqual(settings.timeout, 50000);
 
     /* page_streaming_method is unaffected because it's not specified in
@@ -196,6 +201,8 @@ describe('gax construct settings', () => {
     assert.strictEqual(backoff.initialRetryDelayMillis, 100);
     assert.strictEqual(backoff.retryDelayMultiplier, 1.2);
     assert.strictEqual(backoff.maxRetryDelayMillis, 1000);
-    assert.deepStrictEqual(settings.retry.retryCodes, [RETRY_DICT.code_c]);
+    assert.deepStrictEqual(settings.retry.retryCodesOrShouldRetryFn, [
+      RETRY_DICT.code_c,
+    ]);
   });
 });

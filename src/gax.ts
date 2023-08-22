@@ -67,19 +67,42 @@ import {toLowerCamelCase} from './util';
 
 /**
  * Per-call configurable settings for retrying upon transient failure.
+ * @implements {RetryOptionsType}
  * @typedef {Object} RetryOptions
- * @property {String[]} retryCodes
+ * @property {String[] | (function)} retryCodesOrShouldRetryFn
  * @property {BackoffSettings} backoffSettings
+ * @property {(function)} getResumptionRequestFn
  */
 export class RetryOptions {
-  retryCodes: number[];
+  retryCodesOrShouldRetryFn: number[] | ((error: any) => boolean);
   backoffSettings: BackoffSettings;
-  constructor(retryCodes: number[], backoffSettings: BackoffSettings) {
-    this.retryCodes = retryCodes;
+  getResumptionRequestFn?: (response: any) => any;
+  constructor(
+    retryCodesOrShouldRetryFn: number[] | ((error: any) => boolean),
+    backoffSettings: BackoffSettings,
+    getResumptionRequestFn?: (response: any) => any
+  ) {
+    this.retryCodesOrShouldRetryFn = retryCodesOrShouldRetryFn;
     this.backoffSettings = backoffSettings;
+    this.getResumptionRequestFn = getResumptionRequestFn;
   }
 }
 
+/**
+ * Per-call configurable settings for working with retry-request
+ * See the repo README for more about the parameters
+ * https://github.com/googleapis/retry-request
+ * Will be deprecated in a future release. Only relevant to server streaming calls
+ * @typedef {Object} RetryOptions
+ * @property {boolean} objectMode - when true utilizes object mode in streams
+ * @property {request} request - the request to retry
+ * @property {number} noResponseRetries - number of times to retry on no response
+ * @property {number} currentRetryAttempt - what # retry attempt retry-request is on
+ * @property {Function} shouldRetryFn - determines whether to retry, returns a boolean
+ * @property {number} maxRetryDelay - maximum retry delay in seconds
+ * @property {number} retryDelayMultiplier - multiplier to increase the delay in between completion of failed requests
+ * @property {number} totalTimeout - total timeout in seconds
+ */
 export interface RetryRequestOptions {
   objectMode?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -87,7 +110,10 @@ export interface RetryRequestOptions {
   retries?: number;
   noResponseRetries?: number;
   currentRetryAttempt?: number;
-  shouldRetryFn?: () => boolean;
+  shouldRetryFn?: (error: any) => boolean;
+  maxRetryDelay?: number;
+  retryDelayMultiplier?: number;
+  totalTimeout?: number;
 }
 
 /**
@@ -209,31 +235,50 @@ export class CallSettings {
     let longrunning = this.longrunning;
     let apiName = this.apiName;
     let retryRequestOptions = this.retryRequestOptions;
+
     // If a method-specific timeout is set in the service config, and the retry codes for that
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
-    if (
-      retry !== undefined &&
-      retry !== null &&
-      retry.retryCodes !== null &&
-      retry.retryCodes.length > 0
-    ) {
-      retry.backoffSettings.initialRpcTimeoutMillis = timeout;
-      retry.backoffSettings.maxRpcTimeoutMillis = timeout;
-      retry.backoffSettings.totalTimeoutMillis = timeout;
+    if (retry !== undefined && retry !== null) {
+      // if verify that the retry codes/retry function are not null or undefined
+      if (
+        retry.retryCodesOrShouldRetryFn !== null &&
+        retry.retryCodesOrShouldRetryFn !== undefined
+      ) {
+        // if it's an array of retry codes, make sure it has an element or check if it's a function
+        if (
+          (retry.retryCodesOrShouldRetryFn instanceof Array &&
+            retry.retryCodesOrShouldRetryFn.length > 0) ||
+          retry.retryCodesOrShouldRetryFn instanceof Function
+        ) {
+          retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+          retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+          retry.backoffSettings.totalTimeoutMillis = timeout;
+        }
+      }
     }
+
     // If the user provides a timeout to the method, that timeout value will be used
     // to override the backoff settings.
     if ('timeout' in options) {
       timeout = options.timeout!;
-      if (
-        retry !== undefined &&
-        retry !== null &&
-        retry.retryCodes.length > 0
-      ) {
-        retry.backoffSettings.initialRpcTimeoutMillis = timeout;
-        retry.backoffSettings.maxRpcTimeoutMillis = timeout;
-        retry.backoffSettings.totalTimeoutMillis = timeout;
+      if (retry !== undefined && retry !== null) {
+        // if verify that the retry codes/retry function are not null or undefined
+        if (
+          retry.retryCodesOrShouldRetryFn !== null &&
+          retry.retryCodesOrShouldRetryFn !== undefined
+        ) {
+          // if it's an array of retry codes, make sure it has an element or if it's a function
+          if (
+            (retry.retryCodesOrShouldRetryFn instanceof Array &&
+              retry.retryCodesOrShouldRetryFn.length > 0) ||
+            retry.retryCodesOrShouldRetryFn instanceof Function
+          ) {
+            retry.backoffSettings.initialRpcTimeoutMillis = timeout;
+            retry.backoffSettings.maxRpcTimeoutMillis = timeout;
+            retry.backoffSettings.totalTimeoutMillis = timeout;
+          }
+        }
       }
     }
     if ('retry' in options) {
@@ -262,7 +307,11 @@ export class CallSettings {
       isBundling = options.isBundling!;
     }
 
-    if ('maxRetries' in options) {
+    if ('maxRetries' in options && typeof options.maxRetries !== 'undefined') {
+      console.log(
+        'removing timeout in favor of max retries',
+        retry!.backoffSettings!.totalTimeoutMillis
+      );
       retry!.backoffSettings!.maxRetries = options.maxRetries;
       delete retry!.backoffSettings!.totalTimeoutMillis;
     }
@@ -273,6 +322,7 @@ export class CallSettings {
     if ('apiName' in options) {
       apiName = options.apiName;
     }
+    //
     if ('retryRequestOptions' in options) {
       retryRequestOptions = options.retryRequestOptions;
     }
@@ -293,22 +343,147 @@ export class CallSettings {
 }
 
 /**
+ * Validates passed retry options in preparation for eventual parameter deprecation
+ * converts retryRequestOptions to retryOptions
+ * then sets retryRequestOptions to null
+ *
+ * @param {CallOptions} options - a list of passed retry option
+ * @return {CallOptions} A new CallOptions object.
+ *
+ */
+
+export function checkRetryOptions(
+  options?: CallOptions,
+  gaxStreamingRetries?: boolean
+): CallOptions | undefined {
+  // options will be undefined if no CallOptions object is passed at call time
+  if (options) {
+    // if a user provided retry AND retryRequestOptions at call time, throw an error
+    if (gaxStreamingRetries) {
+      if (
+        options.retry !== undefined &&
+        options.retryRequestOptions !== undefined
+      ) {
+        throw new Error('Only one of retry or retryRequestOptions may be set');
+      } else {
+        if (options.retryRequestOptions !== undefined) {
+          // // Retry settings
+          if (options.retryRequestOptions.objectMode) {
+            console.log(
+              'objectMode override is not supported. It is set to true internally by default in gax.'
+            );
+          }
+          if (options.retryRequestOptions.noResponseRetries) {
+            console.log(
+              'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.'
+            );
+          }
+          if (options.retryRequestOptions.currentRetryAttempt) {
+            console.log(
+              'currentRetryAttempt override is not supported. Retry attempts are tracked internally.'
+            );
+          }
+          let retryCodesOrShouldRetryFn;
+
+          if (options.retryRequestOptions.shouldRetryFn) {
+            retryCodesOrShouldRetryFn =
+              options.retryRequestOptions.shouldRetryFn;
+          } else {
+            // default to retry code 14 per AIP-194
+            retryCodesOrShouldRetryFn = [14];
+          }
+
+          //Backoff settings
+          if (
+            options.retryRequestOptions.retries !== null &&
+            options.retryRequestOptions !== undefined
+          ) {
+            // don't want to just check for truthiness here in case it's 0
+            options.maxRetries = options.retryRequestOptions.retries;
+          }
+          // create a default backoff settings object in case the user didn't provide overrides for everything
+          const backoffSettings = createDefaultBackoffSettings();
+          let maxRetryDelayMillis;
+          let totalTimeoutMillis;
+          // maxRetryDelay - this is in seconds, need to convert to milliseconds
+          if (options.retryRequestOptions.maxRetryDelay) {
+            maxRetryDelayMillis =
+              options.retryRequestOptions.maxRetryDelay * 1000;
+          }
+          // retryDelayMultiplier - should be a one to one mapping to retryDelayMultiplier
+          const retryDelayMultiplier =
+            options.retryRequestOptions.retryDelayMultiplier;
+          // totalTimeout - this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
+          if (options.retryRequestOptions.totalTimeout) {
+            totalTimeoutMillis =
+              options.retryRequestOptions.totalTimeout * 1000;
+          }
+
+          // for the variables the user wants to override, override in the backoff settings object we made
+          if (maxRetryDelayMillis) {
+            backoffSettings.maxRetryDelayMillis = maxRetryDelayMillis;
+          }
+          if (retryDelayMultiplier) {
+            backoffSettings.retryDelayMultiplier = retryDelayMultiplier;
+          }
+          if (totalTimeoutMillis) {
+            backoffSettings.totalTimeoutMillis = totalTimeoutMillis;
+          }
+
+          const convertedRetryOptions = createRetryOptions(
+            retryCodesOrShouldRetryFn,
+            backoffSettings
+          );
+          options.retry = convertedRetryOptions;
+          delete options.retryRequestOptions; // completely remove them to avoid any further confusion
+          warn(
+            'retry_request_options',
+            'retryRequestOptions will be deprecated in a future release. Please use retryOptions to pass retry options at call time',
+            'DeprecationWarning'
+          );
+        }
+      }
+    } else {
+      // if user is opted into legacy settings but has passed retry settings, let them know there might be an issue if it's a streaming call
+      if (options.retry !== undefined) {
+        warn(
+          'legacy_streaming_retry_behavior',
+          'Legacy streaming retry behavior will not honor settings passed at call time or via client configuration. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will be set to true by default in future releases.',
+          'DeprecationWarning'
+        );
+      }
+      if (options.retryRequestOptions !== undefined) {
+        warn(
+          'legacy_streaming_retry_request_behavior',
+          'Legacy streaming retry behavior will not honor retryRequestOptions passed at call time. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will convert retryRequestOptions to retry parameters by default in future releases.',
+          'DeprecationWarning'
+        );
+      }
+    }
+  }
+  return options;
+}
+
+/**
  * Per-call configurable settings for retrying upon transient failure.
  *
- * @param {number[]} retryCodes - a list of Google API canonical error codes
+ * @param {number[] | function} retryCodesOrShouldRetryFn - a list of Google API canonical error codes OR a function that returns a boolean to determine retry behavior
  *   upon which a retry should be attempted.
  * @param {BackoffSettings} backoffSettings - configures the retry
  *   exponential backoff algorithm.
+ * @param {function} getResumptionRequestFn - a function with a resumption strategy - only used with server streaming retries
  * @return {RetryOptions} A new RetryOptions object.
  *
  */
 export function createRetryOptions(
-  retryCodes: number[],
-  backoffSettings: BackoffSettings
+  retryCodesOrShouldRetryFn: number[] | ((response: any) => boolean),
+  backoffSettings: BackoffSettings,
+  getResumptionRequestFn?: (response: any) => any
 ): RetryOptions {
   return {
-    retryCodes,
+    retryCodesOrShouldRetryFn,
     backoffSettings,
+    getResumptionRequestFn,
   };
 }
 
@@ -479,7 +654,7 @@ function constructRetry(
     return null;
   }
 
-  let codes: number[] | null = null;
+  let codes: number[] | null = null; // this is one instance where it will NOT be an array OR a function because we do not allow shouldRetryFn in the client
   if (retryCodes && 'retry_codes_name' in methodConfig) {
     const retryCodesName = methodConfig['retry_codes_name'];
     codes = (retryCodes[retryCodesName!] || []).map(name => {
@@ -526,16 +701,30 @@ function mergeRetryOptions(
     return null;
   }
 
-  if (!overrides.retryCodes && !overrides.backoffSettings) {
+  if (
+    !overrides.retryCodesOrShouldRetryFn &&
+    !overrides.backoffSettings &&
+    !overrides.getResumptionRequestFn
+  ) {
     return retry;
   }
 
-  const codes = overrides.retryCodes ? overrides.retryCodes : retry.retryCodes;
+  const codesOrFunction = overrides.retryCodesOrShouldRetryFn
+    ? overrides.retryCodesOrShouldRetryFn
+    : retry.retryCodesOrShouldRetryFn;
 
   const backoffSettings = overrides.backoffSettings
     ? overrides.backoffSettings
     : retry.backoffSettings;
-  return createRetryOptions(codes!, backoffSettings!);
+
+  const getResumptionRequestFn = overrides.getResumptionRequestFn
+    ? overrides.getResumptionRequestFn
+    : retry.getResumptionRequestFn;
+  return createRetryOptions(
+    codesOrFunction!,
+    backoffSettings!,
+    getResumptionRequestFn!
+  );
 }
 
 export interface ServiceConfig {

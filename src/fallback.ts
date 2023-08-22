@@ -35,7 +35,6 @@ import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor, StreamDescriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
 import {FallbackServiceError} from './googleError';
-import * as fallbackProto from './fallbackProto';
 import * as fallbackRest from './fallbackRest';
 import {isNodeJS} from './featureDetection';
 import {generateServiceStub} from './fallbackServiceStub';
@@ -94,7 +93,7 @@ export type AuthClient =
 export class GrpcClient {
   auth?: OAuth2Client | GoogleAuth;
   authClient?: AuthClient;
-  fallback: boolean | 'rest' | 'proto';
+  fallback: boolean;
   grpcVersion: string;
   private static protoCache = new Map<string, protobuf.Root>();
   httpRules?: Array<google.api.IHttpRule>;
@@ -119,7 +118,11 @@ export class GrpcClient {
 
   constructor(
     options: (GrpcClientOptions | {auth: OAuth2Client}) & {
-      fallback?: boolean | 'rest' | 'proto';
+      /**
+       * Fallback mode to use instead of gRPC.
+       * A string is accepted for compatibility, all non-empty string values enable the HTTP REST fallback.
+       */
+      fallback?: boolean | string;
     } = {}
   ) {
     if (!isNodeJS()) {
@@ -135,7 +138,7 @@ export class GrpcClient {
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
-    this.fallback = options.fallback !== 'rest' ? 'proto' : 'rest';
+    this.fallback = options.fallback ? true : false;
     this.grpcVersion = require('../../package.json').version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
     this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
@@ -316,14 +319,8 @@ export class GrpcClient {
       servicePort = 443;
     }
 
-    const encoder =
-      this.fallback === 'rest'
-        ? fallbackRest.encodeRequest
-        : fallbackProto.encodeRequest;
-    const decoder =
-      this.fallback === 'rest'
-        ? fallbackRest.decodeResponse
-        : fallbackProto.decodeResponse;
+    const encoder = fallbackRest.encodeRequest;
+    const decoder = fallbackRest.decodeResponse;
     const serviceStub = generateServiceStub(
       methods,
       protocol,
@@ -362,7 +359,7 @@ export class GrpcClient {
 export function lro(options: GrpcClientOptions) {
   options = Object.assign({scopes: []}, options);
   if (options.protoJson) {
-    options = Object.assign(options, {fallback: 'rest'});
+    options = Object.assign(options, {fallback: true});
   }
   const gaxGrpc = new GrpcClient(options);
   return new OperationsClientBuilder(gaxGrpc, options.protoJson);
@@ -396,10 +393,10 @@ export function createApiCall(
   func: Promise<GRPCCall> | GRPCCall,
   settings: gax.CallSettings,
   descriptor?: Descriptor,
-  fallback?: boolean | 'proto' | 'rest'
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _fallback?: boolean | string // unused; for compatibility only
 ): GaxCall {
   if (
-    (!fallback || fallback === 'rest') &&
     descriptor &&
     'streaming' in descriptor &&
     (descriptor as StreamDescriptor).type !== StreamType.SERVER_STREAMING
@@ -410,14 +407,10 @@ export function createApiCall(
       );
     };
   }
-  if (
-    (fallback === 'proto' || fallback === true) && // for legacy reasons, fallback === true means 'proto'
-    descriptor &&
-    'streaming' in descriptor
-  ) {
+  if (descriptor && 'streaming' in descriptor && !isNodeJS()) {
     return () => {
       throw new Error(
-        'The gRPC-fallback (proto over HTTP) transport currently does not support streaming calls.'
+        'Server streaming over the REST transport is only supported in Node.js.'
       );
     };
   }
