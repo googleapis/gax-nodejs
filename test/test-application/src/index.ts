@@ -70,7 +70,6 @@ async function testShowcase() {
   };
 
   const grpcClient = new EchoClient(grpcClientOpts);
-
   const grpcClientWithNewRetry = new EchoClient(grpcClientOptsWithNewRetry);
   const grpcSequenceClientWithNewRetry = new SequenceServiceClient(
     grpcClientOptsWithNewRetry
