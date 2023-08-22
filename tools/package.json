@@ -44,7 +44,7 @@
     "gts": "^5.0.0",
     "mocha": "^9.0.0",
     "ncp": "^2.0.0",
-    "protobufjs": "7.2.4",
+    "protobufjs": "7.2.5",
     "typescript": "^5.1.6"
   },
   "engines": {
