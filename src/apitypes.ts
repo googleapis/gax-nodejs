@@ -48,7 +48,7 @@ export type RawResponseType = Operation | {} | null;
 export type ResultTuple = [
   ResponseType | [ResponseType],
   NextPageRequestType | undefined,
-  RawResponseType | undefined
+  RawResponseType | undefined,
 ];
 
 export interface SimpleCallbackFunction {

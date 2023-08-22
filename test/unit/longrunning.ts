@@ -435,11 +435,11 @@ describe('longrunning', () => {
         const client = mockOperationsClient({expectedCalls: 0});
         const apiCall = createApiCall(func, client);
         const [operation] = (await apiCall({})) as unknown as [
-          longrunning.Operation
+          longrunning.Operation,
         ];
         assert.notStrictEqual(operation, null);
         const [finalResult] = (await operation!.promise()) as unknown as [
-          string
+          string,
         ];
         assert.strictEqual(finalResult, RESPONSE_VAL);
       });

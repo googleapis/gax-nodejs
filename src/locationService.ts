@@ -372,7 +372,7 @@ export class LocationsClient {
     [
       protos.google.cloud.location.ILocation[],
       protos.google.cloud.location.IListLocationsRequest | null,
-      protos.google.cloud.location.IListLocationsResponse
+      protos.google.cloud.location.IListLocationsResponse,
     ]
   >;
   listLocations(
@@ -438,7 +438,7 @@ export class LocationsClient {
     [
       protos.google.cloud.location.ILocation[],
       protos.google.cloud.location.IListLocationsRequest | null,
-      protos.google.cloud.location.IListLocationsResponse
+      protos.google.cloud.location.IListLocationsResponse,
     ]
   > | void {
     request = request || {};
