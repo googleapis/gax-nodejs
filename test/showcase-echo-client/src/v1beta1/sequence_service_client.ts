@@ -381,7 +381,7 @@ export class SequenceServiceClient {
     [
       protos.google.showcase.v1beta1.ISequence,
       protos.google.showcase.v1beta1.ICreateSequenceRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   createSequence(
@@ -421,7 +421,7 @@ export class SequenceServiceClient {
     [
       protos.google.showcase.v1beta1.ISequence,
       protos.google.showcase.v1beta1.ICreateSequenceRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -463,7 +463,7 @@ export class SequenceServiceClient {
         | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   >;
   createStreamingSequence(
@@ -512,7 +512,7 @@ export class SequenceServiceClient {
         | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -555,7 +555,7 @@ export class SequenceServiceClient {
     [
       protos.google.showcase.v1beta1.ISequenceReport,
       protos.google.showcase.v1beta1.IGetSequenceReportRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getSequenceReport(
@@ -601,7 +601,7 @@ export class SequenceServiceClient {
     [
       protos.google.showcase.v1beta1.ISequenceReport,
       protos.google.showcase.v1beta1.IGetSequenceReportRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -647,7 +647,7 @@ export class SequenceServiceClient {
         | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   >;
   getStreamingSequenceReport(
@@ -696,7 +696,7 @@ export class SequenceServiceClient {
         | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
         | undefined
       ),
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
@@ -743,7 +743,7 @@ export class SequenceServiceClient {
     [
       protos.google.protobuf.IEmpty,
       protos.google.showcase.v1beta1.IAttemptSequenceRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   attemptSequence(
@@ -783,7 +783,7 @@ export class SequenceServiceClient {
     [
       protos.google.protobuf.IEmpty,
       protos.google.showcase.v1beta1.IAttemptSequenceRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};

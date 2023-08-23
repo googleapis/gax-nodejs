@@ -705,7 +705,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IPagedExpandResponse,
       protos.google.showcase.v1beta1.IPagedExpandLegacyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   >;
   pagedExpandLegacy(
@@ -751,7 +751,7 @@ export class EchoClient {
     [
       protos.google.showcase.v1beta1.IPagedExpandResponse,
       protos.google.showcase.v1beta1.IPagedExpandLegacyRequest | undefined,
-      {} | undefined
+      {} | undefined,
     ]
   > | void {
     request = request || {};
