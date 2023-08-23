@@ -16,13 +16,12 @@
 
 // Lots of comments we can delete in uglify
 async function main() {
-    // Showcases auto-pagination functionality.
-    
-    // Let's say we have an API call that returns results grouped into pages.
-    // It accepts 4 parameters (just like gRPC stub calls do):
-    return 'SUCCESS';
-  }
-  
-  main().catch(console.error);
-  // More comments
-  
+  // Showcases auto-pagination functionality.
+
+  // Let's say we have an API call that returns results grouped into pages.
+  // It accepts 4 parameters (just like gRPC stub calls do):
+  return 'SUCCESS';
+}
+
+main().catch(console.error);
+// More comments
