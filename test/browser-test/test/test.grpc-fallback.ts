@@ -229,10 +229,7 @@ describe('grpc-fallback', () => {
     const options: any = {};
     options.otherArgs = {};
     options.otherArgs.headers = {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      fallback.routingHeader.fromParams({
-        abc: 'def',
-      });
+    options.otherArgs.headers['x-test-header'] = 'value';
     const response = requestObject;
     // eslint-disable-next-line no-undef
     const savedFetch = window.fetch;
@@ -240,7 +237,7 @@ describe('grpc-fallback', () => {
     // eslint-disable-next-line no-undef
     window.fetch = (url, options) => {
       // @ts-ignore
-      assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
+      assert.strictEqual(options.headers['x-test-header'], 'value');
       return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
