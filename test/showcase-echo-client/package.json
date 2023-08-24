@@ -1,5 +1,5 @@
 {
- "name": "showcase-echo-client",
+  "name": "showcase-echo-client",
   "version": "0.1.0",
   "description": "Showcase client for Node.js",
   "repository": "googleapis/nodejs-showcase",
