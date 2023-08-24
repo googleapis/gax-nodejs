@@ -227,7 +227,6 @@ export class EchoClient {
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
         this._opts.newRetry
-
       ),
       collect: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.CLIENT_STREAMING,
