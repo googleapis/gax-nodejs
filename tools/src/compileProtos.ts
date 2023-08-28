@@ -163,6 +163,13 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
 }
 
 function fixJsFile(js: string): string {
+  // 1. fix protobufjs import: we don't want the libraries to
+  // depend on protobufjs, so we re-export it from google-gax
+  js = js.replace(
+    'import * as $protobuf from "protobufjs/minimal"',
+    'import * as $protobuf from "google-gax/build/src/protobufjs/protobufMinimal.js"'
+  );
+
   // 1. fix protobufjs require: we don't want the libraries to
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
@@ -236,7 +243,8 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
 async function compileProtos(
   rootName: string,
   protos: string[],
-  skipJson = false
+  skipJson = false,
+  amd = false
 ): Promise<void> {
   if (!skipJson) {
     // generate protos.json file from proto list
@@ -273,6 +281,8 @@ async function compileProtos(
     gaxProtos,
     '-o',
     jsOutput,
+    '-w',
+    'es6',
   ];
   pbjsArgs4js.push(...protos);
   await pbjsMain(pbjsArgs4js);
@@ -280,6 +290,28 @@ async function compileProtos(
   let jsResult = (await readFile(jsOutput)).toString();
   jsResult = fixJsFile(jsResult);
   await writeFile(jsOutput, jsResult);
+
+  if (amd) {
+    const jsOutputAmd = path.join('protos', 'protos.cjs');
+    const pbjsArgs4jsAmd = [
+      '-r',
+      rootName,
+      '--target',
+      'static-module',
+      '-p',
+      'protos',
+      '-p',
+      path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
+      '-o',
+      jsOutputAmd,
+    ];
+    pbjsArgs4jsAmd.push(...protos);
+    await pbjsMain(pbjsArgs4jsAmd);
+
+    let jsResult = (await readFile(jsOutputAmd)).toString();
+    jsResult = fixJsFile(jsResult);
+    await writeFile(jsOutputAmd, jsResult);
+  }
 
   // generate protos/protos.d.ts
   const tsOutput = path.join('protos', 'protos.d.ts');
@@ -330,10 +362,15 @@ export async function generateRootName(directories: string[]): Promise<string> {
 export async function main(parameters: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
   let skipJson = false;
+  let amd = false;
   const directories: string[] = [];
   for (const parameter of parameters) {
     if (parameter === '--skip-json') {
       skipJson = true;
+      continue;
+    }
+    if (parameter === '--amd') {
+      amd = true;
       continue;
     }
     // it's not an option so it's a directory
@@ -343,14 +380,16 @@ export async function main(parameters: string[]): Promise<void> {
   }
   const rootName = await generateRootName(directories);
   const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(rootName, protos, skipJson);
+  await compileProtos(rootName, protos, skipJson, amd);
 }
 
 /**
  * Shows the usage information.
  */
 function usage() {
-  console.log(`Usage: node ${process.argv[1]} [--skip-json] directory ...`);
+  console.log(
+    `Usage: node ${process.argv[1]} [--skip-json] [--amd] directory ...`
+  );
   console.log(
     `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
   );
