@@ -224,7 +224,7 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
     const directory = path.dirname(file);
     const content = await readFile(file);
     const list = JSON.parse(content.toString()).map((filePath: string) =>
-      path.join(directory, normalizePath(filePath))
+      path.join(directory, '..', normalizePath(filePath))
     );
     result.push(...list);
   }
