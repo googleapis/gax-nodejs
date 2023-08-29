@@ -167,7 +167,7 @@ function fixJsFile(js: string): string {
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
     'import * as $protobuf from "protobufjs/minimal"',
-    'import * as $protobuf from "google-gax/build/src/protobufjs/protobufMinimal.js"'
+    'import { protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
   );
 
   // 1. fix protobufjs require: we don't want the libraries to

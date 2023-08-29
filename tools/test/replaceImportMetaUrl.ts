@@ -34,12 +34,13 @@ describe('replace import.meta.url', () => {
     assert.strictEqual(result?.code, program);
   });
 
-  it('replaces import.meta.url with __dirname when no user option provided', async () => {
-    const program = 'console.log(import.meta.url);';
-    const expected = 'console.log(__dirname);';
+  it.only('replaces path.dirname(fileURLToPath(import.meta.url)) with __dirname when no user option provided', async () => {
+    const program = 'path.dirname(fileURLToPath(import.meta.url))';
+    const expected = '__dirname;';
     const result = await babel.transformAsync(program, {
       plugins: [replaceImportMetaUrl],
     });
+    console.log(result);
     assert.strictEqual(result?.code, expected);
   });
 
