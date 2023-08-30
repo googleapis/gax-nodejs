@@ -13,7 +13,6 @@
 // limitations under the License.
 
 const {PassThrough} = require('stream');
-const extend = require('extend');
 
 const DEFAULTS = {
   /*
