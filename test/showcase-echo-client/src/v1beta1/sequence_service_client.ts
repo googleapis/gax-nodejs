@@ -203,7 +203,7 @@ export class SequenceServiceClient {
       attemptStreamingSequence: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        this._opts.newRetry
+        this._opts.gaxServerStreamingRetries
       ),
     };
 

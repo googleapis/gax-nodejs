@@ -37,10 +37,10 @@ async function testShowcase() {
     sslCreds: grpc.credentials.createInsecure(),
   };
 
-  const grpcClientOptsWithNewRetry = {
+  const grpcClientOptsWithServerStreamingRetries = {
     grpc,
     sslCreds: grpc.credentials.createInsecure(),
-    newRetry: true,
+    gaxServerStreamingRetries: true,
   };
 
   const fakeGoogleAuth = {
@@ -70,10 +70,11 @@ async function testShowcase() {
   };
 
   const grpcClient = new EchoClient(grpcClientOpts);
-  const grpcClientWithNewRetry = new EchoClient(grpcClientOptsWithNewRetry);
-  const grpcSequenceClientWithNewRetry = new SequenceServiceClient(
-    grpcClientOptsWithNewRetry
+  const grpcClientWithServerStreamingRetries = new EchoClient(
+    grpcClientOptsWithServerStreamingRetries
   );
+  const grpcSequenceClientWithServerStreamingRetries =
+    new SequenceServiceClient(grpcClientOptsWithServerStreamingRetries);
 
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
@@ -103,49 +104,51 @@ async function testShowcase() {
   await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
   await testWait(restClientCompat);
-  // Testing with newRetry being true
-  await testServerStreamingRetryOptions(grpcSequenceClientWithNewRetry);
+  // Testing with gaxServerStreamingRetries being true
+  await testServerStreamingRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
   await testServerStreamingRetriesWithShouldRetryFn(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingRetrieswithRetryOptions(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingRetrieswithRetryRequestOptions(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingThrowsClassifiedTransientError(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingRetriesAndThrowsClassifiedTransientError(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
   await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    grpcSequenceClientWithNewRetry
+    grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testEcho(grpcClientWithNewRetry);
-  await testEchoError(grpcClientWithNewRetry);
-  await testExpand(grpcClientWithNewRetry);
-  await testPagedExpand(grpcClientWithNewRetry);
-  await testPagedExpandAsync(grpcClientWithNewRetry);
-  await testCollect(grpcClientWithNewRetry);
-  await testChat(grpcClientWithNewRetry);
-  await testWait(grpcClientWithNewRetry);
+  await testEcho(grpcClientWithServerStreamingRetries);
+  await testEchoError(grpcClientWithServerStreamingRetries);
+  await testExpand(grpcClientWithServerStreamingRetries);
+  await testPagedExpand(grpcClientWithServerStreamingRetries);
+  await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
+  await testCollect(grpcClientWithServerStreamingRetries);
+  await testChat(grpcClientWithServerStreamingRetries);
+  await testWait(grpcClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
