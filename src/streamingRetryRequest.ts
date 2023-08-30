@@ -95,7 +95,7 @@ export function streamingRetryRequest(
     callback = opts;
   }
 
-  opts = extend({}, DEFAULTS, opts);
+  opts = Object.assign({}, DEFAULTS, opts);
 
   if (typeof opts.request === 'undefined') {
     try {
