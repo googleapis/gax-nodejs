@@ -28,11 +28,7 @@ export default function replaceImportMetaUrl(): {
 } {
   return {
     visitor: {
-<<<<<<< HEAD
       CallExpression(path, state) {
-=======
-      MemberExpression(path, state) {
->>>>>>> c7514b42edea7667dee2799a83325d0a79ac72ef
         const opts = state.opts || {};
         const replacementValue = opts.replacementValue || '__dirname';
         const {node} = path;
