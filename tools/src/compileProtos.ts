@@ -35,7 +35,7 @@ const stat = util.promisify(fs.stat);
 const pbjsMain = util.promisify(pbjs.main);
 const pbtsMain = util.promisify(pbts.main);
 
-const PROTO_LIST_REGEX = /_proto_list\.json$/;
+const PROTO_LIST_REGEX = /_proto_list\.js$/;
 
 const apacheLicense = `// Copyright ${new Date().getFullYear()} Google LLC
 //
@@ -301,7 +301,7 @@ async function compileProtos(
       '-p',
       'protos',
       '-p',
-      path.join(__dirname, '..', '..', '..', 'google-gax', 'build', 'protos'),
+      gaxProtos,
       '-o',
       jsOutputAmd,
     ];
