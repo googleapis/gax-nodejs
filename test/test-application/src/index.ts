@@ -129,11 +129,11 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testServerStreamingThrowsClassifiedTransientError(
+  await testServerStreamingThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testServerStreamingRetriesAndThrowsClassifiedTransientError(
+  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
 
@@ -840,12 +840,12 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     },
     (err: GoogleError) => {
       assert.strictEqual(err.code, 3);
-      assert.match(err.message, /not classified as transient/);
+      assert.match(err.note!, /not classified as transient/);
     }
   );
 }
 
-async function testServerStreamingThrowsClassifiedTransientError(
+async function testServerStreamingThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -895,13 +895,13 @@ async function testServerStreamingThrowsClassifiedTransientError(
       assert(false);
     },
     (err: GoogleError) => {
-      assert.strictEqual(err.code, 3);
-      assert.match(err.message, /not classified as transient/);
+      assert.strictEqual(err.code, 14);
+      assert.match(err.note!, /not classified as transient/);
     }
   );
 }
 
-async function testServerStreamingRetriesAndThrowsClassifiedTransientError(
+async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -951,8 +951,8 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientError(
       assert(false);
     },
     (err: GoogleError) => {
-      assert.strictEqual(err.code, 3);
-      assert.match(err.message, /not classified as transient/);
+      assert.strictEqual(err.code, 4);
+      assert.match(err.note!, /not classified as transient/);
     }
   );
 }

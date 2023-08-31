@@ -231,7 +231,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     );
 
     this.retries!++;
-
     const e = GoogleError.parseGRPCStatusDetails(error);
     let shouldRetry = this.defaultShouldRetry(e!, retry);
     if (typeof retry.retryCodesOrShouldRetryFn! === 'function') {
@@ -250,13 +249,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
       }, toSleep);
     } else {
-      const newError = new GoogleError(
+      e.note =
         'Exception occurred in retry method that was ' +
-          'not classified as transient'
-      );
-      newError.code = Status.INVALID_ARGUMENT;
-      this.emit('error', newError);
-      this.destroy(newError);
+        'not classified as transient';
+      this.emit('error', e);
+      this.destroy(e);
       return;
     }
 
@@ -437,13 +434,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             return retryStream;
           }
         } else {
-          const newError = new GoogleError(
+          const e = GoogleError.parseGRPCStatusDetails(error);
+          e.note =
             'Exception occurred in retry method that was ' +
-              'not classified as transient'
-          );
-          newError.code = Status.INVALID_ARGUMENT;
-          this.emit('error', newError);
-          this.destroy(newError);
+            'not classified as transient';
+          this.emit('error', error);
+          this.destroy(error);
           return;
         }
       } else {
