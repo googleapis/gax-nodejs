@@ -34,7 +34,7 @@ describe('replace import.meta.url', () => {
     assert.strictEqual(result?.code, program);
   });
 
-  it.only('replaces path.dirname(fileURLToPath(import.meta.url)) with __dirname when no user option provided', async () => {
+  it('replaces path.dirname(fileURLToPath(import.meta.url)) with __dirname when no user option provided', async () => {
     const program = 'path.dirname(fileURLToPath(import.meta.url))';
     const expected = '__dirname;';
     const result = await babel.transformAsync(program, {
