@@ -244,7 +244,7 @@ async function compileProtos(
   rootName: string,
   protos: string[],
   skipJson = false,
-  amd = false
+  esm = false
 ): Promise<void> {
   if (!skipJson) {
     // generate protos.json file from proto list
@@ -281,8 +281,6 @@ async function compileProtos(
     gaxProtos,
     '-o',
     jsOutput,
-    '-w',
-    'es6',
   ];
   pbjsArgs4js.push(...protos);
   await pbjsMain(pbjsArgs4js);
@@ -291,9 +289,9 @@ async function compileProtos(
   jsResult = fixJsFile(jsResult);
   await writeFile(jsOutput, jsResult);
 
-  if (amd) {
-    const jsOutputAmd = path.join('protos', 'protos.cjs');
-    const pbjsArgs4jsAmd = [
+  if (esm) {
+    const jsOutputEsm = path.join('protos', 'protos.cjs');
+    const pbjsArgs4jsEsm = [
       '-r',
       rootName,
       '--target',
@@ -303,14 +301,16 @@ async function compileProtos(
       '-p',
       gaxProtos,
       '-o',
-      jsOutputAmd,
+      jsOutputEsm,
+      '-w',
+      'es6',
     ];
-    pbjsArgs4jsAmd.push(...protos);
-    await pbjsMain(pbjsArgs4jsAmd);
+    pbjsArgs4jsEsm.push(...protos);
+    await pbjsMain(pbjsArgs4jsEsm);
 
-    let jsResult = (await readFile(jsOutputAmd)).toString();
+    let jsResult = (await readFile(jsOutputEsm)).toString();
     jsResult = fixJsFile(jsResult);
-    await writeFile(jsOutputAmd, jsResult);
+    await writeFile(jsOutputEsm, jsResult);
   }
 
   // generate protos/protos.d.ts
@@ -362,15 +362,15 @@ export async function generateRootName(directories: string[]): Promise<string> {
 export async function main(parameters: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
   let skipJson = false;
-  let amd = false;
+  let esm = false;
   const directories: string[] = [];
   for (const parameter of parameters) {
     if (parameter === '--skip-json') {
       skipJson = true;
       continue;
     }
-    if (parameter === '--amd') {
-      amd = true;
+    if (parameter === '--esm') {
+      esm = true;
       continue;
     }
     // it's not an option so it's a directory
@@ -380,7 +380,7 @@ export async function main(parameters: string[]): Promise<void> {
   }
   const rootName = await generateRootName(directories);
   const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(rootName, protos, skipJson, amd);
+  await compileProtos(rootName, protos, skipJson, esm);
 }
 
 /**
@@ -388,7 +388,7 @@ export async function main(parameters: string[]): Promise<void> {
  */
 function usage() {
   console.log(
-    `Usage: node ${process.argv[1]} [--skip-json] [--amd] directory ...`
+    `Usage: node ${process.argv[1]} [--skip-json] [--esm] directory ...`
   );
   console.log(
     `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
