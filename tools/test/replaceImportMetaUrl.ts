@@ -18,16 +18,16 @@ import replaceImportMetaUrl from '../src/replaceImportMetaUrl';
 import * as assert from 'assert';
 
 describe('replace import.meta.url', () => {
-  it('does not replace import.meta without url property', async () => {
-    const program = 'console.log(import.meta);';
+  it('does not replace path.dirname(fileURLToPath(import.meta)) without url property', async () => {
+    const program = 'console.log(path.dirname(fileURLToPath(import.meta)));';
     const result = await babel.transformAsync(program, {
       plugins: [replaceImportMetaUrl],
     });
     assert.strictEqual(result?.code, program);
   });
 
-  it('does not replace properties other than url on import.meta', async () => {
-    const program = 'console.log(import.meta.foo);';
+  it('does not replace properties other than url on path.dirname(fileURLToPath(import.meta))', async () => {
+    const program = 'console.log(path.dirname(fileURLToPath(import.meta.foo)));';
     const result = await babel.transformAsync(program, {
       plugins: [replaceImportMetaUrl],
     });
@@ -40,12 +40,11 @@ describe('replace import.meta.url', () => {
     const result = await babel.transformAsync(program, {
       plugins: [replaceImportMetaUrl],
     });
-    console.log(result);
     assert.strictEqual(result?.code, expected);
   });
 
-  it('replaces import.meta.url with the provided option', async () => {
-    const program = 'console.log(import.meta.url)';
+  it('replaces path.dirname(fileURLToPath(import.meta.url)) with the provided option', async () => {
+    const program = 'console.log(path.dirname(fileURLToPath(import.meta.url)))';
     const expected = 'console.log(foo.bar);';
     const result = await babel.transformAsync(program, {
       plugins: [[replaceImportMetaUrl, {replacementValue: 'foo.bar'}]],

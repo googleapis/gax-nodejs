@@ -45,7 +45,8 @@ export default function replaceImportMetaUrl(): {
           node.arguments[0].arguments[0].object.type === 'MetaProperty' &&
           node.arguments[0].arguments[0].object.meta.type === 'Identifier' &&
           node.arguments[0].arguments[0].object.meta.name === 'import' &&
-          node.arguments[0].arguments[0].object.property.type === 'Identifier' &&
+          node.arguments[0].arguments[0].object.property.type ===
+            'Identifier' &&
           node.arguments[0].arguments[0].object.property.name === 'meta' &&
           node.arguments[0].arguments[0].property.type === 'Identifier' &&
           node.arguments[0].arguments[0].property.name === 'url'
