@@ -218,13 +218,14 @@ function fixDtsFile(dts: string): string {
  * @param {string[]} protoJsonFiles List of JSON files to parse
  * @return {Promise<string[]>} Resolves to an array of proto files.
  */
-async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
+async function buildListOfProtos(protoJsonFiles: string[], esm?: boolean): Promise<string[]> {
   const result: string[] = [];
   for (const file of protoJsonFiles) {
     const directory = path.dirname(file);
     const content = await readFile(file);
     const list = JSON.parse(content.toString()).map((filePath: string) =>
-      path.join(directory, '..', normalizePath(filePath))
+    // If we're in ESM, we're going to be in a directory level below normal
+    esm ? path.join(directory, '..', normalizePath(filePath)) : path.join(directory, normalizePath(filePath))
     );
     result.push(...list);
   }
@@ -379,8 +380,12 @@ export async function main(parameters: string[]): Promise<void> {
     protoJsonFiles.push(...(await findProtoJsonFiles(directory)));
   }
   const rootName = await generateRootName(directories);
-  const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(rootName, protos, skipJson, esm);
+  if (esm) {
+    const esmProtos = await buildListOfProtos(protoJsonFiles, esm);
+    await compileProtos(rootName, esmProtos, skipJson, esm);
+  }
+  const protos = await buildListOfProtos(protoJsonFiles, esm);
+  await compileProtos(rootName, protos, skipJson);
 }
 
 /**
