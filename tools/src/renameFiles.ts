@@ -26,7 +26,7 @@ async function modifyCJSDir(dirNameReadAbsolute: string, searchPattern: string, 
       const readName = path.join(dirNameReadAbsolute, fileName);
   
       if (fs.statSync(readName).isFile()) {
-        await fsp.rename(readName, readName.replace(new RegExp(searchPattern), resultString));
+        await fsp.rename(readName, readName.replace(searchPattern, resultString));
       } else if (fs.statSync(readName).isDirectory()) {
         modifyCJSDir(readName, searchPattern, resultString);
       }
