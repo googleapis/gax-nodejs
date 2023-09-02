@@ -270,7 +270,7 @@ async function compileProtos(
   }
 
   // generate protos/protos.js from protos.json
-  const jsOutput = path.join('protos', 'protos.js');
+  const jsOutput = esm ? path.join('protos', 'protos.cjs') : path.join('protos', 'protos.js');
   const pbjsArgs4js = [
     '-r',
     rootName,
@@ -290,8 +290,9 @@ async function compileProtos(
   jsResult = fixJsFile(jsResult);
   await writeFile(jsOutput, jsResult);
 
+  let jsOutputEsm;
   if (esm) {
-    const jsOutputEsm = path.join('protos', 'protos.cjs');
+    jsOutputEsm = path.join('protos', 'protos.js');
     const pbjsArgs4jsEsm = [
       '-r',
       rootName,
@@ -316,7 +317,7 @@ async function compileProtos(
 
   // generate protos/protos.d.ts
   const tsOutput = path.join('protos', 'protos.d.ts');
-  const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
+  const pbjsArgs4ts = [esm ? jsOutputEsm! : jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 
   let tsResult = (await readFile(tsOutput)).toString();
@@ -385,7 +386,7 @@ export async function main(parameters: string[]): Promise<void> {
     await compileProtos(rootName, esmProtos, skipJson, esm);
   }
   const protos = await buildListOfProtos(protoJsonFiles, esm);
-  await compileProtos(rootName, protos, skipJson);
+  await compileProtos(rootName, protos, skipJson, esm);
 }
 
 /**

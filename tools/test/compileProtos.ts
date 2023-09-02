@@ -17,7 +17,7 @@
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach} from 'mocha';
 import * as fs from 'fs';
-import * as rimraf from 'rimraf';
+import {rimraf} from 'rimraf';
 import * as util from 'util';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
@@ -25,7 +25,6 @@ import * as compileProtos from '../src/compileProtos';
 
 const readFile = util.promisify(fs.readFile);
 const mkdir = util.promisify(fs.mkdir);
-const rmrf = util.promisify(rimraf);
 
 const testDir = path.join(process.cwd(), '.compileProtos-test');
 const resultDir = path.join(testDir, 'protos');
@@ -34,11 +33,12 @@ const cwd = process.cwd();
 const expectedJsonResultFile = path.join(resultDir, 'protos.json');
 const expectedJSResultFile = path.join(resultDir, 'protos.js');
 const expectedTSResultFile = path.join(resultDir, 'protos.d.ts');
+const expectedCommonJSResultFile = path.join(resultDir, 'protos.cjs');
 
 describe('compileProtos tool', () => {
   beforeEach(async () => {
     if (fs.existsSync(testDir)) {
-      await rmrf(testDir);
+      await rimraf(testDir);
     }
     await mkdir(testDir);
     await mkdir(resultDir);
@@ -50,6 +50,26 @@ describe('compileProtos tool', () => {
     process.chdir(cwd);
   });
 
+  it('fetches gax from the appropriate place', async () => {
+    assert.deepStrictEqual(fs.readdirSync(compileProtos.gaxProtos), [
+      'compute_operations.d.ts',
+      'compute_operations.js',
+      'compute_operations.json',
+      'google',
+      'http.d.ts',
+      'http.js',
+      'iam_service.d.ts',
+      'iam_service.js',
+      'iam_service.json',
+      'locations.d.ts',
+      'locations.js',
+      'locations.json',
+      'operations.d.ts',
+      'operations.js',
+      'operations.json',
+      'status.json',
+    ]);
+  });
   it('compiles protos to JSON, JS, TS', async function () {
     this.timeout(20000);
     await compileProtos.main([
@@ -76,6 +96,75 @@ describe('compileProtos tool', () => {
         .includes('require("google-gax/build/src/protobuf").protobufMinimal')
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
+
+    // check that it uses proper root object; it's taken from fixtures/package.json
+    assert(js.toString().includes('$protobuf.roots._org_fake_package'));
+
+    const ts = await readFile(expectedTSResultFile);
+    assert(ts.toString().includes('TestMessage'));
+    assert(ts.toString().includes('LibraryService'));
+    assert(ts.toString().includes('import Long = require'));
+    assert(!ts.toString().includes('import * as Long'));
+    assert(
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(
+      ts
+        .toString()
+        .includes('import type {protobuf as $protobuf} from "google-gax"')
+    );
+    assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
+  });
+
+  it('compiles protos to CJS and ES6 if --esm is specified', async function () {
+    this.timeout(20000);
+    await compileProtos.main([
+      '--esm',
+      path.join(__dirname, '..', '..', 'test', 'fixtures', 'esm'),
+    ]);
+    assert(fs.existsSync(expectedJsonResultFile));
+    assert(fs.existsSync(expectedJSResultFile));
+    assert(fs.existsSync(expectedTSResultFile));
+    assert(fs.existsSync(expectedCommonJSResultFile));
+
+    const json = await readFile(expectedJsonResultFile);
+    const root = protobuf.Root.fromJSON(JSON.parse(json.toString()));
+    assert(root.lookup('TestMessage'));
+    assert(root.lookup('LibraryService'));
+
+    const cjs = await readFile(expectedCommonJSResultFile);
+    assert(cjs.toString().includes('TestMessage'));
+    assert(cjs.toString().includes('LibraryService'));
+    assert(
+      cjs.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(
+      cjs
+        .toString()
+        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+    );
+    assert(!cjs.toString().includes('require("protobufjs/minimal")'));
+
+    // check that it uses proper root object; it's taken from fixtures/package.json
+    assert(cjs.toString().includes('$protobuf.roots._org_fake_package'));
+
+    const js = await readFile(expectedJSResultFile);
+    assert(js.toString().includes('TestMessage'));
+    assert(js.toString().includes('LibraryService'));
+    assert(
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+    );
+    assert(
+      js
+        .toString()
+        .includes(
+          'import { protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
+        )
+    );
+    assert(!js.toString().includes('require("protobufjs/minimal")'));
+    assert(
+      !js.toString().includes('import * as $protobuf from "protobufjs/minimal"')
+    );
 
     // check that it uses proper root object; it's taken from fixtures/package.json
     assert(js.toString().includes('$protobuf.roots._org_fake_package'));
