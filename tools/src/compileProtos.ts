@@ -218,14 +218,19 @@ function fixDtsFile(dts: string): string {
  * @param {string[]} protoJsonFiles List of JSON files to parse
  * @return {Promise<string[]>} Resolves to an array of proto files.
  */
-async function buildListOfProtos(protoJsonFiles: string[], esm?: boolean): Promise<string[]> {
+async function buildListOfProtos(
+  protoJsonFiles: string[],
+  esm?: boolean
+): Promise<string[]> {
   const result: string[] = [];
   for (const file of protoJsonFiles) {
     const directory = path.dirname(file);
     const content = await readFile(file);
     const list = JSON.parse(content.toString()).map((filePath: string) =>
-    // If we're in ESM, we're going to be in a directory level below normal
-    esm ? path.join(directory, '..', normalizePath(filePath)) : path.join(directory, normalizePath(filePath))
+      // If we're in ESM, we're going to be in a directory level below normal
+      esm
+        ? path.join(directory, '..', normalizePath(filePath))
+        : path.join(directory, normalizePath(filePath))
     );
     result.push(...list);
   }
@@ -270,7 +275,9 @@ async function compileProtos(
   }
 
   // generate protos/protos.js from protos.json
-  const jsOutput = esm ? path.join('protos', 'protos.cjs') : path.join('protos', 'protos.js');
+  const jsOutput = esm
+    ? path.join('protos', 'protos.cjs')
+    : path.join('protos', 'protos.js');
   const pbjsArgs4js = [
     '-r',
     rootName,

@@ -27,7 +27,8 @@ describe('replace import.meta.url', () => {
   });
 
   it('does not replace properties other than url on path.dirname(fileURLToPath(import.meta))', async () => {
-    const program = 'console.log(path.dirname(fileURLToPath(import.meta.foo)));';
+    const program =
+      'console.log(path.dirname(fileURLToPath(import.meta.foo)));';
     const result = await babel.transformAsync(program, {
       plugins: [replaceImportMetaUrl],
     });
