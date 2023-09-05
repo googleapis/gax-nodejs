@@ -20,6 +20,7 @@
 
 import type {Message} from 'protobufjs';
 import {warn} from './warnings';
+import {GoogleError} from './googleError';
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
 import {toLowerCamelCase} from './util';
 import {Status} from './status';
@@ -75,11 +76,11 @@ import {Status} from './status';
  * @property {(function)} getResumptionRequestFn
  */
 export class RetryOptions {
-  retryCodesOrShouldRetryFn: number[] | ((error: any) => boolean);
+  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean);
   backoffSettings: BackoffSettings;
   getResumptionRequestFn?: (response: any) => any;
   constructor(
-    retryCodesOrShouldRetryFn: number[] | ((error: any) => boolean),
+    retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean),
     backoffSettings: BackoffSettings,
     getResumptionRequestFn?: (response: any) => any
   ) {
@@ -111,7 +112,7 @@ export interface RetryRequestOptions {
   retries?: number;
   noResponseRetries?: number;
   currentRetryAttempt?: number;
-  shouldRetryFn?: (error: any) => boolean;
+  shouldRetryFn?: (error: GoogleError) => boolean;
   maxRetryDelay?: number;
   retryDelayMultiplier?: number;
   totalTimeout?: number;
