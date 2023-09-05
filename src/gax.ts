@@ -240,12 +240,10 @@ export class CallSettings {
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
     if (retry !== undefined && retry !== null) {
-      // if verify that the retry codes/retry function are not null or undefined
       if (
         retry.retryCodesOrShouldRetryFn !== null &&
         retry.retryCodesOrShouldRetryFn !== undefined
       ) {
-        // if it's an array of retry codes, make sure it has an element or check if it's a function
         if (
           (retry.retryCodesOrShouldRetryFn instanceof Array &&
             retry.retryCodesOrShouldRetryFn.length > 0) ||
@@ -263,12 +261,10 @@ export class CallSettings {
     if ('timeout' in options) {
       timeout = options.timeout!;
       if (retry !== undefined && retry !== null) {
-        // if verify that the retry codes/retry function are not null or undefined
         if (
           retry.retryCodesOrShouldRetryFn !== null &&
           retry.retryCodesOrShouldRetryFn !== undefined
         ) {
-          // if it's an array of retry codes, make sure it has an element or if it's a function
           if (
             (retry.retryCodesOrShouldRetryFn instanceof Array &&
               retry.retryCodesOrShouldRetryFn.length > 0) ||
@@ -307,11 +303,7 @@ export class CallSettings {
       isBundling = options.isBundling!;
     }
 
-    if ('maxRetries' in options && typeof options.maxRetries !== 'undefined') {
-      console.log(
-        'removing timeout in favor of max retries',
-        retry!.backoffSettings!.totalTimeoutMillis
-      );
+    if ('maxRetries' in options && options.maxRetries !== undefined) {
       retry!.backoffSettings!.maxRetries = options.maxRetries;
       delete retry!.backoffSettings!.totalTimeoutMillis;
     }
@@ -322,7 +314,6 @@ export class CallSettings {
     if ('apiName' in options) {
       apiName = options.apiName;
     }
-    //
     if ('retryRequestOptions' in options) {
       retryRequestOptions = options.retryRequestOptions;
     }

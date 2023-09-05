@@ -102,14 +102,14 @@ export function createApiCall(
           ?.streaming;
 
         const retry = thisSettings.retry;
-        if (!streaming && retry && retry.getResumptionRequestFn) {
+        if (!streaming && retry && retry?.getResumptionRequestFn) {
           throw new Error(
             'Resumption strategy can only be used with server streaming retries'
           );
         }
-        if (!streaming && retry && retry.retryCodesOrShouldRetryFn) {
+        if (!streaming && retry && retry?.retryCodesOrShouldRetryFn) {
           if (
-            retry.retryCodesOrShouldRetryFn instanceof Array &&
+            Array.isArray(retry.retryCodesOrShouldRetryFn) &&
             retry.retryCodesOrShouldRetryFn.length > 0
           ) {
             retry.backoffSettings.initialRpcTimeoutMillis =

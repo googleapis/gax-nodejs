@@ -96,7 +96,7 @@ export function streamingRetryRequest(
 
   opts = Object.assign({}, DEFAULTS, opts);
 
-  if (typeof opts.request === 'undefined') {
+  if (opts.request === undefined) {
     try {
       // eslint-disable-next-line node/no-unpublished-require
       opts.request = require('request');
