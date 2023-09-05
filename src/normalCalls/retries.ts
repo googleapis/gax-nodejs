@@ -109,7 +109,7 @@ export function retryable(
         canceller = null;
         if (
           retry.retryCodesOrShouldRetryFn !== undefined &&
-          retry.retryCodesOrShouldRetryFn instanceof Array &&
+          Array.isArray(retry.retryCodesOrShouldRetryFn) &&
           retry.retryCodesOrShouldRetryFn.indexOf(err!.code!) < 0
         ) {
           err.note =

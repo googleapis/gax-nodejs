@@ -79,7 +79,7 @@ function expectRetryOptions(obj: gax.RetryOptions) {
     assert.ok(obj.hasOwnProperty(k))
   );
   assert.ok(
-    obj.retryCodesOrShouldRetryFn instanceof Array ||
+    Array.isArray(obj.retryCodesOrShouldRetryFn) ||
       obj.retryCodesOrShouldRetryFn instanceof Function
   );
   expectBackoffSettings(obj.backoffSettings);

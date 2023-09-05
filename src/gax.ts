@@ -247,7 +247,7 @@ export class CallSettings {
         retry.retryCodesOrShouldRetryFn !== undefined
       ) {
         if (
-          (retry.retryCodesOrShouldRetryFn instanceof Array &&
+          (Array.isArray(retry.retryCodesOrShouldRetryFn) &&
             retry.retryCodesOrShouldRetryFn.length > 0) ||
           retry.retryCodesOrShouldRetryFn instanceof Function
         ) {
@@ -268,7 +268,7 @@ export class CallSettings {
           retry.retryCodesOrShouldRetryFn !== undefined
         ) {
           if (
-            (retry.retryCodesOrShouldRetryFn instanceof Array &&
+            (Array.isArray(retry.retryCodesOrShouldRetryFn) &&
               retry.retryCodesOrShouldRetryFn.length > 0) ||
             retry.retryCodesOrShouldRetryFn instanceof Function
           ) {
