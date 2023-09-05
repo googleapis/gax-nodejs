@@ -22,6 +22,7 @@ import type {Message} from 'protobufjs';
 import {warn} from './warnings';
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
 import {toLowerCamelCase} from './util';
+import {Status} from './status';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -386,7 +387,7 @@ export function checkRetryOptions(
               options.retryRequestOptions.shouldRetryFn;
           } else {
             // default to retry code 14 per AIP-194
-            retryCodesOrShouldRetryFn = [14];
+            retryCodesOrShouldRetryFn = [Status.UNAVAILABLE];
           }
 
           //Backoff settings
