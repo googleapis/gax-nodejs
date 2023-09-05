@@ -72,10 +72,10 @@ export function createApiCall(
     callback?: APICallback
   ) => {
     let currentApiCaller = apiCaller;
-    const gaxStreamingRetries = (currentApiCaller as StreamingApiCaller)
-      .descriptor?.gaxStreamingRetries;
+
     let thisSettings: CallSettings;
     if (currentApiCaller instanceof StreamingApiCaller) {
+      const gaxStreamingRetries = currentApiCaller.descriptor?.gaxStreamingRetries;
       // If Gax streaming retries are enabled, check settings passed at call time and convert parameters if needed
       const thisSettingsTemp = checkRetryOptions(
         callOptions,
