@@ -796,7 +796,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     sinon
       .stub(streaming.StreamProxy.prototype, 'forwardEventsNewImplementation')
       .callsFake((stream, retry): any => {
-        console.log('hello i am here', retry);
         assert(stream instanceof internal.Stream);
         assert(retry.getResumptionRequestFn instanceof Function);
         done();
