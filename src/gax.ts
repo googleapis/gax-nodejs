@@ -358,20 +358,25 @@ export function checkRetryOptions(
         throw new Error('Only one of retry or retryRequestOptions may be set');
       } else {
         if (options.retryRequestOptions !== undefined) {
-          // // Retry settings
-          if (options.retryRequestOptions.objectMode) {
-            console.log(
-              'objectMode override is not supported. It is set to true internally by default in gax.'
+          if (options.retryRequestOptions.objectMode !== undefined) {
+            warn(
+              'retry_request_options',
+              'objectMode override is not supported. It is set to true internally by default in gax.',
+              'UnsupportedParameterWarning'
             );
           }
-          if (options.retryRequestOptions.noResponseRetries) {
-            console.log(
-              'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.'
+          if (options.retryRequestOptions.noResponseRetries !== undefined) {
+            warn(
+              'retry_request_options',
+              'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.',
+              'UnsupportedParameterWarning'
             );
           }
-          if (options.retryRequestOptions.currentRetryAttempt) {
-            console.log(
-              'currentRetryAttempt override is not supported. Retry attempts are tracked internally.'
+          if (options.retryRequestOptions.currentRetryAttempt !== undefined) {
+            warn(
+              'retry_request_options',
+              'currentRetryAttempt override is not supported. Retry attempts are tracked internally.',
+              'UnsupportedParameterWarning'
             );
           }
           let retryCodesOrShouldRetryFn;

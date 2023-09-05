@@ -906,9 +906,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       .stub(StreamingApiCaller.prototype, 'call')
       .callsFake((apiCall, argument, settings, stream) => {
         try {
-          // Retry settings
-          // TODO: retries - one to one with maxRetries - this should be undefined if timeout is defined, I think
-          // //Backoff settings
           assert(settings.retry);
           assert(typeof settings.retryRequestOptions === 'undefined');
           assert.strictEqual(
@@ -962,7 +959,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
         return true;
       },
     };
-    // make the call with both options passed at call time
     apiCall(
       {},
       {
@@ -970,12 +966,33 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       }
     );
 
-    assert.strictEqual(warnStub.callCount, 1);
+    assert.strictEqual(warnStub.callCount, 4);
     assert(
       warnStub.calledWith(
         'retry_request_options',
         'retryRequestOptions will be deprecated in a future release. Please use retryOptions to pass retry options at call time',
         'DeprecationWarning'
+      )
+    );
+    assert(
+      warnStub.calledWith(
+        'retry_request_options',
+        'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.',
+        'UnsupportedParameterWarning'
+      )
+    );
+    assert(
+      warnStub.calledWith(
+        'retry_request_options',
+        'currentRetryAttempt override is not supported. Retry attempts are tracked internally.',
+        'UnsupportedParameterWarning'
+      )
+    );
+    assert(
+      warnStub.calledWith(
+        'retry_request_options',
+        'objectMode override is not supported. It is set to true internally by default in gax.',
+        'UnsupportedParameterWarning'
       )
     );
   });
@@ -1044,12 +1061,33 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       }
     );
 
-    assert.strictEqual(warnStub.callCount, 1);
+    assert.strictEqual(warnStub.callCount, 4);
     assert(
       warnStub.calledWith(
         'retry_request_options',
         'retryRequestOptions will be deprecated in a future release. Please use retryOptions to pass retry options at call time',
         'DeprecationWarning'
+      )
+    );
+    assert(
+      warnStub.calledWith(
+        'retry_request_options',
+        'objectMode override is not supported. It is set to true internally by default in gax.',
+        'UnsupportedParameterWarning'
+      )
+    );
+    assert(
+      warnStub.calledWith(
+        'retry_request_options',
+        'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.',
+        'UnsupportedParameterWarning'
+      )
+    );
+    assert(
+      warnStub.calledWith(
+        'retry_request_options',
+        'currentRetryAttempt override is not supported. Retry attempts are tracked internally.',
+        'UnsupportedParameterWarning'
       )
     );
   });
