@@ -75,7 +75,8 @@ export function createApiCall(
 
     let thisSettings: CallSettings;
     if (currentApiCaller instanceof StreamingApiCaller) {
-      const gaxStreamingRetries = currentApiCaller.descriptor?.gaxStreamingRetries;
+      const gaxStreamingRetries =
+        currentApiCaller.descriptor?.gaxStreamingRetries;
       // If Gax streaming retries are enabled, check settings passed at call time and convert parameters if needed
       const thisSettingsTemp = checkRetryOptions(
         callOptions,
@@ -112,8 +113,7 @@ export function createApiCall(
             Array.isArray(retry.retryCodesOrShouldRetryFn) &&
             retry.retryCodesOrShouldRetryFn.length > 0
           ) {
-            retry.backoffSettings.initialRpcTimeoutMillis =
-              retry.backoffSettings.initialRpcTimeoutMillis ||
+            retry.backoffSettings.initialRpcTimeoutMillis ??=
               thisSettings.timeout;
             return retryable(
               func,

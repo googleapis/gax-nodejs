@@ -1097,7 +1097,6 @@ describe('warns/errors about server streaming retry behavior when gaxStreamingRe
     sinon.restore();
   });
 
-  // NO RETRY BEHAVIOR ENABLED
   it('throws a warning when retryRequestOptions are passed', done => {
     const warnStub = sinon.stub(warnings, 'warn');
 
