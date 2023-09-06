@@ -246,21 +246,14 @@ export class CallSettings {
     // If a method-specific timeout is set in the service config, and the retry codes for that
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
-    if (retry !== undefined && retry !== null) {
-      if (
-        retry.retryCodesOrShouldRetryFn !== null &&
-        retry.retryCodesOrShouldRetryFn !== undefined
-      ) {
-        if (
-          (Array.isArray(retry.retryCodesOrShouldRetryFn) &&
-            retry.retryCodesOrShouldRetryFn.length > 0) ||
-          retry.retryCodesOrShouldRetryFn instanceof Function
-        ) {
-          retry.backoffSettings.initialRpcTimeoutMillis = timeout;
-          retry.backoffSettings.maxRpcTimeoutMillis = timeout;
-          retry.backoffSettings.totalTimeoutMillis = timeout;
-        }
-      }
+    if (
+      (Array.isArray(retry?.retryCodesOrShouldRetryFn) &&
+        retry!.retryCodesOrShouldRetryFn.length > 0) ||
+      retry?.retryCodesOrShouldRetryFn instanceof Function
+    ) {
+      retry!.backoffSettings.initialRpcTimeoutMillis = timeout;
+      retry!.backoffSettings.maxRpcTimeoutMillis = timeout;
+      retry!.backoffSettings.totalTimeoutMillis = timeout;
     }
 
     if ('retry' in options) {
