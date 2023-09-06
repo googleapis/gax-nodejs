@@ -238,6 +238,11 @@ export class CallSettings {
     let apiName = this.apiName;
     let retryRequestOptions = this.retryRequestOptions;
 
+    // If the user provides a timeout to the method, that timeout value will be used
+    // to override the backoff settings.
+    if ('timeout' in options) {
+      timeout = options.timeout!;
+    }
     // If a method-specific timeout is set in the service config, and the retry codes for that
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
@@ -258,27 +263,6 @@ export class CallSettings {
       }
     }
 
-    // If the user provides a timeout to the method, that timeout value will be used
-    // to override the backoff settings.
-    if ('timeout' in options) {
-      timeout = options.timeout!;
-      if (retry !== undefined && retry !== null) {
-        if (
-          retry.retryCodesOrShouldRetryFn !== null &&
-          retry.retryCodesOrShouldRetryFn !== undefined
-        ) {
-          if (
-            (Array.isArray(retry.retryCodesOrShouldRetryFn) &&
-              retry.retryCodesOrShouldRetryFn.length > 0) ||
-            retry.retryCodesOrShouldRetryFn instanceof Function
-          ) {
-            retry.backoffSettings.initialRpcTimeoutMillis = timeout;
-            retry.backoffSettings.maxRpcTimeoutMillis = timeout;
-            retry.backoffSettings.totalTimeoutMillis = timeout;
-          }
-        }
-      }
-    }
     if ('retry' in options) {
       retry = mergeRetryOptions(retry || ({} as RetryOptions), options.retry!);
     }
@@ -344,120 +328,114 @@ export class CallSettings {
  * @return {CallOptions} A new CallOptions object.
  *
  */
-
 export function checkRetryOptions(
   options?: CallOptions,
   gaxStreamingRetries?: boolean
 ): CallOptions | undefined {
   // options will be undefined if no CallOptions object is passed at call time
-  if (options) {
-    // if a user provided retry AND retryRequestOptions at call time, throw an error
-    if (gaxStreamingRetries) {
-      if (
-        options.retry !== undefined &&
-        options.retryRequestOptions !== undefined
-      ) {
-        throw new Error('Only one of retry or retryRequestOptions may be set');
-      } else {
-        if (options.retryRequestOptions !== undefined) {
-          if (options.retryRequestOptions.objectMode !== undefined) {
-            warn(
-              'retry_request_options',
-              'objectMode override is not supported. It is set to true internally by default in gax.',
-              'UnsupportedParameterWarning'
-            );
-          }
-          if (options.retryRequestOptions.noResponseRetries !== undefined) {
-            warn(
-              'retry_request_options',
-              'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.',
-              'UnsupportedParameterWarning'
-            );
-          }
-          if (options.retryRequestOptions.currentRetryAttempt !== undefined) {
-            warn(
-              'retry_request_options',
-              'currentRetryAttempt override is not supported. Retry attempts are tracked internally.',
-              'UnsupportedParameterWarning'
-            );
-          }
-          let retryCodesOrShouldRetryFn;
-
-          if (options.retryRequestOptions.shouldRetryFn) {
-            retryCodesOrShouldRetryFn =
-              options.retryRequestOptions.shouldRetryFn;
-          } else {
-            // default to retry code 14 per AIP-194
-            retryCodesOrShouldRetryFn = [Status.UNAVAILABLE];
-          }
-
-          //Backoff settings
-          if (
-            options.retryRequestOptions.retries !== null &&
-            options.retryRequestOptions !== undefined
-          ) {
-            // don't want to just check for truthiness here in case it's 0
-            options.maxRetries = options.retryRequestOptions.retries;
-          }
-          // create a default backoff settings object in case the user didn't provide overrides for everything
-          const backoffSettings = createDefaultBackoffSettings();
-          let maxRetryDelayMillis;
-          let totalTimeoutMillis;
-          // maxRetryDelay - this is in seconds, need to convert to milliseconds
-          if (options.retryRequestOptions.maxRetryDelay) {
-            maxRetryDelayMillis =
-              options.retryRequestOptions.maxRetryDelay * 1000;
-          }
-          // retryDelayMultiplier - should be a one to one mapping to retryDelayMultiplier
-          const retryDelayMultiplier =
-            options.retryRequestOptions.retryDelayMultiplier;
-          // totalTimeout - this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
-          if (options.retryRequestOptions.totalTimeout) {
-            totalTimeoutMillis =
-              options.retryRequestOptions.totalTimeout * 1000;
-          }
-
-          // for the variables the user wants to override, override in the backoff settings object we made
-          if (maxRetryDelayMillis) {
-            backoffSettings.maxRetryDelayMillis = maxRetryDelayMillis;
-          }
-          if (retryDelayMultiplier) {
-            backoffSettings.retryDelayMultiplier = retryDelayMultiplier;
-          }
-          if (totalTimeoutMillis) {
-            backoffSettings.totalTimeoutMillis = totalTimeoutMillis;
-          }
-
-          const convertedRetryOptions = createRetryOptions(
-            retryCodesOrShouldRetryFn,
-            backoffSettings
-          );
-          options.retry = convertedRetryOptions;
-          delete options.retryRequestOptions; // completely remove them to avoid any further confusion
-          warn(
-            'retry_request_options',
-            'retryRequestOptions will be deprecated in a future release. Please use retryOptions to pass retry options at call time',
-            'DeprecationWarning'
-          );
-        }
-      }
-    } else {
-      // if user is opted into legacy settings but has passed retry settings, let them know there might be an issue if it's a streaming call
-      if (options.retry !== undefined) {
-        warn(
-          'legacy_streaming_retry_behavior',
-          'Legacy streaming retry behavior will not honor settings passed at call time or via client configuration. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will be set to true by default in future releases.',
-          'DeprecationWarning'
-        );
-      }
-      if (options.retryRequestOptions !== undefined) {
-        warn(
-          'legacy_streaming_retry_request_behavior',
-          'Legacy streaming retry behavior will not honor retryRequestOptions passed at call time. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will convert retryRequestOptions to retry parameters by default in future releases.',
-          'DeprecationWarning'
-        );
-      }
+  if (!options) {
+    return options;
+  }
+  // if a user provided retry AND retryRequestOptions at call time, throw an error
+  // otherwise, convert supported parameters
+  if (!gaxStreamingRetries) {
+    // if user is opted into legacy settings but has passed retry settings, let them know there might be an issue if it's a streaming call
+    if (options.retry !== undefined) {
+      warn(
+        'legacy_streaming_retry_behavior',
+        'Legacy streaming retry behavior will not honor settings passed at call time or via client configuration. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will be set to true by default in future releases.',
+        'DeprecationWarning'
+      );
     }
+    if (options.retryRequestOptions !== undefined) {
+      warn(
+        'legacy_streaming_retry_request_behavior',
+        'Legacy streaming retry behavior will not honor retryRequestOptions passed at call time. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will convert retryRequestOptions to retry parameters by default in future releases.',
+        'DeprecationWarning'
+      );
+    }
+    return options;
+  }
+  if (
+    options.retry !== undefined &&
+    options.retryRequestOptions !== undefined
+  ) {
+    throw new Error('Only one of retry or retryRequestOptions may be set');
+  } // handle parameter conversion from retryRequestOptions to retryOptions
+  if (options.retryRequestOptions !== undefined) {
+    if (options.retryRequestOptions.objectMode !== undefined) {
+      warn(
+        'retry_request_options',
+        'objectMode override is not supported. It is set to true internally by default in gax.',
+        'UnsupportedParameterWarning'
+      );
+    }
+    if (options.retryRequestOptions.noResponseRetries !== undefined) {
+      warn(
+        'retry_request_options',
+        'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.',
+        'UnsupportedParameterWarning'
+      );
+    }
+    if (options.retryRequestOptions.currentRetryAttempt !== undefined) {
+      warn(
+        'retry_request_options',
+        'currentRetryAttempt override is not supported. Retry attempts are tracked internally.',
+        'UnsupportedParameterWarning'
+      );
+    }
+    let retryCodesOrShouldRetryFn;
+
+    if (options.retryRequestOptions.shouldRetryFn) {
+      retryCodesOrShouldRetryFn = options.retryRequestOptions.shouldRetryFn;
+    } else {
+      // default to retry code 14 per AIP-194
+      retryCodesOrShouldRetryFn = [Status.UNAVAILABLE];
+    }
+
+    //Backoff settings
+    if (options?.retryRequestOptions?.retries) {
+      // don't want to just check for truthiness here in case it's 0
+      options.maxRetries = options.retryRequestOptions.retries;
+    }
+    // create a default backoff settings object in case the user didn't provide overrides for everything
+    const backoffSettings = createDefaultBackoffSettings();
+    let maxRetryDelayMillis;
+    let totalTimeoutMillis;
+    // maxRetryDelay - this is in seconds, need to convert to milliseconds
+    if (options.retryRequestOptions.maxRetryDelay) {
+      maxRetryDelayMillis = options.retryRequestOptions.maxRetryDelay * 1000;
+    }
+    // retryDelayMultiplier - should be a one to one mapping to retryDelayMultiplier
+    const retryDelayMultiplier =
+      options.retryRequestOptions.retryDelayMultiplier;
+    // totalTimeout - this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
+    if (options.retryRequestOptions.totalTimeout) {
+      totalTimeoutMillis = options.retryRequestOptions.totalTimeout * 1000;
+    }
+
+    // for the variables the user wants to override, override in the backoff settings object we made
+    if (maxRetryDelayMillis) {
+      backoffSettings.maxRetryDelayMillis = maxRetryDelayMillis;
+    }
+    if (retryDelayMultiplier) {
+      backoffSettings.retryDelayMultiplier = retryDelayMultiplier;
+    }
+    if (totalTimeoutMillis) {
+      backoffSettings.totalTimeoutMillis = totalTimeoutMillis;
+    }
+
+    const convertedRetryOptions = createRetryOptions(
+      retryCodesOrShouldRetryFn,
+      backoffSettings
+    );
+    options.retry = convertedRetryOptions;
+    delete options.retryRequestOptions; // completely remove them to avoid any further confusion
+    warn(
+      'retry_request_options',
+      'retryRequestOptions will be deprecated in a future release. Please use retryOptions to pass retry options at call time',
+      'DeprecationWarning'
+    );
   }
   return options;
 }
