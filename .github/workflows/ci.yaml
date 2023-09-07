@@ -94,8 +94,8 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 14
-      - run: cd gax; npm install
-      - run: cd gax; npm run docs
+      - run: npm install
+      - run: npm run docs
       - uses: JustinBeckwith/linkinator-action@v1
         with:
           paths: docs/

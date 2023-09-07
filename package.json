@@ -3,7 +3,8 @@
   "private": true,
   "description": "Google API Extensions",
   "scripts": {
-    "test": "echo \"Please go into tools/ and gax/ to run tests separately\" && exit 1"
+    "test": "echo \"Please go into tools/ and gax/ to run tests separately\" && exit 1",
+    "docs": "cd ../ && compodoc src/"
   },
   "keywords": [
     "grpc"
@@ -17,6 +18,9 @@
   "engines": {
     "node": ">=14"
   },
-  "homepage": "https://github.com/googleapis/gax-nodejs#readme"
+  "homepage": "https://github.com/googleapis/gax-nodejs#readme",
+  "devDependencies": {
+    "@compodoc/compodoc": "1.1.21"
+  }
 
 }
