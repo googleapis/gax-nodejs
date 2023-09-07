@@ -1,1 +1,0 @@
-## Sample Edition Level 3
