@@ -1,0 +1,26 @@
+{
+    "name": "sample-files",
+    "version": "0.0.0",
+    "license": "MIT",
+    "dependencies": {},
+    "scripts": {
+        "doc": "./node_modules/.bin/compodoc -p src/tsconfig.json"
+    },
+    "peerDependencies": {
+        "@angular/forms": ">=4.0.0"
+    },
+    "devDependencies": {
+        "@compodoc/compodoc": "https://github.com/compodoc/compodoc/tarball/develop",
+        "typescript": "~3.1.1"
+    },
+    "description": "Demo for project",
+    "keywords": [
+        "documentation",
+        "angular"
+    ],
+    "homepage": "https://github.com/just-a-repo",
+    "bugs": "https://github.com/just-a-repo/issues",
+    "url": "https://github.com/just-a-repo",
+    "repository": "https://github.com/just-a-repo",
+    "author": "The author"
+}
