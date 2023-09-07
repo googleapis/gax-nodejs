@@ -4,7 +4,7 @@
   "description": "Google API Extensions",
   "scripts": {
     "test": "echo \"Please go into tools/ and gax/ to run tests separately\" && exit 1",
-    "docs": "compodoc src/"
+    "docs": "compodoc gax/src/"
   },
   "keywords": [
     "grpc"
