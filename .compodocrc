@@ -1,5 +1,5 @@
 ---
-tsconfig: ./tsconfig.json
+tsconfig: ./gax/tsconfig.json
 output: ./docs
 theme: material
 hideGenerator: true
