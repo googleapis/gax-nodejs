@@ -190,7 +190,7 @@ describe('Run system tests for some libraries', () => {
       stdio: 'inherit',
     });
     await fs.promises.rename(
-      path.join(gaxDir, 'tools', '..', toolsBasename),
+      path.join(gaxDir, '..', 'tools', toolsBasename),
       toolsTarball
     );
     if (!fs.existsSync(toolsTarball)) {
