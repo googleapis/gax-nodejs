@@ -59,7 +59,7 @@
     "webpack-cli": "^4.0.0"
   },
   "scripts": {
-    "docs": "compodoc src/",
+    "docs": "cd ../ && compodoc src/",
     "pretest": "npm run prepare",
     "test": "c8 mocha build/test/unit",
     "lint": "gts check src samples test",
