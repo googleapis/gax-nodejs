@@ -82,8 +82,8 @@
     "test-application": "cd test/test-application && npm run prefetch && npm install && npm start",
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
-    "update-protos": "cd ../tools && npm i && npm run compile && node ../tools/build/src/listProtos.js .",
-    "minify-proto-json": "cd ../tools && npm i && npm run compile && node ../tools/build/src/minify.js"
+    "update-protos": "cd ../tools && npm i && npm run compile && node ../tools/build/src/listProtos.js . && cd ../gax",
+    "minify-proto-json": "cd ../tools && npm i && npm run compile && node ../tools/build/src/minify.js && && cd ../gax"
   },
   "repository": "googleapis/gax-nodejs",
   "keywords": [
