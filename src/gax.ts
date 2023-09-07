@@ -76,11 +76,11 @@ import {Status} from './status';
  * @property {(function)} getResumptionRequestFn
  */
 export class RetryOptions {
-  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean);
+  retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean);
   backoffSettings: BackoffSettings;
   getResumptionRequestFn?: (response: any) => any;
   constructor(
-    retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean),
+    retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean),
     backoffSettings: BackoffSettings,
     getResumptionRequestFn?: (response: any) => any
   ) {
@@ -112,7 +112,7 @@ export interface RetryRequestOptions {
   retries?: number;
   noResponseRetries?: number;
   currentRetryAttempt?: number;
-  shouldRetryFn?: (error: GoogleError) => boolean;
+  shouldRetryFn?: (error?: GoogleError) => boolean;
   maxRetryDelay?: number;
   retryDelayMultiplier?: number;
   totalTimeout?: number;

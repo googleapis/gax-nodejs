@@ -586,8 +586,8 @@ async function testServerStreamingRetriesWithShouldRetryFn(
   client: SequenceServiceClient
 ) {
   const finalData: string[] = [];
-  const shouldRetryFn = function checkRetry(error: GoogleError) {
-    return [14, 4].includes(error.code!);
+  const shouldRetryFn = function checkRetry(error?: GoogleError) {
+    return [14, 4].includes(error!.code!);
   };
 
   const backoffSettings = createBackoffSettings(
@@ -656,8 +656,8 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
     totalTimeout: 650,
     noResponseRetries: 3,
     currentRetryAttempt: 0,
-    shouldRetryFn: function checkRetry(error: GoogleError) {
-      return [14, 4].includes(error.code!);
+    shouldRetryFn: function checkRetry(error?: GoogleError) {
+      return [14, 4].includes(error!.code!);
     },
   };
 
@@ -707,8 +707,8 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
   client: SequenceServiceClient
 ) {
   const finalData: string[] = [];
-  const shouldRetryFn = (error: GoogleError) => {
-    return [4, 14].includes(error.code!);
+  const shouldRetryFn = (error?: GoogleError) => {
+    return [4, 14].includes(error!.code!);
   };
   const backoffSettings = createBackoffSettings(
     10000,
@@ -780,8 +780,8 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
 async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
   client: SequenceServiceClient
 ) {
-  const shouldRetryFn = (error: GoogleError) => {
-    return [4, 14].includes(error.code!);
+  const shouldRetryFn = (error?: GoogleError) => {
+    return [4, 14].includes(error!.code!);
   };
   const backoffSettings = createBackoffSettings(
     10000,
