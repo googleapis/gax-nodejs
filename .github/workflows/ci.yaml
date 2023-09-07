@@ -98,4 +98,4 @@ jobs:
       - run: cd gax; npm run docs
       - uses: JustinBeckwith/linkinator-action@v1
         with:
-          paths: docs/
+          paths: gax/docs/
