@@ -25,6 +25,8 @@ export GCLOUD_PROJECT=long-door-651
 
 cd $(dirname $0)/..
 
-cd gax; npm install
+cd gax
 
-cd gax; npm run browser-test
+npm install
+
+npm run browser-test

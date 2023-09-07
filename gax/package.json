@@ -58,6 +58,7 @@
     "webpack-cli": "^4.0.0"
   },
   "scripts": {
+    "docs": "compodoc src/",
     "pretest": "npm run prepare",
     "test": "c8 mocha build/test/unit",
     "lint": "gts check src samples test",
@@ -81,7 +82,8 @@
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
     "update-protos": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/listProtos.js .",
-    "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js"
+    "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js",
+    "@compodoc/compodoc": "1.1.21"
   },
   "keywords": [
     "grpc"
