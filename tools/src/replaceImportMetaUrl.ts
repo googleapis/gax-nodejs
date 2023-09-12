@@ -34,8 +34,6 @@ export default function replaceImportMetaUrl(): {
         const {node} = path;
         if (
           node.callee.type === 'MemberExpression' &&
-          node.callee.object.type === 'Identifier' &&
-          node.callee.object.name === 'path' &&
           node.callee.property.type === 'Identifier' &&
           node.callee.property.name === 'dirname' &&
           node.arguments[0].type === 'CallExpression' &&
