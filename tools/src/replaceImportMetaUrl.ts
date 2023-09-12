@@ -28,16 +28,28 @@ export default function replaceImportMetaUrl(): {
 } {
   return {
     visitor: {
-      MemberExpression(path, state) {
+      CallExpression(path, state) {
         const opts = state.opts || {};
         const replacementValue = opts.replacementValue || '__dirname';
         const {node} = path;
         if (
-          node.object.type === 'MetaProperty' &&
-          node.object.meta.name === 'import' &&
-          node.object.property.name === 'meta' &&
-          node.property.type === 'Identifier' &&
-          node.property.name === 'url'
+          node.callee.type === 'MemberExpression' &&
+          node.callee.object.type === 'Identifier' &&
+          node.callee.object.name === 'path' &&
+          node.callee.property.type === 'Identifier' &&
+          node.callee.property.name === 'dirname' &&
+          node.arguments[0].type === 'CallExpression' &&
+          node.arguments[0].callee.type === 'Identifier' &&
+          node.arguments[0].callee.name === 'fileURLToPath' &&
+          node.arguments[0].arguments[0].type === 'MemberExpression' &&
+          node.arguments[0].arguments[0].object.type === 'MetaProperty' &&
+          node.arguments[0].arguments[0].object.meta.type === 'Identifier' &&
+          node.arguments[0].arguments[0].object.meta.name === 'import' &&
+          node.arguments[0].arguments[0].object.property.type ===
+            'Identifier' &&
+          node.arguments[0].arguments[0].object.property.name === 'meta' &&
+          node.arguments[0].arguments[0].property.type === 'Identifier' &&
+          node.arguments[0].arguments[0].property.name === 'url'
         ) {
           const replacement = smart.ast`${replacementValue}` as Statement;
           path.replaceWith(replacement);

@@ -163,6 +163,13 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
 }
 
 function fixJsFile(js: string): string {
+  // 1. fix protobufjs import: we don't want the libraries to
+  // depend on protobufjs, so we re-export it from google-gax
+  js = js.replace(
+    'import * as $protobuf from "protobufjs/minimal"',
+    'import { protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
+  );
+
   // 1. fix protobufjs require: we don't want the libraries to
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
@@ -211,13 +218,19 @@ function fixDtsFile(dts: string): string {
  * @param {string[]} protoJsonFiles List of JSON files to parse
  * @return {Promise<string[]>} Resolves to an array of proto files.
  */
-async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
+async function buildListOfProtos(
+  protoJsonFiles: string[],
+  esm?: boolean
+): Promise<string[]> {
   const result: string[] = [];
   for (const file of protoJsonFiles) {
     const directory = path.dirname(file);
     const content = await readFile(file);
     const list = JSON.parse(content.toString()).map((filePath: string) =>
-      path.join(directory, normalizePath(filePath))
+      // If we're in ESM, we're going to be in a directory level below normal
+      esm
+        ? path.join(directory, '..', normalizePath(filePath))
+        : path.join(directory, normalizePath(filePath))
     );
     result.push(...list);
   }
@@ -236,7 +249,8 @@ async function buildListOfProtos(protoJsonFiles: string[]): Promise<string[]> {
 async function compileProtos(
   rootName: string,
   protos: string[],
-  skipJson = false
+  skipJson = false,
+  esm = false
 ): Promise<void> {
   if (!skipJson) {
     // generate protos.json file from proto list
@@ -261,7 +275,9 @@ async function compileProtos(
   }
 
   // generate protos/protos.js from protos.json
-  const jsOutput = path.join('protos', 'protos.js');
+  const jsOutput = esm
+    ? path.join('protos', 'protos.cjs')
+    : path.join('protos', 'protos.js');
   const pbjsArgs4js = [
     '-r',
     rootName,
@@ -281,9 +297,34 @@ async function compileProtos(
   jsResult = fixJsFile(jsResult);
   await writeFile(jsOutput, jsResult);
 
+  let jsOutputEsm;
+  if (esm) {
+    jsOutputEsm = path.join('protos', 'protos.js');
+    const pbjsArgs4jsEsm = [
+      '-r',
+      rootName,
+      '--target',
+      'static-module',
+      '-p',
+      'protos',
+      '-p',
+      gaxProtos,
+      '-o',
+      jsOutputEsm,
+      '-w',
+      'es6',
+    ];
+    pbjsArgs4jsEsm.push(...protos);
+    await pbjsMain(pbjsArgs4jsEsm);
+
+    let jsResult = (await readFile(jsOutputEsm)).toString();
+    jsResult = fixJsFile(jsResult);
+    await writeFile(jsOutputEsm, jsResult);
+  }
+
   // generate protos/protos.d.ts
   const tsOutput = path.join('protos', 'protos.d.ts');
-  const pbjsArgs4ts = [jsOutput, '-o', tsOutput];
+  const pbjsArgs4ts = [esm ? jsOutputEsm! : jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 
   let tsResult = (await readFile(tsOutput)).toString();
@@ -330,10 +371,15 @@ export async function generateRootName(directories: string[]): Promise<string> {
 export async function main(parameters: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
   let skipJson = false;
+  let esm = false;
   const directories: string[] = [];
   for (const parameter of parameters) {
     if (parameter === '--skip-json') {
       skipJson = true;
+      continue;
+    }
+    if (parameter === '--esm') {
+      esm = true;
       continue;
     }
     // it's not an option so it's a directory
@@ -342,15 +388,21 @@ export async function main(parameters: string[]): Promise<void> {
     protoJsonFiles.push(...(await findProtoJsonFiles(directory)));
   }
   const rootName = await generateRootName(directories);
-  const protos = await buildListOfProtos(protoJsonFiles);
-  await compileProtos(rootName, protos, skipJson);
+  if (esm) {
+    const esmProtos = await buildListOfProtos(protoJsonFiles, esm);
+    await compileProtos(rootName, esmProtos, skipJson, esm);
+  }
+  const protos = await buildListOfProtos(protoJsonFiles, esm);
+  await compileProtos(rootName, protos, skipJson, esm);
 }
 
 /**
  * Shows the usage information.
  */
 function usage() {
-  console.log(`Usage: node ${process.argv[1]} [--skip-json] directory ...`);
+  console.log(
+    `Usage: node ${process.argv[1]} [--skip-json] [--esm] directory ...`
+  );
   console.log(
     `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
   );
