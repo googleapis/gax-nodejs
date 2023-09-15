@@ -181,7 +181,7 @@ export class CallSettings {
     this.maxResults = settings.maxResults;
     this.otherArgs = settings.otherArgs || {};
     this.bundleOptions = settings.bundleOptions;
-    this.isBundling = 'isBundling' in settings ? settings.isBundling! : true;
+    this.isBundling = 'isBundling' in settings ? settings.isBundling! : false;
     this.longrunning =
       'longrunning' in settings ? settings.longrunning : undefined;
     this.apiName = settings.apiName ?? undefined;
