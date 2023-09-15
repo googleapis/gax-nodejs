@@ -4,6 +4,17 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.0.4](https://github.com/googleapis/gax-nodejs/compare/v4.0.3...v4.0.4) (2023-09-07)
+
+
+### Bug Fixes
+
+* **deps:** Update dependency @grpc/grpc-js to ~1.9.0 ([#1486](https://github.com/googleapis/gax-nodejs/issues/1486)) ([ea8020f](https://github.com/googleapis/gax-nodejs/commit/ea8020f9084ff068a3139a8b19be6b8c0caa74e3))
+* **deps:** Update dependency google-proto-files to v4 ([#1490](https://github.com/googleapis/gax-nodejs/issues/1490)) ([4748c9f](https://github.com/googleapis/gax-nodejs/commit/4748c9fc3a8cfe31e5abb3e35a6ee0d9a6f0e560))
+* **deps:** Update dependency proto3-json-serializer to v2 ([#1489](https://github.com/googleapis/gax-nodejs/issues/1489)) ([5c7dfd0](https://github.com/googleapis/gax-nodejs/commit/5c7dfd021d1dc5d311e42d8c17b78fe616fed6fe))
+* **deps:** Update dependency protobufjs-cli to v1.1.2 ([#1495](https://github.com/googleapis/gax-nodejs/issues/1495)) ([762591e](https://github.com/googleapis/gax-nodejs/commit/762591ed28801e5311ab737b04185781a41752e6))
+* Release new version of gapic-tools ([#1483](https://github.com/googleapis/gax-nodejs/issues/1483)) ([e4f5482](https://github.com/googleapis/gax-nodejs/commit/e4f548254bfce3daa3b02ae81764bb3394fc4f23))
+
 ## [4.0.3](https://github.com/googleapis/gax-nodejs/compare/v4.0.2...v4.0.3) (2023-07-27)
 
 
