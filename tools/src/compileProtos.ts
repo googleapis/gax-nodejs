@@ -163,7 +163,7 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
 }
 
 function fixJsFile(js: string): string {
-  // 1. fix protobufjs import: we don't want the libraries to
+  // 0. fix protobufjs import: we don't want the libraries to
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
     'import * as $protobuf from "protobufjs/minimal"',
