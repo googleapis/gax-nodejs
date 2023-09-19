@@ -1,2 +1,3 @@
 handleGHRelease: true
 releaseType: node
+mainfest: true
