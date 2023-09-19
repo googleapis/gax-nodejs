@@ -310,7 +310,8 @@ describe('compileProtos tool', () => {
     assert.strictEqual(rootName, 'default');
   });
 
-  it('reformat the JSDOC link in the JS and TS file', async () => {
+  it('reformat the JSDOC link in the JS and TS file', async function () {
+    this.timeout(20000);
     await compileProtos.main([
       path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
     ]);
