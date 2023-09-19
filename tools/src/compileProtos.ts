@@ -249,6 +249,7 @@ async function compileProtos(
     const pbjsArgs4JSON = [
       '--target',
       'json',
+      '--keep-case',
       '-p',
       'protos',
       '-p',
@@ -267,6 +268,7 @@ async function compileProtos(
     rootName,
     '--target',
     'static-module',
+    '--keep-case',
     '-p',
     'protos',
     '-p',
