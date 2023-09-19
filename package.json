@@ -17,6 +17,6 @@
   "engines": {
     "node": ">=14"
   },
-  "homepage": "https://github.com/googleapis/gax-nodejs#readme"
-
+  "homepage": "https://github.com/googleapis/gax-nodejs#readme",
+  "version": "4.1.0"
 }
