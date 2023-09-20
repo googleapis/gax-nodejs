@@ -89,6 +89,11 @@
   "keywords": [
     "grpc"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/googleapis/gax-nodejs.git",
+    "directory": "gax"
+  },
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "bugs": {
