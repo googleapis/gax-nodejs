@@ -37,7 +37,7 @@ const gaxDir = path.resolve(__dirname, '..', '..', '..');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../../package.json');
 const gaxTarball = path.join(gaxDir, `${pkg.name}-${pkg.version}.tgz`);
-const toolsPkg = require('../../../tools/package.json');
+const toolsPkg = require('../../../../tools/package.json');
 const toolsBasename = `${toolsPkg.name}-${toolsPkg.version}.tgz`;
 const toolsTarball = path.join(gaxDir, toolsBasename);
 
@@ -182,15 +182,15 @@ describe('Run system tests for some libraries', () => {
     }
     console.log('Packing gapic-tools...');
     await execa('npm', ['install'], {
-      cwd: path.join(gaxDir, 'tools'),
+      cwd: path.join(gaxDir, '..', 'tools'),
       stdio: 'inherit',
     });
     await execa('npm', ['pack'], {
-      cwd: path.join(gaxDir, 'tools'),
+      cwd: path.join(gaxDir, '..', 'tools'),
       stdio: 'inherit',
     });
     await fs.promises.rename(
-      path.join(gaxDir, 'tools', toolsBasename),
+      path.join(gaxDir, '..', 'tools', toolsBasename),
       toolsTarball
     );
     if (!fs.existsSync(toolsTarball)) {
