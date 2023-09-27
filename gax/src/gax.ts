@@ -332,7 +332,6 @@ export function checkRetryOptions(
   // if a user provided retry AND retryRequestOptions at call time, throw an error
   // otherwise, convert supported parameters
   if (!gaxStreamingRetries) {
-    // if user is opted into legacy settings but has passed retry settings, let them know there might be an issue if it's a streaming call
     if (options.retry !== undefined) {
       warn(
         'legacy_streaming_retry_behavior',
@@ -354,7 +353,7 @@ export function checkRetryOptions(
     options.retryRequestOptions !== undefined
   ) {
     throw new Error('Only one of retry or retryRequestOptions may be set');
-  } // handle parameter conversion from retryRequestOptions to retryOptions
+  } // handles parameter conversion from retryRequestOptions to retryOptions
   if (options.retryRequestOptions !== undefined) {
     if (options.retryRequestOptions.objectMode !== undefined) {
       warn(
@@ -377,40 +376,37 @@ export function checkRetryOptions(
         'UnsupportedParameterWarning'
       );
     }
-    let retryCodesOrShouldRetryFn;
-    retryCodesOrShouldRetryFn = options?.retryRequestOptions?.shouldRetryFn ?? [Status.UNAVAILABLE];
+    const retryCodesOrShouldRetryFn = options?.retryRequestOptions?.shouldRetryFn ?? [
+      Status.UNAVAILABLE,
+    ];
 
-
-    //Backoff settings //TODO(coleleah): use nullish coalescing assignment
-    if (options?.retryRequestOptions?.retries) { //TODO(coleleah) this doesn't match comment below it
-      // don't want to just check for truthiness here in case it's 0
-      options.maxRetries = options.retryRequestOptions.retries;
-    }
+    //Backoff settings
+    options.maxRetries =
+      options?.retryRequestOptions?.retries ?? options.maxRetries;
     // create a default backoff settings object in case the user didn't provide overrides for everything
     const backoffSettings = createDefaultBackoffSettings();
     let maxRetryDelayMillis;
     let totalTimeoutMillis;
     // maxRetryDelay - this is in seconds, need to convert to milliseconds
-    //TODO(coleleah): simplify with nullisch coalescing if possible and optional chaining
-    if (options.retryRequestOptions.maxRetryDelay) {
+    if (options.retryRequestOptions.maxRetryDelay !== undefined) {
       maxRetryDelayMillis = options.retryRequestOptions.maxRetryDelay * 1000;
     }
     // retryDelayMultiplier - should be a one to one mapping to retryDelayMultiplier
     const retryDelayMultiplier =
-      options?.retryRequestOptions?.retryDelayMultiplier ?? backoffSettings.retryDelayMultiplier;
+      options?.retryRequestOptions?.retryDelayMultiplier ??
+      backoffSettings.retryDelayMultiplier;
     // this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
-    //TODO(coleleah)
-    if (options.retryRequestOptions.totalTimeout) {
+    if (options.retryRequestOptions.totalTimeout !== undefined) {
       totalTimeoutMillis = options.retryRequestOptions.totalTimeout * 1000;
     }
-    // totalTimeoutMillis = (options?.retryRequestOptions?.totalTimeout * 1000) ?? totalTimeoutMillis;
-    
 
     // for the variables the user wants to override, override in the backoff settings object we made
-    backoffSettings.maxRetryDelayMillis = maxRetryDelayMillis ?? backoffSettings.maxRetryDelayMillis;
-    backoffSettings.retryDelayMultiplier = retryDelayMultiplier ?? backoffSettings.retryDelayMultiplier;
-    backoffSettings.totalTimeoutMillis = totalTimeoutMillis ?? backoffSettings.totalTimeoutMillis;
-
+    backoffSettings.maxRetryDelayMillis =
+      maxRetryDelayMillis ?? backoffSettings.maxRetryDelayMillis;
+    backoffSettings.retryDelayMultiplier =
+      retryDelayMultiplier ?? backoffSettings.retryDelayMultiplier;
+    backoffSettings.totalTimeoutMillis =
+      totalTimeoutMillis ?? backoffSettings.totalTimeoutMillis;
 
     const convertedRetryOptions = createRetryOptions(
       retryCodesOrShouldRetryFn,
