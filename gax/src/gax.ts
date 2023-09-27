@@ -378,16 +378,11 @@ export function checkRetryOptions(
       );
     }
     let retryCodesOrShouldRetryFn;
+    retryCodesOrShouldRetryFn = options?.retryRequestOptions?.shouldRetryFn ?? [Status.UNAVAILABLE];
 
-    if (options.retryRequestOptions.shouldRetryFn) {
-      retryCodesOrShouldRetryFn = options.retryRequestOptions.shouldRetryFn;
-    } else {
-      // default to retry code 14 per AIP-194
-      retryCodesOrShouldRetryFn = [Status.UNAVAILABLE];
-    }
 
-    //Backoff settings
-    if (options?.retryRequestOptions?.retries) {
+    //Backoff settings //TODO(coleleah): use nullish coalescing assignment
+    if (options?.retryRequestOptions?.retries) { //TODO(coleleah) this doesn't match comment below it
       // don't want to just check for truthiness here in case it's 0
       options.maxRetries = options.retryRequestOptions.retries;
     }
@@ -396,27 +391,26 @@ export function checkRetryOptions(
     let maxRetryDelayMillis;
     let totalTimeoutMillis;
     // maxRetryDelay - this is in seconds, need to convert to milliseconds
+    //TODO(coleleah): simplify with nullisch coalescing if possible and optional chaining
     if (options.retryRequestOptions.maxRetryDelay) {
       maxRetryDelayMillis = options.retryRequestOptions.maxRetryDelay * 1000;
     }
     // retryDelayMultiplier - should be a one to one mapping to retryDelayMultiplier
     const retryDelayMultiplier =
-      options.retryRequestOptions.retryDelayMultiplier;
-    // totalTimeout - this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
+      options?.retryRequestOptions?.retryDelayMultiplier ?? backoffSettings.retryDelayMultiplier;
+    // this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
+    //TODO(coleleah)
     if (options.retryRequestOptions.totalTimeout) {
       totalTimeoutMillis = options.retryRequestOptions.totalTimeout * 1000;
     }
+    // totalTimeoutMillis = (options?.retryRequestOptions?.totalTimeout * 1000) ?? totalTimeoutMillis;
+    
 
     // for the variables the user wants to override, override in the backoff settings object we made
-    if (maxRetryDelayMillis) {
-      backoffSettings.maxRetryDelayMillis = maxRetryDelayMillis;
-    }
-    if (retryDelayMultiplier) {
-      backoffSettings.retryDelayMultiplier = retryDelayMultiplier;
-    }
-    if (totalTimeoutMillis) {
-      backoffSettings.totalTimeoutMillis = totalTimeoutMillis;
-    }
+    backoffSettings.maxRetryDelayMillis = maxRetryDelayMillis ?? backoffSettings.maxRetryDelayMillis;
+    backoffSettings.retryDelayMultiplier = retryDelayMultiplier ?? backoffSettings.retryDelayMultiplier;
+    backoffSettings.totalTimeoutMillis = totalTimeoutMillis ?? backoffSettings.totalTimeoutMillis;
+
 
     const convertedRetryOptions = createRetryOptions(
       retryCodesOrShouldRetryFn,
