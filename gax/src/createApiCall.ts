@@ -110,6 +110,14 @@ export function createApiCall(
         }
         if (!streaming && retry && retry?.retryCodesOrShouldRetryFn) {
           if (
+            retry.retryCodesOrShouldRetryFn instanceof Function &&
+            !streaming
+          ) {
+            throw new Error(
+              'Using a function to determine retry eligibility is only supported with server streaming calls'
+            );
+          }
+          if (
             Array.isArray(retry.retryCodesOrShouldRetryFn) &&
             retry.retryCodesOrShouldRetryFn.length > 0
           ) {
@@ -121,15 +129,6 @@ export function createApiCall(
               thisSettings.otherArgs as GRPCCallOtherArgs,
               thisSettings.apiName
             );
-          } else {
-            if (
-              retry.retryCodesOrShouldRetryFn instanceof Function &&
-              !streaming
-            ) {
-              throw new Error(
-                'Using a function to determine retry eligibility is only supported with server streaming calls'
-              );
-            }
           }
         }
         return addTimeoutArg(
