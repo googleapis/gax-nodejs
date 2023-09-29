@@ -24,6 +24,7 @@ import {GoogleError} from './googleError';
 import {BundleOptions} from './bundlingCalls/bundleExecutor';
 import {toLowerCamelCase} from './util';
 import {Status} from './status';
+import {RequestType} from './apitypes';
 
 /**
  * Encapsulates the overridable settings for a particular API call.
@@ -78,11 +79,11 @@ import {Status} from './status';
 export class RetryOptions {
   retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean);
   backoffSettings: BackoffSettings;
-  getResumptionRequestFn?: (response: any) => any;
+  getResumptionRequestFn?: (request: RequestType) => RequestType;
   constructor(
     retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean),
     backoffSettings: BackoffSettings,
-    getResumptionRequestFn?: (response: any) => any
+    getResumptionRequestFn?: (request: RequestType) => RequestType
   ) {
     this.retryCodesOrShouldRetryFn = retryCodesOrShouldRetryFn;
     this.backoffSettings = backoffSettings;
@@ -433,7 +434,7 @@ export function checkRetryOptions(
 export function createRetryOptions(
   retryCodesOrShouldRetryFn: number[] | ((response: any) => boolean),
   backoffSettings: BackoffSettings,
-  getResumptionRequestFn?: (response: any) => any
+  getResumptionRequestFn?: (request: RequestType) => RequestType
 ): RetryOptions {
   return {
     retryCodesOrShouldRetryFn,

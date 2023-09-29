@@ -30,6 +30,7 @@ import {
   createBackoffSettings,
   RetryOptions,
 } from 'google-gax';
+import {RequestType} from 'google-gax/build/src/apitypes';
 
 async function testShowcase() {
   const grpcClientOpts = {
@@ -719,14 +720,12 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
     3000,
     600000
   );
-  const getResumptionRequestFn = (
-    originalRequest: protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest
-  ) => {
+  const getResumptionRequestFn = (request: RequestType) => {
     const newRequest =
-      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
-    newRequest.name = originalRequest.name;
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest() as unknown as RequestType;
+    newRequest.name = request.name;
     newRequest.lastFailIndex = 5;
-    return newRequest;
+    return newRequest as unknown as RequestType;
   };
 
   const retryOptions = new RetryOptions(

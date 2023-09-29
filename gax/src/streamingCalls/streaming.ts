@@ -22,6 +22,7 @@ import {
   APICallback,
   CancellableStream,
   GRPCCallResult,
+  RequestType,
   SimpleCallbackFunction,
 } from '../apitypes';
 import {RetryOptions, RetryRequestOptions} from '../gax';
@@ -128,13 +129,17 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   }
 
   retry(stream: CancellableStream, retry: RetryOptions) {
-    let retryArgument = this.argument!;
+    let retryArgument = this.argument! as unknown as RequestType;
+
+    const newRetryArgument = retry.getResumptionRequestFn!(
+      this.argument as unknown as RequestType
+    );
 
     if (
       typeof retry.getResumptionRequestFn! === 'function' &&
-      retry.getResumptionRequestFn!(this.argument)
+      newRetryArgument
     ) {
-      retryArgument = retry.getResumptionRequestFn!(this.argument);
+      retryArgument = newRetryArgument;
     }
 
     this.resetStreams(stream);
