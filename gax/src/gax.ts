@@ -77,11 +77,11 @@ import {RequestType} from './apitypes';
  * @property {(function)} getResumptionRequestFn
  */
 export class RetryOptions {
-  retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean);
+  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean);
   backoffSettings: BackoffSettings;
   getResumptionRequestFn?: (request: RequestType) => RequestType;
   constructor(
-    retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean),
+    retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean),
     backoffSettings: BackoffSettings,
     getResumptionRequestFn?: (request: RequestType) => RequestType
   ) {
@@ -97,7 +97,7 @@ export class RetryOptions {
  * @returns
  */
 export function isRetryCodes(
-  retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean)
+  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean)
 ) {
   let retryCodes: number[] | undefined;
   let shouldRetryFunction: ((error: GoogleError) => boolean) | undefined;
@@ -137,7 +137,7 @@ export interface RetryRequestOptions {
   retries?: number;
   noResponseRetries?: number;
   currentRetryAttempt?: number;
-  shouldRetryFn?: (error?: GoogleError) => boolean;
+  shouldRetryFn?: (error: GoogleError) => boolean;
   maxRetryDelay?: number;
   retryDelayMultiplier?: number;
   totalTimeout?: number;
@@ -457,7 +457,7 @@ export function checkRetryOptions(
  *
  */
 export function createRetryOptions(
-  retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean),
+  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean),
   backoffSettings: BackoffSettings,
   getResumptionRequestFn?: (request: RequestType) => RequestType
 ): RetryOptions {
