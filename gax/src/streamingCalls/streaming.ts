@@ -234,8 +234,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     this.retries!++;
     const e = GoogleError.parseGRPCStatusDetails(error);
     let shouldRetry = this.defaultShouldRetry(e!, retry);
-    if (typeof retry.retryCodesOrShouldRetryFn! === 'function') {
-      shouldRetry = retry.retryCodesOrShouldRetryFn!(e!);
+    if (typeof retry.retryCodesOrShouldRetryFn === 'function') {
+      shouldRetry = retry.retryCodesOrShouldRetryFn(e!);
     }
 
     if (shouldRetry) {

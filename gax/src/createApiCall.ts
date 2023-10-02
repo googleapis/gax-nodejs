@@ -28,7 +28,12 @@ import {
   SimpleCallbackFunction,
 } from './apitypes';
 import {Descriptor} from './descriptor';
-import {CallOptions, CallSettings, checkRetryOptions} from './gax';
+import {
+  CallOptions,
+  CallSettings,
+  checkRetryOptions,
+  isRetryCodes,
+} from './gax';
 import {retryable} from './normalCalls/retries';
 import {addTimeoutArg} from './normalCalls/timeout';
 import {StreamingApiCaller} from './streamingCalls/streamingApiCaller';
@@ -109,16 +114,13 @@ export function createApiCall(
           );
         }
         if (!streaming && retry && retry?.retryCodesOrShouldRetryFn) {
-          if (
-            retry.retryCodesOrShouldRetryFn instanceof Function &&
-            !streaming
-          ) {
+          if (!isRetryCodes(retry.retryCodesOrShouldRetryFn) && !streaming) {
             throw new Error(
               'Using a function to determine retry eligibility is only supported with server streaming calls'
             );
           }
           if (
-            Array.isArray(retry.retryCodesOrShouldRetryFn) &&
+            isRetryCodes(retry.retryCodesOrShouldRetryFn) &&
             retry.retryCodesOrShouldRetryFn.length > 0
           ) {
             retry.backoffSettings.initialRpcTimeoutMillis ??=

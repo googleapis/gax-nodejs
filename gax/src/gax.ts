@@ -72,7 +72,7 @@ import {RequestType} from './apitypes';
  * Per-call configurable settings for retrying upon transient failure.
  * @implements {RetryOptionsType}
  * @typedef {Object} RetryOptions
- * @property {String[] | (function)} retryCodesOrShouldRetryFn
+ * @property {number[] | (function)} retryCodesOrShouldRetryFn
  * @property {BackoffSettings} backoffSettings
  * @property {(function)} getResumptionRequestFn
  */
@@ -88,6 +88,30 @@ export class RetryOptions {
     this.retryCodesOrShouldRetryFn = retryCodesOrShouldRetryFn;
     this.backoffSettings = backoffSettings;
     this.getResumptionRequestFn = getResumptionRequestFn;
+  }
+}
+
+/**
+ * Helper function to reduce the type checking for this variable to one spot
+ * @param retryCodesOrShouldRetryFn
+ * @returns
+ */
+export function isRetryCodes(
+  retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean)
+) {
+  let retryCodes: number[] | undefined;
+  let shouldRetryFunction: ((error: GoogleError) => boolean) | undefined;
+  if (Array.isArray(retryCodesOrShouldRetryFn)) {
+    retryCodes = retryCodesOrShouldRetryFn;
+  } else if (retryCodesOrShouldRetryFn instanceof Function) {
+    shouldRetryFunction = retryCodesOrShouldRetryFn;
+  }
+  if (retryCodes) {
+    return true;
+  } else if (shouldRetryFunction) {
+    return false;
+  } else {
+    throw new Error('retryCodesOrShouldRetryFn must be an array or a function');
   }
 }
 
@@ -248,9 +272,10 @@ export class CallSettings {
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
     if (
-      (Array.isArray(retry?.retryCodesOrShouldRetryFn) &&
+      retry?.retryCodesOrShouldRetryFn &&
+      ((isRetryCodes(retry!.retryCodesOrShouldRetryFn) &&
         retry!.retryCodesOrShouldRetryFn.length > 0) ||
-      retry?.retryCodesOrShouldRetryFn instanceof Function
+        !isRetryCodes(retry!.retryCodesOrShouldRetryFn))
     ) {
       retry!.backoffSettings.initialRpcTimeoutMillis = timeout;
       retry!.backoffSettings.maxRpcTimeoutMillis = timeout;
@@ -432,7 +457,7 @@ export function checkRetryOptions(
  *
  */
 export function createRetryOptions(
-  retryCodesOrShouldRetryFn: number[] | ((response: any) => boolean),
+  retryCodesOrShouldRetryFn: number[] | ((error?: GoogleError) => boolean),
   backoffSettings: BackoffSettings,
   getResumptionRequestFn?: (request: RequestType) => RequestType
 ): RetryOptions {

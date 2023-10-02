@@ -25,6 +25,7 @@
 import * as assert from 'assert';
 import {describe, it} from 'mocha';
 import * as gax from '../../src/gax';
+import {GoogleError} from '../../src';
 
 const SERVICE_NAME = 'test.interface.v1.api';
 
@@ -102,6 +103,51 @@ function expectBackoffSettings(obj: gax.BackoffSettings) {
 }
 
 describe('gax construct settings', () => {
+  it('checks helper function for retry codes', () => {
+    const defaults = gax.constructSettings(
+      SERVICE_NAME,
+      A_CONFIG,
+      {},
+      RETRY_DICT
+    );
+    assert(
+      gax.isRetryCodes(defaults.bundlingMethod.retry.retryCodesOrShouldRetryFn)
+    );
+  });
+  it('checks helper function for should retry function', () => {
+    const defaults = gax.constructSettings(
+      SERVICE_NAME,
+      A_CONFIG,
+      {},
+      RETRY_DICT
+    );
+    function neverRetry(): boolean {
+      return false;
+    }
+    defaults.bundlingMethod.retry.retryCodesOrShouldRetryFn = neverRetry;
+    assert(
+      !gax.isRetryCodes(defaults.bundlingMethod.retry.retryCodesOrShouldRetryFn)
+    );
+  });
+  it('helper function errors on bad input', () => {
+    const defaults = gax.constructSettings(
+      SERVICE_NAME,
+      A_CONFIG,
+      {},
+      RETRY_DICT
+    );
+    defaults.bundlingMethod.retry.retryCodesOrShouldRetryFn = 5;
+    try {
+      gax.isRetryCodes(defaults.bundlingMethod.retry.retryCodesOrShouldRetryFn);
+    } catch (err) {
+      assert(err instanceof Error);
+      assert(
+        err.message ===
+          'retryCodesOrShouldRetryFn must be an array or a function'
+      );
+    }
+  });
+
   it('creates settings', () => {
     const otherArgs = {key: 'value'};
     const defaults = gax.constructSettings(
