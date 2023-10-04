@@ -99,16 +99,9 @@ export class RetryOptions {
 export function isRetryCodes(
   retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean)
 ) {
-  let retryCodes: number[] | undefined;
-  let shouldRetryFunction: ((error: GoogleError) => boolean) | undefined;
   if (Array.isArray(retryCodesOrShouldRetryFn)) {
-    retryCodes = retryCodesOrShouldRetryFn;
-  } else if (retryCodesOrShouldRetryFn instanceof Function) {
-    shouldRetryFunction = retryCodesOrShouldRetryFn;
-  }
-  if (retryCodes) {
     return true;
-  } else if (shouldRetryFunction) {
+  } else if (retryCodesOrShouldRetryFn instanceof Function) {
     return false;
   } else {
     throw new Error('retryCodesOrShouldRetryFn must be an array or a function');
@@ -271,12 +264,7 @@ export class CallSettings {
     // If a method-specific timeout is set in the service config, and the retry codes for that
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
-    if (
-      retry?.retryCodesOrShouldRetryFn &&
-      ((isRetryCodes(retry!.retryCodesOrShouldRetryFn) &&
-        retry!.retryCodesOrShouldRetryFn.length > 0) ||
-        !isRetryCodes(retry!.retryCodesOrShouldRetryFn))
-    ) {
+    if (retry?.retryCodesOrShouldRetryFn) {
       retry!.backoffSettings.initialRpcTimeoutMillis = timeout;
       retry!.backoffSettings.maxRpcTimeoutMillis = timeout;
       retry!.backoffSettings.totalTimeoutMillis = timeout;
