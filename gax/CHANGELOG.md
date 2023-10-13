@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.0.5](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.4...google-gax-v4.0.5) (2023-10-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency retry-request to v7 ([#1515](https://github.com/googleapis/gax-nodejs/issues/1515)) ([85a83a3](https://github.com/googleapis/gax-nodejs/commit/85a83a310dd2c9e70b23c2ac2fe9ea5664947040))
+
 ## [4.0.4](https://github.com/googleapis/gax-nodejs/compare/v4.0.3...v4.0.4) (2023-09-07)
 
 
