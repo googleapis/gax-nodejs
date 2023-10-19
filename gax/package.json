@@ -23,7 +23,7 @@
     "retry-request": "^7.0.0"
   },
   "devDependencies": {
-    "@compodoc/compodoc": "1.1.21",
+    "@compodoc/compodoc": "1.1.22",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
