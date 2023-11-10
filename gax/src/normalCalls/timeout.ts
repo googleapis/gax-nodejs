@@ -17,7 +17,6 @@
 import {
   GRPCCall,
   GRPCCallOtherArgs,
-  ServerStreamingCall,
   SimpleCallbackFunction,
   UnaryCall,
 } from '../apitypes';
@@ -53,24 +52,5 @@ export function addTimeoutArg(
       ? otherArgs.metadataBuilder(abTests, otherArgs.headers || {})
       : null;
     return (func as UnaryCall)(argument, metadata!, options, callback);
-  };
-}
-
-export function addServerTimeoutArg(
-  func: GRPCCall,
-  timeout: number,
-  otherArgs: GRPCCallOtherArgs,
-  abTests?: {}
-): SimpleCallbackFunction {
-  // TODO: this assumes the other arguments consist of metadata and options,
-  // which is specific to gRPC calls. Remove the hidden dependency on gRPC.
-  return argument => {
-    const now = new Date();
-    const options = otherArgs.options || {};
-    options.deadline = new Date(now.getTime() + timeout);
-    const metadata = otherArgs.metadataBuilder
-      ? otherArgs.metadataBuilder(abTests, otherArgs.headers || {})
-      : null;
-    return (func as ServerStreamingCall)(argument, metadata!, options);
   };
 }

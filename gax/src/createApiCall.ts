@@ -28,12 +28,7 @@ import {
   SimpleCallbackFunction,
 } from './apitypes';
 import {Descriptor} from './descriptor';
-import {
-  CallOptions,
-  CallSettings,
-  checkRetryOptions,
-  isRetryCodes,
-} from './gax';
+import {CallOptions, CallSettings, convertRetryOptions} from './gax';
 import {retryable} from './normalCalls/retries';
 import {addTimeoutArg} from './normalCalls/timeout';
 import {StreamingApiCaller} from './streamingCalls/streamingApiCaller';
@@ -81,13 +76,13 @@ export function createApiCall(
     let thisSettings: CallSettings;
     if (currentApiCaller instanceof StreamingApiCaller) {
       const gaxStreamingRetries =
-        currentApiCaller.descriptor?.gaxStreamingRetries;
+        currentApiCaller.descriptor?.gaxStreamingRetries ?? false;
       // If Gax streaming retries are enabled, check settings passed at call time and convert parameters if needed
-      const thisSettingsTemp = checkRetryOptions(
+      const convertedRetryOptions = convertRetryOptions(
         callOptions,
         gaxStreamingRetries
       );
-      thisSettings = settings.merge(thisSettingsTemp);
+      thisSettings = settings.merge(convertedRetryOptions);
     } else {
       thisSettings = settings.merge(callOptions);
     }
@@ -108,21 +103,29 @@ export function createApiCall(
           ?.streaming;
 
         const retry = thisSettings.retry;
-        if (!streaming && retry && retry?.getResumptionRequestFn) {
+
+        if (
+          streaming &&
+          retry &&
+          retry.retryCodes.length > 0 &&
+          retry.shouldRetryFn
+        ) {
           throw new Error(
-            'Resumption strategy can only be used with server streaming retries'
+            'Only one of retryCodes or shouldRetryFn may be defined'
           );
         }
-        if (!streaming && retry && retry?.retryCodesOrShouldRetryFn) {
-          if (!isRetryCodes(retry.retryCodesOrShouldRetryFn) && !streaming) {
+        if (!streaming && retry) {
+          if (retry.shouldRetryFn) {
             throw new Error(
               'Using a function to determine retry eligibility is only supported with server streaming calls'
             );
           }
-          if (
-            isRetryCodes(retry.retryCodesOrShouldRetryFn) &&
-            retry.retryCodesOrShouldRetryFn.length > 0
-          ) {
+          if (retry.getResumptionRequestFn) {
+            throw new Error(
+              'Resumption strategy can only be used with server streaming retries'
+            );
+          }
+          if (retry.retryCodes && retry.retryCodes.length > 0) {
             retry.backoffSettings.initialRpcTimeoutMillis ??=
               thisSettings.timeout;
             return retryable(

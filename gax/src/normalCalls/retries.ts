@@ -108,9 +108,8 @@ export function retryable(
         }
         canceller = null;
         if (
-          retry.retryCodesOrShouldRetryFn !== undefined &&
-          Array.isArray(retry.retryCodesOrShouldRetryFn) &&
-          retry.retryCodesOrShouldRetryFn.indexOf(err!.code!) < 0
+          retry.retryCodes.length > 0 &&
+          retry.retryCodes.indexOf(err!.code!) < 0
         ) {
           err.note =
             'Exception occurred in retry method that was ' +

@@ -140,13 +140,13 @@ describe('createApiCall', () => {
       done();
     });
   });
-  it('override just custom retry.retryCodesOrShouldRetryFn with retry codes', done => {
+  it('override just custom retry.retryCodes with retry codes', done => {
     const initialRetryCodes = [1];
     const overrideRetryCodes = [1, 2, 3];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
       try {
-        assert.strictEqual(retry.retryCodesOrShouldRetryFn, overrideRetryCodes);
+        assert.strictEqual(retry.retryCodes, overrideRetryCodes);
         return func;
       } catch (err) {
         done(err);
@@ -174,12 +174,12 @@ describe('createApiCall', () => {
       {},
       {
         retry: {
-          retryCodesOrShouldRetryFn: overrideRetryCodes,
+          retryCodes: overrideRetryCodes,
         },
       }
     );
   });
-  it('errors when you override just custom retry.retryCodesOrShouldRetryFn with a function on a non streaming call', async () => {
+  it('errors when you override custom retry.shouldRetryFn with a function on a non streaming call', async () => {
     function neverRetry() {
       return false;
     }
@@ -207,7 +207,7 @@ describe('createApiCall', () => {
         {},
         {
           retry: {
-            retryCodesOrShouldRetryFn: overrideRetryCodes,
+            shouldRetryFn: overrideRetryCodes,
           },
         }
       );
@@ -280,6 +280,7 @@ describe('createApiCall', () => {
         retry: gax.createRetryOptions(
           [1],
           initialBackoffSettings,
+          undefined,
           getResumptionRequestFn
         ),
       },

@@ -68,29 +68,24 @@ describe('retry-request', () => {
         true
       );
 
-      const retryStream = streamingRetryRequest(
-        null,
-        {
-          objectMode: true,
-          request: () => {
-            const stream = apiCall(
-              {},
-              {
-                retry: gax.createRetryOptions([5], {
-                  initialRetryDelayMillis: 100,
-                  retryDelayMultiplier: 1.2,
-                  maxRetryDelayMillis: 1000,
-                  rpcTimeoutMultiplier: 1.5,
-                  maxRpcTimeoutMillis: 3000,
-                  maxRetries: 0,
-                }),
-              }
-            ) as CancellableStream;
-            return stream;
-          },
+      const retryStream = streamingRetryRequest({
+        request: () => {
+          const stream = apiCall(
+            {},
+            {
+              retry: gax.createRetryOptions([5], {
+                initialRetryDelayMillis: 100,
+                retryDelayMultiplier: 1.2,
+                maxRetryDelayMillis: 1000,
+                rpcTimeoutMultiplier: 1.5,
+                maxRpcTimeoutMillis: 3000,
+                maxRetries: 0,
+              }),
+            }
+          ) as CancellableStream;
+          return stream;
         },
-        null
-      )
+      })
         .on('end', done())
         .on('data', (data: any) => {
           console.log(data);
@@ -100,20 +95,10 @@ describe('retry-request', () => {
 
     it('throws request error', done => {
       try {
-        streamingRetryRequest(null, null, null);
-      } catch (err: any) {
-        assert.match(err.message, /A request library must be provided/);
-        done();
-      }
-    });
-
-    it('opts is a function and throws request error', done => {
-      try {
-        const opts = () => {
-          return true;
-        };
-        streamingRetryRequest(null, opts, null);
-      } catch (err: any) {
+        const opts = {};
+        streamingRetryRequest(opts);
+      } catch (err) {
+        assert(err instanceof Error);
         assert.match(err.message, /A request library must be provided/);
         done();
       }

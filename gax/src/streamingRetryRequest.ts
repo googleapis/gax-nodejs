@@ -13,87 +13,32 @@
 // limitations under the License.
 
 const {PassThrough} = require('stream');
+import {GoogleError} from './googleError';
+import {ResponseType} from './apitypes';
+import {StreamProxy} from './streamingCalls/streaming';
 
 const DEFAULTS = {
   /*
     Max # of retries
   */
   maxRetries: 2,
-
-  /*
-    The maximum time to delay in seconds. If retryDelayMultiplier results in a
-    delay greater than maxRetryDelay, retries should delay by maxRetryDelay
-    seconds instead.
-  */
-  maxRetryDelayMillis: 64000,
-
-  /*
-    The multiplier by which to increase the delay time between the completion of
-    failed requests, and the initiation of the subsequent retrying request.
-  */
-  retryDelayMultiplier: 2,
-
-  /*
-    The length of time to keep retrying in seconds. The last sleep period will
-    be shortened as necessary, so that the last retry runs at deadline (and not
-    considerably beyond it).  The total time starting from when the initial
-    request is sent, after which an error will be returned, regardless of the
-    retrying attempts made meanwhile.
-  */
-  totalTimeoutMillis: 600000,
-
-  /*
-    The initial delay time, in milliseconds, between the completion of the first
-    failed request and the initiation of the first retrying request.
-  */
-  initialRetryDelayMillis: 60,
-
-  /*
-    Initial timeout parameter to the request.
-  */
-  initialRpcTimeoutMillis: 60,
-
-  /*
-    Maximum timeout in milliseconds for a request.
-    When this value is reached, rpcTimeoutMulitplier will no
-    longer be used to increase the timeout.
-  */
-  maxRpcTimeoutMillis: 60,
-
-  /*
-   Multiplier by which to increase timeout parameter in
-   between failed requests.
-  */
-  rpcTimeoutMultiplier: 2,
-
-  /*
-    The number of retries that have occured.
-  */
-  retries: 0,
-
-  retryCodesOrShouldRetryFn:
-    [14] ||
-    function (response: any) {
-      return undefined;
-    },
-
-  getResumptionRequestFn: function (response: any) {
-    return undefined;
-  },
 };
+// In retry-request, you could pass parameters to request using the requestOpts parameter
+// when we called retry-request from gax, we always passed null
+// passing null here removes an unnecessary parameter from this implementation
+const requestOps = null;
+const objectMode = true; // we don't support objectMode being false
 
-export function streamingRetryRequest(
-  requestOpts: any = null,
-  opts: any = null,
-  callback: any = null,
-  ...args: any
-) {
-  const streamMode = typeof args[args.length - 1] !== 'function';
-
-  if (typeof opts === 'function') {
-    callback = opts;
-  }
-
+interface streamingRetryRequestOptions {
+  request?: Function; //TODO update,
+  maxRetries?: number; //TODO update
+}
+/**
+ * Localized adaptation derived from retry-request
+ * @param opts - corresponds to https://github.com/googleapis/retry-request#opts-optional
+ * @returns
+ */
+export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
   opts = Object.assign({}, DEFAULTS, opts);
 
   if (opts.request === undefined) {
@@ -108,97 +53,61 @@ export function streamingRetryRequest(
   let numNoResponseAttempts = 0;
   let streamResponseHandled = false;
 
-  let retryStream: any;
-  let requestStream: any;
-  let delayStream: any;
+  let requestStream: StreamProxy;
+  let delayStream: StreamProxy;
 
-  let activeRequest: {abort: () => void};
-  const retryRequest = {
-    abort: function () {
-      if (activeRequest && activeRequest.abort) {
-        activeRequest.abort();
-      }
-    },
-  };
-
-  if (streamMode) {
-    retryStream = new PassThrough({objectMode: opts.objectMode});
-    // retryStream.abort = resetStreams;
-  }
+  const retryStream = new PassThrough({objectMode: objectMode});
 
   makeRequest();
-
-  if (streamMode) {
-    return retryStream;
-  } else {
-    return retryRequest;
-  }
+  return retryStream;
 
   function makeRequest() {
-    if (streamMode) {
-      streamResponseHandled = false;
+    streamResponseHandled = false;
 
-      delayStream = new PassThrough({objectMode: opts.objectMode});
-      requestStream = opts.request(requestOpts);
+    delayStream = new PassThrough({objectMode: objectMode});
+    requestStream = opts.request!(requestOps);
 
-      setImmediate(() => {
-        retryStream.emit('request');
+    requestStream
+      // gRPC via google-cloud-node can emit an `error` as well as a `response`
+      // Whichever it emits, we run with-- we can't run with both. That's what
+      // is up with the `streamResponseHandled` tracking.
+      .on('error', (err: GoogleError) => {
+        if (streamResponseHandled) {
+          return;
+        }
+        streamResponseHandled = true;
+        onResponse(err);
+      })
+      .on('response', (resp: ResponseType) => {
+        if (streamResponseHandled) {
+          return;
+        }
+
+        streamResponseHandled = true;
+        onResponse(null, resp);
       });
-
-      requestStream
-        // gRPC via google-cloud-node can emit an `error` as well as a `response`
-        // Whichever it emits, we run with-- we can't run with both. That's what
-        // is up with the `streamResponseHandled` tracking.
-        .on('error', (err: any) => {
-          if (streamResponseHandled) {
-            return;
-          }
-          streamResponseHandled = true;
-          onResponse(err);
-        })
-        .on('response', (resp: any, body: any) => {
-          if (streamResponseHandled) {
-            return;
-          }
-
-          streamResponseHandled = true;
-          onResponse(null, resp, body);
-        })
-        .on('complete', retryStream.emit.bind(retryStream, 'complete'));
-
-      requestStream.pipe(delayStream);
-    } else {
-      activeRequest = opts.request(requestOpts, onResponse);
-    }
+    requestStream.pipe(delayStream);
   }
 
-  function onResponse(err: any, response: any = null, body: any = null) {
+  function onResponse(err: GoogleError | null, response: ResponseType = null) {
     // An error such as DNS resolution.
     if (err) {
       numNoResponseAttempts++;
 
-      if (numNoResponseAttempts <= opts.maxRetries) {
+      if (numNoResponseAttempts <= opts.maxRetries!) {
         makeRequest();
       } else {
-        if (streamMode) {
-          retryStream.emit('error', err);
-        } else {
-          callback(err, response, body);
-        }
+        retryStream.emit('error', err);
       }
 
       return;
     }
 
     // No more attempts need to be made, just continue on.
-    if (streamMode) {
-      retryStream.emit('response', response);
-      delayStream.pipe(retryStream);
-      requestStream.on('error', (err: any) => {
-        retryStream.destroy(err);
-      });
-    } else {
-      callback(err, response, body);
-    }
+    retryStream.emit('response', response);
+    delayStream.pipe(retryStream);
+    requestStream.on('error', (err: GoogleError) => {
+      retryStream.destroy(err);
+    });
   }
 }

@@ -72,39 +72,26 @@ import {RequestType} from './apitypes';
  * Per-call configurable settings for retrying upon transient failure.
  * @implements {RetryOptionsType}
  * @typedef {Object} RetryOptions
- * @property {number[] | (function)} retryCodesOrShouldRetryFn
+ * @property {number[]} retryCodes
  * @property {BackoffSettings} backoffSettings
+ * @property {(function)} shouldRetryFn
  * @property {(function)} getResumptionRequestFn
  */
 export class RetryOptions {
-  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean);
+  retryCodes: number[];
   backoffSettings: BackoffSettings;
+  shouldRetryFn?: (error: GoogleError) => boolean;
   getResumptionRequestFn?: (request: RequestType) => RequestType;
   constructor(
-    retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean),
+    retryCodes: number[],
     backoffSettings: BackoffSettings,
+    shouldRetryFn?: (error: GoogleError) => boolean,
     getResumptionRequestFn?: (request: RequestType) => RequestType
   ) {
-    this.retryCodesOrShouldRetryFn = retryCodesOrShouldRetryFn;
+    this.retryCodes = retryCodes;
     this.backoffSettings = backoffSettings;
+    this.shouldRetryFn = shouldRetryFn;
     this.getResumptionRequestFn = getResumptionRequestFn;
-  }
-}
-
-/**
- * Helper function to reduce the type checking for this variable to one spot
- * @param retryCodesOrShouldRetryFn
- * @returns
- */
-export function isRetryCodes(
-  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean)
-) {
-  if (Array.isArray(retryCodesOrShouldRetryFn)) {
-    return true;
-  } else if (retryCodesOrShouldRetryFn instanceof Function) {
-    return false;
-  } else {
-    throw new Error('retryCodesOrShouldRetryFn must be an array or a function');
   }
 }
 
@@ -264,7 +251,7 @@ export class CallSettings {
     // If a method-specific timeout is set in the service config, and the retry codes for that
     // method are non-null, then that timeout value will be used to
     // override backoff settings.
-    if (retry?.retryCodesOrShouldRetryFn) {
+    if (retry?.retryCodes) {
       retry!.backoffSettings.initialRpcTimeoutMillis = timeout;
       retry!.backoffSettings.maxRpcTimeoutMillis = timeout;
       retry!.backoffSettings.totalTimeoutMillis = timeout;
@@ -335,7 +322,7 @@ export class CallSettings {
  * @return {CallOptions} A new CallOptions object.
  *
  */
-export function checkRetryOptions(
+export function convertRetryOptions(
   options?: CallOptions,
   gaxStreamingRetries?: boolean
 ): CallOptions | undefined {
@@ -387,8 +374,13 @@ export function checkRetryOptions(
         'UnsupportedParameterWarning'
       );
     }
-    const retryCodesOrShouldRetryFn = options?.retryRequestOptions
-      ?.shouldRetryFn ?? [Status.UNAVAILABLE];
+
+    let retryCodes = [Status.UNAVAILABLE];
+    let shouldRetryFn;
+    if (options.retryRequestOptions.shouldRetryFn) {
+      retryCodes = [];
+      shouldRetryFn = options.retryRequestOptions.shouldRetryFn;
+    }
 
     //Backoff settings
     options.maxRetries =
@@ -419,8 +411,9 @@ export function checkRetryOptions(
       totalTimeoutMillis ?? backoffSettings.totalTimeoutMillis;
 
     const convertedRetryOptions = createRetryOptions(
-      retryCodesOrShouldRetryFn,
-      backoffSettings
+      retryCodes,
+      backoffSettings,
+      shouldRetryFn
     );
     options.retry = convertedRetryOptions;
     delete options.retryRequestOptions; // completely remove them to avoid any further confusion
@@ -435,23 +428,25 @@ export function checkRetryOptions(
 
 /**
  * Per-call configurable settings for retrying upon transient failure.
- *
- * @param {number[] | function} retryCodesOrShouldRetryFn - a list of Google API canonical error codes OR a function that returns a boolean to determine retry behavior
+ * @param {number[]} retryCodes - a list of Google API canonical error codes OR a function that returns a boolean to determine retry behavior
  *   upon which a retry should be attempted.
  * @param {BackoffSettings} backoffSettings - configures the retry
  *   exponential backoff algorithm.
+ * @param {function} shouldRetryFn - a function that determines whether a call should retry. If this is defined retryCodes must be empty
  * @param {function} getResumptionRequestFn - a function with a resumption strategy - only used with server streaming retries
  * @return {RetryOptions} A new RetryOptions object.
  *
  */
 export function createRetryOptions(
-  retryCodesOrShouldRetryFn: number[] | ((error: GoogleError) => boolean),
+  retryCodes: number[],
   backoffSettings: BackoffSettings,
+  shouldRetryFn?: (error: GoogleError) => boolean,
   getResumptionRequestFn?: (request: RequestType) => RequestType
 ): RetryOptions {
   return {
-    retryCodesOrShouldRetryFn,
+    retryCodes,
     backoffSettings,
+    shouldRetryFn,
     getResumptionRequestFn,
   };
 }
@@ -671,27 +666,31 @@ function mergeRetryOptions(
   }
 
   if (
-    !overrides.retryCodesOrShouldRetryFn &&
+    !overrides.retryCodes &&
     !overrides.backoffSettings &&
+    !overrides.shouldRetryFn &&
     !overrides.getResumptionRequestFn
   ) {
     return retry;
   }
 
-  const codesOrFunction = overrides.retryCodesOrShouldRetryFn
-    ? overrides.retryCodesOrShouldRetryFn
-    : retry.retryCodesOrShouldRetryFn;
+  const retryCodes = overrides.retryCodes
+    ? overrides.retryCodes
+    : retry.retryCodes;
 
   const backoffSettings = overrides.backoffSettings
     ? overrides.backoffSettings
     : retry.backoffSettings;
-
+  const shouldRetryFn = overrides.shouldRetryFn
+    ? overrides.shouldRetryFn
+    : retry.shouldRetryFn;
   const getResumptionRequestFn = overrides.getResumptionRequestFn
     ? overrides.getResumptionRequestFn
     : retry.getResumptionRequestFn;
   return createRetryOptions(
-    codesOrFunction!,
+    retryCodes!,
     backoffSettings!,
+    shouldRetryFn!,
     getResumptionRequestFn!
   );
 }

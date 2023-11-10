@@ -601,7 +601,7 @@ async function testServerStreamingRetriesWithShouldRetryFn(
     10000
   );
 
-  const retryOptions = new RetryOptions(shouldRetryFn, backoffSettings);
+  const retryOptions = new RetryOptions([], backoffSettings, shouldRetryFn);
 
   const settings = {
     retry: retryOptions,
@@ -729,8 +729,9 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
   };
 
   const retryOptions = new RetryOptions(
-    shouldRetryFn,
+    [],
     backoffSettings,
+    shouldRetryFn,
     getResumptionRequestFn
   );
 
@@ -797,8 +798,9 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
   };
 
   const retryOptions = new RetryOptions(
-    shouldRetryFn,
+    [],
     backoffSettings,
+    shouldRetryFn,
     getResumptionRequestFn
   );
 
