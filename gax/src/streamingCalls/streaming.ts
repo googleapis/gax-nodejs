@@ -29,7 +29,6 @@ import {RetryOptions, RetryRequestOptions} from '../gax';
 import {GoogleError} from '../googleError';
 import {streamingRetryRequest} from '../streamingRetryRequest';
 import {Status} from '../status';
-import {warn} from '../warnings';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const duplexify: DuplexifyConstructor = require('duplexify');
@@ -478,11 +477,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         this.stream = stream;
         this.setReadable(stream);
       } else if (this.gaxServerStreamingRetries) {
-        warn(
-          'gax_server_streaming_retries',
-          'You are using the new experimental gax native server streaming retry implementation',
-          'ExperimentalWarning'
-        );
         const retryStream = streamingRetryRequest({
           request: () => {
             if (this._isCancelCalled) {

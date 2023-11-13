@@ -830,7 +830,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
       settings
     );
 
-    attemptStream.on('error', (e: any) => {
+    attemptStream.on('error', (e: GoogleError) => {
       if (!allowedCodes.includes(e.code!)) {
         reject(e);
       }

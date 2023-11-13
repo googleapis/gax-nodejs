@@ -1345,7 +1345,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows custom CallOptions.retry settings with shouldRetryFn instead of retryCodes and new retry behavior', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
-      .callsFake((stream): any => {
+      .callsFake((stream): undefined => {
         assert(stream instanceof internal.Stream);
         done();
       });
@@ -1430,7 +1430,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows custom CallOptions.retry settings with retryCodes and new retry behavior', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
-      .callsFake((stream): any => {
+      .callsFake((stream): undefined => {
         assert(stream instanceof internal.Stream);
         done();
       });
@@ -1466,7 +1466,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows the user to pass a custom resumption strategy', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
-      .callsFake((stream, retry): any => {
+      .callsFake((stream, retry): undefined => {
         assert(stream instanceof internal.Stream);
         assert(retry.getResumptionRequestFn instanceof Function);
         done();
@@ -1572,11 +1572,9 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   });
   it('throws an error when both retryRequestoptions and retryOptions are passed at call time when new retry behavior is enabled', done => {
     //if this is reached, it means the settings merge in createAPICall did not fail properly
-    sinon
-      .stub(StreamingApiCaller.prototype, 'call')
-      .callsFake((apiCall, argument, settings, stream) => {
-        throw new Error("This shouldn't be happening");
-      });
+    sinon.stub(StreamingApiCaller.prototype, 'call').callsFake(() => {
+      throw new Error("This shouldn't be happening");
+    });
 
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
@@ -1635,6 +1633,9 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     sinon
       .stub(StreamingApiCaller.prototype, 'call')
       .callsFake((apiCall, argument, settings, stream) => {
+        assert(typeof argument === 'object');
+        assert(typeof apiCall === 'function');
+        assert(stream instanceof streaming.StreamProxy);
         try {
           assert(settings.retry);
           assert(typeof settings.retryRequestOptions === 'undefined');
@@ -1730,6 +1731,9 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     sinon
       .stub(StreamingApiCaller.prototype, 'call')
       .callsFake((apiCall, argument, settings, stream) => {
+        assert(typeof argument === 'object');
+        assert(typeof apiCall === 'function');
+        assert(stream instanceof streaming.StreamProxy);
         try {
           assert(settings.retry);
           assert(typeof settings.retryRequestOptions === 'undefined');
@@ -1825,6 +1829,9 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     sinon
       .stub(StreamingApiCaller.prototype, 'call')
       .callsFake((apiCall, argument, settings, stream) => {
+        assert(typeof argument === 'object');
+        assert(typeof apiCall === 'function');
+        assert(stream instanceof streaming.StreamProxy);
         try {
           assert(settings.retry);
           assert(typeof settings.retryRequestOptions === 'undefined');
@@ -1919,6 +1926,9 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     sinon
       .stub(StreamingApiCaller.prototype, 'call')
       .callsFake((apiCall, argument, settings, stream) => {
+        assert(typeof argument === 'object');
+        assert(typeof apiCall === 'function');
+        assert(stream instanceof streaming.StreamProxy);
         try {
           assert(settings.retry);
           assert(typeof settings.retryRequestOptions === 'undefined');
@@ -2019,11 +2029,9 @@ describe('warns/errors about server streaming retry behavior when gaxStreamingRe
     const warnStub = sinon.stub(warnings, 'warn');
 
     // this exists to help resolve createApiCall
-    sinon
-      .stub(StreamingApiCaller.prototype, 'call')
-      .callsFake((apiCall, argument, settings, stream) => {
-        done();
-      });
+    sinon.stub(StreamingApiCaller.prototype, 'call').callsFake(() => {
+      done();
+    });
 
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
@@ -2070,11 +2078,9 @@ describe('warns/errors about server streaming retry behavior when gaxStreamingRe
   it('throws a warning when retry options are passed', done => {
     const warnStub = sinon.stub(warnings, 'warn');
     // this exists to help resolve createApiCall
-    sinon
-      .stub(StreamingApiCaller.prototype, 'call')
-      .callsFake((apiCall, argument, settings, stream) => {
-        done();
-      });
+    sinon.stub(StreamingApiCaller.prototype, 'call').callsFake(() => {
+      done();
+    });
 
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
@@ -2117,11 +2123,9 @@ describe('warns/errors about server streaming retry behavior when gaxStreamingRe
   it('throws no warnings when when no retry options are passed', done => {
     const warnStub = sinon.stub(warnings, 'warn');
     // this exists to help resolve createApiCall
-    sinon
-      .stub(StreamingApiCaller.prototype, 'call')
-      .callsFake((apiCall, argument, settings, stream) => {
-        done();
-      });
+    sinon.stub(StreamingApiCaller.prototype, 'call').callsFake(() => {
+      done();
+    });
 
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
@@ -2145,11 +2149,9 @@ describe('warns/errors about server streaming retry behavior when gaxStreamingRe
   it('throws two warnings when when retry and retryRequestoptions are passed', done => {
     const warnStub = sinon.stub(warnings, 'warn');
     // this exists to help resolve createApiCall
-    sinon
-      .stub(StreamingApiCaller.prototype, 'call')
-      .callsFake((apiCall, argument, settings, stream) => {
-        done();
-      });
+    sinon.stub(StreamingApiCaller.prototype, 'call').callsFake(() => {
+      done();
+    });
 
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);

@@ -30,8 +30,8 @@ const requestOps = null;
 const objectMode = true; // we don't support objectMode being false
 
 interface streamingRetryRequestOptions {
-  request?: Function; //TODO update,
-  maxRetries?: number; //TODO update
+  request?: Function;
+  maxRetries?: number;
 }
 /**
  * Localized adaptation derived from retry-request

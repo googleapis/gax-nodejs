@@ -211,7 +211,8 @@ describe('createApiCall', () => {
           },
         }
       );
-    } catch (err: any) {
+    } catch (err) {
+      assert(err instanceof Error);
       assert.strictEqual(
         err.message,
         'Using a function to determine retry eligibility is only supported with server streaming calls'

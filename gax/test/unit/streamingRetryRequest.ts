@@ -46,6 +46,7 @@ function createApiCallStreaming(
 
 describe('retry-request', () => {
   describe('streams', () => {
+    let receivedData: number[] = [];
     it('works with defaults in a stream', done => {
       const spy = sinon.spy((...args: Array<{}>) => {
         assert.strictEqual(args.length, 3);
@@ -86,9 +87,12 @@ describe('retry-request', () => {
           return stream;
         },
       })
-        .on('end', done())
-        .on('data', (data: any) => {
-          console.log(data);
+        .on('end', () => {
+          assert.deepStrictEqual(receivedData, [1, 2, 3, 4, 5]);
+          done();
+        })
+        .on('data', (data: {resources: number[]}) => {
+          receivedData = receivedData.concat(data.resources);
         });
       assert.strictEqual(retryStream._readableState.objectMode, true);
     });
