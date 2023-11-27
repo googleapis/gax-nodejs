@@ -32,6 +32,7 @@ import {CallOptions, CallSettings, convertRetryOptions} from './gax';
 import {retryable} from './normalCalls/retries';
 import {addTimeoutArg} from './normalCalls/timeout';
 import {StreamingApiCaller} from './streamingCalls/streamingApiCaller';
+import {warn} from './warnings';
 
 /**
  * Converts an rpc call into an API call governed by the settings.
@@ -110,9 +111,11 @@ export function createApiCall(
           retry.retryCodes.length > 0 &&
           retry.shouldRetryFn
         ) {
-          throw new Error(
-            'Only one of retryCodes or shouldRetryFn may be defined'
+          warn(
+            'either_retrycodes_or_shouldretryfn',
+            'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.'
           );
+          retry.retryCodes = [];
         }
         if (!streaming && retry) {
           if (retry.shouldRetryFn) {

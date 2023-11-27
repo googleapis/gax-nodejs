@@ -1384,49 +1384,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       }
     );
   });
-  it('errors when both retryCodes and shouldRetryFn are passed', done => {
-    const spy = sinon.spy((...args: Array<{}>) => {
-      assert.strictEqual(args.length, 3);
-      const s = new PassThrough({
-        objectMode: true,
-      });
-      return s;
-    });
-
-    const apiCall = createApiCallStreaming(
-      spy,
-      streaming.StreamType.SERVER_STREAMING,
-      false,
-      true //gaxStreamingRetries
-    );
-
-    const s = apiCall(
-      {},
-      {
-        retry: gax.createRetryOptions(
-          [14],
-          {
-            initialRetryDelayMillis: 100,
-            retryDelayMultiplier: 1.2,
-            maxRetryDelayMillis: 1000,
-            rpcTimeoutMultiplier: 1.5,
-            maxRpcTimeoutMillis: 3000,
-            totalTimeoutMillis: 4500,
-          },
-          () => {
-            return true;
-          }
-        ),
-      }
-    );
-    s.on('error', error => {
-      assert.strictEqual(
-        error.message,
-        'Only one of retryCodes or shouldRetryFn may be defined'
-      );
-      done();
-    });
-  });
   it('allows custom CallOptions.retry settings with retryCodes and new retry behavior', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
