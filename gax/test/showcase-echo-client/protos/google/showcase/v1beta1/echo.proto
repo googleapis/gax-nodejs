@@ -17,6 +17,7 @@ syntax = "proto3";
 import "google/api/annotations.proto";
 import "google/api/client.proto";
 import "google/api/field_behavior.proto";
+import "google/api/routing.proto";
 import "google/longrunning/operations.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
@@ -27,27 +28,63 @@ package google.showcase.v1beta1;
 option go_package = "github.com/googleapis/gapic-showcase/server/genproto";
 option java_package = "com.google.showcase.v1beta1";
 option java_multiple_files = true;
+option ruby_package = "Google::Showcase::V1beta1";
 
 // This service is used showcase the four main types of rpcs - unary, server
 // side streaming, client side streaming, and bidirectional streaming. This
 // service also exposes methods that explicitly implement server delay, and
 // paginated calls. Set the 'showcase-trailer' metadata key on any method
-// to have the values echoed in the response trailers.
+// to have the values echoed in the response trailers. Set the 
+// 'x-goog-request-params' metadata key on any method to have the values
+// echoed in the response headers.
 service Echo {
   // This service is meant to only run locally on the port 7469 (keypad digits
   // for "show").
   option (google.api.default_host) = "localhost:7469";
 
-  // This method simply echos the request. This method is showcases unary rpcs.
+  // This method simply echoes the request. This method showcases unary RPCs.
   rpc Echo(EchoRequest) returns (EchoResponse) {
     option (google.api.http) = {
       post: "/v1beta1/echo:echo"
       body: "*"
     };
+    option (google.api.routing) = {
+      routing_parameters{
+        field: "header"
+      }
+      routing_parameters{
+        field: "header"
+        path_template: "{routing_id=**}"
+      }
+      routing_parameters{
+        field: "header"
+        path_template: "{table_name=regions/*/zones/*/**}"
+      }
+      routing_parameters{
+        field: "header"
+        path_template: "{super_id=projects/*}/**"
+      }
+      routing_parameters{
+        field: "header"
+        path_template: "{table_name=projects/*/instances/*/**}"
+      }
+      routing_parameters{
+        field: "header"
+        path_template: "projects/*/{instance_id=instances/*}/**"
+      }
+      routing_parameters{
+        field: "other_header"
+        path_template: "{baz=**}"
+      }
+      routing_parameters{
+        field: "other_header"
+        path_template: "{qux=projects/*}/**"
+      }
+    };
   }
 
-  // This method split the given content into words and will pass each word back
-  // through the stream. This method showcases server-side streaming rpcs.
+  // This method splits the given content into words and will pass each word back
+  // through the stream. This method showcases server-side streaming RPCs.
   rpc Expand(ExpandRequest) returns (stream EchoResponse) {
     option (google.api.http) = {
       post: "/v1beta1/echo:expand"
@@ -60,7 +97,7 @@ service Echo {
 
   // This method will collect the words given to it. When the stream is closed
   // by the client, this method will return the a concatenation of the strings
-  // passed to it. This method showcases client-side streaming rpcs.
+  // passed to it. This method showcases client-side streaming RPCs.
   rpc Collect(stream EchoRequest) returns (EchoResponse) {
     option (google.api.http) = {
       post: "/v1beta1/echo:collect"
@@ -68,9 +105,9 @@ service Echo {
     };
   }
 
-  // This method, upon receiving a request on the stream, the same content will
-  // be passed  back on the stream. This method showcases bidirectional
-  // streaming rpcs.
+  // This method, upon receiving a request on the stream, will pass the same
+  // content back on the stream. This method showcases bidirectional
+  // streaming RPCs.
   rpc Chat(stream EchoRequest) returns (stream EchoResponse);
 
   // This is similar to the Expand method but instead of returning a stream of
@@ -82,8 +119,30 @@ service Echo {
     };
   }
 
-  // This method will wait the requested amount of and then return.
-  // This method showcases how a client handles a request timing out.
+  // This is similar to the PagedExpand except that it uses
+  // max_results instead of page_size, as some legacy APIs still
+  // do. New APIs should NOT use this pattern.
+  rpc PagedExpandLegacy(PagedExpandLegacyRequest) returns (PagedExpandResponse) {
+    option (google.api.http) = {
+      post: "/v1beta1/echo:pagedExpandLegacy"
+      body: "*"
+    };
+  }
+
+  // This method returns a map containing lists of words that appear in the input, keyed by their
+  // initial character. The only words returned are the ones included in the current page,
+  // as determined by page_token and page_size, which both refer to the word indices in the
+  // input. This paging result consisting of a map of lists is a pattern used by some legacy
+  // APIs. New APIs should NOT use this pattern.
+  rpc PagedExpandLegacyMapped(PagedExpandRequest) returns (PagedExpandLegacyMappedResponse) {
+    option (google.api.http) = {
+      post: "/v1beta1/echo:pagedExpandLegacyMapped"
+      body: "*"
+    };
+  }
+
+  // This method will wait for the requested amount of time and then return.
+  // This method showcases how a client handles a request timeout.
   rpc Wait(WaitRequest) returns (google.longrunning.Operation) {
     option (google.api.http) = {
       post: "/v1beta1/echo:wait"
@@ -95,7 +154,7 @@ service Echo {
     };
   }
 
-  // This method will block (wait) for the requested amount of time 
+  // This method will block (wait) for the requested amount of time
   // and then return the response or error.
   // This method showcases how a client handles delays or retries.
   rpc Block(BlockRequest) returns (BlockResponse) {
@@ -106,9 +165,19 @@ service Echo {
   };
 }
 
-// The request message used for the Echo, Collect and Chat methods. If content
-// is set in this message then the request will succeed. If status is set in 
-// this message then the status will be returned as an error.
+// A severity enum used to test enum capabilities in GAPIC surfaces.
+enum Severity {
+  UNNECESSARY = 0;
+  NECESSARY = 1;
+  URGENT = 2;
+  CRITICAL = 3;
+}
+
+
+// The request message used for the Echo, Collect and Chat methods.
+// If content or opt are set in this message then the request will succeed.
+// If status is set in this message then the status will be returned as an
+// error.
 message EchoRequest {
   oneof response {
     // The content to be echoed by the server.
@@ -117,12 +186,24 @@ message EchoRequest {
     // The error to be thrown by the server.
     google.rpc.Status error = 2;
   }
+
+  // The severity to be echoed by the server.
+  Severity severity = 3;
+
+  // Optional. This field can be set to test the routing annotation on the Echo method.
+  string header = 4;
+
+  // Optional. This field can be set to test the routing annotation on the Echo method.
+  string other_header = 5;
 }
 
 // The response message for the Echo methods.
 message EchoResponse {
   // The content specified in the request.
   string content = 1;
+
+  // The severity specified in the request.
+  Severity severity = 2;
 }
 
 // The request message for the Expand method.
@@ -132,6 +213,9 @@ message ExpandRequest {
 
   // The error that is thrown after all words are sent on the stream.
   google.rpc.Status error = 2;
+
+  //The wait time between each server streaming messages
+  google.protobuf.Duration stream_wait_time = 3;
 }
 
 // The request for the PagedExpand method.
@@ -139,8 +223,24 @@ message PagedExpandRequest {
   // The string to expand.
   string content = 1 [(google.api.field_behavior) = REQUIRED];
 
-  // The amount of words to returned in each page.
+  // The number of words to returned in each page.
   int32 page_size = 2;
+
+  // The position of the page to be returned.
+  string page_token = 3;
+}
+
+// The request for the PagedExpandLegacy method.  This is a pattern used by some legacy APIs. New
+// APIs should NOT use this pattern, but rather something like PagedExpandRequest which conforms to
+// aip.dev/158.
+message PagedExpandLegacyRequest {
+  // The string to expand.
+  string content = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The number of words to returned in each page.
+  // (-- aip.dev/not-precedent: This is a legacy, non-standard pattern that
+  //     violates aip.dev/158. Ordinarily, this should be page_size. --)
+  int32 max_results = 2;
 
   // The position of the page to be returned.
   string page_token = 3;
@@ -150,6 +250,21 @@ message PagedExpandRequest {
 message PagedExpandResponse {
   // The words that were expanded.
   repeated EchoResponse responses = 1;
+
+  // The next page token.
+  string next_page_token = 2;
+}
+
+// A list of words.
+message PagedExpandResponseList {
+  repeated string words = 1;
+}
+
+message PagedExpandLegacyMappedResponse {
+  // The words that were expanded, indexed by their initial character.
+  // (-- aip.dev/not-precedent: This is a legacy, non-standard pattern that violates
+  //     aip.dev/158. Ordinarily, this should be a `repeated` field, as in PagedExpandResponse. --)
+  map<string, PagedExpandResponseList> alphabetized = 1;
 
   // The next page token.
   string next_page_token = 2;

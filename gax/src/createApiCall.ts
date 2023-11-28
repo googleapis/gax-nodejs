@@ -28,10 +28,11 @@ import {
   SimpleCallbackFunction,
 } from './apitypes';
 import {Descriptor} from './descriptor';
-import {CallOptions, CallSettings} from './gax';
+import {CallOptions, CallSettings, convertRetryOptions} from './gax';
 import {retryable} from './normalCalls/retries';
 import {addTimeoutArg} from './normalCalls/timeout';
 import {StreamingApiCaller} from './streamingCalls/streamingApiCaller';
+import {warn} from './warnings';
 
 /**
  * Converts an rpc call into an API call governed by the settings.
@@ -63,7 +64,6 @@ export function createApiCall(
   // function. Currently client librares are only calling this method with a
   // promise, but it will change.
   const funcPromise = typeof func === 'function' ? Promise.resolve(func) : func;
-
   // the following apiCaller will be used for all calls of this function...
   const apiCaller = createAPICaller(settings, descriptor);
 
@@ -72,9 +72,22 @@ export function createApiCall(
     callOptions?: CallOptions,
     callback?: APICallback
   ) => {
-    const thisSettings = settings.merge(callOptions);
-
     let currentApiCaller = apiCaller;
+
+    let thisSettings: CallSettings;
+    if (currentApiCaller instanceof StreamingApiCaller) {
+      const gaxStreamingRetries =
+        currentApiCaller.descriptor?.gaxStreamingRetries ?? false;
+      // If Gax streaming retries are enabled, check settings passed at call time and convert parameters if needed
+      const convertedRetryOptions = convertRetryOptions(
+        callOptions,
+        gaxStreamingRetries
+      );
+      thisSettings = settings.merge(convertedRetryOptions);
+    } else {
+      thisSettings = settings.merge(callOptions);
+    }
+
     // special case: if bundling is disabled for this one call,
     // use default API caller instead
     if (settings.isBundling && !thisSettings.isBundling) {
@@ -89,22 +102,42 @@ export function createApiCall(
 
         const streaming = (currentApiCaller as StreamingApiCaller).descriptor
           ?.streaming;
+
         const retry = thisSettings.retry;
+
         if (
-          !streaming &&
+          streaming &&
           retry &&
-          retry.retryCodes &&
-          retry.retryCodes.length > 0
+          retry.retryCodes.length > 0 &&
+          retry.shouldRetryFn
         ) {
-          retry.backoffSettings.initialRpcTimeoutMillis =
-            retry.backoffSettings.initialRpcTimeoutMillis ||
-            thisSettings.timeout;
-          return retryable(
-            func,
-            thisSettings.retry!,
-            thisSettings.otherArgs as GRPCCallOtherArgs,
-            thisSettings.apiName
+          warn(
+            'either_retrycodes_or_shouldretryfn',
+            'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.'
           );
+          retry.retryCodes = [];
+        }
+        if (!streaming && retry) {
+          if (retry.shouldRetryFn) {
+            throw new Error(
+              'Using a function to determine retry eligibility is only supported with server streaming calls'
+            );
+          }
+          if (retry.getResumptionRequestFn) {
+            throw new Error(
+              'Resumption strategy can only be used with server streaming retries'
+            );
+          }
+          if (retry.retryCodes && retry.retryCodes.length > 0) {
+            retry.backoffSettings.initialRpcTimeoutMillis ??=
+              thisSettings.timeout;
+            return retryable(
+              func,
+              thisSettings.retry!,
+              thisSettings.otherArgs as GRPCCallOtherArgs,
+              thisSettings.apiName
+            );
+          }
         }
         return addTimeoutArg(
           func,
