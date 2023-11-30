@@ -37,6 +37,7 @@ export interface ClientOptions
   clientConfig?: gax.ClientConfig;
   fallback?: boolean | 'rest' | 'proto';
   apiEndpoint?: string;
+  gaxServerStreamingRetries?: boolean;
 }
 
 export interface Descriptors {
