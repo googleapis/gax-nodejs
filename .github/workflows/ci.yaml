@@ -11,19 +11,19 @@ jobs:
       matrix:
         node: [14, 16]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: node --version
       # The first installation step ensures that all of our production
       # dependencies work on the given Node.js version, this helps us find
       # dependencies that don't match our engines field:
-      - run: npm install --production --engine-strict --ignore-scripts --no-package-lock
+      - run: cd gax; npm install --production --engine-strict --ignore-scripts --no-package-lock
       # Clean up the production install, before installing dev/production:
-      - run: rm -rf node_modules
-      - run: npm install
-      - run: npm test
+      - run: cd gax; rm -rf node_modules
+      - run: cd gax; npm install
+      - run: cd gax; npm test
         env:
           MOCHA_THROW_DEPRECATION: false
   test-tools:
@@ -32,8 +32,8 @@ jobs:
       matrix:
         node: [14, 16]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: node --version
@@ -50,19 +50,19 @@ jobs:
   windows-gax:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
-      - run: npm install
-      - run: npm test
+      - run: cd gax; npm install
+      - run: cd gax; npm test
         env:
           MOCHA_THROW_DEPRECATION: false
   windows-tools:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
       - run: cd tools; npm install
@@ -72,17 +72,17 @@ jobs:
   lint-gax:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
-      - run: npm install
-      - run: npm run lint
+      - run: cd gax; npm install
+      - run: cd gax; npm run lint
   lint-tools:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
       - run: cd tools; npm install
@@ -90,12 +90,12 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 14
-      - run: npm install
-      - run: npm run docs
+      - run: cd gax; npm install
+      - run: cd gax; npm run docs
       - uses: JustinBeckwith/linkinator-action@v1
         with:
-          paths: docs/
+          paths: gax/docs/

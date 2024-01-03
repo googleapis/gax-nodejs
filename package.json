@@ -1,6 +1,6 @@
 {
-  "name": "google-gax",
-  "version": "4.0.3",
+  "name": "gax-nodejs",
+  "private": true,
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -59,44 +59,20 @@
     "webpack-cli": "^4.0.0"
   },
   "scripts": {
-    "docs": "compodoc src/",
-    "pretest": "npm run prepare",
-    "test": "c8 mocha build/test/unit",
-    "lint": "gts check src samples test",
-    "clean": "gts clean",
-    "compile": "tsc -p . && cp src/*.json build/src && cp -r test/fixtures build/test && cp -r protos build/",
-    "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
-    "compile-compute-operations-protos": "pbjs -t json google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.json && pbjs -t static-module -r compute_operations_protos google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.js && pbts protos/compute_operations.js -o protos/compute_operations.d.ts",
-    "compile-iam-protos": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module -r iam_protos google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -o protos/iam_service.d.ts",
-    "compile-location-protos": "pbjs -t json google/cloud/location/locations.proto -p ./protos > protos/locations.json && pbjs -t static-module -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.js && pbts protos/locations.js -o protos/locations.d.ts",
-    "compile-status-protos": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
-    "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
-    "compile-showcase-proto": "pbjs -t json google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.json && pbjs -t static-module -r showcase_protos google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.js && pbts test/fixtures/google-gax-packaging-test-app/protos/protos.js -o test/fixtures/google-gax-packaging-test-app/protos/protos.d.ts",
-    "fix": "gts fix",
-    "prepare": "npm run compile && node ./build/tools/src/prepublish.js . && mkdirp build/protos && cp -r protos/* build/protos/ && npm run minify-proto-json",
-    "system-test": "c8 mocha build/test/system-test --timeout 600000 && npm run test-application",
-    "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
-    "docs-test": "linkinator docs",
-    "predocs-test": "npm run docs",
-    "browser-test": "cd test/browser-test && npm run prefetch && npm install && npm test",
-    "test-application": "cd test/test-application && npm run prefetch && npm install && npm start",
-    "prelint": "cd samples; npm link ../; npm install",
-    "precompile": "gts clean",
-    "update-protos": "node ./build/tools/src/listProtos.js .",
-    "minify-proto-json": "node ./build/tools/src/minify.js"
+    "test": "echo \"Please go into tools/ and gax/ to run tests separately\" && exit 1"
   },
-  "repository": "googleapis/gax-nodejs",
   "keywords": [
     "grpc"
   ],
+  "repository": "googleapis/gax-nodejs",
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/googleapis/gax-nodejs/issues"
   },
-  "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
     "node": ">=14"
   },
-  "browser": "build/src/fallback.js"
+  "homepage": "https://github.com/googleapis/gax-nodejs#readme"
+
 }

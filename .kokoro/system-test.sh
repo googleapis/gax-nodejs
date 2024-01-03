@@ -31,6 +31,8 @@ if [ -f .kokoro/pre-system-test.sh ]; then
     set -x
 fi
 
+cd gax
+
 npm install
 
 # If tests are running against main branch, configure flakybot
