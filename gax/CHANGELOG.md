@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.1.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.5...google-gax-v4.1.0) (2024-01-11)
+
+
+### Features
+
+* server streaming retries ([#1496](https://github.com/googleapis/gax-nodejs/issues/1496)) ([8d4c44b](https://github.com/googleapis/gax-nodejs/commit/8d4c44b959bb75664737aca0f4b17bc28d45880d))
+
+
+### Bug Fixes
+
+* **deps:** update google-proto-files to include new field_info proto ([#1532](https://github.com/googleapis/gax-nodejs/issues/1532)) ([0c89a17](https://github.com/googleapis/gax-nodejs/commit/0c89a17124a3268cadefc8fa1224123f0da4ca7c))
+
 ## [4.0.5](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.4...google-gax-v4.0.5) (2023-10-17)
 
 
