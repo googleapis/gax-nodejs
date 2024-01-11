@@ -39,18 +39,16 @@ interface NodeFetchType {
 let agentOption:
   | ((parsedUrl: {protocol: string}) => HttpAgent | HttpsAgent)
   | null = null;
-let httpAgent: HttpAgent | null = null;
-let httpsAgent: HttpsAgent | null = null;
 if (isNodeJS()) {
   const http = require('http');
-  httpAgent = new http.Agent({keepAlive: true});
   const https = require('https');
-  httpsAgent = new https.Agent({keepAlive: true});
+  const httpAgent = new http.Agent({keepAlive: true});
+  const httpsAgent = new https.Agent({keepAlive: true});
   agentOption = (parsedUrl: {protocol: string}) => {
     if (parsedUrl.protocol === 'http:') {
-      return httpAgent!;
+      return httpAgent;
     }
-    return httpsAgent!;
+    return httpsAgent;
   };
 }
 
