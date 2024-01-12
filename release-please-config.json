@@ -10,6 +10,6 @@
     "gax": {},
     "tools": {}
   },
-  "include-v-in-tag": false,
+  "include-component-in-tag": false,
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
