@@ -28,8 +28,8 @@
   "author": "Google API Authors",
   "license": "Apache-2.0",
   "dependencies": {
-    "google-gax": "^4.0.2",
-    "google-proto-files": "^4.0.0",
+    "google-gax": "^4.1.0",
+    "google-proto-files": "^4.1.0",
     "protobufjs-cli": "1.1.2",
     "rimraf": "^5.0.1",
     "@babel/core": "^7.22.5",
