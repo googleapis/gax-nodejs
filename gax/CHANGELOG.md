@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.2.0](https://github.com/googleapis/gax-nodejs/compare/v4.1.0...v4.2.0) (2024-01-18)
+
+
+### Features
+
+* expose uuid for autopopulation of request_id ([#1542](https://github.com/googleapis/gax-nodejs/issues/1542)) ([6c66e22](https://github.com/googleapis/gax-nodejs/commit/6c66e224919e1bb7a8c044927e1c70f9d32bddb4))
+
 ## [4.1.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.5...google-gax-v4.1.0) (2024-01-11)
 
 
