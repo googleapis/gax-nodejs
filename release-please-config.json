@@ -7,7 +7,9 @@
   "draft": false,
   "prerelease": false,
   "packages": {
-    "gax": {},
+    "gax": {
+      "include-component-in-tag": false
+    },
     "tools": {}
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"

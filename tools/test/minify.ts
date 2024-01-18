@@ -19,7 +19,6 @@ import {promises as fsp} from 'fs';
 import {rimraf} from 'rimraf';
 import * as path from 'path';
 import * as minify from '../src/minify';
-import {promisify} from 'util';
 
 const testDir = path.join(process.cwd(), '.minify-test');
 const fixturesDir = path.join(__dirname, '..', 'test', 'fixtures');

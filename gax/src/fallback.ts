@@ -69,6 +69,8 @@ export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
 export {LocationsClient} from './locationService';
 
+export {makeUUID} from './util';
+
 export const defaultToObjectOptions = {
   keepCase: false,
   longs: String,
