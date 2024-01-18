@@ -335,7 +335,6 @@ describe('REGAPIC', () => {
       gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
         .then(libStub => {
-          console.log(requestObject);
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
@@ -403,7 +402,6 @@ describe('REGAPIC', () => {
       gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
         .then(libStub => {
-          console.log(requestObject);
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
