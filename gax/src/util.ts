@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// eslint-disable-next-line node/no-extraneous-import
+import {v4 as uuidv4} from 'uuid';
 
 function words(str: string, normalize = false) {
   if (normalize) {
@@ -102,4 +104,12 @@ export function toLowerCamelCase(str: string) {
     return camelCase;
   }
   return camelCase[0].toLowerCase() + camelCase.slice(1);
+}
+
+/**
+ * Converts a given string to lower camel case (forcing the first character to be
+ * in lower case).
+ */
+export function makeUUID() {
+  return uuidv4();
 }

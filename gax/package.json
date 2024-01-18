@@ -13,6 +13,7 @@
     "@grpc/grpc-js": "~1.9.6",
     "@grpc/proto-loader": "^0.7.0",
     "@types/long": "^4.0.0",
+    "@types/uuid": "^9.0.7",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
     "google-auth-library": "^9.0.0",
@@ -20,11 +21,12 @@
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^2.0.0",
     "protobufjs": "7.2.5",
-    "retry-request": "^7.0.0"
+    "retry-request": "^7.0.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@compodoc/compodoc": "1.1.23",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@compodoc/compodoc": "1.1.23",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
     "@types/node": "^20.5.0",
