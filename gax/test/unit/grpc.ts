@@ -299,6 +299,13 @@ describe('grpc', () => {
       'v1',
       'library.proto'
     );
+    const TEST_FILE_NO_DEPS = path.join(
+      'google',
+      'example',
+      'library',
+      'v1',
+      'test.proto'
+    );
     const TEST_PATH = path.resolve(__dirname, '..', '..', 'test', 'fixtures');
     const TEST_JSON = path.resolve(
       __dirname,
@@ -331,16 +338,14 @@ describe('grpc', () => {
       );
     });
 
-    it('should load the test file using single parameter syntax', () => {
-      const fullPath = path.join(TEST_PATH, TEST_FILE);
+    it('should load the test file with no dependencies using single parameter syntax', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protos = grpcClient.loadProto(fullPath) as any;
-      assert.strictEqual(
-        typeof protos.google.example.library.v1.LibraryService,
-        'function'
-      );
+      const protos = grpcClient.loadProto(
+        path.join(TEST_PATH, TEST_FILE_NO_DEPS)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
+      assert(protos.test.TestMessage);
     });
 
     it('should load a common proto', () => {
@@ -458,14 +463,14 @@ describe('grpc', () => {
 
     describe('use with protobufjs load', () => {
       it('should not be able to load test file using protobufjs directly', done => {
-        protobuf
-          .load(TEST_FILE)
-          .then(() => {
+        protobuf.load(TEST_FILE).then(
+          () => {
             done(Error('should not get here'));
-          })
-          .catch(() => {
+          },
+          () => {
             done();
-          });
+          }
+        );
       });
 
       it('should load a test file', done => {
@@ -508,9 +513,9 @@ describe('grpc', () => {
 
     describe('use with protobufjs loadSync', () => {
       it('should not be able to load test file using protobufjs directly', () => {
-        const root = protobuf.loadSync(TEST_FILE);
-        // Common proto that should not have been loaded.
-        assert.strictEqual(root.lookup('google.api.Http'), null);
+        assert.throws(() => {
+          protobuf.loadSync(TEST_FILE);
+        });
       });
 
       it('should load a test file that relies on common protos', () => {
