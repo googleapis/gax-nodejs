@@ -20,9 +20,9 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^2.0.0",
-    "protobufjs": "7.2.5",
     "retry-request": "^7.0.0",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "protobufjs": "7.2.6"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.7",
