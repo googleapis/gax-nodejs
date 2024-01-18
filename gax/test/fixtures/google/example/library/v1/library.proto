@@ -21,7 +21,7 @@ import "google/protobuf/empty.proto";
 
 // This import is not in the canonical library api and is used to test if the
 // protobuf loader works with protos that live alongside the main proto.
-import "example/library/v1/test.proto";
+import "google/example/library/v1/test.proto";
 
 option go_package = "google.golang.org/genproto/googleapis/example/library/v1;library";
 option java_multiple_files = true;
