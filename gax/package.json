@@ -13,7 +13,6 @@
     "@grpc/grpc-js": "~1.9.6",
     "@grpc/proto-loader": "^0.7.0",
     "@types/long": "^4.0.0",
-    "@types/uuid": "^9.0.7",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
     "google-auth-library": "^9.0.0",
