@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.2.1](https://github.com/googleapis/gax-nodejs/compare/v4.2.0...v4.2.1) (2024-01-26)
+
+
+### Bug Fixes
+
+* run update-protos to include new field_info.proto ([#1547](https://github.com/googleapis/gax-nodejs/issues/1547)) ([ae37986](https://github.com/googleapis/gax-nodejs/commit/ae37986ddc9f6c822ff557248cdf68529931abc6))
+
 ## [4.2.0](https://github.com/googleapis/gax-nodejs/compare/v4.1.0...v4.2.0) (2024-01-18)
 
 
