@@ -50,6 +50,7 @@ export interface GrpcClientOptions extends GoogleAuthOptions {
   protoJson?: protobuf.Root;
   httpRules?: Array<google.api.IHttpRule>;
   numericEnums?: boolean;
+  universeDomain?: string;
 }
 
 export interface MetadataValue {
@@ -104,6 +105,7 @@ export interface ClientStubOptions {
   // For mtls:
   cert?: string;
   key?: string;
+  universeDomain?: string;
 }
 
 export class ClientStub extends grpc.Client {
@@ -398,7 +400,10 @@ export class GrpcClient {
       'grpc.channelFactoryOverride',
       'grpc.gcpApiConfig',
     ];
-    const [cert, key] = await this._detectClientCertificate(options);
+    const [cert, key] = await this._detectClientCertificate(
+      options,
+      options.universeDomain
+    );
     const servicePath = this._mtlsServicePath(
       options.servicePath,
       customServicePath,
@@ -406,6 +411,18 @@ export class GrpcClient {
     );
     const opts = Object.assign({}, options, {cert, key, servicePath});
     const serviceAddress = servicePath + ':' + opts.port;
+    if (!options.universeDomain) {
+      options.universeDomain = 'googleapis.com';
+    }
+    if (options.universeDomain) {
+      const universeFromAuth = await this.auth.getUniverseDomain();
+      if (options.universeDomain !== universeFromAuth) {
+        throw new Error(
+          `The configured universe domain (${options.universeDomain}) does not match the universe domain found in the credentials (${universeFromAuth}. ` +
+            "If you haven't configured the universe domain explicitly, googleapis.com is the default."
+        );
+      }
+    }
     const creds = await this._getCredentials(opts);
     const grpcOptions: ClientOptions = {};
     // @grpc/grpc-js limits max receive/send message length starting from v0.8.0
@@ -447,7 +464,10 @@ export class GrpcClient {
    * @param {object} [options] - The configuration object.
    * @returns {Promise} Resolves array of strings representing cert and key.
    */
-  async _detectClientCertificate(opts?: ClientOptions) {
+  async _detectClientCertificate(
+    opts?: ClientOptions,
+    universeDomain?: string
+  ) {
     const certRegex =
       /(?<cert>-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----)/s;
     const keyRegex =
@@ -457,6 +477,11 @@ export class GrpcClient {
       typeof process !== 'undefined' &&
       process?.env?.GOOGLE_API_USE_CLIENT_CERTIFICATE === 'true'
     ) {
+      if (universeDomain && universeDomain !== 'googleapis.com') {
+        throw new Error(
+          'mTLS is not supported outside of googleapis.com universe domain.'
+        );
+      }
       if (opts?.cert && opts?.key) {
         return [opts.cert, opts.key];
       }
