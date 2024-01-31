@@ -184,8 +184,8 @@ describe('grpc', () => {
         port: 443,
         universeDomain: 'example.com',
       };
-      // @ts-ignore
       assert.rejects(
+        // @ts-ignore
         grpcClient.createStub(DummyStub, opts),
         /configured universe domain/
       );
@@ -195,8 +195,8 @@ describe('grpc', () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
       stubAuth.getUniverseDomain.reset();
       stubAuth.getUniverseDomain.resolves('example.com');
-      // @ts-ignore
       assert.rejects(
+        // @ts-ignore
         grpcClient.createStub(DummyStub, opts),
         /configured universe domain/
       );
@@ -697,8 +697,8 @@ dvorak
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const client = gaxGrpc();
-      // @ts-ignore
       assert.rejects(
+        // @ts-ignore
         client.createStub(DummyStub, {universeDomain: 'example.com'}),
         /configured universe domain/
       );
