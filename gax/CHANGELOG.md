@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.0](https://github.com/googleapis/gax-nodejs/compare/v4.2.1...v4.3.0) (2024-01-31)
+
+
+### Features
+
+* implement support for Trusted Partner Cloud ([#1552](https://github.com/googleapis/gax-nodejs/issues/1552)) ([d51218c](https://github.com/googleapis/gax-nodejs/commit/d51218c23d4afe437285a55a44a39f64bdb3736d))
+
+
+### Bug Fixes
+
+* do not throw DeprecationWarnings for legacy retry behavior ([#1551](https://github.com/googleapis/gax-nodejs/issues/1551)) ([2f39306](https://github.com/googleapis/gax-nodejs/commit/2f39306a441ce08374fe069ab1e1892871715a77))
+
 ## [4.2.1](https://github.com/googleapis/gax-nodejs/compare/v4.2.0...v4.2.1) (2024-01-26)
 
 
