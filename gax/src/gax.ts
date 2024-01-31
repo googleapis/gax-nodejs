@@ -333,20 +333,6 @@ export function convertRetryOptions(
   // if a user provided retry AND retryRequestOptions at call time, throw an error
   // otherwise, convert supported parameters
   if (!gaxStreamingRetries) {
-    if (options.retry) {
-      warn(
-        'legacy_streaming_retry_behavior',
-        'Legacy streaming retry behavior will not honor settings passed at call time or via client configuration. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will be set to true by default in future releases.',
-        'DeprecationWarning'
-      );
-    }
-    if (options.retryRequestOptions) {
-      warn(
-        'legacy_streaming_retry_request_behavior',
-        'Legacy streaming retry behavior will not honor retryRequestOptions passed at call time. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will convert retryRequestOptions to retry parameters by default in future releases.',
-        'DeprecationWarning'
-      );
-    }
     return options;
   }
   if (options.retry && options.retryRequestOptions) {
