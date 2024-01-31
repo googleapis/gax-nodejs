@@ -295,7 +295,7 @@ export class GrpcClient {
     }
     if (opts.universeDomain) {
       const universeFromAuth = this.authClient.universeDomain;
-      if (opts.universeDomain !== universeFromAuth) {
+      if (universeFromAuth && opts.universeDomain !== universeFromAuth) {
         throw new Error(
           `The configured universe domain (${opts.universeDomain}) does not match the universe domain found in the credentials (${universeFromAuth}. ` +
             "If you haven't configured the universe domain explicitly, googleapis.com is the default."

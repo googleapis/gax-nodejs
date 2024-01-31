@@ -119,17 +119,18 @@ describe('grpc', () => {
     });
   });
 
+  class DummyStub {
+    constructor(
+      public address: {},
+      public creds: {},
+      public options: {[index: string]: string | number | Function}
+    ) {}
+  }
+
   describe('createStub', () => {
-    class DummyStub {
-      constructor(
-        public address: {},
-        public creds: {},
-        public options: {[index: string]: string | number | Function}
-      ) {}
-    }
     let grpcClient: GrpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
-    const stubAuth = {getClient: sinon.stub()};
+    const stubAuth = {getClient: sinon.stub(), getUniverseDomain: sinon.stub()};
     const stubGrpc = {
       credentials: {
         createSsl: sinon.stub(),
@@ -148,6 +149,7 @@ describe('grpc', () => {
       stubGrpc.credentials.createFromGoogleCredential.reset();
 
       stubAuth.getClient.resolves(dummyAuth);
+      stubAuth.getUniverseDomain.resolves('googleapis.com');
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
       stubGrpc.credentials.createFromGoogleCredential
         .withArgs(dummyAuth)
@@ -174,6 +176,20 @@ describe('grpc', () => {
           'grpc.initial_reconnect_backoff_ms': 1000,
         });
       });
+    });
+
+    it('validates universe domain if set', async () => {
+      const opts = {servicePath: 'foo.example.com', port: 443, universeDomain: 'example.com'};
+      // @ts-ignore
+      assert.rejects(grpcClient.createStub(DummyStub, opts), /configured universe domain/);
+    });
+
+    it('validates universe domain if unset', async () => {
+      const opts = {servicePath: 'foo.example.com', port: 443};
+      stubAuth.getUniverseDomain.reset();
+      stubAuth.getUniverseDomain.resolves('example.com');
+      // @ts-ignore
+      assert.rejects(grpcClient.createStub(DummyStub, opts), /configured universe domain/);
     });
 
     it('supports optional parameters', () => {
@@ -657,6 +673,22 @@ dvorak
       const [cert, key] = await client._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
+      rimrafSync(tmpFolder); // Cleanup.
+    });
+    it('throws if attempted to use mTLS in non-default universe', async () => {
+      // Pretend that "tmp-secure-context" in the current folder is the
+      // home directory, so that we can test logic for loading
+      // context_aware_metadata.json from well known location:
+      const tmpdir = path.join(tmpFolder, '.secureConnect');
+      mkdirSync(tmpdir, {recursive: true});
+      const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
+      writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
+      sandbox.stub(os, 'homedir').returns(tmpFolder);
+      // Create a client and test the certificate detection flow:
+      process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
+      const client = gaxGrpc();
+      // @ts-ignore
+      assert.rejects(client.createStub(DummyStub, {universeDomain: 'example.com'}), /configured universe domain/);
       rimrafSync(tmpFolder); // Cleanup.
     });
   });

@@ -31,6 +31,7 @@ import {GoogleError} from '../../src';
 const hasAbortController = typeof AbortController !== 'undefined';
 
 const authClient = {
+  universeDomain: 'googleapis.com',
   async getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
   },
@@ -133,6 +134,18 @@ describe('createStub', () => {
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
+  });
+
+  it('validates universe domain if set', async () => {
+    const opts = {...stubOptions, universeDomain: 'example.com'};
+    assert.rejects(gaxGrpc.createStub(echoService, opts), /configured universe domain/);
+  });
+
+  it('validates universe domain if unset', async () => {
+    authClient.universeDomain = 'example.com';
+    assert.rejects(gaxGrpc.createStub(echoService, stubOptions), /configured universe domain/);
+    // reset to default value
+    authClient.universeDomain = 'googleapis.com';
   });
 
   it('should support optional parameters', async () => {
