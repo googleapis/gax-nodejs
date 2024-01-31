@@ -179,9 +179,16 @@ describe('grpc', () => {
     });
 
     it('validates universe domain if set', async () => {
-      const opts = {servicePath: 'foo.example.com', port: 443, universeDomain: 'example.com'};
+      const opts = {
+        servicePath: 'foo.example.com',
+        port: 443,
+        universeDomain: 'example.com',
+      };
       // @ts-ignore
-      assert.rejects(grpcClient.createStub(DummyStub, opts), /configured universe domain/);
+      assert.rejects(
+        grpcClient.createStub(DummyStub, opts),
+        /configured universe domain/
+      );
     });
 
     it('validates universe domain if unset', async () => {
@@ -189,7 +196,10 @@ describe('grpc', () => {
       stubAuth.getUniverseDomain.reset();
       stubAuth.getUniverseDomain.resolves('example.com');
       // @ts-ignore
-      assert.rejects(grpcClient.createStub(DummyStub, opts), /configured universe domain/);
+      assert.rejects(
+        grpcClient.createStub(DummyStub, opts),
+        /configured universe domain/
+      );
     });
 
     it('supports optional parameters', () => {
@@ -688,7 +698,10 @@ dvorak
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const client = gaxGrpc();
       // @ts-ignore
-      assert.rejects(client.createStub(DummyStub, {universeDomain: 'example.com'}), /configured universe domain/);
+      assert.rejects(
+        client.createStub(DummyStub, {universeDomain: 'example.com'}),
+        /configured universe domain/
+      );
       rimrafSync(tmpFolder); // Cleanup.
     });
   });

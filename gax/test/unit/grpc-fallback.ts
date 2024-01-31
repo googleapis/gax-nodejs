@@ -138,12 +138,18 @@ describe('createStub', () => {
 
   it('validates universe domain if set', async () => {
     const opts = {...stubOptions, universeDomain: 'example.com'};
-    assert.rejects(gaxGrpc.createStub(echoService, opts), /configured universe domain/);
+    assert.rejects(
+      gaxGrpc.createStub(echoService, opts),
+      /configured universe domain/
+    );
   });
 
   it('validates universe domain if unset', async () => {
     authClient.universeDomain = 'example.com';
-    assert.rejects(gaxGrpc.createStub(echoService, stubOptions), /configured universe domain/);
+    assert.rejects(
+      gaxGrpc.createStub(echoService, stubOptions),
+      /configured universe domain/
+    );
     // reset to default value
     authClient.universeDomain = 'googleapis.com';
   });
