@@ -8,7 +8,8 @@
   "prerelease": false,
   "packages": {
     "gax": {
-      "include-component-in-tag": false
+      "include-component-in-tag": false,
+      "package-name": "google-gax"
     },
     "tools": {}
   },
