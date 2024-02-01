@@ -8,9 +8,12 @@
   "prerelease": false,
   "packages": {
     "gax": {
-      "include-component-in-tag": false
+      "include-component-in-tag": false,
+      "package-name": "google-gax"
     },
-    "tools": {}
+    "tools": {
+      "package-name": "gapic-tools"
+    }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
