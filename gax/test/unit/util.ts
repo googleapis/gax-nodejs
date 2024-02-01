@@ -20,6 +20,7 @@ import {
   toCamelCase as snakeToCamelCase,
   camelToSnakeCase,
   toLowerCamelCase,
+  makeUUID,
 } from '../../src/util';
 
 describe('util.ts', () => {
@@ -78,5 +79,9 @@ describe('util.ts', () => {
       toLowerCamelCase('PascalCASEString'),
       'pascalCaseString'
     );
+  });
+
+  it('returns UUID', () => {
+    assert.match(makeUUID(), /[a-z0-9-]{36}/);
   });
 });

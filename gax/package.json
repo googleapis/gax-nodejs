@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.0.5",
+  "version": "4.3.0",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -19,12 +19,14 @@
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^2.0.0",
-    "protobufjs": "7.2.5",
-    "retry-request": "^7.0.0"
+    "retry-request": "^7.0.0",
+    "uuid": "^9.0.1",
+    "protobufjs": "7.2.6"
   },
   "devDependencies": {
-    "@compodoc/compodoc": "1.1.23",
+    "@types/uuid": "^9.0.7",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
+    "@compodoc/compodoc": "1.1.23",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
     "@types/node": "^20.5.0",
@@ -34,10 +36,10 @@
     "@types/pumpify": "^1.4.1",
     "@types/sinon": "^17.0.0",
     "@types/uglify-js": "^3.17.0",
-    "c8": "^8.0.0",
+    "c8": "^9.0.0",
     "codecov": "^3.1.0",
     "execa": "^5.0.0",
-    "google-proto-files": "^4.0.0",
+    "google-proto-files": "^4.1.0",
     "gts": "^5.0.0",
     "linkinator": "^4.0.0",
     "long": "^4.0.0",

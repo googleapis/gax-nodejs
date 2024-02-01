@@ -69,6 +69,8 @@ export {OperationsClient} from './operationsClient';
 export {IamClient} from './iamService';
 export {LocationsClient} from './locationService';
 
+export {makeUUID} from './util';
+
 export const defaultToObjectOptions = {
   keepCase: false,
   longs: String,
@@ -287,6 +289,18 @@ export class GrpcClient {
     }
     if (!this.authClient) {
       throw new Error('No authentication was provided');
+    }
+    if (!opts.universeDomain) {
+      opts.universeDomain = 'googleapis.com';
+    }
+    if (opts.universeDomain) {
+      const universeFromAuth = this.authClient.universeDomain;
+      if (universeFromAuth && opts.universeDomain !== universeFromAuth) {
+        throw new Error(
+          `The configured universe domain (${opts.universeDomain}) does not match the universe domain found in the credentials (${universeFromAuth}). ` +
+            "If you haven't configured the universe domain explicitly, googleapis.com is the default."
+        );
+      }
     }
     service.resolveAll();
     const methods = GrpcClient.getServiceMethods(service);
