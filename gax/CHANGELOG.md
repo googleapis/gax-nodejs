@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.1](https://github.com/googleapis/gax-nodejs/compare/v4.3.0...v4.3.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.10.0 ([#1558](https://github.com/googleapis/gax-nodejs/issues/1558)) ([ea84b7b](https://github.com/googleapis/gax-nodejs/commit/ea84b7bc723fbc333b809cc4fb0a0615774738ea))
+* **deps:** update google-auth-library to 9.3.0 ([#1559](https://github.com/googleapis/gax-nodejs/issues/1559)) ([81978ac](https://github.com/googleapis/gax-nodejs/commit/81978ac52d40559258281a3a9d98508401a1822c))
+
 ## [4.3.0](https://github.com/googleapis/gax-nodejs/compare/v4.2.1...v4.3.0) (2024-01-31)
 
 
