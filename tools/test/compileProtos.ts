@@ -315,4 +315,48 @@ describe('compileProtos tool', () => {
       assert.equal(js.toString().includes(link), false);
     }
   });
+
+  it('converts names to camelCase and uses Long by default', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main([dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snakeCaseField);
+    assert(js.includes('@property {number|Long|null} [checkForceNumber]'));
+  });
+
+  it('understands --keep-case', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main(['--keep-case', dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snake_case_field);
+    assert(js.includes('@property {number|Long|null} [check_force_number]'));
+  });
+
+  it('understands --force-number', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main(['--force-number', dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snakeCaseField);
+    assert(js.includes('@property {number|null} [checkForceNumber]'));
+  });
+
+  it('understands both --keep-case and --force-number', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main(['--keep-case', '--force-number', dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snake_case_field);
+    assert(js.includes('@property {number|null} [check_force_number]'));
+  });
 });

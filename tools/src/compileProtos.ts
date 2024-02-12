@@ -238,6 +238,13 @@ async function buildListOfProtos(
   return result;
 }
 
+interface CompileProtosOptions {
+  skipJson?: boolean;
+  esm?: boolean;
+  keepCase?: boolean;
+  forceNumber?: boolean;
+}
+
 /**
  * Runs `pbjs` to compile the given proto files, placing the result into
  * `./protos/protos.json`. No support for changing output filename for now
@@ -249,10 +256,16 @@ async function buildListOfProtos(
 async function compileProtos(
   rootName: string,
   protos: string[],
-  skipJson = false,
-  esm = false
+  options: CompileProtosOptions
 ): Promise<void> {
-  if (!skipJson) {
+  const extraArgs = [];
+  if (options.keepCase) {
+    extraArgs.push('--keep-case');
+  }
+  if (options.forceNumber) {
+    extraArgs.push('--force-number');
+  }
+  if (!options.skipJson) {
     // generate protos.json file from proto list
     const jsonOutput = path.join('protos', 'protos.json');
     if (protos.length === 0) {
@@ -263,6 +276,7 @@ async function compileProtos(
     const pbjsArgs4JSON = [
       '--target',
       'json',
+      ...extraArgs,
       '-p',
       'protos',
       '-p',
@@ -275,7 +289,7 @@ async function compileProtos(
   }
 
   // generate protos/protos.js from protos.json
-  const jsOutput = esm
+  const jsOutput = options.esm
     ? path.join('protos', 'protos.cjs')
     : path.join('protos', 'protos.js');
   const pbjsArgs4js = [
@@ -283,6 +297,7 @@ async function compileProtos(
     rootName,
     '--target',
     'static-module',
+    ...extraArgs,
     '-p',
     'protos',
     '-p',
@@ -298,13 +313,14 @@ async function compileProtos(
   await writeFile(jsOutput, jsResult);
 
   let jsOutputEsm;
-  if (esm) {
+  if (options.esm) {
     jsOutputEsm = path.join('protos', 'protos.js');
     const pbjsArgs4jsEsm = [
       '-r',
       rootName,
       '--target',
       'static-module',
+      ...extraArgs,
       '-p',
       'protos',
       '-p',
@@ -324,7 +340,7 @@ async function compileProtos(
 
   // generate protos/protos.d.ts
   const tsOutput = path.join('protos', 'protos.d.ts');
-  const pbjsArgs4ts = [esm ? jsOutputEsm! : jsOutput, '-o', tsOutput];
+  const pbjsArgs4ts = [options.esm ? jsOutputEsm! : jsOutput, '-o', tsOutput];
   await pbtsMain(pbjsArgs4ts);
 
   let tsResult = (await readFile(tsOutput)).toString();
@@ -372,6 +388,8 @@ export async function main(parameters: string[]): Promise<void> {
   const protoJsonFiles: string[] = [];
   let skipJson = false;
   let esm = false;
+  let keepCase = false;
+  let forceNumber = false;
   const directories: string[] = [];
   for (const parameter of parameters) {
     if (parameter === '--skip-json') {
@@ -382,6 +400,14 @@ export async function main(parameters: string[]): Promise<void> {
       esm = true;
       continue;
     }
+    if (parameter === '--keep-case') {
+      keepCase = true;
+      continue;
+    }
+    if (parameter === '--force-number') {
+      forceNumber = true;
+      continue;
+    }
     // it's not an option so it's a directory
     const directory = parameter;
     directories.push(directory);
@@ -390,10 +416,15 @@ export async function main(parameters: string[]): Promise<void> {
   const rootName = await generateRootName(directories);
   if (esm) {
     const esmProtos = await buildListOfProtos(protoJsonFiles, esm);
-    await compileProtos(rootName, esmProtos, skipJson, esm);
+    await compileProtos(rootName, esmProtos, {
+      skipJson,
+      esm,
+      keepCase,
+      forceNumber,
+    });
   }
   const protos = await buildListOfProtos(protoJsonFiles, esm);
-  await compileProtos(rootName, protos, skipJson, esm);
+  await compileProtos(rootName, protos, {skipJson, esm, keepCase, forceNumber});
 }
 
 /**
