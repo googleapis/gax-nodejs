@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.3.0...gapic-tools-v0.4.0) (2024-02-13)
+
+
+### Features
+
+* allow passing --keep-case and --force-number to compileProtos ([#1561](https://github.com/googleapis/gax-nodejs/issues/1561)) ([004d112](https://github.com/googleapis/gax-nodejs/commit/004d112445f528a6cb143676e8b397b37137adf3))
+
 ## [0.3.0](https://github.com/googleapis/gax-nodejs/compare/v0.2.0...v0.3.0) (2024-01-16)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "gapic-tools",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "compiles, updates, and minifies protos",
   "main": "build/src/compileProtos.js",
   "files": [
