@@ -119,17 +119,18 @@ describe('grpc', () => {
     });
   });
 
+  class DummyStub {
+    constructor(
+      public address: {},
+      public creds: {},
+      public options: {[index: string]: string | number | Function}
+    ) {}
+  }
+
   describe('createStub', () => {
-    class DummyStub {
-      constructor(
-        public address: {},
-        public creds: {},
-        public options: {[index: string]: string | number | Function}
-      ) {}
-    }
     let grpcClient: GrpcClient;
     const dummyChannelCreds = {channelCreds: 'dummyChannelCreds'};
-    const stubAuth = {getClient: sinon.stub()};
+    const stubAuth = {getClient: sinon.stub(), getUniverseDomain: sinon.stub()};
     const stubGrpc = {
       credentials: {
         createSsl: sinon.stub(),
@@ -148,6 +149,7 @@ describe('grpc', () => {
       stubGrpc.credentials.createFromGoogleCredential.reset();
 
       stubAuth.getClient.resolves(dummyAuth);
+      stubAuth.getUniverseDomain.resolves('googleapis.com');
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
       stubGrpc.credentials.createFromGoogleCredential
         .withArgs(dummyAuth)
@@ -174,6 +176,30 @@ describe('grpc', () => {
           'grpc.initial_reconnect_backoff_ms': 1000,
         });
       });
+    });
+
+    it('validates universe domain if set', async () => {
+      const opts = {
+        servicePath: 'foo.example.com',
+        port: 443,
+        universeDomain: 'example.com',
+      };
+      assert.rejects(
+        // @ts-ignore
+        grpcClient.createStub(DummyStub, opts),
+        /configured universe domain/
+      );
+    });
+
+    it('validates universe domain if unset', async () => {
+      const opts = {servicePath: 'foo.example.com', port: 443};
+      stubAuth.getUniverseDomain.reset();
+      stubAuth.getUniverseDomain.resolves('example.com');
+      assert.rejects(
+        // @ts-ignore
+        grpcClient.createStub(DummyStub, opts),
+        /configured universe domain/
+      );
     });
 
     it('supports optional parameters', () => {
@@ -299,6 +325,13 @@ describe('grpc', () => {
       'v1',
       'library.proto'
     );
+    const TEST_FILE_NO_DEPS = path.join(
+      'google',
+      'example',
+      'library',
+      'v1',
+      'test.proto'
+    );
     const TEST_PATH = path.resolve(__dirname, '..', '..', 'test', 'fixtures');
     const TEST_JSON = path.resolve(
       __dirname,
@@ -331,16 +364,14 @@ describe('grpc', () => {
       );
     });
 
-    it('should load the test file using single parameter syntax', () => {
-      const fullPath = path.join(TEST_PATH, TEST_FILE);
+    it('should load the test file with no dependencies using single parameter syntax', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const protos = grpcClient.loadProto(fullPath) as any;
-      assert.strictEqual(
-        typeof protos.google.example.library.v1.LibraryService,
-        'function'
-      );
+      const protos = grpcClient.loadProto(
+        path.join(TEST_PATH, TEST_FILE_NO_DEPS)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
+      assert(protos.test.TestMessage);
     });
 
     it('should load a common proto', () => {
@@ -458,14 +489,14 @@ describe('grpc', () => {
 
     describe('use with protobufjs load', () => {
       it('should not be able to load test file using protobufjs directly', done => {
-        protobuf
-          .load(TEST_FILE)
-          .then(() => {
+        protobuf.load(TEST_FILE).then(
+          () => {
             done(Error('should not get here'));
-          })
-          .catch(() => {
+          },
+          () => {
             done();
-          });
+          }
+        );
       });
 
       it('should load a test file', done => {
@@ -508,9 +539,9 @@ describe('grpc', () => {
 
     describe('use with protobufjs loadSync', () => {
       it('should not be able to load test file using protobufjs directly', () => {
-        const root = protobuf.loadSync(TEST_FILE);
-        // Common proto that should not have been loaded.
-        assert.strictEqual(root.lookup('google.api.Http'), null);
+        assert.throws(() => {
+          protobuf.loadSync(TEST_FILE);
+        });
       });
 
       it('should load a test file that relies on common protos', () => {
@@ -652,6 +683,25 @@ dvorak
       const [cert, key] = await client._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
+      rimrafSync(tmpFolder); // Cleanup.
+    });
+    it('throws if attempted to use mTLS in non-default universe', async () => {
+      // Pretend that "tmp-secure-context" in the current folder is the
+      // home directory, so that we can test logic for loading
+      // context_aware_metadata.json from well known location:
+      const tmpdir = path.join(tmpFolder, '.secureConnect');
+      mkdirSync(tmpdir, {recursive: true});
+      const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
+      writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
+      sandbox.stub(os, 'homedir').returns(tmpFolder);
+      // Create a client and test the certificate detection flow:
+      process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
+      const client = gaxGrpc();
+      assert.rejects(
+        // @ts-ignore
+        client.createStub(DummyStub, {universeDomain: 'example.com'}),
+        /configured universe domain/
+      );
       rimrafSync(tmpFolder); // Cleanup.
     });
   });

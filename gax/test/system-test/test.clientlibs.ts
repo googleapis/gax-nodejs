@@ -165,14 +165,6 @@ async function runSystemTest(
   return await runScript(packageName, inMonorepo, 'system-test');
 }
 
-// nodejs-kms does not have system test.
-async function runSamplesTest(
-  packageName: string,
-  inMonorepo: boolean
-): Promise<TestResult> {
-  return await runScript(packageName, inMonorepo, 'samples-test');
-}
-
 describe('Run system tests for some libraries', () => {
   before(async () => {
     console.log('Packing google-gax...');
@@ -218,21 +210,4 @@ describe('Run system tests for some libraries', () => {
       }
     });
   });
-
-  // KMS api has IAM service injected from gax. All its IAM related test are in samples-test.
-  // KMS is in the google-cloud-node monorepo
-  // Temporarily skipped to avoid circular dependency issue.
-  /*describe('kms', () => {
-    before(async () => {
-      await preparePackage('kms', true);
-    });
-    it('should pass samples tests', async function () {
-      const result = await runSamplesTest('kms', true);
-      if (result === TestResult.SKIP) {
-        this.skip();
-      } else if (result === TestResult.FAIL) {
-        throw new Error('Test failed');
-      }
-    });
-  });*/
 });

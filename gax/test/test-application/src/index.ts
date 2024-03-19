@@ -495,7 +495,7 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, _) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -554,7 +554,7 @@ async function testServerStreamingRetrieswithRetryOptions(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, _) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -617,7 +617,7 @@ async function testServerStreamingRetriesWithShouldRetryFn(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, _) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
     const attemptRequest =
       new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
@@ -676,7 +676,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, _) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -748,7 +748,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, _) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =

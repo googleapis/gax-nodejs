@@ -38,6 +38,10 @@ export interface ClientOptions
   fallback?: boolean | 'rest' | 'proto';
   apiEndpoint?: string;
   gaxServerStreamingRetries?: boolean;
+  // We support both camelCase and snake_case for the universe domain.
+  // No preference; exception will be thrown if both are set to different values.
+  universeDomain?: string;
+  universe_domain?: string;
 }
 
 export interface Descriptors {

@@ -4,6 +4,52 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.1](https://github.com/googleapis/gax-nodejs/compare/v4.3.0...v4.3.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.10.0 ([#1558](https://github.com/googleapis/gax-nodejs/issues/1558)) ([ea84b7b](https://github.com/googleapis/gax-nodejs/commit/ea84b7bc723fbc333b809cc4fb0a0615774738ea))
+* **deps:** update google-auth-library to 9.3.0 ([#1559](https://github.com/googleapis/gax-nodejs/issues/1559)) ([81978ac](https://github.com/googleapis/gax-nodejs/commit/81978ac52d40559258281a3a9d98508401a1822c))
+
+## [4.3.0](https://github.com/googleapis/gax-nodejs/compare/v4.2.1...v4.3.0) (2024-01-31)
+
+
+### Features
+
+* implement support for Trusted Partner Cloud ([#1552](https://github.com/googleapis/gax-nodejs/issues/1552)) ([d51218c](https://github.com/googleapis/gax-nodejs/commit/d51218c23d4afe437285a55a44a39f64bdb3736d))
+
+
+### Bug Fixes
+
+* do not throw DeprecationWarnings for legacy retry behavior ([#1551](https://github.com/googleapis/gax-nodejs/issues/1551)) ([2f39306](https://github.com/googleapis/gax-nodejs/commit/2f39306a441ce08374fe069ab1e1892871715a77))
+
+## [4.2.1](https://github.com/googleapis/gax-nodejs/compare/v4.2.0...v4.2.1) (2024-01-26)
+
+
+### Bug Fixes
+
+* run update-protos to include new field_info.proto ([#1547](https://github.com/googleapis/gax-nodejs/issues/1547)) ([ae37986](https://github.com/googleapis/gax-nodejs/commit/ae37986ddc9f6c822ff557248cdf68529931abc6))
+
+## [4.2.0](https://github.com/googleapis/gax-nodejs/compare/v4.1.0...v4.2.0) (2024-01-18)
+
+
+### Features
+
+* expose uuid for autopopulation of request_id ([#1542](https://github.com/googleapis/gax-nodejs/issues/1542)) ([6c66e22](https://github.com/googleapis/gax-nodejs/commit/6c66e224919e1bb7a8c044927e1c70f9d32bddb4))
+
+## [4.1.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.5...google-gax-v4.1.0) (2024-01-11)
+
+
+### Features
+
+* server streaming retries ([#1496](https://github.com/googleapis/gax-nodejs/issues/1496)) ([8d4c44b](https://github.com/googleapis/gax-nodejs/commit/8d4c44b959bb75664737aca0f4b17bc28d45880d))
+
+
+### Bug Fixes
+
+* **deps:** update google-proto-files to include new field_info proto ([#1532](https://github.com/googleapis/gax-nodejs/issues/1532)) ([0c89a17](https://github.com/googleapis/gax-nodejs/commit/0c89a17124a3268cadefc8fa1224123f0da4ca7c))
+
 ## [4.0.5](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.4...google-gax-v4.0.5) (2023-10-17)
 
 
