@@ -21,6 +21,7 @@ import * as path from 'path';
 import * as util from 'util';
 import * as pbjs from 'protobufjs-cli/pbjs';
 import * as pbts from 'protobufjs-cli/pbts';
+import {walkUp} from 'walk-up-path';
 
 export const gaxProtos = path.join(
   require.resolve('google-gax'),
@@ -360,14 +361,16 @@ export async function generateRootName(directories: string[]): Promise<string> {
   // It's OK to play some guessing game here: if we locate `package.json`
   // with a package name, we'll use it; otherwise, we'll fallback to 'default'.
   for (const directory of directories) {
-    const packageJson = path.resolve(directory, '..', 'package.json');
-    if (fs.existsSync(packageJson)) {
-      const json = JSON.parse((await readFile(packageJson)).toString()) as {
-        name: string;
-      };
-      const name = json.name.replace(/[^\w\d]/g, '_');
-      const hopefullyUniqueName = `${name}_protos`;
-      return hopefullyUniqueName;
+    for (const p of walkUp(path.resolve(directory, '..'))) {
+      const packageJson = path.join(p, 'package.json');
+      if (fs.existsSync(packageJson)) {
+        const json = JSON.parse((await readFile(packageJson)).toString()) as {
+          name: string;
+        };
+        const name = json.name.replace(/[^\w\d]/g, '_');
+        const hopefullyUniqueName = `${name}_protos`;
+        return hopefullyUniqueName;
+      }
     }
   }
   return 'default';

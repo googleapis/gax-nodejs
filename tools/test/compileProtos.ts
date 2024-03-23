@@ -281,9 +281,16 @@ describe('compileProtos tool', () => {
     assert.strictEqual(rootName, '_org_fake_package_protos');
   });
 
-  it('falls back to the default name for protobuf root if unable to guess', async () => {
+  it('uses the nearest package.json to guess the root name', async () => {
     const rootName = await compileProtos.generateRootName([
       path.join(__dirname, 'protoLists', 'empty'),
+    ]);
+    assert.strictEqual(rootName, 'gapic_tools_protos');
+  });
+
+  it('falls back to the default name for protobuf root if unable to guess', async () => {
+    const rootName = await compileProtos.generateRootName([
+      '/nonexistent/empty',
     ]);
     assert.strictEqual(rootName, 'default');
   });
