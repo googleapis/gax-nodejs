@@ -368,8 +368,8 @@ export function overrideHttpRules(
           ]
             ? []
             : Array.isArray(httpOptions['additional_bindings'])
-            ? httpOptions['additional_bindings']
-            : [httpOptions['additional_bindings']];
+              ? httpOptions['additional_bindings']
+              : [httpOptions['additional_bindings']];
           // Make the additional_binding to be an array if it is not.
           httpOptions['additional_bindings'].push(...rule.additional_bindings);
         }
