@@ -15,18 +15,33 @@
  */
 
 'use strict';
-import {EchoClient} from 'showcase-echo-client';
+import {EchoClient, SequenceServiceClient, protos} from 'showcase-echo-client';
 import {ShowcaseServer} from 'showcase-server';
 
 import * as assert from 'assert';
 import {promises as fsp} from 'fs';
 import * as path from 'path';
-import {protobuf, grpc, GoogleError, GoogleAuth} from 'google-gax';
+import {
+  protobuf,
+  grpc,
+  GoogleError,
+  GoogleAuth,
+  Status,
+  createBackoffSettings,
+  RetryOptions,
+} from 'google-gax';
+import {RequestType} from 'google-gax/build/src/apitypes';
 
 async function testShowcase() {
   const grpcClientOpts = {
     grpc,
     sslCreds: grpc.credentials.createInsecure(),
+  };
+
+  const grpcClientOptsWithServerStreamingRetries = {
+    grpc,
+    sslCreds: grpc.credentials.createInsecure(),
+    gaxServerStreamingRetries: true,
   };
 
   const fakeGoogleAuth = {
@@ -56,6 +71,12 @@ async function testShowcase() {
   };
 
   const grpcClient = new EchoClient(grpcClientOpts);
+  const grpcClientWithServerStreamingRetries = new EchoClient(
+    grpcClientOptsWithServerStreamingRetries
+  );
+  const grpcSequenceClientWithServerStreamingRetries =
+    new SequenceServiceClient(grpcClientOptsWithServerStreamingRetries);
+
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
@@ -84,6 +105,85 @@ async function testShowcase() {
   await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
   await testWait(restClientCompat);
+  // Testing with gaxServerStreamingRetries being true
+  await testServerStreamingRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingRetriesWithShouldRetryFn(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingRetrieswithRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingRetrieswithRetryRequestOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testEcho(grpcClientWithServerStreamingRetries);
+  await testEchoError(grpcClientWithServerStreamingRetries);
+  await testExpand(grpcClientWithServerStreamingRetries);
+  await testPagedExpand(grpcClientWithServerStreamingRetries);
+  await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
+  await testCollect(grpcClientWithServerStreamingRetries);
+  await testChat(grpcClientWithServerStreamingRetries);
+  await testWait(grpcClientWithServerStreamingRetries);
+}
+
+function createStreamingSequenceRequestFactory(
+  statusCodeList: Status[],
+  delayList: number[],
+  failIndexs: number[],
+  content: string
+) {
+  const request =
+    new protos.google.showcase.v1beta1.CreateStreamingSequenceRequest();
+  const streamingSequence =
+    new protos.google.showcase.v1beta1.StreamingSequence();
+
+  for (let i = 0; i < statusCodeList.length; i++) {
+    const delay = new protos.google.protobuf.Duration();
+    delay.seconds = delayList[i];
+
+    const status = new protos.google.rpc.Status();
+    status.code = statusCodeList[i];
+    status.message = statusCodeList[i].toString();
+
+    const response =
+      new protos.google.showcase.v1beta1.StreamingSequence.Response();
+    response.delay = delay;
+    response.status = status;
+    response.responseIndex = failIndexs[i];
+
+    streamingSequence.responses.push(response);
+    streamingSequence.content = content;
+  }
+
+  request.streamingSequence = streamingSequence;
+
+  return request;
 }
 
 async function testEcho(client: EchoClient) {
@@ -365,6 +465,557 @@ async function testWait(client: EchoClient) {
   const [operation] = await client.wait(request);
   const [response] = await operation.promise();
   assert.deepStrictEqual(response.content, request.success.content);
+}
+
+async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
+  const finalData: string[] = [];
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+
+  const retryOptions = new RetryOptions([], backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.OK],
+    [0.1],
+    [11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>(resolve => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', () => {
+      //Do Nothing
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.equal(
+      finalData.join(' '),
+      'This is testing the brand new and shiny StreamingSequence server 3'
+    );
+  });
+}
+
+async function testServerStreamingRetrieswithRetryOptions(
+  client: SequenceServiceClient
+) {
+  const finalData: string[] = [];
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+
+  const retryOptions = new RetryOptions([14, 4], backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>(resolve => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', () => {
+      //Do Nothing
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.equal(
+      finalData.join(' '),
+      'This This is This is testing the brand new and shiny StreamingSequence server 3'
+    );
+  });
+}
+
+async function testServerStreamingRetriesWithShouldRetryFn(
+  client: SequenceServiceClient
+) {
+  const finalData: string[] = [];
+  const shouldRetryFn = function checkRetry(error: GoogleError) {
+    return [14, 4].includes(error!.code!);
+  };
+
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+
+  const retryOptions = new RetryOptions([], backoffSettings, shouldRetryFn);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>(resolve => {
+    const sequence = response[0];
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', () => {
+      // Do nothing
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.equal(
+      finalData.join(' '),
+      'This This is This is testing the brand new and shiny StreamingSequence server 3'
+    );
+  });
+}
+
+async function testServerStreamingRetrieswithRetryRequestOptions(
+  client: SequenceServiceClient
+) {
+  const finalData: string[] = [];
+  const retryRequestOptions = {
+    objectMode: true,
+    retries: 1,
+    maxRetryDelay: 70,
+    retryDelayMultiplier: 3,
+    totalTimeout: 650,
+    noResponseRetries: 3,
+    currentRetryAttempt: 0,
+    shouldRetryFn: function checkRetry(error: GoogleError) {
+      return [14, 4].includes(error!.code!);
+    },
+  };
+
+  const settings = {
+    retryRequestOptions: retryRequestOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>(resolve => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', () => {
+      // Do Nothing
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.equal(
+      finalData.join(' '),
+      'This This is This is testing the brand new and shiny StreamingSequence server 3'
+    );
+  });
+}
+async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+  client: SequenceServiceClient
+) {
+  const finalData: string[] = [];
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4, 14].includes(error!.code!);
+  };
+  const backoffSettings = createBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    null,
+    1.5,
+    3000,
+    600000
+  );
+  const getResumptionRequestFn = (request: RequestType) => {
+    const newRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest() as unknown as RequestType;
+    newRequest.name = request.name;
+    newRequest.lastFailIndex = 5;
+    return newRequest as unknown as RequestType;
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>(resolve => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', () => {
+      // do nothing
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.deepStrictEqual(
+      finalData.join(' '),
+      'This new and new and shiny StreamingSequence server 3'
+    );
+  });
+}
+
+async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+  client: SequenceServiceClient
+) {
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4, 14].includes(error!.code!);
+  };
+  const backoffSettings = createBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    null,
+    1.5,
+    3000,
+    600000
+  );
+  const getResumptionRequestFn = () => {
+    // return a bad resumption strategy
+    return {};
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const allowedCodes = [4, 14];
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((_, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+
+    attemptStream.on('error', (e: GoogleError) => {
+      if (!allowedCodes.includes(e.code!)) {
+        reject(e);
+      }
+    });
+  }).then(
+    () => {
+      assert(false);
+    },
+    (err: GoogleError) => {
+      assert.strictEqual(err.code, 3);
+      assert.match(err.note!, /not classified as transient/);
+    }
+  );
+}
+
+async function testServerStreamingThrowsClassifiedTransientErrorNote(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [4];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((_, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('error', (e: GoogleError) => {
+      if (!allowedCodes.includes(e.code!)) {
+        reject(e);
+      }
+    });
+  }).then(
+    () => {
+      assert(false);
+    },
+    (err: GoogleError) => {
+      assert.strictEqual(err.code, 14);
+      assert.match(err.note!, /not classified as transient/);
+    }
+  );
+}
+
+async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [14];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((_, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('error', (e: GoogleError) => {
+      if (!allowedCodes.includes(e.code!)) {
+        reject(e);
+      }
+    });
+  }).then(
+    () => {
+      assert(false);
+    },
+    (err: GoogleError) => {
+      assert.strictEqual(err.code, 4);
+      assert.match(err.note!, /not classified as transient/);
+    }
+  );
+}
+
+async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [14];
+  backoffSettings.maxRetries = 1;
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.OK],
+    [0.1, 0.1],
+    [1, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((_, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('error', (e: GoogleError) => {
+      if (!allowedCodes.includes(e.code!)) {
+        reject(e);
+      }
+    });
+  }).then(
+    () => {
+      assert(false);
+    },
+    (err: GoogleError) => {
+      assert.strictEqual(err.code, 3);
+      assert.match(
+        err.message,
+        /Cannot set both totalTimeoutMillis and maxRetries/
+      );
+    }
+  );
 }
 
 async function main() {

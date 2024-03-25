@@ -78,7 +78,7 @@ function expectRetryOptions(obj: gax.RetryOptions) {
     // eslint-disable-next-line no-prototype-builtins
     assert.ok(obj.hasOwnProperty(k))
   );
-  assert.ok(obj.retryCodes instanceof Array);
+  assert.ok(Array.isArray(obj.retryCodes));
   expectBackoffSettings(obj.backoffSettings);
 }
 

@@ -93,8 +93,8 @@ describe('createStub', () => {
     assert(echoStub.pagedExpand instanceof Function);
     assert(echoStub.wait instanceof Function);
 
-    // There should be 8 methods for the echo service
-    assert.strictEqual(Object.keys(echoStub).length, 8);
+    // There should be 10 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 10);
 
     // Each of the service methods should take 4 arguments (so that it works
     // with createApiCall)
@@ -109,8 +109,8 @@ describe('createStub', () => {
     assert(echoStub.collect instanceof Function);
     assert(echoStub.chat instanceof Function);
 
-    // There should be 8 methods for the echo service
-    assert.strictEqual(Object.keys(echoStub).length, 8);
+    // There should be 10 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 10);
 
     // Each of the service methods should take 4 arguments (so that it works
     // with createApiCall)
@@ -229,10 +229,7 @@ describe('grpc-fallback', () => {
     const options: any = {};
     options.otherArgs = {};
     options.otherArgs.headers = {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      fallback.routingHeader.fromParams({
-        abc: 'def',
-      });
+    options.otherArgs.headers['x-test-header'] = 'value';
     const response = requestObject;
     // eslint-disable-next-line no-undef
     const savedFetch = window.fetch;
@@ -240,7 +237,7 @@ describe('grpc-fallback', () => {
     // eslint-disable-next-line no-undef
     window.fetch = (url, options) => {
       // @ts-ignore
-      assert.strictEqual(options.headers['x-goog-request-params'], 'abc=def');
+      assert.strictEqual(options.headers['x-test-header'], 'value');
       return Promise.resolve({
         ok: true,
         arrayBuffer: () => {

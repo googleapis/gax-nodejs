@@ -17,18 +17,22 @@
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach} from 'mocha';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import {rimraf} from 'rimraf';
+import {ncp} from 'ncp';
 import * as util from 'util';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
 import * as compileProtos from '../src/compileProtos';
 
+const ncpp = util.promisify(ncp);
 const readFile = util.promisify(fs.readFile);
 const mkdir = util.promisify(fs.mkdir);
 
-const testDir = path.join(process.cwd(), '.compileProtos-test');
-const resultDir = path.join(testDir, 'protos');
 const cwd = process.cwd();
+const testDir = path.join(cwd, '.compileProtos-test');
+const resultDir = path.join(testDir, 'protos');
+const fixturesDir = path.join(cwd, 'build', 'test', 'fixtures');
 
 const expectedJsonResultFile = path.join(resultDir, 'protos.json');
 const expectedJSResultFile = path.join(resultDir, 'protos.js');
@@ -42,6 +46,10 @@ describe('compileProtos tool', () => {
     }
     await mkdir(testDir);
     await mkdir(resultDir);
+    const fixturesContent = await fsp.readdir(fixturesDir);
+    for (const fixture of fixturesContent) {
+      await ncpp(path.join(fixturesDir, fixture), path.join(testDir, fixture));
+    }
 
     process.chdir(testDir);
   });
@@ -72,9 +80,7 @@ describe('compileProtos tool', () => {
   });
   it('compiles protos to JSON, JS, TS', async function () {
     this.timeout(20000);
-    await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
-    ]);
+    await compileProtos.main(['protoLists']);
     assert(fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
     assert(fs.existsSync(expectedTSResultFile));
@@ -118,10 +124,7 @@ describe('compileProtos tool', () => {
 
   it('compiles protos to CJS and ES6 if --esm is specified', async function () {
     this.timeout(20000);
-    await compileProtos.main([
-      '--esm',
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'esm'),
-    ]);
+    await compileProtos.main(['--esm', 'esm']);
     assert(fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
     assert(fs.existsSync(expectedTSResultFile));
@@ -187,10 +190,7 @@ describe('compileProtos tool', () => {
 
   it('compiles protos to JS, TS, skips JSON if asked', async function () {
     this.timeout(20000);
-    await compileProtos.main([
-      '--skip-json',
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
-    ]);
+    await compileProtos.main(['--skip-json', 'protoLists']);
     assert(!fs.existsSync(expectedJsonResultFile));
     assert(fs.existsSync(expectedJSResultFile));
     assert(fs.existsSync(expectedTSResultFile));
@@ -228,24 +228,12 @@ describe('compileProtos tool', () => {
   });
 
   it('writes an empty object if no protos are given', async () => {
-    await compileProtos.main([
-      path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'fixtures',
-        'protoLists',
-        'empty'
-      ),
-    ]);
+    await compileProtos.main(['protoLists/empty']);
     assert(fs.existsSync(expectedJsonResultFile));
   });
 
   it('fixes types in the TS file', async () => {
-    await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
-    ]);
+    await compileProtos.main(['dts-update']);
     assert(fs.existsSync(expectedTSResultFile));
     const ts = await readFile(expectedTSResultFile);
 
@@ -289,32 +277,27 @@ describe('compileProtos tool', () => {
   });
 
   it('proposes the name for protobuf root', async () => {
-    const rootName = await compileProtos.generateRootName([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'dts-update'),
-    ]);
+    const rootName = await compileProtos.generateRootName(['dts-update']);
     assert.strictEqual(rootName, '_org_fake_package_protos');
+  });
+
+  it('uses the nearest package.json to guess the root name', async () => {
+    const rootName = await compileProtos.generateRootName([
+      path.join(__dirname, 'protoLists', 'empty'),
+    ]);
+    assert.strictEqual(rootName, 'gapic_tools_protos');
   });
 
   it('falls back to the default name for protobuf root if unable to guess', async () => {
     const rootName = await compileProtos.generateRootName([
-      path.join(
-        __dirname,
-        '..',
-        '..',
-        'test',
-        'fixtures',
-        'protoLists',
-        'empty'
-      ),
+      '/nonexistent/empty',
     ]);
     assert.strictEqual(rootName, 'default');
   });
 
   it('reformat the JSDOC link in the JS and TS file', async function () {
     this.timeout(20000);
-    await compileProtos.main([
-      path.join(__dirname, '..', '..', 'test', 'fixtures', 'protoLists'),
-    ]);
+    await compileProtos.main(['protoLists']);
     assert(fs.existsSync(expectedJSResultFile));
     assert(fs.existsSync(expectedTSResultFile));
     const js = await readFile(expectedJSResultFile);
@@ -338,5 +321,49 @@ describe('compileProtos tool', () => {
       assert(ts.toString().includes(reformate));
       assert.equal(js.toString().includes(link), false);
     }
+  });
+
+  it('converts names to camelCase and uses Long by default', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main([dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snakeCaseField);
+    assert(js.includes('@property {number|Long|null} [checkForceNumber]'));
+  });
+
+  it('understands --keep-case', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main(['--keep-case', dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snake_case_field);
+    assert(js.includes('@property {number|Long|null} [check_force_number]'));
+  });
+
+  it('understands --force-number', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main(['--force-number', dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snakeCaseField);
+    assert(js.includes('@property {number|null} [checkForceNumber]'));
+  });
+
+  it('understands both --keep-case and --force-number', async function () {
+    this.timeout(20000);
+    const dirName = path.join(testDir, 'protoLists', 'parameters');
+    await compileProtos.main(['--keep-case', '--force-number', dirName]);
+    const jsonBuf = await readFile(expectedJsonResultFile);
+    const json = JSON.parse(jsonBuf.toString());
+    const js = await readFile(expectedJSResultFile);
+    assert(json.nested.test.nested.Test.fields.snake_case_field);
+    assert(js.includes('@property {number|null} [check_force_number]'));
   });
 });

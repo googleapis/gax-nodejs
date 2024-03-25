@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 // ** All changes to this file may be overwritten. **
 
 /* global window */
-import * as gax from 'google-gax';
-import {
+import type * as gax from 'google-gax';
+import type {
   Callback,
   CallOptions,
   Descriptors,
@@ -27,16 +27,12 @@ import {
   LROperation,
   PaginationCallback,
   GaxCall,
-  GoogleError,
   IamClient,
   IamProtos,
   LocationsClient,
   LocationProtos,
 } from 'google-gax';
-
-import {Transform} from 'stream';
-import {RequestType} from 'google-gax/build/src/apitypes';
-import {PassThrough} from 'stream';
+import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -45,7 +41,6 @@ import jsonProtos = require('../../protos/protos.json');
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
 import * as gapicConfig from './echo_client_config.json';
-import {operationsProtos} from 'google-gax';
 const version = require('../../../package.json').version;
 
 /**
@@ -53,7 +48,9 @@ const version = require('../../../package.json').version;
  *  side streaming, client side streaming, and bidirectional streaming. This
  *  service also exposes methods that explicitly implement server delay, and
  *  paginated calls. Set the 'showcase-trailer' metadata key on any method
- *  to have the values echoed in the response trailers.
+ *  to have the values echoed in the response trailers. Set the
+ *  'x-goog-request-params' metadata key on any method to have the values
+ *  echoed in the response headers.
  * @class
  * @memberof v1beta1
  */
@@ -108,12 +105,21 @@ export class EchoClient {
    *     API remote host.
    * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
    *     Follows the structure of {@link gapicConfig}.
-   * @param {boolean | "rest"} [options.fallback] - Use HTTP fallback mode.
-   *     Pass "rest" to use HTTP/1.1 REST API instead of gRPC.
+   * @param {boolean} [options.fallback] - Use HTTP/1.1 REST mode.
    *     For more information, please check the
    *     {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#http11-rest-api-mode documentation}.
+   * @param {gax} [gaxInstance]: loaded instance of `google-gax`. Useful if you
+   *     need to avoid loading the default gRPC version and want to use the fallback
+   *     HTTP implementation. Load only fallback version and pass it to the constructor:
+   *     ```
+   *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
+   *     const client = new EchoClient({fallback: true}, gax);
+   *     ```
    */
-  constructor(opts?: ClientOptions) {
+  constructor(
+    opts?: ClientOptions,
+    gaxInstance?: typeof gax | typeof gax.fallback
+  ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof EchoClient;
     const servicePath =
@@ -133,8 +139,13 @@ export class EchoClient {
       opts['scopes'] = staticMembers.scopes;
     }
 
+    // Load google-gax module synchronously if needed
+    if (!gaxInstance) {
+      gaxInstance = require('google-gax') as typeof gax;
+    }
+
     // Choose either gRPC or proto-over-HTTP implementation of google-gax.
-    this._gaxModule = opts.fallback ? gax.fallback : gax;
+    this._gaxModule = opts.fallback ? gaxInstance.fallback : gaxInstance;
 
     // Create a `gaxGrpc` object, with any grpc-specific options sent to the client.
     this._gaxGrpc = new this._gaxModule.GrpcClient(opts);
@@ -155,9 +166,12 @@ export class EchoClient {
     if (servicePath === staticMembers.servicePath) {
       this.auth.defaultScopes = staticMembers.scopes;
     }
-    this.iamClient = new IamClient(this._gaxGrpc, opts);
+    this.iamClient = new this._gaxModule.IamClient(this._gaxGrpc, opts);
 
-    this.locationsClient = new LocationsClient(this._gaxGrpc, opts);
+    this.locationsClient = new this._gaxModule.LocationsClient(
+      this._gaxGrpc,
+      opts
+    );
 
     // Determine the client header string.
     const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
@@ -166,10 +180,10 @@ export class EchoClient {
     } else {
       clientHeader.push(`gl-web/${this._gaxModule.version}`);
     }
-    if (opts.fallback) {
-      clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
-    } else {
+    if (!opts.fallback) {
       clientHeader.push(`grpc/${this._gaxGrpc.grpcVersion}`);
+    } else {
+      clientHeader.push(`rest/${this._gaxGrpc.grpcVersion}`);
     }
     if (opts.libName && opts.libVersion) {
       clientHeader.push(`${opts.libName}/${opts.libVersion}`);
@@ -181,31 +195,18 @@ export class EchoClient {
     // identifiers to uniquely identify resources within the API.
     // Create useful helper objects for these.
     this.pathTemplates = {
-      blueprintPathTemplate: new this._gaxModule.PathTemplate(
-        'sessions/{session}/tests/{test}/blueprints/{blueprint}'
+      sequencePathTemplate: new this._gaxModule.PathTemplate(
+        'sequences/{sequence}'
       ),
-      roomPathTemplate: new this._gaxModule.PathTemplate('rooms/{room_id}'),
-      roomIdBlurbIdPathTemplate: new this._gaxModule.PathTemplate(
-        'rooms/{room_id}/blurbs/{blurb_id}'
+      sequenceReportPathTemplate: new this._gaxModule.PathTemplate(
+        'sequences/{sequence}/sequenceReport'
       ),
-      roomIdBlurbsLegacyRoomIdBlurbIdPathTemplate:
-        new this._gaxModule.PathTemplate(
-          'rooms/{room_id}/blurbs/legacy/{legacy_room_id}.{blurb_id}'
-        ),
-      sessionPathTemplate: new this._gaxModule.PathTemplate(
-        'sessions/{session}'
+      streamingSequencePathTemplate: new this._gaxModule.PathTemplate(
+        'streamingSequences/{streaming_sequence}'
       ),
-      testPathTemplate: new this._gaxModule.PathTemplate(
-        'sessions/{session}/tests/{test}'
+      streamingSequenceReportPathTemplate: new this._gaxModule.PathTemplate(
+        'streamingSequences/{streaming_sequence}/streamingSequenceReport'
       ),
-      userPathTemplate: new this._gaxModule.PathTemplate('users/{user_id}'),
-      userIdProfileBlurbIdPathTemplate: new this._gaxModule.PathTemplate(
-        'user/{user_id}/profile/blurbs/{blurb_id}'
-      ),
-      userIdProfileBlurbsLegacyUserIdBlurbIdPathTemplate:
-        new this._gaxModule.PathTemplate(
-          'user/{user_id}/profile/blurbs/legacy/{legacy_user_id}~{blurb_id}'
-        ),
     };
 
     // Some of the methods on this service return "paged" results,
@@ -223,19 +224,17 @@ export class EchoClient {
     // Provide descriptors for these.
     this.descriptors.stream = {
       expand: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.SERVER_STREAMING,
-        // legacy: opts.fallback can be a string or a boolean
-        opts.fallback ? true : false
+        this._gaxModule.StreamType.SERVER_STREAMING,
+        !!opts.fallback,
+        this._opts.gaxServerStreamingRetries
       ),
       collect: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.CLIENT_STREAMING,
-        // legacy: opts.fallback can be a string or a boolean
-        opts.fallback ? true : false
+        this._gaxModule.StreamType.CLIENT_STREAMING,
+        !!opts.fallback
       ),
       chat: new this._gaxModule.StreamDescriptor(
-        gax.StreamType.BIDI_STREAMING,
-        // legacy: opts.fallback can be a string or a boolean
-        opts.fallback ? true : false
+        this._gaxModule.StreamType.BIDI_STREAMING,
+        !!opts.fallback
       ),
     };
 
@@ -346,7 +345,7 @@ export class EchoClient {
     this.innerApiCalls = {};
 
     // Add a warn function to the client constructor so it can be easily tested.
-    this.warn = gax.warn;
+    this.warn = this._gaxModule.warn;
   }
 
   /**
@@ -387,6 +386,7 @@ export class EchoClient {
       'collect',
       'chat',
       'pagedExpand',
+      'pagedExpandLegacy',
       'wait',
       'block',
     ];
@@ -400,7 +400,9 @@ export class EchoClient {
                 setImmediate(() => {
                   stream.emit(
                     'error',
-                    new GoogleError('The client has already been closed.')
+                    new this._gaxModule.GoogleError(
+                      'The client has already been closed.'
+                    )
                   );
                 });
                 return stream;
@@ -493,12 +495,17 @@ export class EchoClient {
    *   The content to be echoed by the server.
    * @param {google.rpc.Status} request.error
    *   The error to be thrown by the server.
+   * @param {google.showcase.v1beta1.Severity} request.severity
+   *   The severity to be echoed by the server.
+   * @param {string} request.header
+   *   Optional. This field can be set to test the routing annotation on the Echo method.
+   * @param {string} request.otherHeader
+   *   Optional. This field can be set to test the routing annotation on the Echo method.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [EchoResponse]{@link google.showcase.v1beta1.EchoResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.echo.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Echo_async
@@ -562,8 +569,201 @@ export class EchoClient {
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
+    const routingParameter = {};
+    {
+      const fieldValue = request.header;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue.toString().match(RegExp('(?<header>.*)'));
+        if (match) {
+          const parameterValue = match.groups?.['header'] ?? fieldValue;
+          Object.assign(routingParameter, {header: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.header;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue
+          .toString()
+          .match(RegExp('(?<routing_id>(?:.*)?)'));
+        if (match) {
+          const parameterValue = match.groups?.['routing_id'] ?? fieldValue;
+          Object.assign(routingParameter, {routing_id: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.header;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue
+          .toString()
+          .match(RegExp('(?<table_name>regions/[^/]+/zones/[^/]+(?:/.*)?)'));
+        if (match) {
+          const parameterValue = match.groups?.['table_name'] ?? fieldValue;
+          Object.assign(routingParameter, {table_name: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.header;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue
+          .toString()
+          .match(RegExp('(?<super_id>projects/[^/]+)(?:/.*)?'));
+        if (match) {
+          const parameterValue = match.groups?.['super_id'] ?? fieldValue;
+          Object.assign(routingParameter, {super_id: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.header;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue
+          .toString()
+          .match(
+            RegExp('(?<table_name>projects/[^/]+/instances/[^/]+(?:/.*)?)')
+          );
+        if (match) {
+          const parameterValue = match.groups?.['table_name'] ?? fieldValue;
+          Object.assign(routingParameter, {table_name: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.header;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue
+          .toString()
+          .match(
+            RegExp('projects/[^/]+/(?<instance_id>instances/[^/]+)(?:/.*)?')
+          );
+        if (match) {
+          const parameterValue = match.groups?.['instance_id'] ?? fieldValue;
+          Object.assign(routingParameter, {instance_id: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.otherHeader;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue.toString().match(RegExp('(?<baz>(?:.*)?)'));
+        if (match) {
+          const parameterValue = match.groups?.['baz'] ?? fieldValue;
+          Object.assign(routingParameter, {baz: parameterValue});
+        }
+      }
+    }
+    {
+      const fieldValue = request.otherHeader;
+      if (fieldValue !== undefined && fieldValue !== null) {
+        const match = fieldValue
+          .toString()
+          .match(RegExp('(?<qux>projects/[^/]+)(?:/.*)?'));
+        if (match) {
+          const parameterValue = match.groups?.['qux'] ?? fieldValue;
+          Object.assign(routingParameter, {qux: parameterValue});
+        }
+      }
+    }
+    options.otherArgs.headers['x-goog-request-params'] =
+      this._gaxModule.routingHeader.fromParams(routingParameter);
     this.initialize();
     return this.innerApiCalls.echo(request, options, callback);
+  }
+  /**
+   * This is similar to the PagedExpand except that it uses
+   * max_results instead of page_size, as some legacy APIs still
+   * do. New APIs should NOT use this pattern.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.content
+   *   The string to expand.
+   * @param {number} request.maxResults
+   *   The number of words to returned in each page.
+   *   (-- aip.dev/not-precedent: This is a legacy, non-standard pattern that
+   *       violates aip.dev/158. Ordinarily, this should be page_size. --)
+   * @param {string} request.pageToken
+   *   The position of the page to be returned.
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.PagedExpandResponse|PagedExpandResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1beta1/echo.paged_expand_legacy.js</caption>
+   * region_tag:localhost_v1beta1_generated_Echo_PagedExpandLegacy_async
+   */
+  pagedExpandLegacy(
+    request?: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
+      protos.google.showcase.v1beta1.IPagedExpandLegacyRequest | undefined,
+      {} | undefined,
+    ]
+  >;
+  pagedExpandLegacy(
+    request: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
+      | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  pagedExpandLegacy(
+    request: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+    callback: Callback<
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
+      | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  pagedExpandLegacy(
+    request?: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.showcase.v1beta1.IPagedExpandResponse,
+          | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
+      | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.showcase.v1beta1.IPagedExpandResponse,
+      protos.google.showcase.v1beta1.IPagedExpandLegacyRequest | undefined,
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    this.initialize();
+    return this.innerApiCalls.pagedExpandLegacy(request, options, callback);
   }
   /**
    * This method will block (wait) for the requested amount of time
@@ -582,9 +782,8 @@ export class EchoClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [BlockResponse]{@link google.showcase.v1beta1.BlockResponse}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.BlockResponse|BlockResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.block.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Block_async
@@ -653,8 +852,8 @@ export class EchoClient {
   }
 
   /**
-   * This method split the given content into words and will pass each word back
-   * through the stream. This method showcases server-side streaming rpcs.
+   * This method splits the given content into words and will pass each word back
+   * through the stream. This method showcases server-side streaming RPCs.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -662,12 +861,13 @@ export class EchoClient {
    *   The content that will be split into words and returned on the stream.
    * @param {google.rpc.Status} request.error
    *   The error that is thrown after all words are sent on the stream.
+   * @param {google.protobuf.Duration} request.streamWaitTime
+   *  The wait time between each server streaming messages
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits [EchoResponse]{@link google.showcase.v1beta1.EchoResponse} on 'data' event.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming)
+   *   An object stream which emits {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.expand.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Expand_async
@@ -687,14 +887,13 @@ export class EchoClient {
   /**
    * This method will collect the words given to it. When the stream is closed
    * by the client, this method will return the a concatenation of the strings
-   * passed to it. This method showcases client-side streaming rpcs.
+   * passed to it. This method showcases client-side streaming RPCs.
    *
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream} - A writable stream which accepts objects representing
-   * [EchoRequest]{@link google.showcase.v1beta1.EchoRequest}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#client-streaming)
+   * {@link protos.google.showcase.v1beta1.EchoRequest|EchoRequest}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#client-streaming | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.collect.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Collect_async
@@ -738,18 +937,17 @@ export class EchoClient {
   }
 
   /**
-   * This method, upon receiving a request on the stream, the same content will
-   * be passed  back on the stream. This method showcases bidirectional
-   * streaming rpcs.
+   * This method, upon receiving a request on the stream, will pass the same
+   * content back on the stream. This method showcases bidirectional
+   * streaming RPCs.
    *
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
    *   An object stream which is both readable and writable. It accepts objects
-   *   representing [EchoRequest]{@link google.showcase.v1beta1.EchoRequest} for write() method, and
-   *   will emit objects representing [EchoResponse]{@link google.showcase.v1beta1.EchoResponse} on 'data' event asynchronously.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming)
+   *   representing {@link protos.google.showcase.v1beta1.EchoRequest|EchoRequest} for write() method, and
+   *   will emit objects representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event asynchronously.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.chat.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Chat_async
@@ -760,8 +958,8 @@ export class EchoClient {
   }
 
   /**
-   * This method will wait the requested amount of and then return.
-   * This method showcases how a client handles a request timing out.
+   * This method will wait for the requested amount of time and then return.
+   * This method showcases how a client handles a request timeout.
    *
    * @param {Object} request
    *   The request object that will be sent.
@@ -780,8 +978,7 @@ export class EchoClient {
    *   The first element of the array is an object representing
    *   a long running operation. Its `promise()` method returns a promise
    *   you can `await` for.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.wait.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Wait_async
@@ -872,8 +1069,7 @@ export class EchoClient {
    *   The operation name that will be passed.
    * @returns {Promise} - The promise which resolves to an object.
    *   The decoded operation object has result and metadata field to get information from.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.wait.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_Wait_async
@@ -886,11 +1082,12 @@ export class EchoClient {
       protos.google.showcase.v1beta1.WaitMetadata
     >
   > {
-    const request = new operationsProtos.google.longrunning.GetOperationRequest(
-      {name}
-    );
+    const request =
+      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
+        {name}
+      );
     const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new gax.Operation(
+    const decodeOperation = new this._gaxModule.Operation(
       operation,
       this.descriptors.longrunning.wait,
       this._gaxModule.createDefaultBackoffSettings()
@@ -909,20 +1106,19 @@ export class EchoClient {
    * @param {string} request.content
    *   The string to expand.
    * @param {number} request.pageSize
-   *   The amount of words to returned in each page.
+   *   The number of words to returned in each page.
    * @param {string} request.pageToken
    *   The position of the page to be returned.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of [EchoResponse]{@link google.showcase.v1beta1.EchoResponse}.
+   *   The first element of the array is Array of {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed and will merge results from all the pages into this array.
    *   Note that it can affect your quota.
    *   We recommend using `pagedExpandAsync()`
    *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    */
   pagedExpand(
@@ -997,19 +1193,18 @@ export class EchoClient {
    * @param {string} request.content
    *   The string to expand.
    * @param {number} request.pageSize
-   *   The amount of words to returned in each page.
+   *   The number of words to returned in each page.
    * @param {string} request.pageToken
    *   The position of the page to be returned.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Stream}
-   *   An object stream which emits an object representing [EchoResponse]{@link google.showcase.v1beta1.EchoResponse} on 'data' event.
+   *   An object stream which emits an object representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event.
    *   The client library will perform auto-pagination by default: it will call the API as many
    *   times as needed. Note that it can affect your quota.
    *   We recommend using `pagedExpandAsync()`
    *   method described below for async iteration which you can stop as needed.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    */
   pagedExpandStream(
@@ -1024,7 +1219,7 @@ export class EchoClient {
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.pagedExpand.createStream(
-      this.innerApiCalls.pagedExpand as gax.GaxCall,
+      this.innerApiCalls.pagedExpand as GaxCall,
       request,
       callSettings
     );
@@ -1039,18 +1234,17 @@ export class EchoClient {
    * @param {string} request.content
    *   The string to expand.
    * @param {number} request.pageSize
-   *   The amount of words to returned in each page.
+   *   The number of words to returned in each page.
    * @param {string} request.pageToken
    *   The position of the page to be returned.
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
-   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [EchoResponse]{@link google.showcase.v1beta1.EchoResponse}. The API will be called under the hood as needed, once per the page,
+   *   {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    * @example <caption>include:samples/generated/v1beta1/echo.paged_expand.js</caption>
    * region_tag:localhost_v1beta1_generated_Echo_PagedExpand_async
@@ -1068,7 +1262,7 @@ export class EchoClient {
     this.initialize();
     return this.descriptors.page.pagedExpand.asyncIterate(
       this.innerApiCalls['pagedExpand'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.google.showcase.v1beta1.IEchoResponse>;
   }
@@ -1085,16 +1279,16 @@ export class EchoClient {
    *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
    *   `GetIamPolicy`. This field is only used by Cloud IAM.
    *
-   *   This object should have the same structure as [GetPolicyOptions]{@link google.iam.v1.GetPolicyOptions}
+   *   This object should have the same structure as {@link google.iam.v1.GetPolicyOptions | GetPolicyOptions}.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
    * @param {function(?Error, ?Object)} [callback]
    *   The function which will be called with the result of the API call.
    *
-   *   The second parameter to the callback is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   The second parameter to the callback is an object representing {@link google.iam.v1.Policy | Policy}.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+   *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   getIamPolicy(
@@ -1132,17 +1326,16 @@ export class EchoClient {
    * @param {string[]} request.permissions
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see
-   *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
+   *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
    * @param {function(?Error, ?Object)} [callback]
    *   The function which will be called with the result of the API call.
    *
-   *   The second parameter to the callback is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    */
   setIamPolicy(
@@ -1180,17 +1373,16 @@ export class EchoClient {
    * @param {string[]} request.permissions
    *   The set of permissions to check for the `resource`. Permissions with
    *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see
-   *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
+   *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
    * @param {Object} [options]
    *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
    * @param {function(?Error, ?Object)} [callback]
    *   The function which will be called with the result of the API call.
    *
-   *   The second parameter to the callback is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
    *   The promise has a method named "cancel" which cancels the ongoing API call.
    *
    */
@@ -1220,11 +1412,10 @@ export class EchoClient {
    * @param {string} request.name
    *   Resource name for the location.
    * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html | CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing [Location]{@link google.cloud.location.Location}.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+   *   The first element of the array is an object representing {@link google.cloud.location.Location | Location}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
    *   for more details and examples.
    * @example
    * ```
@@ -1270,12 +1461,11 @@ export class EchoClient {
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Object}
-   *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
    *   When you iterate the returned iterable, each element will be an object representing
-   *   [Location]{@link google.cloud.location.Location}. The API will be called under the hood as needed, once per the page,
+   *   {@link google.cloud.location.Location | Location}. The API will be called under the hood as needed, once per the page,
    *   so you can stop the iteration when you don't need more results.
-   *   Please see the
-   *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
    *   for more details and examples.
    * @example
    * ```
@@ -1301,20 +1491,18 @@ export class EchoClient {
    * @param {string} request.name - The name of the operation resource.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
-   *   details.
+   *   e.g, timeout, retries, paginations, etc. See {@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions}
+   *   for the details.
    * @param {function(?Error, ?Object)=} callback
    *   The function which will be called with the result of the API call.
    *
    *   The second parameter to the callback is an object representing
-   * [google.longrunning.Operation]{@link
-   * external:"google.longrunning.Operation"}.
+   *   {@link google.longrunning.Operation | google.longrunning.Operation}.
    * @return {Promise} - The promise which resolves to an array.
    *   The first element of the array is an object representing
-   * [google.longrunning.Operation]{@link
-   * external:"google.longrunning.Operation"}. The promise has a method named
-   * "cancel" which cancels the ongoing API call.
+   * {@link google.longrunning.Operation | google.longrunning.Operation}.
+   * The promise has a method named "cancel" which cancels the ongoing API call.
    *
    * @example
    * ```
@@ -1358,11 +1546,11 @@ export class EchoClient {
    *   resources in a page.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   *   e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   *   e.g, timeout, retries, paginations, etc. See {@link
+   *   https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions} for the
    *   details.
    * @returns {Object}
-   *   An iterable Object that conforms to @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols.
+   *   An iterable Object that conforms to {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | iteration protocols}.
    *
    * @example
    * ```
@@ -1393,8 +1581,8 @@ export class EchoClient {
    * @param {string} request.name - The name of the operation resource to be cancelled.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
+   * e.g, timeout, retries, paginations, etc. See {@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions} for the
    * details.
    * @param {function(?Error)=} callback
    *   The function which will be called with the result of the API call.
@@ -1436,9 +1624,9 @@ export class EchoClient {
    * @param {string} request.name - The name of the operation resource to be deleted.
    * @param {Object=} options
    *   Optional parameters. You can override the default settings for this call,
-   * e.g, timeout, retries, paginations, etc. See [gax.CallOptions]{@link
-   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions} for the
-   * details.
+   * e.g, timeout, retries, paginations, etc. See {@link
+   * https://googleapis.github.io/gax-nodejs/global.html#CallOptions | gax.CallOptions}
+   * for the details.
    * @param {function(?Error)=} callback
    *   The function which will be called with the result of the API call.
    * @return {Promise} - The promise which resolves when API call finishes.
@@ -1474,371 +1662,105 @@ export class EchoClient {
   // --------------------
 
   /**
-   * Return a fully-qualified blueprint resource name string.
+   * Return a fully-qualified sequence resource name string.
    *
-   * @param {string} session
-   * @param {string} test
-   * @param {string} blueprint
+   * @param {string} sequence
    * @returns {string} Resource name string.
    */
-  blueprintPath(session: string, test: string, blueprint: string) {
-    return this.pathTemplates.blueprintPathTemplate.render({
-      session: session,
-      test: test,
-      blueprint: blueprint,
+  sequencePath(sequence: string) {
+    return this.pathTemplates.sequencePathTemplate.render({
+      sequence: sequence,
     });
   }
 
   /**
-   * Parse the session from Blueprint resource.
+   * Parse the sequence from Sequence resource.
    *
-   * @param {string} blueprintName
-   *   A fully-qualified path representing Blueprint resource.
-   * @returns {string} A string representing the session.
+   * @param {string} sequenceName
+   *   A fully-qualified path representing Sequence resource.
+   * @returns {string} A string representing the sequence.
    */
-  matchSessionFromBlueprintName(blueprintName: string) {
-    return this.pathTemplates.blueprintPathTemplate.match(blueprintName)
-      .session;
+  matchSequenceFromSequenceName(sequenceName: string) {
+    return this.pathTemplates.sequencePathTemplate.match(sequenceName).sequence;
   }
 
   /**
-   * Parse the test from Blueprint resource.
+   * Return a fully-qualified sequenceReport resource name string.
    *
-   * @param {string} blueprintName
-   *   A fully-qualified path representing Blueprint resource.
-   * @returns {string} A string representing the test.
-   */
-  matchTestFromBlueprintName(blueprintName: string) {
-    return this.pathTemplates.blueprintPathTemplate.match(blueprintName).test;
-  }
-
-  /**
-   * Parse the blueprint from Blueprint resource.
-   *
-   * @param {string} blueprintName
-   *   A fully-qualified path representing Blueprint resource.
-   * @returns {string} A string representing the blueprint.
-   */
-  matchBlueprintFromBlueprintName(blueprintName: string) {
-    return this.pathTemplates.blueprintPathTemplate.match(blueprintName)
-      .blueprint;
-  }
-
-  /**
-   * Return a fully-qualified room resource name string.
-   *
-   * @param {string} room_id
+   * @param {string} sequence
    * @returns {string} Resource name string.
    */
-  roomPath(roomId: string) {
-    return this.pathTemplates.roomPathTemplate.render({
-      room_id: roomId,
+  sequenceReportPath(sequence: string) {
+    return this.pathTemplates.sequenceReportPathTemplate.render({
+      sequence: sequence,
     });
   }
 
   /**
-   * Parse the room_id from Room resource.
+   * Parse the sequence from SequenceReport resource.
    *
-   * @param {string} roomName
-   *   A fully-qualified path representing Room resource.
-   * @returns {string} A string representing the room_id.
+   * @param {string} sequenceReportName
+   *   A fully-qualified path representing SequenceReport resource.
+   * @returns {string} A string representing the sequence.
    */
-  matchRoomIdFromRoomName(roomName: string) {
-    return this.pathTemplates.roomPathTemplate.match(roomName).room_id;
+  matchSequenceFromSequenceReportName(sequenceReportName: string) {
+    return this.pathTemplates.sequenceReportPathTemplate.match(
+      sequenceReportName
+    ).sequence;
   }
 
   /**
-   * Return a fully-qualified roomIdBlurbId resource name string.
+   * Return a fully-qualified streamingSequence resource name string.
    *
-   * @param {string} room_id
-   * @param {string} blurb_id
+   * @param {string} streaming_sequence
    * @returns {string} Resource name string.
    */
-  roomIdBlurbIdPath(roomId: string, blurbId: string) {
-    return this.pathTemplates.roomIdBlurbIdPathTemplate.render({
-      room_id: roomId,
-      blurb_id: blurbId,
+  streamingSequencePath(streamingSequence: string) {
+    return this.pathTemplates.streamingSequencePathTemplate.render({
+      streaming_sequence: streamingSequence,
     });
   }
 
   /**
-   * Parse the room_id from RoomIdBlurbId resource.
+   * Parse the streaming_sequence from StreamingSequence resource.
    *
-   * @param {string} roomIdBlurbIdName
-   *   A fully-qualified path representing room_id_blurb_id resource.
-   * @returns {string} A string representing the room_id.
+   * @param {string} streamingSequenceName
+   *   A fully-qualified path representing StreamingSequence resource.
+   * @returns {string} A string representing the streaming_sequence.
    */
-  matchRoomIdFromRoomIdBlurbIdName(roomIdBlurbIdName: string) {
-    return this.pathTemplates.roomIdBlurbIdPathTemplate.match(roomIdBlurbIdName)
-      .room_id;
+  matchStreamingSequenceFromStreamingSequenceName(
+    streamingSequenceName: string
+  ) {
+    return this.pathTemplates.streamingSequencePathTemplate.match(
+      streamingSequenceName
+    ).streaming_sequence;
   }
 
   /**
-   * Parse the blurb_id from RoomIdBlurbId resource.
+   * Return a fully-qualified streamingSequenceReport resource name string.
    *
-   * @param {string} roomIdBlurbIdName
-   *   A fully-qualified path representing room_id_blurb_id resource.
-   * @returns {string} A string representing the blurb_id.
-   */
-  matchBlurbIdFromRoomIdBlurbIdName(roomIdBlurbIdName: string) {
-    return this.pathTemplates.roomIdBlurbIdPathTemplate.match(roomIdBlurbIdName)
-      .blurb_id;
-  }
-
-  /**
-   * Return a fully-qualified roomIdBlurbsLegacyRoomIdBlurbId resource name string.
-   *
-   * @param {string} room_id
-   * @param {string} legacy_room_id
-   * @param {string} blurb_id
+   * @param {string} streaming_sequence
    * @returns {string} Resource name string.
    */
-  roomIdBlurbsLegacyRoomIdBlurbIdPath(
-    roomId: string,
-    legacyRoomId: string,
-    blurbId: string
-  ) {
-    return this.pathTemplates.roomIdBlurbsLegacyRoomIdBlurbIdPathTemplate.render(
-      {
-        room_id: roomId,
-        legacy_room_id: legacyRoomId,
-        blurb_id: blurbId,
-      }
-    );
-  }
-
-  /**
-   * Parse the room_id from RoomIdBlurbsLegacyRoomIdBlurbId resource.
-   *
-   * @param {string} roomIdBlurbsLegacyRoomIdBlurbIdName
-   *   A fully-qualified path representing room_id_blurbs_legacy_room_id_blurb_id resource.
-   * @returns {string} A string representing the room_id.
-   */
-  matchRoomIdFromRoomIdBlurbsLegacyRoomIdBlurbIdName(
-    roomIdBlurbsLegacyRoomIdBlurbIdName: string
-  ) {
-    return this.pathTemplates.roomIdBlurbsLegacyRoomIdBlurbIdPathTemplate.match(
-      roomIdBlurbsLegacyRoomIdBlurbIdName
-    ).room_id;
-  }
-
-  /**
-   * Parse the legacy_room_id from RoomIdBlurbsLegacyRoomIdBlurbId resource.
-   *
-   * @param {string} roomIdBlurbsLegacyRoomIdBlurbIdName
-   *   A fully-qualified path representing room_id_blurbs_legacy_room_id_blurb_id resource.
-   * @returns {string} A string representing the legacy_room_id.
-   */
-  matchLegacyRoomIdFromRoomIdBlurbsLegacyRoomIdBlurbIdName(
-    roomIdBlurbsLegacyRoomIdBlurbIdName: string
-  ) {
-    return this.pathTemplates.roomIdBlurbsLegacyRoomIdBlurbIdPathTemplate.match(
-      roomIdBlurbsLegacyRoomIdBlurbIdName
-    ).legacy_room_id;
-  }
-
-  /**
-   * Parse the blurb_id from RoomIdBlurbsLegacyRoomIdBlurbId resource.
-   *
-   * @param {string} roomIdBlurbsLegacyRoomIdBlurbIdName
-   *   A fully-qualified path representing room_id_blurbs_legacy_room_id_blurb_id resource.
-   * @returns {string} A string representing the blurb_id.
-   */
-  matchBlurbIdFromRoomIdBlurbsLegacyRoomIdBlurbIdName(
-    roomIdBlurbsLegacyRoomIdBlurbIdName: string
-  ) {
-    return this.pathTemplates.roomIdBlurbsLegacyRoomIdBlurbIdPathTemplate.match(
-      roomIdBlurbsLegacyRoomIdBlurbIdName
-    ).blurb_id;
-  }
-
-  /**
-   * Return a fully-qualified session resource name string.
-   *
-   * @param {string} session
-   * @returns {string} Resource name string.
-   */
-  sessionPath(session: string) {
-    return this.pathTemplates.sessionPathTemplate.render({
-      session: session,
+  streamingSequenceReportPath(streamingSequence: string) {
+    return this.pathTemplates.streamingSequenceReportPathTemplate.render({
+      streaming_sequence: streamingSequence,
     });
   }
 
   /**
-   * Parse the session from Session resource.
+   * Parse the streaming_sequence from StreamingSequenceReport resource.
    *
-   * @param {string} sessionName
-   *   A fully-qualified path representing Session resource.
-   * @returns {string} A string representing the session.
+   * @param {string} streamingSequenceReportName
+   *   A fully-qualified path representing StreamingSequenceReport resource.
+   * @returns {string} A string representing the streaming_sequence.
    */
-  matchSessionFromSessionName(sessionName: string) {
-    return this.pathTemplates.sessionPathTemplate.match(sessionName).session;
-  }
-
-  /**
-   * Return a fully-qualified test resource name string.
-   *
-   * @param {string} session
-   * @param {string} test
-   * @returns {string} Resource name string.
-   */
-  testPath(session: string, test: string) {
-    return this.pathTemplates.testPathTemplate.render({
-      session: session,
-      test: test,
-    });
-  }
-
-  /**
-   * Parse the session from Test resource.
-   *
-   * @param {string} testName
-   *   A fully-qualified path representing Test resource.
-   * @returns {string} A string representing the session.
-   */
-  matchSessionFromTestName(testName: string) {
-    return this.pathTemplates.testPathTemplate.match(testName).session;
-  }
-
-  /**
-   * Parse the test from Test resource.
-   *
-   * @param {string} testName
-   *   A fully-qualified path representing Test resource.
-   * @returns {string} A string representing the test.
-   */
-  matchTestFromTestName(testName: string) {
-    return this.pathTemplates.testPathTemplate.match(testName).test;
-  }
-
-  /**
-   * Return a fully-qualified user resource name string.
-   *
-   * @param {string} user_id
-   * @returns {string} Resource name string.
-   */
-  userPath(userId: string) {
-    return this.pathTemplates.userPathTemplate.render({
-      user_id: userId,
-    });
-  }
-
-  /**
-   * Parse the user_id from User resource.
-   *
-   * @param {string} userName
-   *   A fully-qualified path representing User resource.
-   * @returns {string} A string representing the user_id.
-   */
-  matchUserIdFromUserName(userName: string) {
-    return this.pathTemplates.userPathTemplate.match(userName).user_id;
-  }
-
-  /**
-   * Return a fully-qualified userIdProfileBlurbId resource name string.
-   *
-   * @param {string} user_id
-   * @param {string} blurb_id
-   * @returns {string} Resource name string.
-   */
-  userIdProfileBlurbIdPath(userId: string, blurbId: string) {
-    return this.pathTemplates.userIdProfileBlurbIdPathTemplate.render({
-      user_id: userId,
-      blurb_id: blurbId,
-    });
-  }
-
-  /**
-   * Parse the user_id from UserIdProfileBlurbId resource.
-   *
-   * @param {string} userIdProfileBlurbIdName
-   *   A fully-qualified path representing user_id_profile_blurb_id resource.
-   * @returns {string} A string representing the user_id.
-   */
-  matchUserIdFromUserIdProfileBlurbIdName(userIdProfileBlurbIdName: string) {
-    return this.pathTemplates.userIdProfileBlurbIdPathTemplate.match(
-      userIdProfileBlurbIdName
-    ).user_id;
-  }
-
-  /**
-   * Parse the blurb_id from UserIdProfileBlurbId resource.
-   *
-   * @param {string} userIdProfileBlurbIdName
-   *   A fully-qualified path representing user_id_profile_blurb_id resource.
-   * @returns {string} A string representing the blurb_id.
-   */
-  matchBlurbIdFromUserIdProfileBlurbIdName(userIdProfileBlurbIdName: string) {
-    return this.pathTemplates.userIdProfileBlurbIdPathTemplate.match(
-      userIdProfileBlurbIdName
-    ).blurb_id;
-  }
-
-  /**
-   * Return a fully-qualified userIdProfileBlurbsLegacyUserIdBlurbId resource name string.
-   *
-   * @param {string} user_id
-   * @param {string} legacy_user_id
-   * @param {string} blurb_id
-   * @returns {string} Resource name string.
-   */
-  userIdProfileBlurbsLegacyUserIdBlurbIdPath(
-    userId: string,
-    legacyUserId: string,
-    blurbId: string
+  matchStreamingSequenceFromStreamingSequenceReportName(
+    streamingSequenceReportName: string
   ) {
-    return this.pathTemplates.userIdProfileBlurbsLegacyUserIdBlurbIdPathTemplate.render(
-      {
-        user_id: userId,
-        legacy_user_id: legacyUserId,
-        blurb_id: blurbId,
-      }
-    );
-  }
-
-  /**
-   * Parse the user_id from UserIdProfileBlurbsLegacyUserIdBlurbId resource.
-   *
-   * @param {string} userIdProfileBlurbsLegacyUserIdBlurbIdName
-   *   A fully-qualified path representing user_id_profile_blurbs_legacy_user_id_blurb_id resource.
-   * @returns {string} A string representing the user_id.
-   */
-  matchUserIdFromUserIdProfileBlurbsLegacyUserIdBlurbIdName(
-    userIdProfileBlurbsLegacyUserIdBlurbIdName: string
-  ) {
-    return this.pathTemplates.userIdProfileBlurbsLegacyUserIdBlurbIdPathTemplate.match(
-      userIdProfileBlurbsLegacyUserIdBlurbIdName
-    ).user_id;
-  }
-
-  /**
-   * Parse the legacy_user_id from UserIdProfileBlurbsLegacyUserIdBlurbId resource.
-   *
-   * @param {string} userIdProfileBlurbsLegacyUserIdBlurbIdName
-   *   A fully-qualified path representing user_id_profile_blurbs_legacy_user_id_blurb_id resource.
-   * @returns {string} A string representing the legacy_user_id.
-   */
-  matchLegacyUserIdFromUserIdProfileBlurbsLegacyUserIdBlurbIdName(
-    userIdProfileBlurbsLegacyUserIdBlurbIdName: string
-  ) {
-    return this.pathTemplates.userIdProfileBlurbsLegacyUserIdBlurbIdPathTemplate.match(
-      userIdProfileBlurbsLegacyUserIdBlurbIdName
-    ).legacy_user_id;
-  }
-
-  /**
-   * Parse the blurb_id from UserIdProfileBlurbsLegacyUserIdBlurbId resource.
-   *
-   * @param {string} userIdProfileBlurbsLegacyUserIdBlurbIdName
-   *   A fully-qualified path representing user_id_profile_blurbs_legacy_user_id_blurb_id resource.
-   * @returns {string} A string representing the blurb_id.
-   */
-  matchBlurbIdFromUserIdProfileBlurbsLegacyUserIdBlurbIdName(
-    userIdProfileBlurbsLegacyUserIdBlurbIdName: string
-  ) {
-    return this.pathTemplates.userIdProfileBlurbsLegacyUserIdBlurbIdPathTemplate.match(
-      userIdProfileBlurbsLegacyUserIdBlurbIdName
-    ).blurb_id;
+    return this.pathTemplates.streamingSequenceReportPathTemplate.match(
+      streamingSequenceReportName
+    ).streaming_sequence;
   }
 
   /**
