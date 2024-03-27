@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.0...gapic-tools-v0.4.1) (2024-03-23)
+
+
+### Bug Fixes
+
+* improve package.json lookup for root name ([#1530](https://github.com/googleapis/gax-nodejs/issues/1530)) ([3ec09cf](https://github.com/googleapis/gax-nodejs/commit/3ec09cfe190da615aec7c3443afb39837bd9bef1))
+
 ## [0.4.0](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.3.0...gapic-tools-v0.4.0) (2024-02-13)
 
 

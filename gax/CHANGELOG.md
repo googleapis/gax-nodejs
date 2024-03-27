@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.2](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.1...google-gax-v4.3.2) (2024-03-26)
+
+
+### Bug Fixes
+
+* **deps:** include new proto changes ([#1573](https://github.com/googleapis/gax-nodejs/issues/1573)) ([87b5718](https://github.com/googleapis/gax-nodejs/commit/87b5718941fbde95bc878447d5adc84344611f26))
+
 ## [4.3.1](https://github.com/googleapis/gax-nodejs/compare/v4.3.0...v4.3.1) (2024-02-08)
 
 
@@ -56,7 +63,10 @@
 ### Bug Fixes
 
 * **deps:** update dependency retry-request to v7 ([#1515](https://github.com/googleapis/gax-nodejs/issues/1515)) ([85a83a3](https://github.com/googleapis/gax-nodejs/commit/85a83a310dd2c9e70b23c2ac2fe9ea5664947040))
+<<<<<<< HEAD
+=======
 * **deps:** update grpc-js to 1.9.6 ([#1518](https://github.com/googleapis/gax-nodejs/issues/1518)) ([4e1f365](https://github.com/googleapis/gax-nodejs/commit/4e1f36591c23787cb70aa52fe77276dbd7a0448a))
+>>>>>>> 082a42d9e9135ef898f9ba8916a6762c93002e2b
 
 ## [4.0.4](https://github.com/googleapis/gax-nodejs/compare/v4.0.3...v4.0.4) (2023-09-07)
 
