@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.3](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.2...google-gax-v4.3.3) (2024-03-28)
+
+
+### Bug Fixes
+
+* don't retry server streaming calls if retryCodes is the empty array ([#1578](https://github.com/googleapis/gax-nodejs/issues/1578)) ([150a683](https://github.com/googleapis/gax-nodejs/commit/150a683514fe8c310d03d5f1a82a80160438effb))
+
 ## [4.3.2](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.1...google-gax-v4.3.2) (2024-03-26)
 
 
