@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.1...gapic-tools-v0.4.2) (2024-03-27)
+
+
+### Bug Fixes
+
+* **deps:** update google-proto-files and gax in gapic-tools ([#1579](https://github.com/googleapis/gax-nodejs/issues/1579)) ([c9b83e9](https://github.com/googleapis/gax-nodejs/commit/c9b83e9f16c6c65cf5e49a7f98fe7bfb999271fc))
+
 ## [0.4.1](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.0...gapic-tools-v0.4.1) (2024-03-23)
 
 
