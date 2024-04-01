@@ -44,6 +44,7 @@ export interface Options {
 }
 
 export function createApiCall(func: Function, opts?: Options) {
+  console.log('in fake createApiCall')
   const settings = new gax.CallSettings((opts && opts.settings) || {});
   const descriptor = opts && opts.descriptor;
   return realCreateApiCall(
@@ -57,9 +58,9 @@ export function createApiCall(func: Function, opts?: Options) {
           },
         };
       }
-      const conceller = func(argument, metadata, options, callback);
-      if (conceller instanceof Promise) {
-        conceller.catch((err: string) => {
+      const canceller = func(argument, metadata, options, callback);
+      if (canceller instanceof Promise) {
+        canceller.catch((err: string) => {
           callback(new GoogleError(err));
         });
       }
