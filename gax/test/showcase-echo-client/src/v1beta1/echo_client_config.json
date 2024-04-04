@@ -24,6 +24,10 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
+        "EchoErrorDetails": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "Expand": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"

@@ -1,5 +1,5 @@
 {
-  "extends": "../../node_modules/gts/tsconfig-google.json",
+  "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "build",
@@ -12,6 +12,8 @@
   "include": [
     "src/*.ts",
     "src/**/*.ts",
+    "test/*.ts",
+    "test/**/*.ts",
     "system-test/*.ts"
   ]
 }
