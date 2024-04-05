@@ -107,16 +107,22 @@ export function createApiCall(
 
         if (
           streaming &&
-          retry &&
+          retry){
+          if(
           retry.retryCodes.length > 0 &&
-          retry.shouldRetryFn
-        ) {
+          retry.shouldRetryFn)
+         {
           warn(
             'either_retrycodes_or_shouldretryfn',
             'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.'
           );
           retry.retryCodes = [];
         }
+        if(!(currentApiCaller as StreamingApiCaller).descriptor.gaxStreamingRetries && retry.getResumptionRequestFn){
+          throw new Error('getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.')
+        }
+      
+      }
         if (!streaming && retry) {
           if (retry.shouldRetryFn) {
             throw new Error(
