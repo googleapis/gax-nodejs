@@ -1201,7 +1201,6 @@ describe('streaming', () => {
     // stubbing cancel is needed because PassThrough doesn't have
     // a cancel method and cancel is called as part of the retry
     sinon.stub(streaming.StreamProxy.prototype, 'cancel');
-    const receivedData: string[] = [];
     const error = Object.assign(new GoogleError('test error'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1289,10 +1288,12 @@ describe('streaming', () => {
     s.on('error', err => {
       // double check it's the expected error on the stream
       // stream will continue after retry
-      assert.deepStrictEqual(err.message, 'getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.');
-      done()
+      assert.deepStrictEqual(
+        err.message,
+        'getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.'
+      );
+      done();
     });
-
   });
 });
 
