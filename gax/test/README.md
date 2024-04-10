@@ -41,12 +41,13 @@ The following steps will regenerate new Echo and Sequence clients from the lates
     --service-yaml ~/regenerate/gapic-showcase/schema/google/showcase/v1beta1/showcase_v1beta1.yaml \
     -I ~/regenerate/gapic-showcase/schema google/showcase/v1beta1/{echo,sequence}.proto
     ```
-1. Change to the `/tmp/showcase` directory and rename the `showcase` directory to `showcase-echo-client` (`/tmp/showcase` is now `/tmp/showcase-echo-client`)
+1. Change to the `/tmp` directory and rename the `showcase` directory to `showcase-echo-client` with `mv showcase showcase-echo-client`
+1. Change to the `/tmp/showcase-echo-client` directory
 1. Remove the `samples/`, `system-test/` and `test/` directories
 1. Run `npx gts fix` to help minimize git differences when eventually bringing this directory into gax
 1. Make the following modifications in the `package.json` file:
     1.  Rename the package name from `showcase` to `showcase-echo-client`
-    1. Add this `prefetch` step to the scripts (add in alphabetical order)
+    1. Add this `prefetch` step to the scripts section (add in alphabetical order with the existing scripts)
         ```json
         "prefetch": "rm -rf node_modules package-lock.json google-gax*.tgz gapic-tools*.tgz && cd ../.. && npm pack && mv google-gax*.tgz test/showcase-echo-client/google-gax.tgz && cd ../tools && npm install && npm pack && mv gapic-tools*.tgz ../gax/test/showcase-echo-client/gapic-tools.tgz"
         ```
