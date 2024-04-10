@@ -1,38 +1,94 @@
 # Tests for gax-nodejs
 
-## [test-application](./test-application/)
-TODO: possibly link within this readme
+## [browser-test](./browser-test/)
 ### About
-The test-application starts a [showcase-server](./showcase-server) and runs tests against the [showcase echo client library](./showcase-echo-client/). Gax is packed and the packed version is used as a dependency. Multiple clients are constructed to test how gax works with client libraries in both gRPC and REST environments.
+End-to-end karma tests that run against the GAPIC [showcase server](#showcase-server)
 
 ### Maintenance
-TODO
-
-## [showcase-echo-client](./showcase-echo-client/)
-### About
-TODO
-### Maintenance
-TODO
-
-## [showcase-server](./showcase-server/)
-### About
-TODO
-### Maintenance
-TODO
-
-## [system-test](./system-test/)
-Runs the tests for two client libraries that utilize various capabilities of gax with the version of gax found in the repo. 
-
-## [unit](./unit/)
-Mocha unit tests
+The [showcase-server](#showcase-server) should periodically be updated to the newest version of gapic-showcase. See [showcase server maintenance info](#maintenance-2) for more details. 
 
 ## [fixtures](./fixtures)
 ### About
 TODO
 
-
-## [browser-test](./browser-test/)
+## [showcase-echo-client](./showcase-echo-client/)
 ### About
-End-to-end karma tests that run against the [showcase-server](./showcase-server/)
+This name of this directory is a misnomer these days, as it now contains generated protos and clients for two of the [gapic-showcase](https://github.com/googleapis/gapic-showcase) clients: Echo and Sequence. These clients are used in the [test application](#test-application). The [Echo client](./showcase-echo-client/protos/google/showcase/v1beta1/echo.proto) showcases the four main types of GAPIC calls, and the [Sequence client](./showcase-echo-client/protos/google/showcase/v1beta1/sequence.proto) gives users the ability to define a sequence of either unary or server streaming responses from the server, enabling thorough testing of retry behavior.
+
 ### Maintenance
-The [showcase-server](./showcase-server/) should periodically be updated to the newest version of gapic-showcase. See 
+Currently, the process to update the showcase echo client is entirely manual. It involves two steps: manually regenerating the files found in the directory and manually bumping the version of GAPIC showcase in the [showcase server](#showcase-server). 
+
+#### Regenerate the clients
+TODO: test these in a fresh environment
+
+The following steps will regenerate new Echo and Sequence clients from the latest version of GAPIC showcase.
+
+**Prerequsities**
+* an environment where you can run [Bazel](https://bazel.build/) (Recommended: a gLinux environment, at least for the generation steps)
+* an environment with `node`, `npm`, and `npx`
+* a GitHub account and the git CLI
+* familiarity with cloning repos, creating branches, and creating PRs
+
+1. Create a directory named `regenerate` and change to that directory 
+1. Clone the [gapic-showcase repo](https://github.com/googleapis/gapic-showcase)
+1. Fork and then clone your fork of [NodeJs GAX](https://github.com/googleapis/gax-nodejs). Create a new branch called `regenerate-showcase-client`.
+1. From your new `regenerate` directory, clone the [gapic-generator-typescript repo](https://github.com/googleapis/gapic-generator-typescript) and change to the root directory of this repo (`~/regenerate/gapic-generator-typescript`)
+1. Run the following command to regenerate the Echo and Sequence clients. The generated output will be found in `/tmp/showcase`
+    ```sh
+    rm -rf /tmp/showcase && mkdir -p /tmp/showcase && bazel run //:gapic_generator_typescript -- --output_dir /tmp/showcase --service-yaml ~/regenerate/gapic-showcase/schema/google/showcase/v1beta1/showcase_v1beta1.yaml -I ~/workspace/gapic-showcase/schema google/showcase/v1beta1/{echo,sequence}.proto
+    ```
+1. Change to the `/tmp/showcase` directory and rename the `showcase` directory to `showcase-echo-client` (`/tmp/showcase` is now `/tmp/showcase-echo-client`)
+1. Remove the `samples/`, `system-test/` and `test/` directories
+1. Run `npx gts fix` to help minimize git differences when eventually bringing this directory into gax
+1. Make the following modifications in the `package.json` file:
+    1.  Rename the package name from `showcase` to `showcase-echo-client`
+    1. Add this `prefetch` step to the scripts (add in alphabetical order)
+        ```json
+        "prefetch": "rm -rf node_modules package-lock.json google-gax*.tgz gapic-tools*.tgz && cd ../.. && npm pack && mv google-gax*.tgz test/showcase-echo-client/google-gax.tgz && cd ../tools && npm install && npm pack && mv gapic-tools*.tgz ../gax/test/showcase-echo-client/gapic-tools.tgz"
+        ```
+    1. In the `dependencies` section change `google-gax` from whatever version number is there to  `./google-gax.tgz`
+    1. In the `devDependencies` change `gapic-tools` from whatever version number is there to `./gapic-tools.tgz`
+    1. Remove the `docs`, `fix`, `lint`, `system-test`, and `test` sessions from the `scripts` section
+1. Change to the `regenerate` directory you created at the beginning of this process and copy your newly generated showcase client directory into gax
+    ```sh
+    cd ~/regenerate
+    cp /tmp/showcase-echo-client ~/regenerate/gax-nodejs/gax/test/
+    ```
+1. Change to the `gax-nodejs` directory and run `git add -p` to go through the changes introduced one by one to ensure you are not introducing anything detrimental. Things to keep in mind while looking at the output from `git add -p`:
+    * If there are updates to the dependencies in `package.json` keep them. It is preferred to use the caret (^) notation rather than pinning to exact versions; you may need to make slight modifications manually
+    * Do not change the README
+    * Do not update the copyright years (copyright years reflect initial year of authoring, not year last updated)
+    * Keep an eye on the tsconfig update to ensure the relative directories match with the existing (not newly regenrated) paths
+1. [Update the showcase server](#update-the-showcase-server) version
+1. Test your changes locally in the [test application](#test-application) 
+1. Once you have verified that nothing is broken, commit these changes and make a PR from your fork to upstream gax
+
+
+#### Update the showcase server
+See [showcase server maintenance info](#maintenance-2) for more details. 
+
+
+## [showcase-server](./showcase-server/)
+### About
+This contains helper code that fetches [GAPIC showcase](https://github.com/googleapis/gapic-showcase) so tests can be run against it. GAPIC showcase is used as part of the [browser tests](#browser-test) and the [test application](#test-application). It enables us to test GAX functionality in realistic conditions, rather than mocking server behavior. 
+
+### Maintenance
+The current process to update the showcase server is manual. In [index.ts](./showcase-server/src/index.ts) the `showcaseVersion` variable either pulls from an environment variable or from a default. The default string value should be updated periodically to the latest version of GAPIC showcase as found on the [releases page](https://github.com/googleapis/gapic-showcase/releases).
+
+## [system-test](./system-test/)
+Helper code that fetches two client libraries that utilize various capabilities of GAX and runs their tests against the version of GAX found in the repo. 
+
+## [test-application](./test-application/)
+### About
+The test-application starts a [showcase server](#showcase-server) and runs tests against the [showcase echo client library](#showcase-echo-client). Gax and the showcase echo client library are both packed and the packed versions are used as dependencies. Multiple clients are constructed to test how gax works with client libraries in both gRPC and REST environments.
+
+### Maintenance
+The showcase echo client and showcase server should both periodically be updated to ensure the latest capabilities are being tested in gax. See maintenance info for [showcase-echo-client](#maintenance-1) and [showcase-server](#maintenance-2) for the latest info on keeping them up to date.
+
+## [unit](./unit/)
+Mocha unit tests
+
+
+
+
+
