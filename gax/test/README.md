@@ -35,7 +35,11 @@ The following steps will regenerate new Echo and Sequence clients from the lates
 1. From your new `regenerate` directory, clone the [gapic-generator-typescript repo](https://github.com/googleapis/gapic-generator-typescript) and change to the root directory of this repo (`~/regenerate/gapic-generator-typescript`)
 1. Run the following command to regenerate the Echo and Sequence clients. The generated output will be found in `/tmp/showcase`
     ```sh
-    rm -rf /tmp/showcase && mkdir -p /tmp/showcase && bazel run //:gapic_generator_typescript -- --output_dir /tmp/showcase --service-yaml ~/regenerate/gapic-showcase/schema/google/showcase/v1beta1/showcase_v1beta1.yaml -I ~/workspace/gapic-showcase/schema google/showcase/v1beta1/{echo,sequence}.proto
+    rm -rf /tmp/showcase && mkdir -p /tmp/showcase &&
+    bazel run //:gapic_generator_typescript -- \
+    --output_dir /tmp/showcase \
+    --service-yaml ~/regenerate/gapic-showcase/schema/google/showcase/v1beta1/showcase_v1beta1.yaml \
+    -I ~/regenerate/gapic-showcase/schema google/showcase/v1beta1/{echo,sequence}.proto
     ```
 1. Change to the `/tmp/showcase` directory and rename the `showcase` directory to `showcase-echo-client` (`/tmp/showcase` is now `/tmp/showcase-echo-client`)
 1. Remove the `samples/`, `system-test/` and `test/` directories
