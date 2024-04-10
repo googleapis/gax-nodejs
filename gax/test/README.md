@@ -44,7 +44,7 @@ The following steps will regenerate new Echo and Sequence clients from the lates
 1. Change to the `/tmp` directory and rename the `showcase` directory to `showcase-echo-client` with `mv showcase showcase-echo-client`
 1. Change to the `/tmp/showcase-echo-client` directory
 1. Remove the `samples/`, `system-test/` and `test/` directories
-1. Run `npx gts fix` to help minimize git differences when eventually bringing this directory into gax
+1. Run `npm install && npx gts fix` to help minimize git differences when eventually bringing this directory into gax
 1. Make the following modifications in the `package.json` file:
     1.  Rename the package name from `showcase` to `showcase-echo-client`
     1. Add this `prefetch` step to the scripts section (add in alphabetical order with the existing scripts)
@@ -53,17 +53,17 @@ The following steps will regenerate new Echo and Sequence clients from the lates
         ```
     1. In the `dependencies` section change `google-gax` from whatever version number is there to  `./google-gax.tgz`
     1. In the `devDependencies` change `gapic-tools` from whatever version number is there to `./gapic-tools.tgz`
-    1. Remove the `docs`, `fix`, `lint`, `system-test`, and `test` sessions from the `scripts` section
+    1. Remove the `docs`, `fix`, `lint`, `system-test`, and `test` sessions from the `scripts` section. If there is a trailing comma after the last script, remove it
 1. Change to the `regenerate` directory you created at the beginning of this process and copy your newly generated showcase client directory into gax. This will replace the existing `showcase-echo-client` directory
     ```sh
     cd ~/regenerate
-    cp /tmp/showcase-echo-client ~/regenerate/gax-nodejs/gax/test/
+    cp -r /tmp/showcase-echo-client ~/regenerate/gax-nodejs/gax/test/
     ```
 1. Change to the `gax-nodejs` directory and run `git add -p` to go through the changes introduced one by one to ensure you are not introducing anything detrimental. Things to keep in mind while looking at the output from `git add -p`:
     * If there are updates to the dependencies in `package.json` keep them. It is preferred to use the caret (^) notation rather than pinning to exact versions; you may need to make slight modifications manually
     * Do not change the README
     * Do not update the copyright years (copyright years reflect initial year of authoring, not year last updated)
-    * Keep an eye on the tsconfig update to ensure the relative directories match with the existing (not newly regenrated) paths
+    * Do not change the tsconfig
 1. [Update the showcase server](#update-the-showcase-server) version
 1. Validate your changes - change to the `gax` directory (`~/regenerate/gax-nodejs/gax`) and run `npm run test-application` and `npm run browser-test`. Fix any errors.
 1. Once you have verified that nothing is broken, commit these changes and make a PR from the `regenerate-showcase-client` branch in your fork to the main gax-nodejs repo.
