@@ -18,8 +18,6 @@ This name of this directory is a misnomer these days, as it now contains generat
 Currently, the process to update the showcase echo client is entirely manual. It involves two steps: [manually regenerating](#regenerate-the-clients) the files found in the directory and manually bumping the version of GAPIC showcase in the [showcase server](#showcase-server).
 
 #### Regenerate the clients
-TODO: test these in a fresh environment
-
 The following steps will regenerate new Echo and Sequence clients from the latest version of GAPIC showcase.
 
 **Prerequsities**
@@ -65,7 +63,7 @@ The following steps will regenerate new Echo and Sequence clients from the lates
     * Do not update the copyright years (copyright years reflect initial year of authoring, not year last updated)
     * Do not change the tsconfig
 1. [Update the showcase server](#update-the-showcase-server) version
-1. Validate your changes - change to the `gax` directory (`~/regenerate/gax-nodejs/gax`) and run `npm run test-application` and `npm run browser-test`. Fix any errors.
+1. Validate your changes - change to the `gax` directory (`~/regenerate/gax-nodejs/gax`) and run `npm install`, `npm run test-application` and `npm run browser-test`. Fix any errors.
 1. Once you have verified that nothing is broken, commit these changes and make a PR from the `regenerate-showcase-client` branch in your fork to the main gax-nodejs repo.
 
 
