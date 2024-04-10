@@ -1197,6 +1197,104 @@ describe('streaming', () => {
       done();
     });
   });
+  it('errors when there is a resumption request function an gaxStreamingRetries is not enabled', done => {
+    // stubbing cancel is needed because PassThrough doesn't have
+    // a cancel method and cancel is called as part of the retry
+    sinon.stub(streaming.StreamProxy.prototype, 'cancel');
+    const error = Object.assign(new GoogleError('test error'), {
+      code: 14,
+      details: 'UNAVAILABLE',
+      metadata: new Metadata(),
+    });
+
+    const spy = sinon.spy((...args: Array<{}>) => {
+      //@ts-ignore
+      const arg = args[0].arg;
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      switch (arg) {
+        case 0:
+          s.push('Hello');
+          s.push('World');
+          setImmediate(() => {
+            s.emit('metadata');
+          });
+          setImmediate(() => {
+            s.emit('error', error);
+          });
+          setImmediate(() => {
+            s.emit('status');
+          });
+          return s;
+        case 1:
+          s.push(null);
+          setImmediate(() => {
+            s.emit('error', new Error('Should not reach'));
+          });
+
+          setImmediate(() => {
+            s.emit('status');
+          });
+          return s;
+        case 2:
+          s.push('testing');
+          s.push('retries');
+          setImmediate(() => {
+            s.emit('metadata');
+          });
+          setImmediate(() => {
+            s.emit('end');
+          });
+          return s;
+        default:
+          setImmediate(() => {
+            s.emit('end');
+          });
+          return s;
+      }
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      false // new retry behavior disabled
+    );
+    // resumption strategy is to pass a different arg to the function
+    const getResumptionRequestFn = (originalRequest: RequestType) => {
+      assert.strictEqual(originalRequest.arg, 0);
+      return {arg: 2};
+    };
+    const s = apiCall(
+      {arg: 0},
+      {
+        retry: gax.createRetryOptions(
+          [14],
+          {
+            initialRetryDelayMillis: 100,
+            retryDelayMultiplier: 1.2,
+            maxRetryDelayMillis: 1000,
+            rpcTimeoutMultiplier: 1.5,
+            maxRpcTimeoutMillis: 3000,
+            maxRetries: 2, // max retries or timeout must be > 0 in order to reach the code we want to test
+          },
+          undefined,
+          getResumptionRequestFn
+        ),
+      }
+    );
+
+    s.on('error', err => {
+      // double check it's the expected error on the stream
+      // stream will continue after retry
+      assert.deepStrictEqual(
+        err.message,
+        'getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.'
+      );
+      done();
+    });
+  });
 });
 
 describe('handles server streaming retries in gax when gaxStreamingRetries is enabled', () => {

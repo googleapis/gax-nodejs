@@ -17,7 +17,7 @@
 // ** All changes to this file may be overwritten. **
 
 /* global window */
-import type * as gax from 'google-gax';
+import * as gax from 'google-gax';
 import type {
   Callback,
   CallOptions,
@@ -35,6 +35,7 @@ import type {
 import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+
 /**
  * Client JSON configuration object, loaded from
  * `src/v1beta1/echo_client_config.json`.
@@ -62,6 +63,8 @@ export class EchoClient {
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
+  private _universeDomain: string;
+  private _servicePath: string;
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -122,8 +125,27 @@ export class EchoClient {
   ) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof EchoClient;
+    if (
+      opts?.universe_domain &&
+      opts?.universeDomain &&
+      opts?.universe_domain !== opts?.universeDomain
+    ) {
+      throw new Error(
+        'Please set either universe_domain or universeDomain, but not both.'
+      );
+    }
+    const universeDomainEnvVar =
+      typeof process === 'object' && typeof process.env === 'object'
+        ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
+        : undefined;
+    this._universeDomain =
+      opts?.universeDomain ??
+      opts?.universe_domain ??
+      universeDomainEnvVar ??
+      'googleapis.com';
+    this._servicePath = 'localhost';
     const servicePath =
-      opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+      opts?.servicePath || opts?.apiEndpoint || this._servicePath;
     this._providedCustomServicePath = !!(
       opts?.servicePath || opts?.apiEndpoint
     );
@@ -135,7 +157,7 @@ export class EchoClient {
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
-    if (servicePath !== staticMembers.servicePath && !('scopes' in opts)) {
+    if (servicePath !== this._servicePath && !('scopes' in opts)) {
       opts['scopes'] = staticMembers.scopes;
     }
 
@@ -160,10 +182,10 @@ export class EchoClient {
     this.auth.useJWTAccessWithScope = true;
 
     // Set defaultServicePath on the auth object.
-    this.auth.defaultServicePath = staticMembers.servicePath;
+    this.auth.defaultServicePath = this._servicePath;
 
     // Set the default scopes in auth client if needed.
-    if (servicePath === staticMembers.servicePath) {
+    if (servicePath === this._servicePath) {
       this.auth.defaultScopes = staticMembers.scopes;
     }
     this.iamClient = new this._gaxModule.IamClient(this._gaxGrpc, opts);
@@ -175,7 +197,7 @@ export class EchoClient {
 
     // Determine the client header string.
     const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
-    if (typeof process !== 'undefined' && 'versions' in process) {
+    if (typeof process === 'object' && 'versions' in process) {
       clientHeader.push(`gl-node/${process.versions.node}`);
     } else {
       clientHeader.push(`gl-web/${this._gaxModule.version}`);
@@ -226,15 +248,17 @@ export class EchoClient {
       expand: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.SERVER_STREAMING,
         !!opts.fallback,
-        this._opts.gaxServerStreamingRetries
+        !!opts.gaxServerStreamingRetries
       ),
       collect: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.CLIENT_STREAMING,
-        !!opts.fallback
+        !!opts.fallback,
+        !!opts.gaxServerStreamingRetries
       ),
       chat: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.BIDI_STREAMING,
-        !!opts.fallback
+        !!opts.fallback,
+        !!opts.gaxServerStreamingRetries
       ),
     };
 
@@ -382,6 +406,7 @@ export class EchoClient {
     // and create an API call method for each.
     const echoStubMethods = [
       'echo',
+      'echoErrorDetails',
       'expand',
       'collect',
       'chat',
@@ -437,19 +462,50 @@ export class EchoClient {
 
   /**
    * The DNS address for this API service.
+   * @deprecated Use the apiEndpoint method of the client instance.
    * @returns {string} The DNS address for this service.
    */
   static get servicePath() {
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      process.emitWarning(
+        'Static servicePath is deprecated, please use the instance method instead.',
+        'DeprecationWarning'
+      );
+    }
     return 'localhost';
   }
 
   /**
-   * The DNS address for this API service - same as servicePath(),
-   * exists for compatibility reasons.
+   * The DNS address for this API service - same as servicePath.
+   * @deprecated Use the apiEndpoint method of the client instance.
    * @returns {string} The DNS address for this service.
    */
   static get apiEndpoint() {
+    if (
+      typeof process === 'object' &&
+      typeof process.emitWarning === 'function'
+    ) {
+      process.emitWarning(
+        'Static apiEndpoint is deprecated, please use the instance method instead.',
+        'DeprecationWarning'
+      );
+    }
     return 'localhost';
+  }
+
+  /**
+   * The DNS address for this API service.
+   * @returns {string} The DNS address for this service.
+   */
+  get apiEndpoint() {
+    return this._servicePath;
+  }
+
+  get universeDomain() {
+    return this._universeDomain;
   }
 
   /**
@@ -501,6 +557,10 @@ export class EchoClient {
    *   Optional. This field can be set to test the routing annotation on the Echo method.
    * @param {string} request.otherHeader
    *   Optional. This field can be set to test the routing annotation on the Echo method.
+   * @param {string} request.requestId
+   *   To facilitate testing of https://google.aip.dev/client-libraries/4235
+   * @param {string} request.otherRequestId
+   *   To facilitate testing of https://google.aip.dev/client-libraries/4235
    * @param {object} [options]
    *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
    * @returns {Promise} - The promise which resolves to an array.
@@ -559,6 +619,12 @@ export class EchoClient {
     ]
   > | void {
     request = request || {};
+    if (!request.requestId) {
+      request.requestId = gax.makeUUID();
+    }
+    if (!request.otherRequestId) {
+      request.otherRequestId = gax.makeUUID();
+    }
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
@@ -670,6 +736,101 @@ export class EchoClient {
       this._gaxModule.routingHeader.fromParams(routingParameter);
     this.initialize();
     return this.innerApiCalls.echo(request, options, callback);
+  }
+  /**
+   * This method returns error details in a repeated "google.protobuf.Any"
+   * field. This method showcases handling errors thus encoded, particularly
+   * over REST transport. Note that GAPICs only allow the type
+   * "google.protobuf.Any" for field paths ending in "error.details", and, at
+   * run-time, the actual types for these fields must be one of the types in
+   * google/rpc/error_details.proto.
+   *
+   * @param {Object} request
+   *   The request object that will be sent.
+   * @param {string} request.singleDetailText
+   *   Content to return in a singular `*.error.details` field of type
+   *   `google.protobuf.Any`
+   * @param {string[]} request.multiDetailText
+   *   Content to return in a repeated `*.error.details` field of type
+   *   `google.protobuf.Any`
+   * @param {object} [options]
+   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+   * @returns {Promise} - The promise which resolves to an array.
+   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.EchoErrorDetailsResponse|EchoErrorDetailsResponse}.
+   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+   *   for more details and examples.
+   * @example <caption>include:samples/generated/v1beta1/echo.echo_error_details.js</caption>
+   * region_tag:localhost_v1beta1_generated_Echo_EchoErrorDetails_async
+   */
+  echoErrorDetails(
+    request?: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+    options?: CallOptions
+  ): Promise<
+    [
+      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+      protos.google.showcase.v1beta1.IEchoErrorDetailsRequest | undefined,
+      {} | undefined,
+    ]
+  >;
+  echoErrorDetails(
+    request: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+    options: CallOptions,
+    callback: Callback<
+      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+      | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  echoErrorDetails(
+    request: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+    callback: Callback<
+      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+      | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): void;
+  echoErrorDetails(
+    request?: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+    optionsOrCallback?:
+      | CallOptions
+      | Callback<
+          protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+          | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
+          | null
+          | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+      | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
+      | null
+      | undefined,
+      {} | null | undefined
+    >
+  ): Promise<
+    [
+      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+      protos.google.showcase.v1beta1.IEchoErrorDetailsRequest | undefined,
+      {} | undefined,
+    ]
+  > | void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    } else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    this.initialize();
+    return this.innerApiCalls.echoErrorDetails(request, options, callback);
   }
   /**
    * This is similar to the PagedExpand except that it uses

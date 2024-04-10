@@ -36,7 +36,7 @@ export class ShowcaseServer {
     const testDir = path.join(process.cwd(), '.showcase-server-dir');
     const platform = process.platform;
     const arch = process.arch === 'x64' ? 'amd64' : process.arch;
-    const showcaseVersion = process.env['SHOWCASE_VERSION'] || '0.28.4';
+    const showcaseVersion = process.env['SHOWCASE_VERSION'] || '0.32.2';
     const tarballFilename = `gapic-showcase-${showcaseVersion}-${platform}-${arch}.tar.gz`;
     const fallbackServerUrl = `https://github.com/googleapis/gapic-showcase/releases/download/v${showcaseVersion}/${tarballFilename}`;
     const binaryName = './gapic-showcase';
