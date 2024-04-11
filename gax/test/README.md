@@ -20,7 +20,7 @@ Currently, the process to update the showcase echo client is entirely manual. It
 #### Regenerate the clients
 The following steps will regenerate new Echo and Sequence clients from the latest version of GAPIC showcase.
 
-**Prerequsities**
+**Prerequisites**
 * an environment where you can run [Bazel](https://bazel.build/) (Recommended: a gLinux environment, at least for the generation steps)
 * an environment with `node`, `npm`, and `npx`
 * a GitHub account and the git CLI
