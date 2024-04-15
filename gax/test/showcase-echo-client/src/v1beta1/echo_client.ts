@@ -252,8 +252,7 @@ export class EchoClient {
       ),
       collect: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.CLIENT_STREAMING,
-        !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
+        !!opts.fallback
       ),
       chat: new this._gaxModule.StreamDescriptor(
         this._gaxModule.StreamType.BIDI_STREAMING,
