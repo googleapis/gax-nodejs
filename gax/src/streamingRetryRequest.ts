@@ -22,6 +22,7 @@ const DEFAULTS = {
     Max # of retries
   */
   maxRetries: 2,
+  request: require('teeny-request'),
 };
 // In retry-request, you could pass parameters to request using the requestOpts parameter
 // when we called retry-request from gax, we always passed null
@@ -40,15 +41,6 @@ interface streamingRetryRequestOptions {
  */
 export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
   opts = Object.assign({}, DEFAULTS, opts);
-
-  if (opts.request === undefined) {
-    try {
-      // eslint-disable-next-line node/no-unpublished-require
-      opts.request = require('request');
-    } catch (e) {
-      throw new Error('A request library must be provided to retry-request.');
-    }
-  }
 
   let numNoResponseAttempts = 0;
   let streamResponseHandled = false;
