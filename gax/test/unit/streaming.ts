@@ -1091,7 +1091,7 @@ describe('streaming', () => {
       assert.strictEqual(counter, 2);
     });
   });
-  it('retries using resumption request function ', done => {
+  it.only('retries using resumption request function ', done => {
     // stubbing cancel is needed because PassThrough doesn't have
     // a cancel method and cancel is called as part of the retry
     sinon.stub(streaming.StreamProxy.prototype, 'cancel');
@@ -1157,10 +1157,11 @@ describe('streaming', () => {
       true // new retry behavior enabled
     );
     // resumption strategy is to pass a different arg to the function
-    const getResumptionRequestFn = (originalRequest: RequestType) => {
+    const getResumptionRequestFn = sinon.spy(
+        (originalRequest: RequestType) => {
       assert.strictEqual(originalRequest.arg, 0);
       return {arg: 2};
-    };
+    });
     const s = apiCall(
       {arg: 0},
       {
@@ -1194,6 +1195,7 @@ describe('streaming', () => {
         receivedData.join(' '),
         'Hello World testing retries'
       );
+      assert.strictEqual(getResumptionRequestFn.callCount, 1);
       done();
     });
   });
