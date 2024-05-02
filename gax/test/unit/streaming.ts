@@ -1091,7 +1091,7 @@ describe('streaming', () => {
       assert.strictEqual(counter, 2);
     });
   });
-  it.only('retries using resumption request function ', done => {
+  it('retries using resumption request function ', done => {
     // stubbing cancel is needed because PassThrough doesn't have
     // a cancel method and cancel is called as part of the retry
     sinon.stub(streaming.StreamProxy.prototype, 'cancel');
