@@ -1157,8 +1157,7 @@ describe('streaming', () => {
       true // new retry behavior enabled
     );
     // resumption strategy is to pass a different arg to the function
-    const getResumptionRequestFn = sinon.spy(
-        (originalRequest: RequestType) => {
+    const getResumptionRequestFn = sinon.spy((originalRequest: RequestType) => {
       assert.strictEqual(originalRequest.arg, 0);
       return {arg: 2};
     });
