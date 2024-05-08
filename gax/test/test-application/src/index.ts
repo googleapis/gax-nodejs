@@ -510,7 +510,7 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', error => {
+    attemptStream.on('error', (error: GoogleError) => {
       // should not reach this
       reject(error);
     });
@@ -826,7 +826,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(() => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -841,6 +841,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     attemptStream.on('error', (e: GoogleError) => {
       assert.strictEqual(e.code, 3);
       assert.match(e.note!, /not classified as transient/);
+      resolve();
     });
   });
 }
@@ -875,7 +876,7 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(() => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -889,6 +890,7 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
     attemptStream.on('error', (e: GoogleError) => {
       assert.strictEqual(e.code, 14);
       assert.match(e.note!, /not classified as transient/);
+      resolve();
     });
   });
 }
@@ -923,7 +925,7 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(() => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -937,6 +939,7 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     attemptStream.on('error', (e: GoogleError) => {
       assert.strictEqual(e.code, 4);
       assert.match(e.note!, /not classified as transient/);
+      resolve();
     });
   });
 }
@@ -971,7 +974,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(() => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -988,6 +991,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
         e.message,
         /Cannot set both totalTimeoutMillis and maxRetries/
       );
+      resolve();
     });
   });
 }
