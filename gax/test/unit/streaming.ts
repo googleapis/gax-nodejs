@@ -1157,10 +1157,10 @@ describe('streaming', () => {
       true // new retry behavior enabled
     );
     // resumption strategy is to pass a different arg to the function
-    const getResumptionRequestFn = (originalRequest: RequestType) => {
+    const getResumptionRequestFn = sinon.spy((originalRequest: RequestType) => {
       assert.strictEqual(originalRequest.arg, 0);
       return {arg: 2};
-    };
+    });
     const s = apiCall(
       {arg: 0},
       {
@@ -1194,6 +1194,7 @@ describe('streaming', () => {
         receivedData.join(' '),
         'Hello World testing retries'
       );
+      assert.strictEqual(getResumptionRequestFn.callCount, 1);
       done();
     });
   });

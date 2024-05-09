@@ -133,7 +133,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       const resumptionRetryArgument =
         retry.getResumptionRequestFn(retryArgument);
       if (resumptionRetryArgument !== undefined) {
-        retryArgument = retry.getResumptionRequestFn(retryArgument);
+        retryArgument = resumptionRetryArgument;
       }
     }
     this.resetStreams(stream);
