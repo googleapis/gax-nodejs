@@ -404,7 +404,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     });
 
     stream.on('data', data => {
-      console.log('data in forwardEventsWithRetries')
+      console.log('data in forwardEventsWithRetries');
       console.log(data);
       this.retries = 0;
     });
