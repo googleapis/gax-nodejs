@@ -39,6 +39,8 @@ interface streamingRetryRequestOptions {
  * @returns
  */
 export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
+  console.log('in streamingRetryRequest');
+  console.log(JSON.stringify(opts));
   opts = Object.assign({}, DEFAULTS, opts);
 
   if (opts.request === undefined) {
@@ -111,6 +113,10 @@ export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
       // but the error event should not be passed - if it emits as part of .destroy()
       // it will bubble up early to the caller
       retryStream.destroy();
+    });
+    requestStream.on('data', data => {
+      console.log('streamingRetryRequest data');
+      console.log(data);
     });
   }
 }

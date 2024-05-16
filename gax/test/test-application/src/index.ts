@@ -80,6 +80,14 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
+  /*
+  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+   */
+  await testExample(grpcSequenceClientWithServerStreamingRetries);
+
+  /*
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -150,6 +158,7 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
+   */
 }
 
 function createStreamingSequenceRequestFactory(
@@ -707,6 +716,83 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
     assert.equal(
       finalData.join(' '),
       'This This is This is testing the brand new and shiny StreamingSequence server 3'
+    );
+  });
+}
+
+async function testExample(client: SequenceServiceClient) {
+  const finalData: string[] = [];
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4, 13, 14].includes(error!.code!);
+  };
+  const backoffSettings = createBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    null,
+    1.5,
+    3000,
+    600000
+  );
+  const getResumptionRequestFn = (request: RequestType) => {
+    return request;
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  /*
+  const request = createStreamingSequenceRequestFactory(
+    [Status.OK],
+    [0.1],
+    [11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+   */
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      console.log('final data');
+      console.log(response);
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', error => {
+      reject(error);
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.deepStrictEqual(
+      finalData.join(' '),
+      'This is testing the brand new and shiny StreamingSequence server 3'
     );
   });
 }

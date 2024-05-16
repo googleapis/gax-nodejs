@@ -106,6 +106,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     rest?: boolean,
     gaxServerStreamingRetries?: boolean
   ) {
+    console.log('in constructor');
     super(undefined, undefined, {
       objectMode: true,
       readable: type !== StreamType.CLIENT_STREAMING,
@@ -128,6 +129,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   }
 
   retry(stream: CancellableStream, retry: RetryOptions) {
+    console.log('in retry');
     let retryArgument = this.argument! as unknown as RequestType;
     if (typeof retry.getResumptionRequestFn! === 'function') {
       const resumptionRetryArgument =
@@ -159,6 +161,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     maxRetries: number,
     totalTimeoutMillis: number
   ): void {
+    console.log('throwIfMaxRetriesOrTotalTimeoutExceeded');
     const now = new Date();
 
     if (
@@ -202,6 +205,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     retry: RetryOptions,
     error: Error
   ): void {
+    console.log('in streamHandoffErrorHandler');
     let retryStream = this.stream;
     const delayMult = retry.backoffSettings.retryDelayMultiplier;
     const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
@@ -270,16 +274,26 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    *   algorithm.
    */
   streamHandoffHelper(stream: CancellableStream, retry: RetryOptions): void {
+    console.log('in streamHandoffHelper');
     let enteredError = false;
-    const eventsToForward = ['metadata', 'response', 'status', 'data'];
+    const eventsToForward = ['metadata', 'response', 'status'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
     });
 
     stream.on('error', error => {
+      // @ts-ignore
+      console.log(`error code: ${error.code}`);
+      console.log('streamHandoffHelper error');
+      debugger;
       enteredError = true;
       this.streamHandoffErrorHandler(stream, retry, error);
+    });
+    stream.on('data', data => {
+      console.log('Getting data');
+      console.log(data);
+      this.emit('data', data);
     });
 
     stream.on('end', () => {
@@ -300,6 +314,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
 
   forwardEvents(stream: Stream) {
+    console.log('in forwardEvents');
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
@@ -362,6 +377,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream: CancellableStream,
     retry: RetryOptions
   ): CancellableStream | undefined {
+    console.log('in forwardEventsWithRetries');
     let retryStream = this.stream;
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
@@ -378,6 +394,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           message: 'OK',
         });
       }
+    });
+
+    stream.on('data', (data) => {
+      console.log('data in forwardEventsWithRetries')
+      console.log(data);
     });
 
     // We also want to supply the status data as 'response' event to support
@@ -399,6 +420,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     });
 
     stream.on('error', error => {
+      // @ts-ignore
+      console.log(`error code: ${error.code}`);
+      console.log('handling error in forwardEventsWithRetries');
       const timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
@@ -443,6 +467,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {CancellableStream} requestStream - the stream to end
    */
   resetStreams(requestStream: CancellableStream) {
+    console.log('in resetStreams');
     if (requestStream) {
       requestStream.cancel && requestStream.cancel();
       if (requestStream.destroy) {
@@ -469,6 +494,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     retryRequestOptions: RetryRequestOptions = {},
     retry: RetryOptions
   ) {
+    console.log('in setStream');
     this.apiCall = apiCall;
     this.argument = argument;
 
