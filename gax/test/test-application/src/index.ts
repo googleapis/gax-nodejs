@@ -799,7 +799,7 @@ async function testExample(client: SequenceServiceClient) {
 async function testResetRetriesToZero(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
-    return [4, 5, 6].includes(error!.code!);
+    return [4, 5, 6, 7].includes(error!.code!);
   };
   const backoffSettings = createBackoffSettings(
       10000,
@@ -833,10 +833,11 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
         Status.DEADLINE_EXCEEDED,
         Status.NOT_FOUND,
         Status.ALREADY_EXISTS,
+        Status.PERMISSION_DENIED,
         Status.OK,
       ],
-      [0.1, 0.1, 0.1, 0.1],
-      [1, 1, 1, 1],
+      [0.1, 0.1, 0.1, 0.1, 0.1],
+      [1, 1, 1, 1, 1],
       'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
@@ -868,7 +869,7 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
     console.log(finalData);
     assert.deepStrictEqual(
         finalData.join(' '),
-        'This This This This'
+        'This This This This This'
     );
   });
 }

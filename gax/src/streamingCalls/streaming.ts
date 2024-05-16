@@ -227,6 +227,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       deadline = now.getTime() + retry.backoffSettings.totalTimeoutMillis;
     }
     const maxRetries = retry.backoffSettings.maxRetries!;
+    this.retries!++;
     try {
       this.throwIfMaxRetriesOrTotalTimeoutExceeded(
         deadline,
@@ -237,7 +238,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       return;
     }
 
-    this.retries!++;
     const e = GoogleError.parseGRPCStatusDetails(error);
     let shouldRetry = this.defaultShouldRetry(e!, retry);
     if (retry.shouldRetryFn) {
@@ -299,7 +299,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream.on('data', data => {
       console.log('Getting data');
       console.log(data);
-      // this.retries = 0;
+      this.retries = 0;
       this.emit('data', data);
     });
 
@@ -403,9 +403,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       }
     });
 
-    stream.on('data', (data) => {
+    stream.on('data', data => {
       console.log('data in forwardEventsWithRetries')
       console.log(data);
+      this.retries = 0;
     });
 
     // We also want to supply the status data as 'response' event to support
