@@ -35,6 +35,8 @@ const duplexify: DuplexifyConstructor = require('duplexify');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const retryRequest = require('retry-request');
 
+let errorHandlerCount = 0;
+
 // Directly copy over Duplexify interfaces
 export interface DuplexifyOptions extends DuplexOptions {
   autoDestroy?: boolean;
@@ -180,6 +182,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       throw error;
     }
 
+    const retries = this.retries;
+    console.log('maxRetries');
+    console.log(`max retries: ${maxRetries}`);
+    console.log(`total retries: ${retries}`);
     if (this.retries && this.retries >= maxRetries) {
       const error = new GoogleError(
         'Exceeded maximum number of retries before any ' +
@@ -283,16 +289,17 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     });
 
     stream.on('error', error => {
+      errorHandlerCount = errorHandlerCount + 1;
       // @ts-ignore
-      console.log(`error code: ${error.code}`);
-      console.log('streamHandoffHelper error');
-      debugger;
+      console.log(`error code: ${error.code} times: ${errorHandlerCount}`);
+      console.log('catching streamHandoffHelper error');
       enteredError = true;
       this.streamHandoffErrorHandler(stream, retry, error);
     });
     stream.on('data', data => {
       console.log('Getting data');
       console.log(data);
+      // this.retries = 0;
       this.emit('data', data);
     });
 

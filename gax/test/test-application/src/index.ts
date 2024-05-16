@@ -723,7 +723,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
 async function testExample(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
-    return [4, 13, 14].includes(error!.code!);
+    return [4, 5, 6].includes(error!.code!);
   };
   const backoffSettings = createBackoffSettings(
     10000,
@@ -732,8 +732,9 @@ async function testExample(client: SequenceServiceClient) {
     null,
     1.5,
     3000,
-    600000
+    null
   );
+  backoffSettings.maxRetries = 2;
   const getResumptionRequestFn = (request: RequestType) => {
     return request;
   };
@@ -752,19 +753,16 @@ async function testExample(client: SequenceServiceClient) {
   client.initialize();
 
   const request = createStreamingSequenceRequestFactory(
-    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
-    [0.1, 0.1, 0.1],
-    [1, 2, 11],
+    [
+      Status.DEADLINE_EXCEEDED,
+      Status.NOT_FOUND,
+      Status.ALREADY_EXISTS,
+      Status.OK,
+    ],
+    [0.1, 0.1, 0.1, 0.1],
+    [0, 0, 1, 0],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
-  /*
-  const request = createStreamingSequenceRequestFactory(
-    [Status.OK],
-    [0.1],
-    [11],
-    'This is testing the brand new and shiny StreamingSequence server 3'
-  );
-   */
   const response = await client.createStreamingSequence(request);
   await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
@@ -783,6 +781,7 @@ async function testExample(client: SequenceServiceClient) {
       finalData.push(response.content);
     });
     attemptStream.on('error', error => {
+      console.log('rejected');
       reject(error);
     });
     attemptStream.on('end', () => {
