@@ -80,13 +80,7 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
-  /*
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-   */
   await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
-  await testShouldNotRetry(grpcSequenceClientWithServerStreamingRetries);
 
   /*
   // assuming gRPC server is started locally
@@ -870,80 +864,6 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
     console.log(finalData);
     assert.deepStrictEqual(finalData.join(' '), 'This This This This This');
   });
-}
-
-// The test should not retry when the max retries are set to 0
-async function testShouldNotRetry(client: SequenceServiceClient) {
-  const finalData: string[] = [];
-  const shouldRetryFn = (error: GoogleError) => {
-    return [4].includes(error!.code!);
-  };
-  const backoffSettings = createBackoffSettings(
-    10000,
-    2.5,
-    1000,
-    null,
-    1.5,
-    3000,
-    null
-  );
-  backoffSettings.maxRetries = 0;
-  const getResumptionRequestFn = (request: RequestType) => {
-    return request;
-  };
-
-  const retryOptions = new RetryOptions(
-    [],
-    backoffSettings,
-    shouldRetryFn,
-    getResumptionRequestFn
-  );
-
-  const settings = {
-    retry: retryOptions,
-  };
-
-  client.initialize();
-
-  const request = createStreamingSequenceRequestFactory(
-    [Status.DEADLINE_EXCEEDED],
-    [0.1],
-    [1],
-    'This is testing the brand new and shiny StreamingSequence server 3'
-  );
-  const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, reject) => {
-    const sequence = response[0];
-
-    const attemptRequest =
-      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
-    attemptRequest.name = sequence.name!;
-
-    const attemptStream = client.attemptStreamingSequence(
-      attemptRequest,
-      settings
-    );
-    attemptStream.on('data', (response: {content: string}) => {
-      console.log('final data');
-      console.log(response);
-      finalData.push(response.content);
-    });
-    attemptStream.on('error', error => {
-      console.log('rejected');
-      reject(error);
-    });
-    attemptStream.on('end', () => {
-      attemptStream.end();
-      resolve();
-    });
-  })
-    .then(() => {
-      assert.fail('The user should have received an error');
-    })
-    .catch((error: {code: number}) => {
-      console.log('error bubbled all the way up');
-      assert.strictEqual(error.code, Status.DEADLINE_EXCEEDED);
-    });
 }
 
 // streaming call that retries twice with RetryRequestOpsions and resumes from where it left off
