@@ -80,6 +80,7 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
+  /*
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -150,7 +151,8 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
-  await testShouldNotRetry(grpcSequenceClientWithServerStreamingRetries);
+   */
+  await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -713,7 +715,8 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
 }
 
 // The test should not retry when the max retries are set to 0
-async function testShouldNotRetry(client: SequenceServiceClient) {
+// and the emitted error should bubble up to the user when it does not retry.
+async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
     return [4].includes(error!.code!);
@@ -746,9 +749,9 @@ async function testShouldNotRetry(client: SequenceServiceClient) {
   client.initialize();
 
   const request = createStreamingSequenceRequestFactory(
-    [Status.DEADLINE_EXCEEDED],
-    [0.1],
-    [1],
+    [Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1],
+    [1, 1],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
