@@ -35,8 +35,6 @@ const duplexify: DuplexifyConstructor = require('duplexify');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const retryRequest = require('retry-request');
 
-let errorHandlerCount = 0;
-
 // Directly copy over Duplexify interfaces
 export interface DuplexifyOptions extends DuplexOptions {
   autoDestroy?: boolean;
@@ -108,7 +106,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     rest?: boolean,
     gaxServerStreamingRetries?: boolean
   ) {
-    console.log('in constructor');
     super(undefined, undefined, {
       objectMode: true,
       readable: type !== StreamType.CLIENT_STREAMING,
@@ -131,7 +128,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   }
 
   retry(stream: CancellableStream, retry: RetryOptions) {
-    console.log('in retry');
     let retryArgument = this.argument! as unknown as RequestType;
     if (typeof retry.getResumptionRequestFn! === 'function') {
       const resumptionRetryArgument =
@@ -163,7 +159,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     maxRetries: number,
     totalTimeoutMillis: number
   ): void {
-    console.log('throwIfMaxRetriesOrTotalTimeoutExceeded');
     const now = new Date();
 
     if (
@@ -227,7 +222,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       deadline = now.getTime() + retry.backoffSettings.totalTimeoutMillis;
     }
     const maxRetries = retry.backoffSettings.maxRetries!;
-    this.retries!++;
     try {
       this.throwIfMaxRetriesOrTotalTimeoutExceeded(
         deadline,
@@ -238,6 +232,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       return;
     }
 
+    this.retries!++;
     const e = GoogleError.parseGRPCStatusDetails(error);
     let shouldRetry = this.defaultShouldRetry(e!, retry);
     if (retry.shouldRetryFn) {
@@ -280,27 +275,16 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    *   algorithm.
    */
   streamHandoffHelper(stream: CancellableStream, retry: RetryOptions): void {
-    console.log('in streamHandoffHelper');
     let enteredError = false;
-    const eventsToForward = ['metadata', 'response', 'status'];
+    const eventsToForward = ['metadata', 'response', 'status', 'data'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
     });
 
     stream.on('error', error => {
-      errorHandlerCount = errorHandlerCount + 1;
-      // @ts-ignore
-      console.log(`error code: ${error.code} times: ${errorHandlerCount}`);
-      console.log('catching streamHandoffHelper error');
       enteredError = true;
       this.streamHandoffErrorHandler(stream, retry, error);
-    });
-    stream.on('data', data => {
-      console.log('Getting data');
-      console.log(data);
-      this.retries = 0;
-      this.emit('data', data);
     });
 
     stream.on('end', () => {
@@ -321,7 +305,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
 
   forwardEvents(stream: Stream) {
-    console.log('in forwardEvents');
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
@@ -384,7 +367,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream: CancellableStream,
     retry: RetryOptions
   ): CancellableStream | undefined {
-    console.log('in forwardEventsWithRetries');
     let retryStream = this.stream;
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
@@ -401,12 +383,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           message: 'OK',
         });
       }
-    });
-
-    stream.on('data', data => {
-      console.log('data in forwardEventsWithRetries');
-      console.log(data);
-      this.retries = 0;
     });
 
     // We also want to supply the status data as 'response' event to support
@@ -428,9 +404,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     });
 
     stream.on('error', error => {
-      // @ts-ignore
-      console.log(`error code: ${error.code}`);
-      console.log('handling error in forwardEventsWithRetries');
       const timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {

@@ -41,8 +41,6 @@ interface streamingRetryRequestOptions {
  * @returns
  */
 export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
-  console.log('in streamingRetryRequest');
-  console.log(JSON.stringify(opts));
   opts = Object.assign({}, DEFAULTS, opts);
 
   if (opts.request === undefined) {
@@ -110,19 +108,11 @@ export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
     // No more attempts need to be made, just continue on.
     retryStream.emit('response', response);
     delayStream.pipe(retryStream);
-    requestStream.on('error', error => {
+    requestStream.on('error', () => {
       // retryStream must be destroyed here for the stream handoff part of retries to function properly
       // but the error event should not be passed - if it emits as part of .destroy()
       // it will bubble up early to the caller
-      bubbledUpError = bubbledUpError + 1;
-      console.log(`bubbled up error ${bubbledUpError}`);
-      // @ts-ignore
-      console.log(`error code: ${error.code}`);
       retryStream.destroy();
-    });
-    requestStream.on('data', data => {
-      console.log('streamingRetryRequest data');
-      console.log(data);
     });
   }
 }
