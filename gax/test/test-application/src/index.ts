@@ -715,6 +715,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   });
 }
 
+// When the stream recieves data then the retry count should be set to 0
 async function testResetRetriesToZero(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
