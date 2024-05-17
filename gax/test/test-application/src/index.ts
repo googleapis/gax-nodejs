@@ -755,7 +755,7 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       Status.OK,
     ],
     [0.1, 0.1, 0.1, 0.1, 0.1],
-    [1, 1, 1, 1, 1],
+    [1, 2, 3, 4, 5],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
@@ -781,7 +781,10 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       resolve();
     });
   }).then(() => {
-    assert.deepStrictEqual(finalData.join(' '), 'This This This This This');
+    assert.deepStrictEqual(
+      finalData.join(' '),
+      'This This is This is testing This is testing the This is testing the brand'
+    );
   });
 }
 
