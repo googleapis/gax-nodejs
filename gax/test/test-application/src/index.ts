@@ -82,7 +82,6 @@ async function testShowcase() {
 
   await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
-  /*
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -153,7 +152,6 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
-   */
 }
 
 function createStreamingSequenceRequestFactory(
@@ -773,12 +771,9 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       settings
     );
     attemptStream.on('data', (response: {content: string}) => {
-      console.log('final data');
-      console.log(response);
       finalData.push(response.content);
     });
     attemptStream.on('error', error => {
-      console.log('rejected');
       reject(error);
     });
     attemptStream.on('end', () => {
@@ -786,7 +781,6 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       resolve();
     });
   }).then(() => {
-    console.log(finalData);
     assert.deepStrictEqual(finalData.join(' '), 'This This This This This');
   });
 }
