@@ -85,7 +85,9 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
    */
-  await testShouldFailOnThirdError(grpcSequenceClientWithServerStreamingRetries);
+  await testShouldFailOnThirdError(
+    grpcSequenceClientWithServerStreamingRetries
+  );
   // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
   // await testShouldNotRetry(grpcSequenceClientWithServerStreamingRetries);
 
