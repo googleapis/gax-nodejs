@@ -781,7 +781,6 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
       assert.fail('The user should have received an error');
     })
     .catch((error: {code: number}) => {
-      console.log('error bubbled all the way up');
       assert.strictEqual(error.code, Status.DEADLINE_EXCEEDED);
     });
 }
