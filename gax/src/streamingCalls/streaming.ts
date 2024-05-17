@@ -271,7 +271,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
   streamHandoffHelper(stream: CancellableStream, retry: RetryOptions): void {
     let enteredError = false;
-    const eventsToForward = ['metadata', 'response', 'status'];
+    // const eventsToForward = ['metadata', 'response', 'status'];
+    const eventsToForward = ['metadata', 'response', 'status', 'data'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
@@ -281,9 +282,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       enteredError = true;
       this.streamHandoffErrorHandler(stream, retry, error);
     });
-    stream.on('data', data => {
+
+    stream.on('data', () => {
       this.retries = 0;
-      this.emit('data', data);
     });
 
     stream.on('end', () => {
@@ -384,9 +385,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       }
     });
 
+    /*
     stream.on('data', () => {
       this.retries = 0;
     });
+     */
 
     // We also want to supply the status data as 'response' event to support
     // the behavior of google-cloud-node expects.
