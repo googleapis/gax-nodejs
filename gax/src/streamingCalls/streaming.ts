@@ -177,10 +177,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       throw error;
     }
 
-    const retries = this.retries;
-    console.log('maxRetries');
-    console.log(`max retries: ${maxRetries}`);
-    console.log(`total retries: ${retries}`);
     if (this.retries && this.retries >= maxRetries) {
       const error = new GoogleError(
         'Exceeded maximum number of retries before any ' +
@@ -206,7 +202,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     retry: RetryOptions,
     error: Error
   ): void {
-    console.log('in streamHandoffErrorHandler');
     let retryStream = this.stream;
     const delayMult = retry.backoffSettings.retryDelayMultiplier;
     const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
@@ -448,7 +443,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {CancellableStream} requestStream - the stream to end
    */
   resetStreams(requestStream: CancellableStream) {
-    console.log('in resetStreams');
     if (requestStream) {
       requestStream.cancel && requestStream.cancel();
       if (requestStream.destroy) {
@@ -475,7 +469,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     retryRequestOptions: RetryRequestOptions = {},
     retry: RetryOptions
   ) {
-    console.log('in setStream');
     this.apiCall = apiCall;
     this.argument = argument;
 

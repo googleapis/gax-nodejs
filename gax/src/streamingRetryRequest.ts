@@ -17,8 +17,6 @@ import {GoogleError} from './googleError';
 import {ResponseType} from './apitypes';
 import {StreamProxy} from './streamingCalls/streaming';
 
-let bubbledUpError = 0;
-
 const DEFAULTS = {
   /*
     Max # of retries
