@@ -741,9 +741,6 @@ describe('streaming', () => {
       );
       done();
     });
-    s.on('end', () => {
-      done();
-    });
   });
   it('emit transient error message on first error when new retries are enabled', done => {
     const errorInfoObj = {
