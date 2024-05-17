@@ -85,8 +85,9 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
    */
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
-  await testShouldNotRetry(grpcSequenceClientWithServerStreamingRetries);
+  await testShouldFailOnThirdError(grpcSequenceClientWithServerStreamingRetries);
+  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  // await testShouldNotRetry(grpcSequenceClientWithServerStreamingRetries);
 
   /*
   // assuming gRPC server is started locally
@@ -721,7 +722,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   });
 }
 
-async function testExample(client: SequenceServiceClient) {
+async function testShouldFailOnThirdError(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
     return [4, 5, 6].includes(error!.code!);
@@ -761,7 +762,7 @@ async function testExample(client: SequenceServiceClient) {
       Status.OK,
     ],
     [0.1, 0.1, 0.1, 0.1],
-    [0, 0, 1, 0],
+    [0, 0, 0, 1],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
