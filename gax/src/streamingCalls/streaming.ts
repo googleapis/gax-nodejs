@@ -432,7 +432,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return; // end chunk
         }
       } else {
-        return GoogleError.parseGRPCStatusDetails(error);
+        const emittedError = GoogleError.parseGRPCStatusDetails(error);
+        this.emit('error', emittedError);
+        return emittedError;
       }
     });
     return retryStream;
