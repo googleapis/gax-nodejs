@@ -767,12 +767,9 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
       settings
     );
     attemptStream.on('data', (response: {content: string}) => {
-      console.log('final data');
-      console.log(response);
       finalData.push(response.content);
     });
     attemptStream.on('error', error => {
-      console.log('rejected');
       reject(error);
     });
     attemptStream.on('end', () => {
