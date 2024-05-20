@@ -98,8 +98,11 @@ export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
     // No more attempts need to be made, just continue on.
     retryStream.emit('response', response);
     delayStream.pipe(retryStream);
-    requestStream.on('error', (err: GoogleError) => {
-      retryStream.destroy(err);
+    requestStream.on('error', () => {
+      // retryStream must be destroyed here for the stream handoff part of retries to function properly
+      // but the error event should not be passed - if it emits as part of .destroy()
+      // it will bubble up early to the caller
+      retryStream.destroy();
     });
   }
 }

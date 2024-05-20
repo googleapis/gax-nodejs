@@ -55,7 +55,7 @@
     "gts": "^5.0.0",
     "mocha": "^9.0.0",
     "ncp": "^2.0.0",
-    "protobufjs": "7.2.6",
+    "protobufjs": "7.3.0",
     "typescript": "^5.1.6"
   },
   "engines": {

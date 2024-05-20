@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.3.2",
+  "version": "4.3.3",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -22,7 +22,7 @@
     "retry-request": "^7.0.0",
     "teeny-request": "^9.0.0",
     "uuid": "^9.0.1",
-    "protobufjs": "7.2.6"
+    "protobufjs": "7.3.0"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.7",
