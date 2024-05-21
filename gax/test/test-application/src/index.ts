@@ -762,7 +762,6 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
       reject(new GoogleError('The stream should not receive any data'));
     });
     attemptStream.on('error', (error: GoogleError) => {
-      console.log('catching catching error');
       try {
         assert.strictEqual(error.code, 4);
         assert.strictEqual(
