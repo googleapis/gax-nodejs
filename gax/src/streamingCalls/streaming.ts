@@ -177,7 +177,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       throw error;
     }
 
-    const retries = this.retries;
     if (this.retries && this.retries >= maxRetries) {
       const error = new GoogleError(
         'Exceeded maximum number of retries before any ' +
