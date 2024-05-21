@@ -724,31 +724,21 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   });
 }
 
+// When maxRetries are set to 2 then on the third error from the server gax
+// should throw an error that says the retry count has been exceeded.
 async function testShouldFailOnThirdError(client: SequenceServiceClient) {
-  const finalData: string[] = [];
-  const shouldRetryFn = (error: GoogleError) => {
-    return [4, 5, 6].includes(error!.code!);
-  };
   const backoffSettings = createBackoffSettings(
-    10000,
-    2.5,
+    100,
+    1.2,
     1000,
     null,
     1.5,
     3000,
     null
   );
+  const allowedCodes = [4, 5, 6];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
   backoffSettings.maxRetries = 2;
-  const getResumptionRequestFn = (request: RequestType) => {
-    return request;
-  };
-
-  const retryOptions = new RetryOptions(
-    [],
-    backoffSettings,
-    shouldRetryFn,
-    getResumptionRequestFn
-  );
 
   const settings = {
     retry: retryOptions,
@@ -780,23 +770,26 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
       settings
     );
     attemptStream.on('data', (response: {content: string}) => {
-      console.log('final data');
-      console.log(response);
-      finalData.push(response.content);
+      reject(new GoogleError('The stream should not receive any data'));
     });
-    attemptStream.on('error', error => {
-      console.log('rejected');
-      reject(error);
-    });
-    attemptStream.on('end', () => {
-      attemptStream.end();
+    attemptStream.on('error', (error: GoogleError) => {
+      console.log('catching catching error');
+      try {
+        assert.strictEqual(error.code, 4);
+        assert.strictEqual(
+          error.message,
+          'Exceeded maximum number of retries before any response was received'
+        );
+      } catch (assertionError: unknown) {
+        reject(assertionError);
+      }
       resolve();
     });
-  }).then(() => {
-    assert.deepStrictEqual(
-      finalData.join(' '),
-      'This is testing the brand new and shiny StreamingSequence server 3'
-    );
+    attemptStream.on('end', (response: {content: string}) => {
+      reject(
+        new GoogleError('The stream should not end before it receives an error')
+      );
+    });
   });
 }
 
