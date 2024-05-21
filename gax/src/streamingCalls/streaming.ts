@@ -383,7 +383,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         });
       }
     });
-    
+
     // We also want to supply the status data as 'response' event to support
     // the behavior of google-cloud-node expects.
     // see:
