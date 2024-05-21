@@ -109,30 +109,39 @@ async function testShowcase() {
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingRetriesWithShouldRetryFn(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingRetrieswithRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingRetrieswithRetryRequestOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
     grpcSequenceClientWithServerStreamingRetries
   );
+
   await testEcho(grpcClientWithServerStreamingRetries);
   await testEchoError(grpcClientWithServerStreamingRetries);
   await testExpand(grpcClientWithServerStreamingRetries);
