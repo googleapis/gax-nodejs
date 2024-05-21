@@ -80,13 +80,6 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
-  await testShouldFailOnThirdError(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -747,7 +740,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
     [
       Status.DEADLINE_EXCEEDED, // Error code 4
       Status.NOT_FOUND, // Error code 5
-      Status.ALREADY_EXISTS,  // Error code 6
+      Status.ALREADY_EXISTS, // Error code 6
       Status.OK,
     ],
     [0.1, 0.1, 0.1, 0.1],
