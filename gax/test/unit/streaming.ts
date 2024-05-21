@@ -1353,9 +1353,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
         if (err.code !== 14) {
           // ignore the error we are expecting
           assert.strictEqual(err.code, 4);
-          // even though max retries is 2
-          // the retry function will always be called maxRetries+1
-          // the final call is where the failure happens
           assert.strictEqual(retrySpy.callCount, 2);
           assert.strictEqual(
             err.message,
