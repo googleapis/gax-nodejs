@@ -1312,7 +1312,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     });
 
     const spy = sinon.spy((...args: Array<{}>) => {
-      console.log('in spy');
       assert.strictEqual(args.length, 3);
       const s = new PassThrough({
         objectMode: true,
@@ -1349,7 +1348,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     );
 
     call.on('error', err => {
-      console.log('catching outer error');
       try {
         assert(err instanceof GoogleError);
         if (err.code !== 14) {
