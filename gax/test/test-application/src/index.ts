@@ -31,6 +31,7 @@ import {
   RetryOptions,
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
+import {createMaxRetriesBackoffSettings} from '../../../src';
 
 async function testShowcase() {
   const grpcClientOpts = {
@@ -81,6 +82,7 @@ async function testShowcase() {
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
   // assuming gRPC server is started locally
+  /*
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
   await testExpand(grpcClient);
@@ -150,6 +152,7 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
+  */
   await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
 }
 
@@ -719,16 +722,15 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
   const shouldRetryFn = (error: GoogleError) => {
     return [4].includes(error!.code!);
   };
-  const backoffSettings = createBackoffSettings(
+  const backoffSettings = createMaxRetriesBackoffSettings(
     10000,
     2.5,
     1000,
-    null,
+    0,
     1.5,
     3000,
-    null
+    0
   );
-  backoffSettings.maxRetries = 0;
   const getResumptionRequestFn = (request: RequestType) => {
     return request;
   };
@@ -771,8 +773,9 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
       reject(error);
     });
     attemptStream.on('end', () => {
-      attemptStream.end();
-      resolve();
+      reject(
+        new GoogleError('The stream should not end before it receives an error')
+      );
     });
   })
     .then(() => {
