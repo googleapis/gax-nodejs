@@ -770,10 +770,10 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
           error.message,
           'Exceeded maximum number of retries before any response was received'
         );
+        resolve();
       } catch (assertionError: unknown) {
         reject(assertionError);
       }
-      resolve();
     });
     attemptStream.on('end', (response: {content: string}) => {
       reject(
