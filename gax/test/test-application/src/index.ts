@@ -80,146 +80,67 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
-  let testCounter = 0;
   // assuming gRPC server is started locally
-  testCounter += 1;
-  console.log(`test counter 1`);
   await testEcho(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 2`);
   await testEchoError(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 3`);
   await testExpand(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 4`);
   await testPagedExpand(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 5`);
   await testPagedExpandAsync(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 6`);
   await testCollect(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 7`);
   await testChat(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 8`);
   await testWait(grpcClient);
-  testCounter += 1;
-  console.log(`test counter 9`);
 
   await testEcho(restClient);
-  testCounter += 1;
-  console.log(`test counter 10`);
   await testExpand(restClient); // REGAPIC supports server streaming
-  testCounter += 1;
-  console.log(`test counter 11`);
   await testPagedExpand(restClient);
-  testCounter += 1;
-  console.log(`test counter 12`);
   await testPagedExpandAsync(restClient);
-  testCounter += 1;
-  console.log(`test counter 13`);
   await testCollectThrows(restClient); // REGAPIC does not support client streaming
-  testCounter += 1;
-  console.log(`test counter 14`);
   await testChatThrows(restClient); // REGAPIC does not support bidi streaming
-  testCounter += 1;
-  console.log(`test counter 15`);
   await testWait(restClient);
 
   await testEcho(restClientCompat);
-  testCounter += 1;
-  console.log(`test counter 16`);
   await testExpand(restClientCompat); // REGAPIC supports server streaming
-  testCounter += 1;
-  console.log(`test counter 17`);
   await testPagedExpand(restClientCompat);
-  testCounter += 1;
-  console.log(`test counter 18`);
   await testPagedExpandAsync(restClientCompat);
-  testCounter += 1;
-  console.log(`test counter 19`);
   await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
-  testCounter += 1;
-  console.log(`test counter 20`);
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
-  testCounter += 1;
-  console.log(`test counter 21`);
   await testWait(restClientCompat);
-  testCounter += 1;
-  console.log(`test counter 22`);
   // Testing with gaxServerStreamingRetries being true
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 23`);
   await testServerStreamingRetriesWithShouldRetryFn(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 24`);
   await testServerStreamingRetrieswithRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 25`);
   await testServerStreamingRetrieswithRetryRequestOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 26`);
   await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 27`);
   await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 28`);
   await testServerStreamingThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 29`);
   await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 30`);
   await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
     grpcSequenceClientWithServerStreamingRetries
   );
-  testCounter += 1;
-  console.log(`test counter 31`);
   await testEcho(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 32`);
   await testEchoError(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 33`);
   await testExpand(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 34`);
   await testPagedExpand(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 35`);
   await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 36`);
   await testCollect(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 37`);
   await testChat(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 38`);
   await testWait(grpcClientWithServerStreamingRetries);
-  testCounter += 1;
-  console.log(`test counter 39`);
   await testShouldFailOnThirdError(
     grpcSequenceClientWithServerStreamingRetries
   );
