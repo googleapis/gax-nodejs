@@ -660,6 +660,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   const finalData: string[] = [];
   const retryRequestOptions = {
     objectMode: true,
+    retries: 2,
     maxRetryDelay: 70,
     retryDelayMultiplier: 3,
     totalTimeout: 650,
