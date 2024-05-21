@@ -758,7 +758,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
       attemptRequest,
       settings
     );
-    attemptStream.on('data', (response: {content: string}) => {
+    attemptStream.on('data', () => {
       reject(new GoogleError('The stream should not receive any data'));
     });
     attemptStream.on('error', (error: GoogleError) => {
@@ -774,7 +774,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
         reject(assertionError);
       }
     });
-    attemptStream.on('end', (response: {content: string}) => {
+    attemptStream.on('end', () => {
       reject(
         new GoogleError('The stream should not end before it receives an error')
       );
