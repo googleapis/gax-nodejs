@@ -745,9 +745,9 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
 
   const request = createStreamingSequenceRequestFactory(
     [
-      Status.DEADLINE_EXCEEDED,
-      Status.NOT_FOUND,
-      Status.ALREADY_EXISTS,
+      Status.DEADLINE_EXCEEDED, // Error code 4
+      Status.NOT_FOUND, // Error code 5
+      Status.ALREADY_EXISTS,  // Error code 6
       Status.OK,
     ],
     [0.1, 0.1, 0.1, 0.1],
