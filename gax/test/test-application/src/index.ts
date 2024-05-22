@@ -751,7 +751,7 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
   const request = createStreamingSequenceRequestFactory(
     [Status.DEADLINE_EXCEEDED, Status.OK],
     [0.1, 0.1],
-    [1, 2],
+    [0, 1],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
@@ -766,8 +766,8 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
       attemptRequest,
       settings
     );
-    attemptStream.on('data', (response: {content: string}) => {
-      finalData.push(response.content);
+    attemptStream.on('data', () => {
+      reject(new GoogleError('The stream should not receive any data'));
     });
     attemptStream.on('error', (error: GoogleError) => {
       try {
