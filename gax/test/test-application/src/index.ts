@@ -751,7 +751,7 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
   const request = createStreamingSequenceRequestFactory(
     [Status.DEADLINE_EXCEEDED, Status.OK],
     [0.1, 0.1],
-    [1, 1],
+    [1, 2],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
@@ -769,21 +769,25 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', error => {
-      reject(error);
+    attemptStream.on('error', (error: GoogleError) => {
+      try {
+        assert.strictEqual(error.code, 4);
+        assert.strictEqual(finalData, 'This');
+        assert.strictEqual(
+          error.message,
+          'Exceeded maximum number of retries before any response was received'
+        );
+        resolve();
+      } catch (assertionError: unknown) {
+        reject(assertionError);
+      }
     });
     attemptStream.on('end', () => {
       reject(
         new GoogleError('The stream should not end before it receives an error')
       );
     });
-  })
-    .then(() => {
-      assert.fail('The user should have received an error');
-    })
-    .catch((error: {code: number}) => {
-      assert.strictEqual(error.code, Status.DEADLINE_EXCEEDED);
-    });
+  });
 }
 
 // streaming call that retries twice with RetryRequestOpsions and resumes from where it left off
