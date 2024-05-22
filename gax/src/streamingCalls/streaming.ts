@@ -419,6 +419,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             this.destroy();
             return; //end chunk
           } else {
+            this.retries!++;
             retryStream = this.retry(stream, retry);
             this.stream = retryStream;
             return retryStream;
