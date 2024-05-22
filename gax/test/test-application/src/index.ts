@@ -82,7 +82,6 @@ async function testShowcase() {
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
   // assuming gRPC server is started locally
-  /*
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
   await testExpand(grpcClient);
@@ -152,19 +151,7 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
-  */
-  /*
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-   */
-  /*
-  await testServerStreamingRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
-   */
-  await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -728,7 +715,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
 
 // The test should not retry when the max retries are set to 0
 // and the emitted error should bubble up to the user when it does not retry.
-async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
+async function testErrorMaxRetries0(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
     return [4].includes(error!.code!);
