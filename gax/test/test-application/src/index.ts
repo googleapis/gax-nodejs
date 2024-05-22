@@ -28,10 +28,10 @@ import {
   GoogleAuth,
   Status,
   createBackoffSettings,
+  createMaxRetriesBackoffSettings,
   RetryOptions,
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
-import {createMaxRetriesBackoffSettings} from '../../../src';
 
 async function testShowcase() {
   const grpcClientOpts = {
