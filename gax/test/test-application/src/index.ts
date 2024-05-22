@@ -82,7 +82,6 @@ async function testShowcase() {
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
   // assuming gRPC server is started locally
-  /*
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
   await testExpand(grpcClient);
@@ -152,16 +151,10 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
-  */
   await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
     grpcSequenceClientWithServerStreamingRetries
   );
-  /*
-  await testServerStreamingRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
   await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
-   */
 }
 
 function createStreamingSequenceRequestFactory(
