@@ -179,7 +179,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
     if ((this.retries || this.retries === 0) && this.retries >= maxRetries) {
       const error = new GoogleError(
-          'Exceeded maximum number of retries before any ' +
+        'Exceeded maximum number of retries before any ' +
           'response was received'
       );
       error.code = Status.DEADLINE_EXCEEDED;
