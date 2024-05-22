@@ -727,7 +727,7 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
     0,
     1.5,
     3000,
-    0
+    0 // maxRetries
   );
   const getResumptionRequestFn = (request: RequestType) => {
     return request;
