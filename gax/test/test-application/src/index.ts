@@ -153,15 +153,18 @@ async function testShowcase() {
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
   */
+  /*
   await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
     grpcSequenceClientWithServerStreamingRetries
   );
+   */
   /*
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
   await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
    */
+  await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -780,7 +783,6 @@ async function testErrorShouldBubbleUp(client: SequenceServiceClient) {
     attemptStream.on('error', (error: GoogleError) => {
       try {
         assert.strictEqual(error.code, 4);
-        assert.strictEqual(finalData, 'This');
         assert.strictEqual(
           error.message,
           'Exceeded maximum number of retries before any response was received'

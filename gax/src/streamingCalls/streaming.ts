@@ -434,11 +434,17 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         }
       } else {
         console.log('maybe throwing error?');
-        this.throwIfMaxRetriesOrTotalTimeoutExceeded(
-          0,
-          maxRetries,
-          retry.backoffSettings.totalTimeoutMillis!
-        );
+        try {
+          this.throwIfMaxRetriesOrTotalTimeoutExceeded(
+              0,
+              maxRetries,
+              retry.backoffSettings.totalTimeoutMillis!
+          );
+        } catch (error: unknown) {
+          console.log('catching error');
+          console.log((error as Error).message);
+          this.destroy(error as Error);
+        }
         return GoogleError.parseGRPCStatusDetails(error);
       }
     });
