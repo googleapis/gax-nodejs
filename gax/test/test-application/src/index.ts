@@ -153,7 +153,15 @@ async function testShowcase() {
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
   */
+  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  /*
+  await testServerStreamingRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
   await testErrorShouldBubbleUp(grpcSequenceClientWithServerStreamingRetries);
+   */
 }
 
 function createStreamingSequenceRequestFactory(

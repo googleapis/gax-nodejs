@@ -401,6 +401,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream.on('error', error => {
       const timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
+      console.log('getting error');
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
         const e = GoogleError.parseGRPCStatusDetails(error);
         let shouldRetry = this.defaultShouldRetry(e!, retry);
@@ -432,6 +433,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return; // end chunk
         }
       } else {
+        console.log('maybe throwing error?');
+        this.throwIfMaxRetriesOrTotalTimeoutExceeded(
+          0,
+          maxRetries,
+          retry.backoffSettings.totalTimeoutMillis!
+        );
         return GoogleError.parseGRPCStatusDetails(error);
       }
     });
