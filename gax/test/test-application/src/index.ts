@@ -152,6 +152,9 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
+  await testShouldFailOnThirdError(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 }
 
 function createStreamingSequenceRequestFactory(
@@ -659,7 +662,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   const finalData: string[] = [];
   const retryRequestOptions = {
     objectMode: true,
-    retries: 1,
+    retries: 2,
     maxRetryDelay: 70,
     retryDelayMultiplier: 3,
     totalTimeout: 650,
@@ -785,6 +788,74 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       finalData.join(' '),
       'This This is This is testing This is testing the This is testing the brand'
     );
+  });
+}
+
+// When maxRetries are set to 2 then on the third error from the server gax
+// should throw an error that says the retry count has been exceeded.
+async function testShouldFailOnThirdError(client: SequenceServiceClient) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    null
+  );
+  const allowedCodes = [4, 5, 6];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+  backoffSettings.maxRetries = 2;
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [
+      Status.DEADLINE_EXCEEDED, // Error code 4
+      Status.NOT_FOUND, // Error code 5
+      Status.ALREADY_EXISTS, // Error code 6
+      Status.OK,
+    ],
+    [0.1, 0.1, 0.1, 0.1],
+    [0, 0, 0, 1],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', () => {
+      reject(new GoogleError('The stream should not receive any data'));
+    });
+    attemptStream.on('error', (error: GoogleError) => {
+      try {
+        assert.strictEqual(error.code, 4);
+        assert.strictEqual(
+          error.message,
+          'Exceeded maximum number of retries before any response was received'
+        );
+        resolve();
+      } catch (assertionError: unknown) {
+        reject(assertionError);
+      }
+    });
+    attemptStream.on('end', () => {
+      reject(
+        new GoogleError('The stream should not end before it receives an error')
+      );
+    });
   });
 }
 

@@ -271,7 +271,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
   streamHandoffHelper(stream: CancellableStream, retry: RetryOptions): void {
     let enteredError = false;
-    const eventsToForward = ['metadata', 'response', 'status', 'data'];
+    const eventsToForward = ['metadata', 'response', 'status'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
@@ -282,8 +282,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       this.streamHandoffErrorHandler(stream, retry, error);
     });
 
-    stream.on('data', () => {
+    stream.on('data', (data: ResponseType) => {
       this.retries = 0;
+      this.emit('data', data);
     });
 
     stream.on('end', () => {
@@ -423,6 +424,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             this.destroy();
             return; //end chunk
           } else {
+            this.retries!++;
             retryStream = this.retry(stream, retry);
             this.stream = retryStream;
             return retryStream;

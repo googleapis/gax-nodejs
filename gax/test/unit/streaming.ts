@@ -1316,7 +1316,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       const s = new PassThrough({
         objectMode: true,
       });
-      s.push('hello');
       setImmediate(() => {
         s.emit('metadata');
       });
@@ -1348,19 +1347,20 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     );
 
     call.on('error', err => {
-      assert(err instanceof GoogleError);
-      if (err.code !== 14) {
-        // ignore the error we are expecting
-        assert.strictEqual(err.code, 4);
-        // even though max retries is 2
-        // the retry function will always be called maxRetries+1
-        // the final call is where the failure happens
-        assert.strictEqual(retrySpy.callCount, 3);
-        assert.strictEqual(
-          err.message,
-          'Exceeded maximum number of retries before any response was received'
-        );
-        done();
+      try {
+        assert(err instanceof GoogleError);
+        if (err.code !== 14) {
+          // ignore the error we are expecting
+          assert.strictEqual(err.code, 4);
+          assert.strictEqual(retrySpy.callCount, 2);
+          assert.strictEqual(
+            err.message,
+            'Exceeded maximum number of retries before any response was received'
+          );
+          done();
+        }
+      } catch (error: unknown) {
+        done(error);
       }
     });
   });
