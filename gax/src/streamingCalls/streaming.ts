@@ -177,9 +177,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       throw error;
     }
 
-    if (this.retries && this.retries >= maxRetries) {
+    if ((this.retries || this.retries === 0) && this.retries >= maxRetries) {
       const error = new GoogleError(
-        'Exceeded maximum number of retries before any ' +
+          'Exceeded maximum number of retries before any ' +
           'response was received'
       );
       error.code = Status.DEADLINE_EXCEEDED;
@@ -401,7 +401,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream.on('error', error => {
       const timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
-      console.log('getting error');
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
         const e = GoogleError.parseGRPCStatusDetails(error);
         let shouldRetry = this.defaultShouldRetry(e!, retry);
@@ -433,7 +432,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return; // end chunk
         }
       } else {
-        console.log('maybe throwing error?');
         try {
           this.throwIfMaxRetriesOrTotalTimeoutExceeded(
               0,
@@ -441,9 +439,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               retry.backoffSettings.totalTimeoutMillis!
           );
         } catch (error: unknown) {
-          console.log('catching error');
-          console.log((error as Error).message);
           this.destroy(error as Error);
+          return;
         }
         return GoogleError.parseGRPCStatusDetails(error);
       }
