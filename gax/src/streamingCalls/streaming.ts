@@ -284,7 +284,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
     stream.on('data', (data: ResponseType) => {
       this.retries = 0;
-      this.emit('data', data);
+      this.emit.bind(this, 'data')(data);
     });
 
     stream.on('end', () => {
