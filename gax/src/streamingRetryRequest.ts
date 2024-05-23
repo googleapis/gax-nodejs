@@ -21,7 +21,7 @@ const DEFAULTS = {
   /*
     Max # of retries
   */
-  maxRetries: 2,
+  maxRetries: 0,
 };
 // In retry-request, you could pass parameters to request using the requestOpts parameter
 // when we called retry-request from gax, we always passed null

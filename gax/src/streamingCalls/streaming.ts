@@ -362,6 +362,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream: CancellableStream,
     retry: RetryOptions
   ): CancellableStream | undefined {
+    let errorReported = false;
     let retryStream = this.stream;
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
@@ -432,15 +433,17 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return; // end chunk
         }
       } else {
-        try {
-          this.throwIfMaxRetriesOrTotalTimeoutExceeded(
-              0,
-              maxRetries,
-              retry.backoffSettings.totalTimeoutMillis!
-          );
-        } catch (error: unknown) {
-          this.destroy(error as Error);
-          return;
+        if (!errorReported) {
+          try {
+            this.throwIfMaxRetriesOrTotalTimeoutExceeded(
+                0,
+                maxRetries,
+                retry.backoffSettings.totalTimeoutMillis!
+            );
+          } catch (error: unknown) {
+            errorReported = true;
+            this.destroy(error as Error);
+          }
         }
         return GoogleError.parseGRPCStatusDetails(error);
       }

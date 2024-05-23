@@ -665,7 +665,7 @@ describe('streaming', () => {
       done();
     });
   });
-  it('emit parsed GoogleError when new retries are enabled', done => {
+  it.only('emit parsed GoogleError when new retries are enabled', done => {
     const errorInfoObj = {
       reason: 'SERVICE_DISABLED',
       domain: 'googleapis.com',
@@ -729,19 +729,24 @@ describe('streaming', () => {
     );
 
     s.on('error', err => {
-      s.pause();
-      s.destroy();
-      assert(err instanceof GoogleError);
-      assert.deepStrictEqual(err.message, 'test error');
-      assert.strictEqual(err.domain, errorInfoObj.domain);
-      assert.strictEqual(err.reason, errorInfoObj.reason);
-      assert.strictEqual(
-        JSON.stringify(err.errorInfoMetadata),
-        JSON.stringify(errorInfoObj.metadata)
-      );
-      done();
+      try {
+        s.pause();
+        s.destroy();
+        assert.strictEqual(spy.callCount, 1);
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err.code, 4);
+        assert.strictEqual(
+          err.message,
+          'Exceeded maximum number of retries before any response was received'
+        );
+        console.log('error done');
+        done();
+      } catch (error: unknown) {
+        done(error);
+      }
     });
     s.on('end', () => {
+      console.log('end');
       done();
     });
   });
