@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.4](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.3...google-gax-v4.3.4) (2024-05-22)
+
+
+### Bug Fixes
+
+* Counter does increment first retry ([#1601](https://github.com/googleapis/gax-nodejs/issues/1601)) ([4b77bf3](https://github.com/googleapis/gax-nodejs/commit/4b77bf349e5fec46f9ad7934e4cce334b79e8013))
+* don't emit error event during stream handoff ([#1592](https://github.com/googleapis/gax-nodejs/issues/1592)) ([2e7d30a](https://github.com/googleapis/gax-nodejs/commit/2e7d30a1671aa667f7c000c737dfa40824f7b9f1))
+* Only call getResumptionRequestFn once ([#1593](https://github.com/googleapis/gax-nodejs/issues/1593)) ([e1755a9](https://github.com/googleapis/gax-nodejs/commit/e1755a920e789270dcb41b87290bab16c273d25f))
+
 ## [4.3.3](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.2...google-gax-v4.3.3) (2024-04-19)
 
 
