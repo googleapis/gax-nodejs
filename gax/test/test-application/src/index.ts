@@ -731,6 +731,8 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
     3000,
     null
   );
+  // intentionally set maxRetries to a value less than
+  // the number of errors in the sequence
   backoffSettings.maxRetries = 2;
   const getResumptionRequestFn = (request: RequestType) => {
     return request;
