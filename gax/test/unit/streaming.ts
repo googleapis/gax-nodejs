@@ -665,7 +665,7 @@ describe('streaming', () => {
       done();
     });
   });
-  it.only('emit parsed GoogleError when new retries are enabled', done => {
+  it('emit parsed GoogleError when new retries are enabled', done => {
     const errorInfoObj = {
       reason: 'SERVICE_DISABLED',
       domain: 'googleapis.com',
