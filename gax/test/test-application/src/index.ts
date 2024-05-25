@@ -1208,7 +1208,10 @@ async function testErrorMaxRetries0(client: SequenceServiceClient) {
     attemptStream.on('error', (error: GoogleError) => {
       try {
         assert.strictEqual(error.code, 4);
-        assert.strictEqual(error.note, 'Max retries is set to zero.');
+        assert.strictEqual(
+          error.note,
+          'Max retries is set to zero.'
+        );
         resolve();
       } catch (assertionError: unknown) {
         reject(assertionError);
