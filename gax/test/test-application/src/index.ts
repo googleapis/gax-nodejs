@@ -107,6 +107,7 @@ async function testShowcase() {
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
   await testWait(restClientCompat);
   // Testing with gaxServerStreamingRetries being true
+
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
@@ -1068,6 +1069,79 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
         /Cannot set both totalTimeoutMillis and maxRetries/
       );
       resolve();
+    });
+  });
+}
+
+// The test should not retry when the max retries are set to 0
+// and the emitted error should bubble up to the user when it does not retry.
+async function testErrorMaxRetries0(client: SequenceServiceClient) {
+  const finalData: string[] = [];
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4].includes(error!.code!);
+  };
+  const backoffSettings = createMaxRetriesBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    0,
+    1.5,
+    3000,
+    0
+  );
+  const getResumptionRequestFn = (request: RequestType) => {
+    return request;
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1],
+    [0, 1],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', () => {
+      reject(new GoogleError('The stream should not receive any data'));
+    });
+    attemptStream.on('error', (error: GoogleError) => {
+      try {
+        assert.strictEqual(error.code, 4);
+        assert.strictEqual(
+          error.note,
+          'Max retries is set to zero.'
+        );
+        resolve();
+      } catch (assertionError: unknown) {
+        reject(assertionError);
+      }
+    });
+    attemptStream.on('end', () => {
+      reject(
+        new GoogleError('The stream should not end before it receives an error')
+      );
     });
   });
 }
