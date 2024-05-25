@@ -28,6 +28,7 @@ import {
   GoogleAuth,
   Status,
   createBackoffSettings,
+  createMaxRetriesBackoffSettings,
   RetryOptions,
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
@@ -142,6 +143,12 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
+  await testShouldFailOnThirdError(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries)
+  // ensure legacy tests pass with streaming retries client
   await testEcho(grpcClientWithServerStreamingRetries);
   await testEchoError(grpcClientWithServerStreamingRetries);
   await testExpand(grpcClientWithServerStreamingRetries);
@@ -150,9 +157,7 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
-  await testShouldFailOnThirdError(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+
 }
 
 function createStreamingSequenceRequestFactory(
