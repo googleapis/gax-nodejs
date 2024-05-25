@@ -151,6 +151,7 @@ async function testShowcase() {
   );
 
   await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  
   // ensure legacy tests pass with streaming retries client
   await testEcho(grpcClientWithServerStreamingRetries);
   await testEchoError(grpcClientWithServerStreamingRetries);
