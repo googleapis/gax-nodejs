@@ -438,6 +438,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return; // end chunk
         }
       } else {
+        if (maxRetries === 0) {
+          const e = GoogleError.parseGRPCStatusDetails(error);
+          e.note = 'Max retries is set to zero.';
+          this.destroy(e);
+          return; // end chunk
+        }
         return GoogleError.parseGRPCStatusDetails(error);
       }
     });
