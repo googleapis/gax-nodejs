@@ -150,7 +150,7 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries)
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
   // ensure legacy tests pass with streaming retries client
   await testEcho(grpcClientWithServerStreamingRetries);
   await testEchoError(grpcClientWithServerStreamingRetries);
@@ -160,7 +160,6 @@ async function testShowcase() {
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
-
 }
 
 function createStreamingSequenceRequestFactory(
@@ -1208,10 +1207,7 @@ async function testErrorMaxRetries0(client: SequenceServiceClient) {
     attemptStream.on('error', (error: GoogleError) => {
       try {
         assert.strictEqual(error.code, 4);
-        assert.strictEqual(
-          error.note,
-          'Max retries is set to zero.'
-        );
+        assert.strictEqual(error.note, 'Max retries is set to zero.');
         resolve();
       } catch (assertionError: unknown) {
         reject(assertionError);
