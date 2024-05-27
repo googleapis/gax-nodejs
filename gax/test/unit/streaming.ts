@@ -1316,7 +1316,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       const s = new PassThrough({
         objectMode: true,
       });
-      s.push('hello');
       setImmediate(() => {
         s.emit('metadata');
       });

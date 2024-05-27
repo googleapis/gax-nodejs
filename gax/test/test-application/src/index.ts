@@ -81,6 +81,8 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
+  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -716,6 +718,83 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
     assert.equal(
       finalData.join(' '),
       'This This is This is testing the brand new and shiny StreamingSequence server 3'
+    );
+  });
+}
+
+// When the stream recieves data then the retry count should be set to 0
+async function testResetRetriesToZero(client: SequenceServiceClient) {
+  const finalData: string[] = [];
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4, 5, 6, 7].includes(error!.code!);
+  };
+  const backoffSettings = createBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    null,
+    1.5,
+    3000,
+    null
+  );
+  // intentionally set maxRetries to a value less than
+  // the number of errors in the sequence
+  backoffSettings.maxRetries = 2;
+  const getResumptionRequestFn = (request: RequestType) => {
+    return request;
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [
+      Status.DEADLINE_EXCEEDED,
+      Status.NOT_FOUND,
+      Status.ALREADY_EXISTS,
+      Status.PERMISSION_DENIED,
+      Status.OK,
+    ],
+    [0.1, 0.1, 0.1, 0.1, 0.1],
+    [1, 2, 3, 4, 5],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', error => {
+      reject(error);
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.deepStrictEqual(
+      finalData.join(' '),
+      'This This is This is testing This is testing the This is testing the brand'
     );
   });
 }
