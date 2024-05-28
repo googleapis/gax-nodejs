@@ -1154,7 +1154,6 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
 // The test should not retry when the max retries are set to 0
 // and the emitted error should bubble up to the user when it does not retry.
 async function testErrorMaxRetries0(client: SequenceServiceClient) {
-  const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
     return [4].includes(error!.code!);
   };
