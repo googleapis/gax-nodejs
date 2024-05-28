@@ -4,6 +4,15 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.5](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.4...google-gax-v4.3.5) (2024-05-28)
+
+
+### Bug Fixes
+
+* fix lint warning ([#1608](https://github.com/googleapis/gax-nodejs/issues/1608)) ([863d563](https://github.com/googleapis/gax-nodejs/commit/863d563beb21325eeb080906b48fe3c3f48bcc98))
+* raise error on retryable error when max retries is 0 ([#1605](https://github.com/googleapis/gax-nodejs/issues/1605)) ([b4f2f30](https://github.com/googleapis/gax-nodejs/commit/b4f2f3085d20120f4c449218a6fb1843bcdd6a8c))
+* Reset the retry counter to 0 when receiving data ([#1604](https://github.com/googleapis/gax-nodejs/issues/1604)) ([13b5d23](https://github.com/googleapis/gax-nodejs/commit/13b5d23c6faca88386f66ad5c75a37ecf9ae31e7))
+
 ## [4.3.4](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.3...google-gax-v4.3.4) (2024-05-22)
 
 
