@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.3.1",
+  "version": "4.3.5",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -10,7 +10,7 @@
     "!build/src/**/*.map"
   ],
   "dependencies": {
-    "@grpc/grpc-js": "~1.10.0",
+    "@grpc/grpc-js": "~1.10.3",
     "@grpc/proto-loader": "^0.7.0",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
@@ -21,7 +21,7 @@
     "proto3-json-serializer": "^2.0.0",
     "retry-request": "^7.0.0",
     "uuid": "^9.0.1",
-    "protobufjs": "7.2.6"
+    "protobufjs": "7.3.0"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.7",
@@ -73,7 +73,6 @@
     "compile-location-protos": "pbjs -t json google/cloud/location/locations.proto -p ./protos > protos/locations.json && pbjs -t static-module -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.js && pbts protos/locations.js -o protos/locations.d.ts",
     "compile-status-protos": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
     "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
-    "compile-showcase-proto": "pbjs -t json google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.json && pbjs -t static-module -r showcase_protos google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.js && pbts test/fixtures/google-gax-packaging-test-app/protos/protos.js -o test/fixtures/google-gax-packaging-test-app/protos/protos.d.ts",
     "fix": "gts fix",
     "prepare": "npm run compile && cd ../tools && npm i && npm run compile && cd ../gax && pwd && node ../tools/build/src/prepublish.js . && mkdirp build/protos && cp -r protos/* build/protos/ && npm run minify-proto-json",
     "system-test": "c8 mocha build/test/system-test --timeout 600000 && npm run test-application",

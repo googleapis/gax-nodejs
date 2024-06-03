@@ -133,7 +133,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       const resumptionRetryArgument =
         retry.getResumptionRequestFn(retryArgument);
       if (resumptionRetryArgument !== undefined) {
-        retryArgument = retry.getResumptionRequestFn(retryArgument);
+        retryArgument = resumptionRetryArgument;
       }
     }
     this.resetStreams(stream);
@@ -271,7 +271,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
   streamHandoffHelper(stream: CancellableStream, retry: RetryOptions): void {
     let enteredError = false;
-    const eventsToForward = ['metadata', 'response', 'status', 'data'];
+    const eventsToForward = ['metadata', 'response', 'status'];
 
     eventsToForward.forEach(event => {
       stream.on(event, this.emit.bind(this, event));
@@ -280,6 +280,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     stream.on('error', error => {
       enteredError = true;
       this.streamHandoffErrorHandler(stream, retry, error);
+    });
+
+    stream.on('data', (data: ResponseType) => {
+      this.retries = 0;
+      this.emit.bind(this, 'data')(data);
     });
 
     stream.on('end', () => {
@@ -342,8 +347,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
   defaultShouldRetry(error: GoogleError, retry: RetryOptions) {
     if (
-      retry.retryCodes.length > 0 &&
-      retry.retryCodes.indexOf(error!.code!) < 0
+      (retry.retryCodes.length > 0 &&
+        retry.retryCodes.indexOf(error!.code!) < 0) ||
+      retry.retryCodes.length === 0
     ) {
       return false;
     }
@@ -418,6 +424,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             this.destroy();
             return; //end chunk
           } else {
+            this.retries!++;
             retryStream = this.retry(stream, retry);
             this.stream = retryStream;
             return retryStream;
@@ -431,6 +438,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return; // end chunk
         }
       } else {
+        if (maxRetries === 0) {
+          const e = GoogleError.parseGRPCStatusDetails(error);
+          e.note = 'Max retries is set to zero.';
+          this.destroy(e);
+          return; // end chunk
+        }
         return GoogleError.parseGRPCStatusDetails(error);
       }
     });

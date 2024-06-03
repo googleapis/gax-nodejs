@@ -28,6 +28,7 @@ import {
   GoogleAuth,
   Status,
   createBackoffSettings,
+  createMaxRetriesBackoffSettings,
   RetryOptions,
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
@@ -80,6 +81,8 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
+  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+
   // assuming gRPC server is started locally
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -106,6 +109,7 @@ async function testShowcase() {
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
   await testWait(restClientCompat);
   // Testing with gaxServerStreamingRetries being true
+
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
@@ -142,6 +146,12 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
+  await testShouldFailOnThirdError(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  // ensure legacy tests pass with streaming retries client
   await testEcho(grpcClientWithServerStreamingRetries);
   await testEchoError(grpcClientWithServerStreamingRetries);
   await testExpand(grpcClientWithServerStreamingRetries);
@@ -467,6 +477,7 @@ async function testWait(client: EchoClient) {
   assert.deepStrictEqual(response.content, request.success.content);
 }
 
+// a successful streaming call that has retry options passed but does not retry
 async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
   const finalData: string[] = [];
   const backoffSettings = createBackoffSettings(
@@ -495,7 +506,7 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -509,8 +520,9 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', () => {
-      //Do Nothing
+    attemptStream.on('error', (error: GoogleError) => {
+      // should not reach this
+      reject(error);
     });
     attemptStream.on('end', () => {
       attemptStream.end();
@@ -524,6 +536,7 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
   });
 }
 
+// a streaming call that retries two times and finishes successfully
 async function testServerStreamingRetrieswithRetryOptions(
   client: SequenceServiceClient
 ) {
@@ -554,7 +567,7 @@ async function testServerStreamingRetrieswithRetryOptions(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -568,8 +581,8 @@ async function testServerStreamingRetrieswithRetryOptions(
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', () => {
-      //Do Nothing
+    attemptStream.on('error', error => {
+      reject(error);
     });
     attemptStream.on('end', () => {
       attemptStream.end();
@@ -583,6 +596,7 @@ async function testServerStreamingRetrieswithRetryOptions(
   });
 }
 
+// a streaming call that retries twice using shouldRetryFn and finally succeeds
 async function testServerStreamingRetriesWithShouldRetryFn(
   client: SequenceServiceClient
 ) {
@@ -617,7 +631,7 @@ async function testServerStreamingRetriesWithShouldRetryFn(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
     const attemptRequest =
       new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
@@ -630,8 +644,9 @@ async function testServerStreamingRetriesWithShouldRetryFn(
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', () => {
-      // Do nothing
+    attemptStream.on('error', error => {
+      // should not reach this
+      reject(error);
     });
     attemptStream.on('end', () => {
       attemptStream.end();
@@ -645,13 +660,14 @@ async function testServerStreamingRetriesWithShouldRetryFn(
   });
 }
 
+// streaming call that retries twice using RetryRequestOptions instead of RetryOptions
 async function testServerStreamingRetrieswithRetryRequestOptions(
   client: SequenceServiceClient
 ) {
   const finalData: string[] = [];
   const retryRequestOptions = {
     objectMode: true,
-    retries: 1,
+    retries: 2,
     maxRetryDelay: 70,
     retryDelayMultiplier: 3,
     totalTimeout: 650,
@@ -676,7 +692,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -690,8 +706,8 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', () => {
-      // Do Nothing
+    attemptStream.on('error', error => {
+      reject(error);
     });
     attemptStream.on('end', () => {
       attemptStream.end();
@@ -704,6 +720,153 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
     );
   });
 }
+
+// When the stream recieves data then the retry count should be set to 0
+async function testResetRetriesToZero(client: SequenceServiceClient) {
+  const finalData: string[] = [];
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4, 5, 6, 7].includes(error!.code!);
+  };
+  const backoffSettings = createBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    null,
+    1.5,
+    3000,
+    null
+  );
+  // intentionally set maxRetries to a value less than
+  // the number of errors in the sequence
+  backoffSettings.maxRetries = 2;
+  const getResumptionRequestFn = (request: RequestType) => {
+    return request;
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [
+      Status.DEADLINE_EXCEEDED,
+      Status.NOT_FOUND,
+      Status.ALREADY_EXISTS,
+      Status.PERMISSION_DENIED,
+      Status.OK,
+    ],
+    [0.1, 0.1, 0.1, 0.1, 0.1],
+    [1, 2, 3, 4, 5],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
+    attemptStream.on('error', error => {
+      reject(error);
+    });
+    attemptStream.on('end', () => {
+      attemptStream.end();
+      resolve();
+    });
+  }).then(() => {
+    assert.deepStrictEqual(
+      finalData.join(' '),
+      'This This is This is testing This is testing the This is testing the brand'
+    );
+  });
+}
+
+// When maxRetries are set to 2 then on the third error from the server gax
+// should throw an error that says the retry count has been exceeded.
+async function testShouldFailOnThirdError(client: SequenceServiceClient) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    null
+  );
+  const allowedCodes = [4, 5, 6];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+  backoffSettings.maxRetries = 2;
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [
+      Status.DEADLINE_EXCEEDED, // Error code 4
+      Status.NOT_FOUND, // Error code 5
+      Status.ALREADY_EXISTS, // Error code 6
+      Status.OK,
+    ],
+    [0.1, 0.1, 0.1, 0.1],
+    [0, 0, 0, 1],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', () => {
+      reject(new GoogleError('The stream should not receive any data'));
+    });
+    attemptStream.on('error', (error: GoogleError) => {
+      try {
+        assert.strictEqual(error.code, 4);
+        assert.strictEqual(
+          error.message,
+          'Exceeded maximum number of retries before any response was received'
+        );
+        resolve();
+      } catch (assertionError: unknown) {
+        reject(assertionError);
+      }
+    });
+    attemptStream.on('end', () => {
+      reject(
+        new GoogleError('The stream should not end before it receives an error')
+      );
+    });
+  });
+}
+
+// streaming call that retries twice with RetryRequestOpsions and resumes from where it left off
 async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
   client: SequenceServiceClient
 ) {
@@ -748,7 +911,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -762,8 +925,8 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
-    attemptStream.on('error', () => {
-      // do nothing
+    attemptStream.on('error', error => {
+      reject(error);
     });
     attemptStream.on('end', () => {
       attemptStream.end();
@@ -777,6 +940,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
   });
 }
 
+// retries twice but fails with an error not from the streaming sequence
 async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
   client: SequenceServiceClient
 ) {
@@ -816,9 +980,8 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     [1, 2, 11],
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
-  const allowedCodes = [4, 14];
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((_, reject) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -831,21 +994,14 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     );
 
     attemptStream.on('error', (e: GoogleError) => {
-      if (!allowedCodes.includes(e.code!)) {
-        reject(e);
-      }
+      assert.strictEqual(e.code, 3);
+      assert.match(e.note!, /not classified as transient/);
+      resolve();
     });
-  }).then(
-    () => {
-      assert(false);
-    },
-    (err: GoogleError) => {
-      assert.strictEqual(err.code, 3);
-      assert.match(err.note!, /not classified as transient/);
-    }
-  );
+  });
 }
 
+// fails on the first error in the sequence
 async function testServerStreamingThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
@@ -875,7 +1031,7 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((_, reject) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -887,21 +1043,14 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
       settings
     );
     attemptStream.on('error', (e: GoogleError) => {
-      if (!allowedCodes.includes(e.code!)) {
-        reject(e);
-      }
+      assert.strictEqual(e.code, 14);
+      assert.match(e.note!, /not classified as transient/);
+      resolve();
     });
-  }).then(
-    () => {
-      assert(false);
-    },
-    (err: GoogleError) => {
-      assert.strictEqual(err.code, 14);
-      assert.match(err.note!, /not classified as transient/);
-    }
-  );
+  });
 }
 
+// retries once and fails on the second error in the sequence
 async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
@@ -931,7 +1080,7 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((_, reject) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -943,19 +1092,11 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
       settings
     );
     attemptStream.on('error', (e: GoogleError) => {
-      if (!allowedCodes.includes(e.code!)) {
-        reject(e);
-      }
+      assert.strictEqual(e.code, 4);
+      assert.match(e.note!, /not classified as transient/);
+      resolve();
     });
-  }).then(
-    () => {
-      assert(false);
-    },
-    (err: GoogleError) => {
-      assert.strictEqual(err.code, 4);
-      assert.match(err.note!, /not classified as transient/);
-    }
-  );
+  });
 }
 
 async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
@@ -988,7 +1129,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((_, reject) => {
+  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -1000,22 +1141,83 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
       settings
     );
     attemptStream.on('error', (e: GoogleError) => {
-      if (!allowedCodes.includes(e.code!)) {
-        reject(e);
-      }
-    });
-  }).then(
-    () => {
-      assert(false);
-    },
-    (err: GoogleError) => {
-      assert.strictEqual(err.code, 3);
+      assert.strictEqual(e.code, 3);
       assert.match(
-        err.message,
+        e.message,
         /Cannot set both totalTimeoutMillis and maxRetries/
       );
-    }
+      resolve();
+    });
+  });
+}
+
+// The test should not retry when the max retries are set to 0
+// and the emitted error should bubble up to the user when it does not retry.
+async function testErrorMaxRetries0(client: SequenceServiceClient) {
+  const shouldRetryFn = (error: GoogleError) => {
+    return [4].includes(error!.code!);
+  };
+  const backoffSettings = createMaxRetriesBackoffSettings(
+    10000,
+    2.5,
+    1000,
+    0,
+    1.5,
+    3000,
+    0
   );
+  const getResumptionRequestFn = (request: RequestType) => {
+    return request;
+  };
+
+  const retryOptions = new RetryOptions(
+    [],
+    backoffSettings,
+    shouldRetryFn,
+    getResumptionRequestFn
+  );
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1],
+    [0, 1],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>((resolve, reject) => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    attemptStream.on('data', () => {
+      reject(new GoogleError('The stream should not receive any data'));
+    });
+    attemptStream.on('error', (error: GoogleError) => {
+      try {
+        assert.strictEqual(error.code, 4);
+        assert.strictEqual(error.note, 'Max retries is set to zero.');
+        resolve();
+      } catch (assertionError: unknown) {
+        reject(assertionError);
+      }
+    });
+    attemptStream.on('end', () => {
+      reject(
+        new GoogleError('The stream should not end before it receives an error')
+      );
+    });
+  });
 }
 
 async function main() {

@@ -105,17 +105,23 @@ export function createApiCall(
 
         const retry = thisSettings.retry;
 
-        if (
-          streaming &&
-          retry &&
-          retry.retryCodes.length > 0 &&
-          retry.shouldRetryFn
-        ) {
-          warn(
-            'either_retrycodes_or_shouldretryfn',
-            'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.'
-          );
-          retry.retryCodes = [];
+        if (streaming && retry) {
+          if (retry.retryCodes.length > 0 && retry.shouldRetryFn) {
+            warn(
+              'either_retrycodes_or_shouldretryfn',
+              'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.'
+            );
+            retry.retryCodes = [];
+          }
+          if (
+            !(currentApiCaller as StreamingApiCaller).descriptor
+              .gaxStreamingRetries &&
+            retry.getResumptionRequestFn
+          ) {
+            throw new Error(
+              'getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.'
+            );
+          }
         }
         if (!streaming && retry) {
           if (retry.shouldRetryFn) {
