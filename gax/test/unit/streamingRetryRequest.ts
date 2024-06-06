@@ -96,5 +96,16 @@ describe('retry-request', () => {
         });
       assert.strictEqual(retryStream._readableState.objectMode, true);
     });
+    it('throws request error', done => {
+      try {
+        const opts = {};
+        //@ts-expect-error
+        streamingRetryRequest(opts);
+      } catch (err) {
+        assert(err instanceof Error);
+        assert.match(err.message, /A request function must be provided/);
+        done();
+      }
+    });
   });
 });
