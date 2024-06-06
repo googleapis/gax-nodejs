@@ -30,7 +30,7 @@ const requestOps = null;
 const objectMode = true; // we don't support objectMode being false
 
 interface streamingRetryRequestOptions {
-  request?: Function;
+  request: Function;
   maxRetries?: number;
 }
 /**
@@ -40,10 +40,6 @@ interface streamingRetryRequestOptions {
  */
 export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
   opts = Object.assign({}, DEFAULTS, opts);
-
-  if (opts.request === undefined) {
-    throw new Error('A request function must be provided');
-  }
 
   let numNoResponseAttempts = 0;
   let streamResponseHandled = false;
