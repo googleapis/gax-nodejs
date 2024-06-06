@@ -103,7 +103,7 @@ describe('retry-request', () => {
         streamingRetryRequest(opts);
       } catch (err) {
         assert(err instanceof Error);
-        assert.match(err.message, /A request library must be provided/);
+        assert.match(err.message, /A request function must be provided/);
         done();
       }
     });

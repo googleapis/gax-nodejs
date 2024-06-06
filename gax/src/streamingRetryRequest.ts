@@ -42,12 +42,7 @@ export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
   opts = Object.assign({}, DEFAULTS, opts);
 
   if (opts.request === undefined) {
-    try {
-      // eslint-disable-next-line node/no-unpublished-require
-      opts.request = require('request');
-    } catch (e) {
-      throw new Error('A request library must be provided to retry-request.');
-    }
+      throw new Error('A request function must be provided');
   }
 
   let numNoResponseAttempts = 0;
