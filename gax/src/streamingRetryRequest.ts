@@ -40,8 +40,8 @@ interface streamingRetryRequestOptions {
  */
 export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
   opts = Object.assign({}, DEFAULTS, opts);
-  if (opts.request === undefined){
-    throw new Error('A request function must be provided')
+  if (opts.request === undefined) {
+    throw new Error('A request function must be provided');
   }
 
   let numNoResponseAttempts = 0;
