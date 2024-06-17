@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.3.5",
+  "version": "4.3.6",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -11,7 +11,7 @@
   ],
   "dependencies": {
     "@grpc/grpc-js": "~1.10.3",
-    "@grpc/proto-loader": "^0.7.0",
+    "@grpc/proto-loader": "^0.7.13",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
