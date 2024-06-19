@@ -21,9 +21,9 @@ const features = {
     typeof window !== 'undefined' &&
     window?.fetch &&
     typeof window?.fetch === 'function',
-  // eslint-disable-next-line node/n-unsupported-features/node-builtins
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
   textEncoder: typeof TextEncoder !== 'undefined',
-  // eslint-disable-next-line node/n-unsupported-features/node-builtins
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
   textDecoder: typeof TextDecoder !== 'undefined',
   nodeJS: typeof process !== 'undefined' && process?.versions?.node,
   abortController: typeof AbortController !== 'undefined',
