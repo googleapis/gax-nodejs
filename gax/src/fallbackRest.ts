@@ -83,7 +83,7 @@ export function decodeResponse(
   ok: boolean,
   response: Buffer | ArrayBuffer
 ): {} {
-  // eslint-disable-next-line node/no-unsupported-features/node-builtins
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
   const decodedString = new TextDecoder().decode(response);
   const json = JSON.parse(decodedString);
   if (!ok) {
