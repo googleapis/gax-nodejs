@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.4.3](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.2...gapic-tools-v0.4.3) (2024-06-19)
+
+
+### Bug Fixes
+
+* update various dependencies and linting ([#1622](https://github.com/googleapis/gax-nodejs/issues/1622)) ([227b296](https://github.com/googleapis/gax-nodejs/commit/227b296dfe7820de1777afe4699ecdc09487b1df))
+
+## [0.4.2](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.1...gapic-tools-v0.4.2) (2024-03-27)
+
+
+### Bug Fixes
+
+* **deps:** update google-proto-files and gax in gapic-tools ([#1579](https://github.com/googleapis/gax-nodejs/issues/1579)) ([c9b83e9](https://github.com/googleapis/gax-nodejs/commit/c9b83e9f16c6c65cf5e49a7f98fe7bfb999271fc))
+
+## [0.4.1](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.0...gapic-tools-v0.4.1) (2024-03-23)
+
+
+### Bug Fixes
+
+* improve package.json lookup for root name ([#1530](https://github.com/googleapis/gax-nodejs/issues/1530)) ([3ec09cf](https://github.com/googleapis/gax-nodejs/commit/3ec09cfe190da615aec7c3443afb39837bd9bef1))
+
+## [0.4.0](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.3.0...gapic-tools-v0.4.0) (2024-02-13)
+
+
+### Features
+
+* allow passing --keep-case and --force-number to compileProtos ([#1561](https://github.com/googleapis/gax-nodejs/issues/1561)) ([004d112](https://github.com/googleapis/gax-nodejs/commit/004d112445f528a6cb143676e8b397b37137adf3))
+
 ## [0.3.0](https://github.com/googleapis/gax-nodejs/compare/v0.2.0...v0.3.0) (2024-01-16)
 
 

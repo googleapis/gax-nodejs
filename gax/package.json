@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.3.0",
+  "version": "4.3.7",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -10,18 +10,18 @@
     "!build/src/**/*.map"
   ],
   "dependencies": {
-    "@grpc/grpc-js": "~1.9.6",
-    "@grpc/proto-loader": "^0.7.0",
+    "@grpc/grpc-js": "^1.10.9",
+    "@grpc/proto-loader": "^0.7.13",
     "@types/long": "^4.0.0",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.0.0",
-    "google-auth-library": "^9.0.0",
+    "google-auth-library": "^9.3.0",
     "node-fetch": "^2.6.1",
     "object-hash": "^3.0.0",
-    "proto3-json-serializer": "^2.0.0",
+    "proto3-json-serializer": "^2.0.2",
     "retry-request": "^7.0.0",
     "uuid": "^9.0.1",
-    "protobufjs": "7.2.6"
+    "protobufjs": "^7.3.2"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.7",
@@ -39,7 +39,7 @@
     "c8": "^9.0.0",
     "codecov": "^3.1.0",
     "execa": "^5.0.0",
-    "google-proto-files": "^4.1.0",
+    "google-proto-files": "^4.2.0",
     "gts": "^5.0.0",
     "linkinator": "^4.0.0",
     "long": "^4.0.0",
@@ -51,7 +51,7 @@
     "proxyquire": "^2.0.1",
     "pumpify": "^2.0.0",
     "rimraf": "^5.0.1",
-    "sinon": "^17.0.0",
+    "sinon": "^18.0.0",
     "stream-events": "^1.0.4",
     "ts-loader": "^9.0.0",
     "typescript": "^5.1.6",
@@ -73,7 +73,6 @@
     "compile-location-protos": "pbjs -t json google/cloud/location/locations.proto -p ./protos > protos/locations.json && pbjs -t static-module -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.js && pbts protos/locations.js -o protos/locations.d.ts",
     "compile-status-protos": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
     "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
-    "compile-showcase-proto": "pbjs -t json google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.json && pbjs -t static-module -r showcase_protos google/showcase/v1beta1/echo.proto google/showcase/v1beta1/identity.proto google/showcase/v1beta1/messaging.proto google/showcase/v1beta1/testing.proto -p ./protos > test/fixtures/google-gax-packaging-test-app/protos/protos.js && pbts test/fixtures/google-gax-packaging-test-app/protos/protos.js -o test/fixtures/google-gax-packaging-test-app/protos/protos.d.ts",
     "fix": "gts fix",
     "prepare": "npm run compile && cd ../tools && npm i && npm run compile && cd ../gax && pwd && node ../tools/build/src/prepublish.js . && mkdirp build/protos && cp -r protos/* build/protos/ && npm run minify-proto-json",
     "system-test": "c8 mocha build/test/system-test --timeout 600000 && npm run test-application",

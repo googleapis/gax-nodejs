@@ -30,7 +30,7 @@ const requestOps = null;
 const objectMode = true; // we don't support objectMode being false
 
 interface streamingRetryRequestOptions {
-  request?: Function;
+  request: Function;
   maxRetries?: number;
 }
 /**
@@ -40,14 +40,8 @@ interface streamingRetryRequestOptions {
  */
 export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
   opts = Object.assign({}, DEFAULTS, opts);
-
   if (opts.request === undefined) {
-    try {
-      // eslint-disable-next-line node/no-unpublished-require
-      opts.request = require('request');
-    } catch (e) {
-      throw new Error('A request library must be provided to retry-request.');
-    }
+    throw new Error('A request function must be provided');
   }
 
   let numNoResponseAttempts = 0;
@@ -106,8 +100,11 @@ export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
     // No more attempts need to be made, just continue on.
     retryStream.emit('response', response);
     delayStream.pipe(retryStream);
-    requestStream.on('error', (err: GoogleError) => {
-      retryStream.destroy(err);
+    requestStream.on('error', () => {
+      // retryStream must be destroyed here for the stream handoff part of retries to function properly
+      // but the error event should not be passed - if it emits as part of .destroy()
+      // it will bubble up early to the caller
+      retryStream.destroy();
     });
   }
 }
