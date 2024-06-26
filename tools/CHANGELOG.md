@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.2...gapic-tools-v0.4.3) (2024-06-19)
+
+
+### Bug Fixes
+
+* update various dependencies and linting ([#1622](https://github.com/googleapis/gax-nodejs/issues/1622)) ([227b296](https://github.com/googleapis/gax-nodejs/commit/227b296dfe7820de1777afe4699ecdc09487b1df))
+
 ## [0.4.2](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.1...gapic-tools-v0.4.2) (2024-03-27)
 
 
