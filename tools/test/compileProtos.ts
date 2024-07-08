@@ -18,7 +18,6 @@ import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach} from 'mocha';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
-import {rimraf} from 'rimraf';
 import {ncp} from 'ncp';
 import * as util from 'util';
 import * as path from 'path';
@@ -42,7 +41,7 @@ const expectedCommonJSResultFile = path.join(resultDir, 'protos.cjs');
 describe('compileProtos tool', () => {
   beforeEach(async () => {
     if (fs.existsSync(testDir)) {
-      await rimraf(testDir);
+      await fsp.rm(testDir, {recursive: true, force: true});
     }
     await mkdir(testDir);
     await mkdir(resultDir);
