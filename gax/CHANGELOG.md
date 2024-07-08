@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.8](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.7...google-gax-v4.3.8) (2024-07-08)
+
+
+### Bug Fixes
+
+* **deps:** remove rimraf in favor of native node rm function ([#1626](https://github.com/googleapis/gax-nodejs/issues/1626)) ([dd87646](https://github.com/googleapis/gax-nodejs/commit/dd87646618d5026549920e224df7f85cbb5ff6a8))
+
 ## [4.3.7](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.6...google-gax-v4.3.7) (2024-06-19)
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.4](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.3...gapic-tools-v0.4.4) (2024-07-08)
+
+
+### Bug Fixes
+
+* **deps:** remove rimraf in favor of native node rm function ([#1626](https://github.com/googleapis/gax-nodejs/issues/1626)) ([dd87646](https://github.com/googleapis/gax-nodejs/commit/dd87646618d5026549920e224df7f85cbb5ff6a8))
+* Use a hashed id for default root name ([#1575](https://github.com/googleapis/gax-nodejs/issues/1575)) ([e3cf430](https://github.com/googleapis/gax-nodejs/commit/e3cf430d02bc855df27edf3e0f93454ca8196fdf))
+
 ## [0.4.3](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.2...gapic-tools-v0.4.3) (2024-06-19)
 
 
