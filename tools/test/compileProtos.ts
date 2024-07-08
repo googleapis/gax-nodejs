@@ -291,7 +291,7 @@ describe('compileProtos tool', () => {
     const rootName = await compileProtos.generateRootName([
       '/nonexistent/empty',
     ]);
-    assert.strictEqual(rootName, 'default');
+    assert.strictEqual(rootName, 'default_371767bb');
   });
 
   it('reformat the JSDOC link in the JS and TS file', async function () {
