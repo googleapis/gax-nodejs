@@ -23,8 +23,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
-import {mkdirSync, writeFileSync} from 'fs';
-import {sync as rimrafSync} from 'rimraf';
+import {mkdirSync, rmSync, writeFileSync} from 'fs';
 import {afterEach, describe, it, beforeEach} from 'mocha';
 
 import {protobuf} from '../../src/index';
@@ -683,7 +682,7 @@ dvorak
       const [cert, key] = await client._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
-      rimrafSync(tmpFolder); // Cleanup.
+      rmSync(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });
     it('throws if attempted to use mTLS in non-default universe', async () => {
       // Pretend that "tmp-secure-context" in the current folder is the
@@ -702,7 +701,7 @@ dvorak
         client.createStub(DummyStub, {universeDomain: 'example.com'}),
         /configured universe domain/
       );
-      rimrafSync(tmpFolder); // Cleanup.
+      rmSync(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });
   });
 });
