@@ -33,10 +33,15 @@
     "google-gax": "^4.3.2",
     "google-proto-files": "^4.2.0",
     "protobufjs-cli": "1.1.2",
-    "rimraf": "^5.0.1",
+    "rimraf": "5.0.7",
     "uglify-js": "^3.17.0",
     "walk-up-path": "^3.0.1",
     "walkdir": "^0.4.0"
+  },
+  "overrides": {
+    "rimraf": {
+      "glob": "10.4.2" 
+    }
   },
   "repository": {
     "type": "git",
