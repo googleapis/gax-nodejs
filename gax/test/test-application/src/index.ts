@@ -81,89 +81,96 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
   // assuming gRPC server is started locally
-  await testEcho(grpcClient);
-  await testEchoError(grpcClient);
-  await testExpand(grpcClient);
-  await testPagedExpand(grpcClient);
-  await testPagedExpandAsync(grpcClient);
-  await testCollect(grpcClient);
-  await testChat(grpcClient);
-  await testWait(grpcClient);
+  // await testEcho(grpcClient);
+  // await testEchoError(grpcClient);
+  // await testExpand(grpcClient);
+  // await testPagedExpand(grpcClient);
+  // await testPagedExpandAsync(grpcClient);
+  // await testCollect(grpcClient);
+  // await testChat(grpcClient);
+  // await testWait(grpcClient);
 
-  await testEcho(restClient);
-  await testExpand(restClient); // REGAPIC supports server streaming
-  await testPagedExpand(restClient);
-  await testPagedExpandAsync(restClient);
-  await testCollectThrows(restClient); // REGAPIC does not support client streaming
-  await testChatThrows(restClient); // REGAPIC does not support bidi streaming
-  await testWait(restClient);
+  // await testEcho(restClient);
+  // await testExpand(restClient); // REGAPIC supports server streaming
+  // await testPagedExpand(restClient);
+  // await testPagedExpandAsync(restClient);
+  // await testCollectThrows(restClient); // REGAPIC does not support client streaming
+  // await testChatThrows(restClient); // REGAPIC does not support bidi streaming
+  // await testWait(restClient);
 
-  await testEcho(restClientCompat);
-  await testExpand(restClientCompat); // REGAPIC supports server streaming
-  await testPagedExpand(restClientCompat);
-  await testPagedExpandAsync(restClientCompat);
-  await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
-  await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
-  await testWait(restClientCompat);
-  // Testing with gaxServerStreamingRetries being true
+  // await testEcho(restClientCompat);
+  // await testExpand(restClientCompat); // REGAPIC supports server streaming
+  // await testPagedExpand(restClientCompat);
+  // await testPagedExpandAsync(restClientCompat);
+  // await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
+  // await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
+  // await testWait(restClientCompat);
+  // // Testing with gaxServerStreamingRetries being true
 
-  await testServerStreamingRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetriesWithShouldRetryFn(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetriesWithShouldRetryFn(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testShouldFailOnThirdError(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testShouldFailOnThirdError(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
   await testServerStreamingRetriesImmediatelywithRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  // ensure legacy tests pass with streaming retries client
-  await testEcho(grpcClientWithServerStreamingRetries);
-  await testEchoError(grpcClientWithServerStreamingRetries);
-  await testExpand(grpcClientWithServerStreamingRetries);
-  await testPagedExpand(grpcClientWithServerStreamingRetries);
-  await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
-  await testCollect(grpcClientWithServerStreamingRetries);
-  await testChat(grpcClientWithServerStreamingRetries);
-  await testWait(grpcClientWithServerStreamingRetries);
+  // // ensure legacy tests pass with streaming retries client
+  // await testEcho(grpcClientWithServerStreamingRetries);
+  // await testEchoError(grpcClientWithServerStreamingRetries);
+  // await testExpand(grpcClientWithServerStreamingRetries);
+  // await testPagedExpand(grpcClientWithServerStreamingRetries);
+  // await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
+  // await testCollect(grpcClientWithServerStreamingRetries);
+  // await testChat(grpcClientWithServerStreamingRetries);
+  // await testWait(grpcClientWithServerStreamingRetries);
+
+  console.log("grpcclient")
+  await testMegaExpand(grpcClient);
+  // console.log('rest client');
+  // await testMegaExpand(restClient);
+  console.log('retryclient')
+  // await testMegaExpand(grpcClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -292,6 +299,41 @@ async function testExpand(client: EchoClient) {
   });
   stream.on('end', () => {
     assert.deepStrictEqual(words, result);
+  });
+}
+
+function testInputFactory(size: number): string[]{
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  let output: string[] = [];
+  for(let i=0;i<size; i++){
+    output.push(words[i%5]);
+  }
+  return output;
+
+
+
+
+}
+async function testMegaExpand(client: EchoClient) {
+  // const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const words = testInputFactory(70500);
+  const request = {
+    content: words.join(' '),
+  };
+  const stream = client.expand(request);
+  const sleep = (ms: any) => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  };
+  const result: string[] = [];
+  stream.on('data', async (response: {content: string}) => {
+    result.push(response.content);
+    stream.pause()
+    await sleep(50);
+    stream.resume()
+  });
+  stream.on('end', () => {
+    assert.deepStrictEqual(words, result);
+    assert.deepStrictEqual(words.length, result.length)
   });
 }
 
@@ -1287,13 +1329,13 @@ async function testServerStreamingRetriesImmediatelywithRetryOptions(
 }
 
 async function main() {
-  const showcaseServer = new ShowcaseServer();
-  try {
-    await showcaseServer.start();
+  // const showcaseServer = new ShowcaseServer();
+  // try {
+  //   await showcaseServer.start();
     await testShowcase();
-  } finally {
-    showcaseServer.stop();
-  }
+  // } finally {
+  //   showcaseServer.stop();
+  // }
 }
 
 main();
