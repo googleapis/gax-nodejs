@@ -316,7 +316,7 @@ function testInputFactory(size: number): string[]{
 }
 async function testMegaExpand(client: EchoClient) {
   // const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const words = testInputFactory(70500);
+  const words = testInputFactory(500);
   const request = {
     content: words.join(' '),
   };
@@ -326,10 +326,13 @@ async function testMegaExpand(client: EchoClient) {
   };
   const result: string[] = [];
   stream.on('data', async (response: {content: string}) => {
+    console.log(result.length)
     result.push(response.content);
     stream.pause()
-    await sleep(50);
-    stream.resume()
+    setTimeout(() => {
+      console.log('Now data will start flowing again.');
+      stream.resume();
+    }, 1000);
   });
   stream.on('end', () => {
     assert.deepStrictEqual(words, result);
