@@ -392,6 +392,7 @@ async function testMegaExpand(client: EchoClient) {
   })
 }
 
+// error before any data is sent
 async function testStreamingErrorNoBufferNoRetry(
   client: SequenceServiceClient
 ) {
@@ -416,7 +417,7 @@ async function testStreamingErrorNoBufferNoRetry(
   const request = createStreamingSequenceRequestFactory(
     [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
     [0.1, 0.1, 0.1],
-    [1, 2, 11],
+    [0, 2, 11], //error before any data is sent
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
 
@@ -444,11 +445,11 @@ async function testStreamingErrorNoBufferNoRetry(
     // attemptStream.on('metadata', (metadata) => {
     //   console.log('mtda', metadata);
     // });
-    // attemptStream.on('data', (data) => {
-    //   console.log('this should not happen', data);
-    //   // throw new Error('this is a problem')
-    //   // resolve();
-    // });
+    attemptStream.on('data', (data) => {
+      console.log('this should not happen', data);
+      // throw new Error('this is a problem')
+      // resolve();
+    });
     attemptStream.on('error', (e: GoogleError) => {
       console.log('first stream')
       assert.strictEqual(e.code, 14);
