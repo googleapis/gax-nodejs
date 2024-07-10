@@ -480,7 +480,87 @@ async function testImmediateStreamingErrorNoBufferNoRetry(
 }
 
 
+async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [4];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
 
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+  const baseString = 'zero one two three four five six seven eight nine ';
+  let testString = ''
+
+  const repeats = 100;
+  for (let i=0; i<repeats; i++){
+    testString = testString.concat(baseString)
+  }
+
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.5, 0.1, 0.1],
+    [1000, 99, 100], //error before any data is sent
+    testString
+  );
+
+  const response = await client.createStreamingSequence(request);
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    // const secondStream = new PassThrough({objectMode: true, readableHighWaterMark: 10}) // TODO mess with high water mark
+    // const thirdStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
+    const secondStream = new PassThrough({objectMode: true}) // TODO mess with high water mark
+    const thirdStream = new PassThrough({objectMode: true})
+    let results = []
+    let results2 = []
+    const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    // attemptStream.on('data', (data) => {
+    //   results.push(data);
+    // });
+
+
+    attemptStream.on('error', (e: GoogleError) => {
+      // assert.strictEqual(results.length, 85)
+
+      console.log('first stream')
+      assert.strictEqual(e.code, 14);
+    });
+    togetherStream.on('data', (data: any) => {
+      results2.push(data)
+    });
+    togetherStream.on('error', (e: GoogleError) => {
+      assert.strictEqual(results2.length, 1000)
+      assert.strictEqual(results.length, 85)
+
+      console.log("final stream")
+      assert.strictEqual(e.code, 14);
+    });
+
+
+
+
+
+}
 async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
   client: SequenceServiceClient
 ) {
@@ -519,7 +599,6 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
 
   const response = await client.createStreamingSequence(request);
     const sequence = response[0];
-    console.log("seq", sequence!.content!.length)
 
     const attemptRequest =
       new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
@@ -534,36 +613,27 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
     const secondStream = new PassThrough({objectMode: true}) // TODO mess with high water mark
     const thirdStream = new PassThrough({objectMode: true})
     let results = []
-    // const togetherStream = pipeline([attemptStream, secondStream, thirdStream],() => {console.log('done')});
+    let results2 = []
     const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
     attemptStream.on('data', (data) => {
       results.push(data);
     });
 
-    // when using pipeline it is expected that togetherStream would log before thirdStream because they're basically invoking the same thing
-    // imagine togetherStream is three physical pipes put together - what comes out of the third section of pipe is the same
-    // as what comes out of the whole thing and arrives at the same time
 
-    // when using pumpify, only first stream and final stream will be logged
-
-    // secondStream.on('error', (e: GoogleError) => {
-    //   console.log("second stream")
-    //   assert.strictEqual(e.code, 14);
-    // });
-    // thirdStream.on('error', (e: GoogleError) => {
-    //   console.log("third stream")
-    //   assert.strictEqual(e.code, 14);
-    // });
     attemptStream.on('error', (e: GoogleError) => {
-      assert.strictEqual(results.length, 85)
+      // assert.strictEqual(results.length, 85)
 
-      console.log('first stream')
+      console.log('first stream', results.length)
       assert.strictEqual(e.code, 14);
     });
+    // togetherStream.on('data', (data: any) => {
+    //   results2.push(data)
+    // });
     togetherStream.on('error', (e: GoogleError) => {
+      // assert.strictEqual(results2.length, 85)
       assert.strictEqual(results.length, 85)
 
-      console.log("final stream")
+      console.log("final stream", results.length)
       assert.strictEqual(e.code, 14);
     });
 
