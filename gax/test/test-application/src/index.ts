@@ -174,6 +174,8 @@ async function testShowcase() {
   // await testMegaExpand(grpcClientWithServerStreamingRetries);
   // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
   await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientNoGaxRetries);
+
   // await testStreamingErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
 
   
