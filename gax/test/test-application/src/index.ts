@@ -172,7 +172,12 @@ async function testShowcase() {
   // await testMegaExpand(restClient);
   // console.log('retryclient')
   // await testMegaExpand(grpcClientWithServerStreamingRetries);
-  await testStreamingErrorNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  await testStreamingErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
+
+  // // TODO - deal with this problem
+  // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries); //TODO understand better
+
 }
 
 function createStreamingSequenceRequestFactory(
@@ -389,7 +394,8 @@ async function testMegaExpand(client: EchoClient) {
 }
 
 // error before any data is sent
-async function testStreamingErrorNoBufferNoRetry(
+// pass data through a chain of passthroughs
+async function testImmediateStreamingErrorNoBufferNoRetry(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -418,7 +424,6 @@ async function testStreamingErrorNoBufferNoRetry(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -430,38 +435,133 @@ async function testStreamingErrorNoBufferNoRetry(
       settings
     );
     const secondStream = new PassThrough({objectMode: true})
-    // const togetherStream = new PassThrough({objectMode: true})
-    // attemptStream.pipe(secondStream).pipe(togetherStream);
-    
-    const togetherStream = pipeline([attemptStream, secondStream],() => {console.log('done')});
-    // const togetherStream = pumpify.obj(attemptStream, secondStream)
-    // attemptStream.on('status', (status) => {
-    //   console.log('st', status);
-    // });
-    // attemptStream.on('metadata', (metadata) => {
-    //   console.log('mtda', metadata);
-    // });
+    const thirdStream = new PassThrough({objectMode: true})
+
+    // const togetherStream = pipeline([attemptStream, secondStream, thirdStream],() => {console.log('done')});
+    const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
     attemptStream.on('data', (data) => {
       console.log('this should not happen', data);
-      // throw new Error('this is a problem')
-      // resolve();
+      throw new Error('this is a problem')
     });
-    attemptStream.on('error', (e: GoogleError) => {
-      console.log('first stream')
+
+    // when using pipeline it is expected that togetherStream would log before thirdStream because they're basically invoking the same thing
+    // imagine togetherStream is three physical pipes put together - what comes out of the third section of pipe is the same
+    // as what comes out of the whole thing and arrives at the same time
+
+    // when using pumpify, only first stream and final stream will be logged
+    togetherStream.on('error', (e: GoogleError) => {
+      console.log("final stream")
       assert.strictEqual(e.code, 14);
-      // resolve();
     });
     secondStream.on('error', (e: GoogleError) => {
       console.log("second stream")
       assert.strictEqual(e.code, 14);
-      // resolve();
     });
+    thirdStream.on('error', (e: GoogleError) => {
+      console.log("third stream")
+      assert.strictEqual(e.code, 14);
+    });
+    attemptStream.on('error', (e: GoogleError) => {
+      console.log('first stream')
+      assert.strictEqual(e.code, 14);
+    });
+
+
+
+
+
+}
+
+
+// TODO
+async function testStreamingErrorAfterDataYesBufferNoRetry(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [4];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+  const baseString = 'zero one two three four five six seven eight nine ';
+  let testString = ''
+
+  const repeats = 100;
+  for (let i=0; i<repeats; i++){
+    testString = testString.concat(baseString)
+  }
+
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.5, 0.1, 0.1],
+    [85, 155, 99], //error before any data is sent
+    testString
+  );
+
+  const response = await client.createStreamingSequence(request);
+    const sequence = response[0];
+    console.log("seq", sequence!.content!.length)
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    // const secondStream = new PassThrough({objectMode: true, readableHighWaterMark: 10}) // TODO mess with high water mark
+    // const thirdStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
+    const secondStream = new PassThrough({objectMode: true}) // TODO mess with high water mark
+    const thirdStream = new PassThrough({objectMode: true})
+    let results = []
+    const togetherStream = pipeline([attemptStream, secondStream, thirdStream],() => {console.log('done')});
+    // const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    attemptStream.on('data', (data) => {
+      results.push(data);
+    });
+
+    // when using pipeline it is expected that togetherStream would log before thirdStream because they're basically invoking the same thing
+    // imagine togetherStream is three physical pipes put together - what comes out of the third section of pipe is the same
+    // as what comes out of the whole thing and arrives at the same time
+
+    // when using pumpify, only first stream and final stream will be logged
     togetherStream.on('error', (e: GoogleError) => {
+      console.log(results.length);
+
       console.log("final stream")
       assert.strictEqual(e.code, 14);
-      resolve();
     });
-  });
+    // secondStream.on('error', (e: GoogleError) => {
+    //   console.log("second stream")
+    //   assert.strictEqual(e.code, 14);
+    // });
+    // thirdStream.on('error', (e: GoogleError) => {
+    //   console.log("third stream")
+    //   assert.strictEqual(e.code, 14);
+    // });
+    attemptStream.on('error', (e: GoogleError) => {
+      console.log(results.length)
+      console.log('first stream')
+      assert.strictEqual(e.code, 14);
+    });
+
+
+
+
+
 }
 
 async function testPagedExpand(client: EchoClient) {
