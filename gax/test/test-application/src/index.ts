@@ -173,7 +173,10 @@ async function testShowcase() {
   // console.log('retryclient')
   // await testMegaExpand(grpcClientWithServerStreamingRetries);
   // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
-  await testStreamingErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  // await testStreamingErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+
+  
 
   // // TODO - deal with this problem
   // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries); //TODO understand better
@@ -473,8 +476,8 @@ async function testImmediateStreamingErrorNoBufferNoRetry(
 }
 
 
-// TODO
-async function testStreamingErrorAfterDataYesBufferNoRetry(
+
+async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -506,7 +509,7 @@ async function testStreamingErrorAfterDataYesBufferNoRetry(
   const request = createStreamingSequenceRequestFactory(
     [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
     [0.5, 0.1, 0.1],
-    [85, 155, 99], //error before any data is sent
+    [85, 99, 100], //error before any data is sent
     testString
   );
 
@@ -527,8 +530,8 @@ async function testStreamingErrorAfterDataYesBufferNoRetry(
     const secondStream = new PassThrough({objectMode: true}) // TODO mess with high water mark
     const thirdStream = new PassThrough({objectMode: true})
     let results = []
-    const togetherStream = pipeline([attemptStream, secondStream, thirdStream],() => {console.log('done')});
-    // const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    // const togetherStream = pipeline([attemptStream, secondStream, thirdStream],() => {console.log('done')});
+    const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
     attemptStream.on('data', (data) => {
       results.push(data);
     });
@@ -538,12 +541,7 @@ async function testStreamingErrorAfterDataYesBufferNoRetry(
     // as what comes out of the whole thing and arrives at the same time
 
     // when using pumpify, only first stream and final stream will be logged
-    togetherStream.on('error', (e: GoogleError) => {
-      console.log(results.length);
 
-      console.log("final stream")
-      assert.strictEqual(e.code, 14);
-    });
     // secondStream.on('error', (e: GoogleError) => {
     //   console.log("second stream")
     //   assert.strictEqual(e.code, 14);
@@ -553,7 +551,81 @@ async function testStreamingErrorAfterDataYesBufferNoRetry(
     //   assert.strictEqual(e.code, 14);
     // });
     attemptStream.on('error', (e: GoogleError) => {
-      console.log(results.length)
+      assert.strictEqual(results.length, 85)
+
+      console.log('first stream')
+      assert.strictEqual(e.code, 14);
+    });
+    togetherStream.on('error', (e: GoogleError) => {
+      assert.strictEqual(results.length, 85)
+
+      console.log("final stream")
+      assert.strictEqual(e.code, 14);
+    });
+
+
+
+
+
+}
+async function testStreamingErrorAfterDataNoBufferNoRetry(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [4];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+  const baseString = 'zero one two three four five six seven eight nine ';
+  let testString = ''
+
+  const repeats = 100;
+  for (let i=0; i<repeats; i++){
+    testString = testString.concat(baseString)
+  }
+
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.5, 0.1, 0.1],
+    [85, 155, 99], 
+    testString
+  );
+
+  const response = await client.createStreamingSequence(request);
+    const sequence = response[0];
+    console.log("seq", sequence!.content!.length)
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+
+    let results = []
+
+    attemptStream.on('data', (data) => {
+      results.push(data);
+    });
+
+
+    attemptStream.on('error', (e: GoogleError) => {
+      assert.strictEqual(results.length, 85); // we chose to throw an error after the 85th result
       console.log('first stream')
       assert.strictEqual(e.code, 14);
     });
