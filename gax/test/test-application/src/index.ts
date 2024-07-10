@@ -33,7 +33,7 @@ import {
   
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
-import { Duplex, PassThrough } from 'stream';
+import {PassThrough } from 'stream';
 const pumpify = require('pumpify')
 
 async function testShowcase() {
@@ -78,6 +78,8 @@ async function testShowcase() {
   const grpcClientWithServerStreamingRetries = new EchoClient(
     grpcClientOptsWithServerStreamingRetries
   );
+  const grpcSequenceClientNoGaxRetries =
+    new SequenceServiceClient(grpcClientOpts);
   const grpcSequenceClientWithServerStreamingRetries =
     new SequenceServiceClient(grpcClientOptsWithServerStreamingRetries);
 
@@ -165,11 +167,12 @@ async function testShowcase() {
   // await testWait(grpcClientWithServerStreamingRetries);
 
   console.log("grpcclient")
-  await testMegaExpand(grpcClient);
+  // await testMegaExpand(grpcClient);
   // console.log('rest client');
   // await testMegaExpand(restClient);
-  console.log('retryclient')
-  await testMegaExpand(grpcClientWithServerStreamingRetries);
+  // console.log('retryclient')
+  // await testMegaExpand(grpcClientWithServerStreamingRetries);
+  await testStreamingErrorNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -323,14 +326,12 @@ async function testMegaExpand(client: EchoClient) {
   const stream = client.expand(request);
   //generated with gemini
   const secondStream = new PassThrough({objectMode: true});
-  // pumpify.obj(stream, secondStream); //TODO retry with pumpify
-  stream.pipe(secondStream)
-  // const sleep = (ms: any) => {
-  //   return new Promise(resolve => setTimeout(resolve, ms));
-  // };
+  const togetherStream = pumpify.obj(stream, secondStream); //TODO retry with pumpify
+
   // TODO introduce backpressuring and or pausing
   const result: string[] = [];
   const result2: string[] = [];
+  const result3: string[] = [];
   stream.on('status', (status) => {
     console.log('STATUS', status)
   })
@@ -371,6 +372,94 @@ async function testMegaExpand(client: EchoClient) {
   secondStream.on('error', (err) => {
     console.log('ERR2', err);
   })
+  togetherStream.on('data', (response: {content: string}) => {
+    console.log('data3', result3.length)
+
+    result3.push(response.content);
+  })
+  togetherStream.on('end', () => {
+    console.log('second stream end')
+    assert.deepStrictEqual(words, result3);
+    assert.deepStrictEqual(words.length, result3.length)
+    console.log('assertsions true 2')
+  });
+  togetherStream.on('error', (err: any) => {
+    console.log('ERR3', err);
+  })
+}
+
+async function testStreamingErrorNoBufferNoRetry(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [4];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
+    [0.1, 0.1, 0.1],
+    [1, 2, 11],
+    'This is testing the brand new and shiny StreamingSequence server 3'
+  );
+
+  const response = await client.createStreamingSequence(request);
+  await new Promise<void>(resolve => {
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    const secondStream = new PassThrough({objectMode: true})
+    const togetherStream = new PassThrough({objectMode: true})
+    attemptStream.pipe(secondStream).pipe(togetherStream);
+
+    // const togetherStream = pumpify.obj(attemptStream, secondStream)
+    // attemptStream.on('status', (status) => {
+    //   console.log('st', status);
+    // });
+    // attemptStream.on('metadata', (metadata) => {
+    //   console.log('mtda', metadata);
+    // });
+    // attemptStream.on('data', (data) => {
+    //   console.log('this should not happen', data);
+    //   // throw new Error('this is a problem')
+    //   // resolve();
+    // });
+    attemptStream.on('error', (e: GoogleError) => {
+      console.log('first stream')
+      assert.strictEqual(e.code, 14);
+      // resolve();
+    });
+    secondStream.on('error', (e: GoogleError) => {
+      console.log("second stream")
+      assert.strictEqual(e.code, 13);
+      // resolve();
+    });
+    togetherStream.on('error', (e: GoogleError) => {
+      console.log("final stream")
+      assert.strictEqual(e.code, 14);
+      resolve();
+    });
+  });
 }
 
 async function testPagedExpand(client: EchoClient) {
