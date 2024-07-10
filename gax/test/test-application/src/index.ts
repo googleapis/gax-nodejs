@@ -323,13 +323,20 @@ async function testMegaExpand(client: EchoClient) {
   const stream = client.expand(request);
   //generated with gemini
   const secondStream = new PassThrough({objectMode: true});
-  pumpify.obj(stream, secondStream);
+  // pumpify.obj(stream, secondStream); //TODO retry with pumpify
+  stream.pipe(secondStream)
   // const sleep = (ms: any) => {
   //   return new Promise(resolve => setTimeout(resolve, ms));
   // };
   // TODO introduce backpressuring and or pausing
   const result: string[] = [];
   const result2: string[] = [];
+  stream.on('status', (status) => {
+    console.log('STATUS', status)
+  })
+  stream.on('metadata', (metadata) => {
+    console.log('metadata', metadata)
+  })
   stream.on('data',(response: {content: string}) => {
     console.log('data', result.length)
 
@@ -344,13 +351,14 @@ async function testMegaExpand(client: EchoClient) {
     console.log('first stream end')
     assert.deepStrictEqual(words, result);
     assert.deepStrictEqual(words.length, result.length)
+    console.log('assertions true')
   });
 
   stream.on('error', (err) => {
     console.log('ERR1', err);
   })
-  secondStream.on('data2', (response: {content: string}) => {
-    console.log('data', result2.length)
+  secondStream.on('data', (response: {content: string}) => {
+    console.log('data2', result2.length)
 
     result2.push(response.content);
   })
@@ -358,6 +366,7 @@ async function testMegaExpand(client: EchoClient) {
     console.log('second stream end')
     assert.deepStrictEqual(words, result2);
     assert.deepStrictEqual(words.length, result2.length)
+    console.log('assertsions true 2')
   });
   secondStream.on('error', (err) => {
     console.log('ERR2', err);
