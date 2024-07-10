@@ -30,8 +30,11 @@ import {
   createBackoffSettings,
   createMaxRetriesBackoffSettings,
   RetryOptions,
+  
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
+import { Duplex, PassThrough } from 'stream';
+const pumpify = require('pumpify')
 
 async function testShowcase() {
   const grpcClientOpts = {
@@ -166,7 +169,7 @@ async function testShowcase() {
   // console.log('rest client');
   // await testMegaExpand(restClient);
   console.log('retryclient')
-  // await testMegaExpand(grpcClientWithServerStreamingRetries);
+  await testMegaExpand(grpcClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -312,28 +315,53 @@ function testInputFactory(size: number): string[]{
 }
 async function testMegaExpand(client: EchoClient) {
   // const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const words = testInputFactory(500);
+  const words = testInputFactory(100);
   const request = {
     content: words.join(' '),
   };
+  console.log("length of words", words.length);
   const stream = client.expand(request);
-  const sleep = (ms: any) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  };
+  //generated with gemini
+  const secondStream = new PassThrough({objectMode: true});
+  pumpify.obj(stream, secondStream);
+  // const sleep = (ms: any) => {
+  //   return new Promise(resolve => setTimeout(resolve, ms));
+  // };
+  // TODO introduce backpressuring and or pausing
   const result: string[] = [];
-  stream.on('data', async (response: {content: string}) => {
-    console.log(result.length)
+  const result2: string[] = [];
+  stream.on('data',(response: {content: string}) => {
+    console.log('data', result.length)
+
     result.push(response.content);
-    stream.pause()
-    setTimeout(() => {
-      console.log('Now data will start flowing again.');
-      stream.resume();
-    }, 1000);
+    // stream.pause()
+    // setTimeout(() => {
+    //   console.log('Now data will start flowing again.');
+    //   stream.resume();
+    // }, 1000);
   });
   stream.on('end', () => {
+    console.log('first stream end')
     assert.deepStrictEqual(words, result);
     assert.deepStrictEqual(words.length, result.length)
   });
+
+  stream.on('error', (err) => {
+    console.log('ERR1', err);
+  })
+  secondStream.on('data2', (response: {content: string}) => {
+    console.log('data', result2.length)
+
+    result2.push(response.content);
+  })
+  secondStream.on('end', () => {
+    console.log('second stream end')
+    assert.deepStrictEqual(words, result2);
+    assert.deepStrictEqual(words.length, result2.length)
+  });
+  secondStream.on('error', (err) => {
+    console.log('ERR2', err);
+  })
 }
 
 async function testPagedExpand(client: EchoClient) {
