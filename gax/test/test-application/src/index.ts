@@ -480,7 +480,8 @@ async function testImmediateStreamingErrorNoBufferNoRetry(
 }
 
 
-async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
+
+async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -512,7 +513,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
   const request = createStreamingSequenceRequestFactory(
     [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
     [0.5, 0.1, 0.1],
-    [1000, 99, 100], //error before any data is sent
+    [85, 99, 100], //error at the 85th
     testString
   );
 
@@ -527,32 +528,32 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
       attemptRequest,
       settings
     );
-    // const secondStream = new PassThrough({objectMode: true, readableHighWaterMark: 10}) // TODO mess with high water mark
-    // const thirdStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
+
     const secondStream = new PassThrough({objectMode: true}) // TODO mess with high water mark
     const thirdStream = new PassThrough({objectMode: true})
     let results = []
     let results2 = []
     const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
-    // attemptStream.on('data', (data) => {
-    //   results.push(data);
-    // });
+    attemptStream.on('data', (data) => {
+      results.push(data);
+    });
 
 
     attemptStream.on('error', (e: GoogleError) => {
       // assert.strictEqual(results.length, 85)
-
-      console.log('first stream')
+      // RESULTS LENGTH WILL BE LESS THAN 85
+      console.log('first stream', results.length)
       assert.strictEqual(e.code, 14);
+
     });
-    togetherStream.on('data', (data: any) => {
-      results2.push(data)
-    });
+    // togetherStream.on('data', (data: any) => {
+    //   results2.push(data)
+    // });
     togetherStream.on('error', (e: GoogleError) => {
-      assert.strictEqual(results2.length, 1000)
+      // assert.strictEqual(results2.length, 85)
       assert.strictEqual(results.length, 85)
 
-      console.log("final stream")
+      console.log("final stream", results.length)
       assert.strictEqual(e.code, 14);
     });
 
@@ -561,7 +562,8 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
 
 
 }
-async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
+
+async function testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -621,10 +623,11 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
 
 
     attemptStream.on('error', (e: GoogleError) => {
-      // assert.strictEqual(results.length, 85)
+      setImmediate(() => {      
+        console.log('first stream', results.length)
+        assert.strictEqual(results.length, 85)
+      assert.strictEqual(e.code, 14);})
 
-      console.log('first stream', results.length)
-      assert.strictEqual(e.code, 14);
     });
     // togetherStream.on('data', (data: any) => {
     //   results2.push(data)
