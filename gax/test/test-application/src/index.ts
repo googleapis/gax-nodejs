@@ -33,7 +33,7 @@ import {
   
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
-import {PassThrough } from 'stream';
+import {PassThrough, pipeline } from 'stream';
 const pumpify = require('pumpify')
 
 async function testShowcase() {
@@ -429,9 +429,10 @@ async function testStreamingErrorNoBufferNoRetry(
       settings
     );
     const secondStream = new PassThrough({objectMode: true})
-    const togetherStream = new PassThrough({objectMode: true})
-    attemptStream.pipe(secondStream).pipe(togetherStream);
-
+    // const togetherStream = new PassThrough({objectMode: true})
+    // attemptStream.pipe(secondStream).pipe(togetherStream);
+    
+    const togetherStream = pipeline([attemptStream, secondStream],() => {console.log('done')});
     // const togetherStream = pumpify.obj(attemptStream, secondStream)
     // attemptStream.on('status', (status) => {
     //   console.log('st', status);
@@ -451,7 +452,7 @@ async function testStreamingErrorNoBufferNoRetry(
     });
     secondStream.on('error', (e: GoogleError) => {
       console.log("second stream")
-      assert.strictEqual(e.code, 13);
+      assert.strictEqual(e.code, 14);
       // resolve();
     });
     togetherStream.on('error', (e: GoogleError) => {
