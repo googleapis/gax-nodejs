@@ -42,7 +42,7 @@
     "glob": "10.4.5",
     "google-proto-files": "^4.2.0",
     "gts": "^5.0.0",
-    "jackspeak": "3.4.0",
+    "jackspeak": "3.4.3",
     "linkinator": "^4.0.0",
     "lru-cache": "10.4.3",
     "long": "^4.0.0",
