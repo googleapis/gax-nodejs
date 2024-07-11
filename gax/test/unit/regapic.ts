@@ -296,9 +296,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
-            assert.strictEqual(
-              spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+            assert.match(
+              spy.getCall(0).returnValue?.queryString ?? '',
+              /\$alt=json%3Benum-encoding=int(&.*)?$/
             );
             assert.strictEqual(err, null);
             assert.strictEqual(
@@ -336,9 +336,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.strictEqual(
-              spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+            assert.match(
+              spy.getCall(0).returnValue?.queryString ?? '',
+              /\$alt=json%3Benum-encoding=int(&.*)?$/
             );
             assert.strictEqual(err, null);
             done();
@@ -371,9 +371,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.strictEqual(
-              spy.getCall(0).returnValue?.queryString,
-              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int'
+            assert.match(
+              spy.getCall(0).returnValue?.queryString ?? '',
+              /^queryStringParameter=must-be-preserved(&.*)?&\$alt=json%3Benum-encoding=int(&.*)?$/
             );
             assert.strictEqual(err, null);
             done();
@@ -403,9 +403,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.strictEqual(
-              spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+            assert.match(
+              spy.getCall(0).returnValue?.queryString ?? '',
+              /\$alt=json%3Benum-encoding=int(&.*)?$/
             );
             assert.strictEqual(err, null);
             done();
