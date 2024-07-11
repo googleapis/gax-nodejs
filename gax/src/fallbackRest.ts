@@ -61,6 +61,11 @@ export function encodeRequest(
       '$alt=json%3Benum-encoding=int';
   }
 
+  // Disable pretty-print JSON responses
+  transcoded.queryString =
+    (transcoded.queryString ? `${transcoded.queryString}&` : '') +
+    '$prettyPrint=0';
+
   // Converts httpMethod to method that permitted in standard Fetch API spec
   // https://fetch.spec.whatwg.org/#methods
   const method = transcoded.httpMethod.toUpperCase() as FetchParametersMethod;
