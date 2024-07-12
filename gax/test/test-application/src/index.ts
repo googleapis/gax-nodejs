@@ -173,6 +173,12 @@ async function testShowcase() {
 
   /* Series of tests that validate behavior of gax behavior with stream pipelines */ 
 
+  /* YES BUFFERING NO GAX NATIVE RETRIES
+  This section has pipelines of streams and involves pausing a stream so 
+  data builds up in the buffer. Tests run against gax clients that don't utilize gax native retries*/
+  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries)
+
   /* NO BUFFERING NO GAX NATIVE RETRIES
   This section has pipelines of streams but no data buffering 
   and tests them against gax clients that don't utilize gax native retries */
@@ -186,21 +192,22 @@ async function testShowcase() {
   This section has pipelines of streams but no data buffering 
   and tests them against gax clients that DO utilize gax native retries
   some scenarios may not actually involve retrying */
+  // TODO - test if no data has been received and there is a retryable error
+  // TODO - test if data has been received and there is a retryable error
   // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientWithServerStreamingRetries);
+    await testImmediateStreamingErrorNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
+
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
 
-  /* YES BUFFERING NO GAX NATIVE RETRIES
-  This section has pipelines of streams and involves pausing a stream so 
-  data builds up in the buffer. Tests run against gax clients that don't utilize gax native retries*/
-  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
-  // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries)
 
   /* YES BUFFERING YES GAX NATIVE RETRIES
+  
   This section has pipelines of streams and involves pausing a stream so 
   data builds up in the buffer. Tests run against gax clients that DO utilize gax native retries
   some scenarios may not actually involve retrying */
+  
   // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries)
@@ -356,8 +363,7 @@ function testInputFactory(size: number): string[]{
 }
 
 
-// error before any data is sent
-// pass data through a chain of passthroughs
+
 async function testImmediateStreamingErrorNoBuffer(
   client: SequenceServiceClient
 ) {
@@ -434,6 +440,87 @@ async function testImmediateStreamingErrorNoBuffer(
 
 
 }
+async function testImmediateStreamingErrorNoBufferYesRetry(
+  client: SequenceServiceClient
+) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [14];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings); // default resumption strategy starts from beginning which is fine in this case
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+  const baseArray = Array.from(Array(100).keys())
+  let testString = ''
+
+  for (let i=0; i<baseArray.length; i++){
+    testString = testString.concat(baseArray[i].toString() + ' ')
+  }
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.OK],
+    [0.1, 0.1],
+    [2, 100], //error before any data is sent but retry
+    testString
+  );
+
+  const response = await client.createStreamingSequence(request);
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    const secondStream = new PassThrough({objectMode: true})
+    const thirdStream = new PassThrough({objectMode: true})
+
+    const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    let results = []
+    let results2 = []
+    attemptStream.on('data', (data) => {
+      console.log('data1')
+      results.push(data.content);
+    });
+
+    togetherStream.on('data', (data: any) => {
+      console.log('data2')
+      results2.push(data.content);
+    });
+    togetherStream.on('error', (e: GoogleError) => {
+      throw new Error('should not happen!')
+    });
+
+    attemptStream.on('error', (e: GoogleError) => {
+      throw new Error('should not happen!')
+    });
+    togetherStream.on('close', () => {
+      throw new Error('stream closed prematurely')
+    })
+    togetherStream.on('end', () => {
+      assert.strictEqual(results.length, 100);
+      assert.strictEqual(results2.length, 100);
+      console.log("hooray")
+    })
+
+
+
+
+
+}
 
 
 
@@ -459,9 +546,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
   };
 
   client.initialize();
-  // TODO - use this string for others
   const baseArray = Array.from(Array(100).keys())
-  console.log(baseArray);
   let testString = ''
 
   for (let i=0; i<baseArray.length; i++){
@@ -487,22 +572,15 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
       attemptRequest,
       settings
     );
-    const secondStream = new PassThrough({objectMode: true} ) // TODO mess with high water mark
+    const secondStream = new PassThrough({objectMode: true} )
     const thirdStream = new PassThrough({objectMode: true})
-    // const userStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
-    // const userStream = new PassThrough({objectMode: true})
-
+ 
     let results: string[] = []
     let results2: string[] = []
-    // const userStream = pumpify.obj([attemptStream, secondStream, thirdStream])
-    // const userStream: Duplex = pumpify.obj([attemptStream, secondStream, thirdStream])
-    const userStream: Duplex = pipeline(attemptStream, secondStream, thirdStream, () => {console.log('done');})
+    const userStream: Duplex = pumpify.obj([attemptStream, secondStream, thirdStream])
 
     console.log(userStream.readableHighWaterMark)
-    // const togetherStream: Stream = pumpify.obj([attemptStream, secondStream, thirdStream])
-    // const originalEnd = userStream.end.bind(userStream);
-    // togetherStream.on('end', originalEnd);
-    // togetherStream.pipe(userStream, {end: false})
+
 
     attemptStream.on('data', (data) => {
       results.push(data.content);
@@ -528,7 +606,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
       setImmediate(() => {      
         console.log('first stream', results.length)
         console.log(attemptStream.destroyed)
-        // assert.strictEqual(results.length, 85)
+        assert.strictEqual(results.length, 85)
       assert.strictEqual(e.code, 14);
       })
 
@@ -539,17 +617,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
       throw new Error('should not reach this')
 
     })
-    // togetherStream.on('data', () => {
-    //   console.log('together stream data', results.length, results2.length)
-    // })
-    // togetherStream.on('error', (e: GoogleError) => {
-    //   console.log('togetherStream error')
-    //   // assert.strictEqual(results2.length, 85)
-    //   // assert.strictEqual(results.length, 85)
-
-    //   console.log("togetherstream", results, results2)
-    //   assert.strictEqual(e.code, 14);
-    // });
+   
     userStream.on('error', (e: GoogleError) => {
 
       console.log('userStream error')
@@ -557,6 +625,15 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
       // assert.strictEqual(results.length, 85)
       console.log("final stream", results.length, results2.length, results2)
       assert.strictEqual(e.code, 14);
+    });
+
+    userStream.on('status', (status) => {
+
+      console.log('userStream status', status)
+      // assert.strictEqual(results2.length, 85)
+      // assert.strictEqual(results.length, 85)
+      console.log("final stream", results.length, results2.length, results2)
+      // assert.strictEqual(e.code, 14);
     });
 }
 
@@ -957,6 +1034,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate
 
 }
 
+// without using setImmediate, not all data will make it through this pipeline
 async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
   client: SequenceServiceClient
 ) {

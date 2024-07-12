@@ -104,6 +104,7 @@ export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
       // retryStream must be destroyed here for the stream handoff part of retries to function properly
       // but the error event should not be passed - if it emits as part of .destroy()
       // it will bubble up early to the caller
+      console.log('destroy in restreamingretryrequ')
       retryStream.destroy();
     });
   }

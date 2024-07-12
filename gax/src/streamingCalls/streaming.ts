@@ -406,6 +406,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           e.note =
             'Exception occurred in retry method that was ' +
             'not classified as transient';
+            console.log('forwardevents destroy')
           this.destroy(e);
           return; // end chunk
         }
