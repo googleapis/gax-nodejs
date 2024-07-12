@@ -61,14 +61,16 @@ export function generateServiceStub(
     servicePath: string,
     servicePort: number,
     request: {},
-    numericEnums: boolean
+    numericEnums: boolean,
+    minifyJson: boolean
   ) => FetchParameters,
   responseDecoder: (
     rpc: protobuf.Method,
     ok: boolean,
     response: Buffer | ArrayBuffer
   ) => {},
-  numericEnums: boolean
+  numericEnums: boolean,
+  minifyJson: boolean
 ) {
   const fetch = hasWindowFetch()
     ? window.fetch
@@ -100,7 +102,8 @@ export function generateServiceStub(
           servicePath,
           servicePort,
           request,
-          numericEnums
+          numericEnums,
+          minifyJson
         );
       } catch (err) {
         // we could not encode parameters; pass error to the callback

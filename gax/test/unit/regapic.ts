@@ -50,6 +50,7 @@ const opts = {
 describe('REGAPIC', () => {
   let gaxGrpc: GrpcClient,
     gaxGrpcNumericEnums: GrpcClient,
+    gaxGrpcMinifyJson: GrpcClient,
     protos: protobuf.NamespaceBase,
     libProtos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
@@ -66,6 +67,10 @@ describe('REGAPIC', () => {
     gaxGrpcNumericEnums = new GrpcClient({
       ...opts,
       numericEnums: true,
+    });
+    gaxGrpcMinifyJson = new GrpcClient({
+      ...opts,
+      minifyJson: true,
     });
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
@@ -572,6 +577,88 @@ describe('REGAPIC', () => {
                 bookId: {};
               }
             ).bookId
+          );
+          done();
+        });
+      }, /* catch: */ done);
+    });
+  });
+
+  describe('should support json minification', () => {
+    it('should send prettyPrint=0 when json minification is requested', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 100, // unknown enum value
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
+      );
+
+      gaxGrpcMinifyJson
+        .createStub(libraryService, stubOptions)
+        .then(libStub => {
+          libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+            assert.match(
+              spy.getCall(0).returnValue?.queryString ?? '',
+              /\$prettyPrint=0(&.*)?$/
+            );
+            assert.strictEqual(err, null);
+            assert.strictEqual(
+              'shelf-name',
+              (result as {name: {}; theme: {}; type: {}}).name
+            );
+            assert.strictEqual(
+              100,
+              (result as {name: {}; theme: {}; type: {}}).type
+            );
+            done();
+          });
+        }, /* catch: */ done);
+    });
+
+    it('should not send prettyPrint setting when json minification is not requested', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 100, // unknown enum value
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+      // incomplete types for nodeFetch, so...
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sinon.stub(nodeFetch, 'Promise' as any).returns(
+        Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
+          },
+        })
+      );
+
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.doesNotMatch(
+            spy.getCall(0).returnValue?.queryString ?? '',
+            /prettyPrint/
+          );
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'shelf-name',
+            (result as {name: {}; theme: {}; type: {}}).name
+          );
+          assert.strictEqual(
+            100,
+            (result as {name: {}; theme: {}; type: {}}).type
           );
           done();
         });

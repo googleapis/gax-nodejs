@@ -28,7 +28,8 @@ export function encodeRequest(
   servicePath: string,
   servicePort: number,
   request: {},
-  numericEnums: boolean
+  numericEnums: boolean,
+  minifyJson: boolean
 ): FetchParameters {
   const headers: {[key: string]: string} = {
     'Content-Type': 'application/json',
@@ -61,10 +62,12 @@ export function encodeRequest(
       '$alt=json%3Benum-encoding=int';
   }
 
-  // Disable pretty-print JSON responses
-  transcoded.queryString =
-    (transcoded.queryString ? `${transcoded.queryString}&` : '') +
-    '$prettyPrint=0';
+  // If minifyJson feature is requsted, disable pretty-print JSON responses
+  if (minifyJson) {
+    transcoded.queryString =
+      (transcoded.queryString ? `${transcoded.queryString}&` : '') +
+      '$prettyPrint=0';
+  }
 
   // Converts httpMethod to method that permitted in standard Fetch API spec
   // https://fetch.spec.whatwg.org/#methods
