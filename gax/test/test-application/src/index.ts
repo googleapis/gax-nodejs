@@ -166,39 +166,46 @@ async function testShowcase() {
   // await testChat(grpcClientWithServerStreamingRetries);
   // await testWait(grpcClientWithServerStreamingRetries);
 
-  console.log("grpcclient")
-  // await testMegaExpand(grpcClient);
-  // console.log('rest client');
-  // await testMegaExpand(restClient);
-  // console.log('retryclient')
-  // await testMegaExpand(grpcClientWithServerStreamingRetries);
-  
-  // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientNoGaxRetries);
-  // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientWithServerStreamingRetries);
 
+  /* Series of tests that validate behavior of gax behavior with stream pipelines */ 
+
+  /* NO BUFFERING NO GAX NATIVE RETRIES
+  This section has pipelines of streams but no data buffering 
+  and tests them against gax clients that don't utilize gax native retries */
+  // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientNoGaxRetries);
+  // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+
+ 
+  /* NO BUFFERING YES GAX NATIVE RETRIES
+  This section has pipelines of streams but no data buffering 
+  and tests them against gax clients that DO utilize gax native retries
+  some scenarios may not actually involve retrying */
+  // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientWithServerStreamingRetries);
-  // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
 
+  /* YES BUFFERING NO GAX NATIVE RETRIES
+  This section has pipelines of streams and involves pausing a stream so 
+  data builds up in the buffer. Tests run against gax clients that don't utilize gax native retries*/
   // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
-  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
- // WIP
-  // await testStreamingPipelineErrorAfterDataNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
-
   // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries)
-  await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries)
+
+  /* YES BUFFERING YES GAX NATIVE RETRIES
+  This section has pipelines of streams and involves pausing a stream so 
+  data builds up in the buffer. Tests run against gax clients that DO utilize gax native retries
+  some scenarios may not actually involve retrying */
+  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
+  // await testStreamingPipelineErrorAfterDataNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
+  // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries)
 
 
-  // TODO - pipe pumpified stream to other stream
-  // await testStreamingErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+
+
 
   
-
-  // // TODO - deal with this problem
-  // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries); //TODO understand better
 
 }
 
@@ -343,76 +350,7 @@ function testInputFactory(size: number): string[]{
 
 
 }
-async function testMegaExpand(client: EchoClient) {
-  // const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const words = testInputFactory(100);
-  const request = {
-    content: words.join(' '),
-  };
-  console.log("length of words", words.length);
-  const stream = client.expand(request);
-  //generated with gemini
-  const secondStream = new PassThrough({objectMode: true});
-  const togetherStream = pumpify.obj(stream, secondStream); //TODO retry with pumpify
 
-  // TODO introduce backpressuring and or pausing
-  const result: string[] = [];
-  const result2: string[] = [];
-  const result3: string[] = [];
-  stream.on('status', (status) => {
-    console.log('STATUS', status)
-  })
-  stream.on('metadata', (metadata) => {
-    console.log('metadata', metadata)
-  })
-  stream.on('data',(response: {content: string}) => {
-
-    result.push(response.content);
-    // stream.pause()
-    // setTimeout(() => {
-    //   console.log('Now data will start flowing again.');
-    //   stream.resume();
-    // }, 1000);
-  });
-  stream.on('end', () => {
-    console.log('first stream end')
-    assert.deepStrictEqual(words, result);
-    assert.deepStrictEqual(words.length, result.length)
-    console.log('assertions true')
-  });
-
-  stream.on('error', (err) => {
-    console.log('ERR1', err);
-  })
-  secondStream.on('data', (response: {content: string}) => {
-    // console.log('data2', result2.length)
-
-    result2.push(response.content);
-  })
-  secondStream.on('end', () => {
-    console.log('second stream end')
-    assert.deepStrictEqual(words, result2);
-    assert.deepStrictEqual(words.length, result2.length)
-    console.log('assertsions true 2')
-  });
-  secondStream.on('error', (err) => {
-    console.log('ERR2', err);
-  })
-  togetherStream.on('data', (response: {content: string}) => {
-    // console.log('data3', result3.length)
-
-    result3.push(response.content);
-  })
-  togetherStream.on('end', () => {
-    console.log('second stream end')
-    assert.deepStrictEqual(words, result3);
-    assert.deepStrictEqual(words.length, result3.length)
-    console.log('assertsions true 2')
-  });
-  togetherStream.on('error', (err: any) => {
-    console.log('ERR3', err);
-  })
-}
 
 // error before any data is sent
 // pass data through a chain of passthroughs
