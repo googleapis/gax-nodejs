@@ -33,7 +33,7 @@ import {
   
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
-import {PassThrough, pipeline } from 'stream';
+import {Duplex, PassThrough, Stream, pipeline } from 'stream';
 const pumpify = require('pumpify')
 
 async function testShowcase() {
@@ -181,8 +181,10 @@ async function testShowcase() {
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
-  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
-  await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries)
+  await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
+
+  // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries)
 
   // TODO - pipe pumpified stream to other stream
   // await testStreamingErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
@@ -487,126 +489,128 @@ async function testImmediateStreamingErrorNoBufferNoRetry(
 
 
 
-// async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
-//   client: SequenceServiceClient
-// ) {
-//   console.log("success yes buffer no retry");
+async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
+  client: SequenceServiceClient
+) {
+  console.log("success yes buffer no retry");
 
-//   const backoffSettings = createBackoffSettings(
-//     100,
-//     1.2,
-//     1000,
-//     null,
-//     1.5,
-//     3000,
-//     10000
-//   );
-//   const allowedCodes = [4];
-//   const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [4];
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings);
 
-//   const settings = {
-//     retry: retryOptions,
-//   };
+  const settings = {
+    retry: retryOptions,
+  };
 
-//   client.initialize();
-//   const baseString = 'zero one two three four five six seven eight nine ';
-//   let testString = ''
+  client.initialize();
+  // TODO - use this string for others
+  const baseArray = Array.from(Array(100).keys())
+  console.log(baseArray);
+  let testString = ''
 
-//   const repeats = 10;
-//   for (let i=0; i<repeats; i++){
-//     testString = testString.concat(baseString)
-//   }
+  for (let i=0; i<baseArray.length; i++){
+    testString = testString.concat(baseArray[i].toString() + ' ')
+  }
 
 
-//   const request = createStreamingSequenceRequestFactory(
-//     [Status.UNAVAILABLE, Status.OK],
-//     [0.1, 0.1, 0.1],
-//     [85, 100], //error after the 85th item
-//     testString
-//   );
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.OK],
+    [0.1, 0.1, 0.1],
+    [85, 100], //error after the 85th item
+    testString
+  );
 
-//   const response = await client.createStreamingSequence(request);
-//     const sequence = response[0];
+  const response = await client.createStreamingSequence(request);
+    const sequence = response[0];
 
-//     const attemptRequest =
-//       new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
-//     attemptRequest.name = sequence.name!;
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
 
-//     const attemptStream = client.attemptStreamingSequence(
-//       attemptRequest,
-//       settings
-//     );
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    const secondStream = new PassThrough({objectMode: true} ) // TODO mess with high water mark
+    const thirdStream = new PassThrough({objectMode: true})
+    // const userStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
+    // const userStream = new PassThrough({objectMode: true})
 
-//     const secondStream = new PassThrough({objectMode: true} ) // TODO mess with high water mark
-//     const thirdStream = new PassThrough({objectMode: true})
-//     // const userStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
-//     const userStream = new PassThrough({objectMode: true})
+    let results: string[] = []
+    let results2: string[] = []
+    // const userStream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    // const userStream: Duplex = pumpify.obj([attemptStream, secondStream, thirdStream])
+    const userStream: Duplex = pipeline(attemptStream, secondStream, thirdStream, () => {console.log('done');})
 
-//     let results = []
-//     let results2 = []
+    console.log(userStream.readableHighWaterMark)
+    // const togetherStream: Stream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    // const originalEnd = userStream.end.bind(userStream);
+    // togetherStream.on('end', originalEnd);
+    // togetherStream.pipe(userStream, {end: false})
 
-//     const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
-//     const originalEnd = userStream.end.bind(userStream);
-//     togetherStream.on('end', originalEnd);
-//     togetherStream.pipe(userStream, {end: false});
-
-//     attemptStream.on('data', (data) => {
-//       results.push(data);
-//       console.log('attemptStream data', results.length)
+    attemptStream.on('data', (data) => {
+      results.push(data.content);
+      console.log('attemptStream data', data.content, attemptStream.destroyed)
       
-//     });
+    });
 
- 
-//     attemptStream.on('end', () => {
-//       throw new Error('should not reach this')
-//     })
+    attemptStream.on('end', () => {
+      throw new Error('should not reach this')
+    })
 
+    userStream.on('data', (data: any) => {
+      results2.push(data.content)
+      console.log("userStream data", data.content)
+        userStream.pause();
+        setTimeout(() => {
+        userStream.resume();
+      }, 50);
+    // }
+    });
+    attemptStream.on('error', (e: GoogleError) => {
+      console.log('attempstream onerror')
+      setImmediate(() => {      
+        console.log('first stream', results.length)
+        console.log(attemptStream.destroyed)
+        // assert.strictEqual(results.length, 85)
+      assert.strictEqual(e.code, 14);
+      })
 
-//     attemptStream.on('error', (e: GoogleError) => {
+    });
     
-//       console.log('first stream', results.length)
-//       assert.strictEqual(e.code, 14);
 
-//     });
-//     userStream.on('data', (data: any) => {
-//       results2.push(data)
-//       console.log("userStream data", results2.length)
-//       // if (results2.length == 50){ // pause after 50 items
-//         userStream.pause();
-//         setTimeout(() => {
-//         // console.log('Now data will start flowing again.');
-//         userStream.resume();
-//       }, 100);
-//     // }
+    userStream.on('end', () => {
+      throw new Error('should not reach this')
 
-//     });
-//     userStream.on('end', () => {
-//       throw new Error('should not reach this')
+    })
+    // togetherStream.on('data', () => {
+    //   console.log('together stream data', results.length, results2.length)
+    // })
+    // togetherStream.on('error', (e: GoogleError) => {
+    //   console.log('togetherStream error')
+    //   // assert.strictEqual(results2.length, 85)
+    //   // assert.strictEqual(results.length, 85)
 
-//     })
-//     togetherStream.on('error', (e: GoogleError) => {
-//       console.log('togetherStream error')
-//       // assert.strictEqual(results2.length, 85)
-//       // assert.strictEqual(results.length, 85)
+    //   console.log("togetherstream", results, results2)
+    //   assert.strictEqual(e.code, 14);
+    // });
+    userStream.on('error', (e: GoogleError) => {
 
-//       console.log("togetherstream", results.length, results2.length)
-//       assert.strictEqual(e.code, 14);
-//     });
-//     userStream.on('error', (e: GoogleError) => {
-
-//       console.log('userStream error')
-//       // assert.strictEqual(results2.length, 85)
-//       // assert.strictEqual(results.length, 85)
-
-//       console.log("final stream", results.length, results2.length)
-//       assert.strictEqual(e.code, 14);
-//     });
-
-
-
-
-
-// }
+      console.log('userStream error')
+      // assert.strictEqual(results2.length, 85)
+      // assert.strictEqual(results.length, 85)
+      console.log("final stream", results.length, results2.length, results2)
+      assert.strictEqual(e.code, 14);
+    });
+}
 
 // TODO resume this later
 async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
@@ -832,12 +836,11 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate
   };
 
   client.initialize();
-  const baseString = 'zero one two three four five six seven eight nine ';
+  const baseArray = Array.from(Array(100).keys())
   let testString = ''
 
-  const repeats = 100;
-  for (let i=0; i<repeats; i++){
-    testString = testString.concat(baseString)
+  for (let i=0; i<baseArray.length; i++){
+    testString = testString.concat(baseArray[i].toString() + ' ')
   }
 
 
@@ -863,6 +866,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate
     // const thirdStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
     const secondStream = new PassThrough({objectMode: true}) // TODO mess with high water mark
     const thirdStream = new PassThrough({objectMode: true})
+    
     let results = []
     let results2 = []
     const togetherStream = pumpify.obj([attemptStream, secondStream, thirdStream])
