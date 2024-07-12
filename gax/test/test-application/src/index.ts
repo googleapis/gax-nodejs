@@ -173,14 +173,24 @@ async function testShowcase() {
   // console.log('retryclient')
   // await testMegaExpand(grpcClientWithServerStreamingRetries);
   
-  // await testImmediateStreamingErrorNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientNoGaxRetries);
+  // await testImmediateStreamingErrorNoBuffer(grpcSequenceClientWithServerStreamingRetries);
+
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientNoGaxRetries);
+  // await testStreamingPipelineErrorAfterDataNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
+  // await testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate(grpcSequenceClientWithServerStreamingRetries);
   // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
-  await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
+  // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
+
+  // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries);
   // await testStreamingPipelineErrorAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries);
+ // WIP
+  // await testStreamingPipelineErrorAfterDataNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
 
   // await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientNoGaxRetries)
+  await testStreamingPipelineSuccessAfterDataYesBufferNoRetry(grpcSequenceClientWithServerStreamingRetries)
+
 
   // TODO - pipe pumpified stream to other stream
   // await testStreamingErrorAfterDataNoBufferNoRetry(grpcSequenceClientNoGaxRetries);
@@ -406,7 +416,7 @@ async function testMegaExpand(client: EchoClient) {
 
 // error before any data is sent
 // pass data through a chain of passthroughs
-async function testImmediateStreamingErrorNoBufferNoRetry(
+async function testImmediateStreamingErrorNoBuffer(
   client: SequenceServiceClient
 ) {
   const backoffSettings = createBackoffSettings(
@@ -608,7 +618,117 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
     });
 }
 
-// TODO resume this later
+async function testStreamingPipelineErrorAfterDataNoBufferYesRetry(
+  client: SequenceServiceClient
+) {
+  console.log("data, error, retry, finish");
+
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    10000
+  );
+  const allowedCodes = [14];
+  const getResumptionRequestFn = (request: RequestType) => {
+    const newRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest() as unknown as RequestType;
+    newRequest.name = request.name;
+    newRequest.lastFailIndex = 85; // TODO dynamically get this
+    return newRequest as unknown as RequestType;
+  };
+  const retryOptions = new RetryOptions(allowedCodes, backoffSettings, undefined, getResumptionRequestFn);
+  
+
+  const settings = {
+    retry: retryOptions
+  };
+
+  client.initialize();
+  // TODO - use this string for others
+  const baseArray = Array.from(Array(100).keys())
+  let testString = ''
+
+  for (let i=0; i<baseArray.length; i++){
+    testString = testString.concat(baseArray[i].toString() + ' ')
+  }
+
+
+  const request = createStreamingSequenceRequestFactory(
+    [Status.UNAVAILABLE, Status.OK],
+    [0.1, 0.1, 0.1],
+    [85, 100], //error after the 85th item
+    testString
+  );
+
+
+  const response = await client.createStreamingSequence(request);
+    const sequence = response[0];
+
+    const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptStreamingSequenceRequest();
+    attemptRequest.name = sequence.name!;
+
+    const attemptStream = client.attemptStreamingSequence(
+      attemptRequest,
+      settings
+    );
+    const secondStream = new PassThrough({objectMode: true} ) // TODO mess with high water mark
+    const thirdStream = new PassThrough({objectMode: true})
+    // const userStream = new PassThrough({objectMode: true, readableHighWaterMark: 10})
+    // const userStream = new PassThrough({objectMode: true})
+
+    let results: string[] = []
+    let results2: string[] = []
+    // const userStream = pumpify.obj([attemptStream, secondStream, thirdStream])
+    const userStream: Duplex = pumpify.obj([attemptStream, secondStream, thirdStream])
+  
+
+    attemptStream.on('data', (data) => {
+      results.push(data.content);
+      console.log('attemptStream data', data.content, attemptStream.destroyed)
+      
+    });
+
+    attemptStream.on('end', () => {
+      assert.strictEqual(results.length, 100)
+    })
+
+    userStream.on('data', (data: any) => {
+      results2.push(data.content)
+      console.log("userStream data", data.content)
+
+    });
+    attemptStream.on('error', (e: GoogleError) => {
+      console.log('attempstream onerror')
+      setImmediate(() => {      
+        console.log('first stream', results.length)
+        console.log(attemptStream.destroyed)
+        // assert.strictEqual(results.length, 85)
+      assert.strictEqual(e.code, 14);
+      })
+
+    });
+    
+
+    userStream.on('end', () => {
+      throw new Error('should not reach this')
+
+    })
+    
+    userStream.on('error', (e: GoogleError) => {
+
+      console.log('userStream error')
+      // assert.strictEqual(results2.length, 85)
+      // assert.strictEqual(results.length, 85)
+      console.log("final stream", results.length, results2.length, results2)
+      assert.strictEqual(e.code, 14);
+    });
+}
+
 async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
   client: SequenceServiceClient
 ) {
@@ -956,7 +1076,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetry(
 
 
     attemptStream.on('error', (e: GoogleError) => {
-      // assert.strictEqual(results.length, 85)
+      assert.strictEqual(results.length, 78)
       // RESULTS LENGTH WILL BE LESS THAN 85
       console.log('first stream', results.length)
       assert.strictEqual(e.code, 14);
