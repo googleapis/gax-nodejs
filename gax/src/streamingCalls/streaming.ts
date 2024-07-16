@@ -256,7 +256,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // for some reason this error must be emitted here
       // instead of the destroy, otherwise the error event
       // is swallowed
-      console.log('ugh weird event')
+      // console.log('ugh weird event')
       this.emit('error', e);
       this.destroy();
       return;
@@ -344,12 +344,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    *   algorithm.
    */
   forwardEvents(stream: Stream) {
-    console.log('in forwardevents')
+    // console.log('in forwardevents')
     this.eventForwardHelper(stream);
     this.statusMetadataHelper(stream);
 
     stream.on('error', error => {
-      console.log('uh oh, an error')
+      // console.log('uh oh, an error')
       GoogleError.parseGRPCStatusDetails(error);
     });
   }
@@ -391,7 +391,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 'in backoffSettings.'
             );
             newError.code = Status.INVALID_ARGUMENT;
-            console.log('before an error emit, bad')
+            // console.log('before an error emit, bad')
             this.emit('error', newError);
             this.destroy();
             return; //end chunk
@@ -406,7 +406,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           e.note =
             'Exception occurred in retry method that was ' +
             'not classified as transient';
-            console.log('forwardevents destroy')
+            // console.log('forwardevents destroy')
           this.destroy(e);
           return; // end chunk
         }
