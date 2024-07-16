@@ -658,12 +658,12 @@ async function testStreamingErrorAfterDataNoBufferYesRetryRequestRetry(
     let results: String[] = []
     let results2: String[]  = []
     attemptStream.on('data', (data) => {
-      console.log('data1')
+      console.log('data1', data.content)
       results.push(data.content);
     });
 
     togetherStream.on('data', (data: any) => {
-      console.log('data2')
+      console.log('data2', data.content)
       results2.push(data.content);
       togetherStream.pause();
       setTimeout(() => {
