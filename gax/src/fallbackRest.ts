@@ -62,7 +62,7 @@ export function encodeRequest(
       '$alt=json%3Benum-encoding=int';
   }
 
-  // If minifyJson feature is requsted, disable pretty-print JSON responses
+  // If minifyJson feature is requested, disable pretty-print JSON responses
   if (minifyJson) {
     transcoded.queryString =
       (transcoded.queryString ? `${transcoded.queryString}&` : '') +

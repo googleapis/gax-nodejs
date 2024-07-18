@@ -207,10 +207,7 @@ describe('REGAPIC', () => {
 
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
-          assert.doesNotMatch(
-            spy.getCall(0).returnValue?.queryString ?? '',
-            /\$alt/
-          );
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
           assert.strictEqual(err, null);
           assert.strictEqual(
             'shelf-name',
@@ -245,10 +242,7 @@ describe('REGAPIC', () => {
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-          assert.doesNotMatch(
-            spy.getCall(0).returnValue?.queryString ?? '',
-            /\$alt/
-          );
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
           assert.strictEqual(err, null);
           done();
         });
