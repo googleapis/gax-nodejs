@@ -269,10 +269,7 @@ describe('REGAPIC', () => {
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-          assert.doesNotMatch(
-            spy.getCall(0).returnValue?.queryString ?? '',
-            /\$alt/
-          );
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
           assert.strictEqual(err, null);
           done();
         });
@@ -304,9 +301,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
-            assert.match(
-              spy.getCall(0).returnValue?.queryString ?? '',
-              /\$alt=json%3Benum-encoding=int(&.*)?$/
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              '$alt=json%3Benum-encoding=int'
             );
             assert.strictEqual(err, null);
             assert.strictEqual(
@@ -344,8 +341,12 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+            assert.strictEqual(
+              'string',
+              typeof spy.getCall(0).returnValue?.queryString
+            );
             assert.match(
-              spy.getCall(0).returnValue?.queryString ?? '',
+              <string>spy.getCall(0).returnValue?.queryString,
               /\$alt=json%3Benum-encoding=int(&.*)?$/
             );
             assert.strictEqual(err, null);
@@ -379,9 +380,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.match(
-              spy.getCall(0).returnValue?.queryString ?? '',
-              /^queryStringParameter=must-be-preserved(&.*)?&\$alt=json%3Benum-encoding=int(&.*)?$/
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int'
             );
             assert.strictEqual(err, null);
             done();
@@ -411,9 +412,9 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.match(
-              spy.getCall(0).returnValue?.queryString ?? '',
-              /\$alt=json%3Benum-encoding=int(&.*)?$/
+            assert.strictEqual(
+              spy.getCall(0).returnValue?.queryString,
+              '$alt=json%3Benum-encoding=int'
             );
             assert.strictEqual(err, null);
             done();
@@ -602,8 +603,12 @@ describe('REGAPIC', () => {
         .createStub(libraryService, stubOptions)
         .then(libStub => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+            assert.strictEqual(
+              'string',
+              typeof spy.getCall(0).returnValue?.queryString
+            );
             assert.match(
-              spy.getCall(0).returnValue?.queryString ?? '',
+              <string>spy.getCall(0).returnValue?.queryString,
               /\$prettyPrint=0(&.*)?$/
             );
             assert.strictEqual(err, null);
@@ -641,8 +646,12 @@ describe('REGAPIC', () => {
 
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(
+            'string',
+            typeof spy.getCall(0).returnValue?.queryString
+          );
           assert.doesNotMatch(
-            spy.getCall(0).returnValue?.queryString ?? '',
+            <string>spy.getCall(0).returnValue?.queryString,
             /prettyPrint/
           );
           assert.strictEqual(err, null);
