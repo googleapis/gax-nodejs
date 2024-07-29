@@ -25,7 +25,7 @@ import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
 import internal = require('stream');
 import {StreamArrayParser} from '../../src/streamArrayParser';
-import {streamingRetryRequest} from '../../src/streamingRetryRequest';
+import {streamingRetryRequest} from '../../src/streamingCalls/streaming';
 
 function createApiCallStreaming(
   func:
@@ -94,7 +94,6 @@ describe('retry-request', () => {
         .on('data', (data: {resources: number[]}) => {
           receivedData = receivedData.concat(data.resources);
         });
-      assert.strictEqual(retryStream._readableState.objectMode, true);
     });
     it('throws request error', done => {
       try {

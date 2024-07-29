@@ -12,100 +12,113 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const {PassThrough} = require('stream');
-import {GoogleError} from './googleError';
-import {ResponseType} from './apitypes';
-import {StreamProxy} from './streamingCalls/streaming';
+// import {PassThrough} from 'stream';
+// import {GoogleError} from './googleError';
+// import {ResponseType} from './apitypes';
+// import {StreamProxy} from './streamingCalls/streaming';
 
-const DEFAULTS = {
-  /*
-    Max # of retries
-  */
-  maxRetries: 2,
-};
-// In retry-request, you could pass parameters to request using the requestOpts parameter
-// when we called retry-request from gax, we always passed null
-// passing null here removes an unnecessary parameter from this implementation
-const requestOps = null;
-const objectMode = true; // we don't support objectMode being false
+// const DEFAULTS = {
+//   /*
+//     Max # of retries
+//   */
+//   maxRetries: 2,
+// };
+// // In retry-request, you could pass parameters to request using the requestOpts parameter
+// // when we called retry-request from gax, we always passed null
+// // passing null here removes an unnecessary parameter from this implementation
+// const requestOps = null;
+// const objectMode = true; // we don't support objectMode being false
 
-interface streamingRetryRequestOptions {
-  request: Function;
-  maxRetries?: number;
-}
-/**
- * Localized adaptation derived from retry-request
- * @param opts - corresponds to https://github.com/googleapis/retry-request#opts-optional
- * @returns
- */
-export function streamingRetryRequest(opts: streamingRetryRequestOptions) {
-  opts = Object.assign({}, DEFAULTS, opts);
-  if (opts.request === undefined) {
-    throw new Error('A request function must be provided');
-  }
+// interface streamingRetryRequestOptions {
+//   request: Function;
+//   maxRetries?: number;
+// }
+// /**
+//  * Localized adaptation derived from retry-request
+//  * @param opts - corresponds to https://github.com/googleapis/retry-request#opts-optional
+//  * @returns PassThrough 
+//  */
+// export function streamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
+//   opts = Object.assign({}, DEFAULTS, opts);
+//   if (opts.request === undefined) {
+//     throw new Error('A request function must be provided');
+//   }
 
-  let numNoResponseAttempts = 0;
-  let streamResponseHandled = false;
+//   let numNoResponseAttempts = 0;
+//   let streamResponseHandled = false;
 
-  let requestStream: StreamProxy;
-  let delayStream: StreamProxy;
+//   let requestStream: StreamProxy;
+//   let delayStream: PassThrough | null;
 
-  const retryStream = new PassThrough({objectMode: objectMode});
+//   const retryStream = new PassThrough({objectMode: objectMode});
 
-  makeRequest();
-  return retryStream;
+//   makeRequest();
+//   console.log('before return', retryStream.destroyed);
+//   return retryStream;
 
-  function makeRequest() {
-    streamResponseHandled = false;
 
-    delayStream = new PassThrough({objectMode: objectMode});
-    requestStream = opts.request!(requestOps);
+//   function makeRequest(): void{
+//     streamResponseHandled = false;
 
-    requestStream
-      // gRPC via google-cloud-node can emit an `error` as well as a `response`
-      // Whichever it emits, we run with-- we can't run with both. That's what
-      // is up with the `streamResponseHandled` tracking.
-      .on('error', (err: GoogleError) => {
-        if (streamResponseHandled) {
-          return;
-        }
-        streamResponseHandled = true;
-        onResponse(err);
-      })
-      .on('response', (resp: ResponseType) => {
-        if (streamResponseHandled) {
-          return;
-        }
+//     delayStream = new PassThrough({objectMode: objectMode});
+//     requestStream = opts.request!(requestOps);
 
-        streamResponseHandled = true;
-        onResponse(null, resp);
-      });
-    requestStream.pipe(delayStream);
-  }
+//     requestStream
+//       // gRPC via google-cloud-node can emit an `error` as well as a `response`
+//       // Whichever it emits, we run with-- we can't run with both. That's what
+//       // is up with the `streamResponseHandled` tracking.
+//       .on('error', (err: GoogleError) => {
+//         if (streamResponseHandled) {
+//           console.log('before return 73')
+//           return;
+//         }
+//         streamResponseHandled = true;
+//         console.log('before onresponse err call 77')
+//         onResponse(err);
+//       })
+//       .on('response', (resp: ResponseType) => {
+//         if (streamResponseHandled) {
+//           console.log('before 79 return')
+//           return;
+//         }
 
-  function onResponse(err: GoogleError | null, response: ResponseType = null) {
-    // An error such as DNS resolution.
-    if (err) {
-      numNoResponseAttempts++;
+//         streamResponseHandled = true;
+//         console.log('before onresponse null resp', resp);
+//         onResponse(null, resp);
+//       });
+//     console.log("before requestreampipe delaystream")
+//     requestStream.pipe(delayStream!);
+//   }
 
-      if (numNoResponseAttempts <= opts.maxRetries!) {
-        makeRequest();
-      } else {
-        retryStream.emit('error', err);
-      }
+//   function onResponse(err: GoogleError | null, response: ResponseType = null): void {
+//     // An error such as DNS resolution.
+//     if (err) {
+//       numNoResponseAttempts++;
 
-      return;
-    }
+//       if (numNoResponseAttempts <= opts.maxRetries!) {
+//         makeRequest();
+//       } else {
+//         retryStream.emit('error', err);
+//       }
+//       console.log('before 99 return')
+//       return;
+//     }
 
-    // No more attempts need to be made, just continue on.
-    retryStream.emit('response', response);
-    delayStream.pipe(retryStream);
-    requestStream.on('error', () => {
-      // retryStream must be destroyed here for the stream handoff part of retries to function properly
-      // but the error event should not be passed - if it emits as part of .destroy()
-      // it will bubble up early to the caller
-      // console.log('destroy in restreamingretryrequ')
-      retryStream.destroy();
-    });
-  }
-}
+//     // No more attempts need to be made, just continue on.
+//     retryStream.emit('response', response);
+//     delayStream!.pipe(retryStream);
+//     requestStream.on('error', () => {
+//       console.log('srr destroy on error without error')
+//       // resetStreams();
+//       // retryStream must be destroyed here for the stream handoff part of retries to function properly
+//       // but the error event should not be passed - if it emits as part of .destroy()
+//       // it will bubble up early to the caller
+//       console.log('destroy in restreamingretryrequ')
+//       retryStream.destroy();
+
+//       // retryStream.destroy(new Error('error in retrystreaming'))
+//     });
+//   }
+// }
+
+
