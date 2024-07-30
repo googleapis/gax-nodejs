@@ -85,7 +85,7 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
-  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
   // assuming gRPC server is started locally
   // await testEcho(grpcClient);
@@ -2293,6 +2293,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
 
 // When the stream recieves data then the retry count should be set to 0
 async function testResetRetriesToZero(client: SequenceServiceClient) {
+  console.log("RESET TO ZERO")
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
     return [4, 5, 6, 7].includes(error!.code!);

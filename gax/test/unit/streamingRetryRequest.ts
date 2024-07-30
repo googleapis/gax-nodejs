@@ -25,7 +25,7 @@ import {StreamDescriptor} from '../../src/streamingCalls/streamDescriptor';
 import * as streaming from '../../src/streamingCalls/streaming';
 import internal = require('stream');
 import {StreamArrayParser} from '../../src/streamArrayParser';
-import {streamingRetryRequest} from '../../src/streamingCalls/streaming';
+// import {streamingRetryRequest} from '../../src/streamingCalls/streaming';
 
 function createApiCallStreaming(
   func:
@@ -69,7 +69,9 @@ describe('retry-request', () => {
         true
       );
 
-      const retryStream = streamingRetryRequest({
+
+      // TODO - deal with this
+      const retryStream = streaming.StreamProxy.prototype.streamingRetryRequest({
         request: () => {
           const stream = apiCall(
             {},
@@ -85,7 +87,14 @@ describe('retry-request', () => {
             }
           ) as CancellableStream;
           return stream;
-        },
+        }, retry: gax.createRetryOptions([5], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          maxRetries: 0,
+        })
       })
         .on('end', () => {
           assert.deepStrictEqual(receivedData, [1, 2, 3, 4, 5]);
