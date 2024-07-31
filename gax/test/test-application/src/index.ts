@@ -114,47 +114,47 @@ async function testShowcase() {
   // await testWait(restClientCompat);
   // // Testing with gaxServerStreamingRetries being true
 
-  // await testServerStreamingRetryOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingRetriesWithShouldRetryFn(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetriesWithShouldRetryFn(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingRetrieswithRetryOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetrieswithRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingRetrieswithRetryRequestOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetrieswithRetryRequestOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingThrowsClassifiedTransientErrorNote(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
-  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
   await testShouldFailOnThirdError(
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
   await testServerStreamingRetriesImmediatelywithRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
@@ -1984,6 +1984,7 @@ async function testWait(client: EchoClient) {
 
 // a successful streaming call that has retry options passed but does not retry
 async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
+  console.log("TEST SERVER STREAMING RETRY OPTIONS")
   const finalData: string[] = [];
   const backoffSettings = createBackoffSettings(
     100,
@@ -2043,8 +2044,10 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
 
 // a streaming call that retries two times and finishes successfully
 async function testServerStreamingRetrieswithRetryOptions(
+  
   client: SequenceServiceClient
 ) {
+  console.log("TEST SERVER STREAMING RETRIES WITH RETRY OPTIONS")
   const finalData: string[] = [];
   const backoffSettings = createBackoffSettings(
     100,
@@ -2170,6 +2173,7 @@ async function testServerStreamingRetriesImmediatelywithRetryOptions(
 async function testServerStreamingRetriesWithShouldRetryFn(
   client: SequenceServiceClient
 ) {
+  console.log("TEST SERVER STREAMING RETRIES WITH SHOULD RETRY FN")
   const finalData: string[] = [];
   const shouldRetryFn = function checkRetry(error: GoogleError) {
     return [14, 4].includes(error!.code!);
@@ -2234,6 +2238,7 @@ async function testServerStreamingRetriesWithShouldRetryFn(
 async function testServerStreamingRetrieswithRetryRequestOptions(
   client: SequenceServiceClient
 ) {
+  console.log("TEST SERVER STREAMING RETRIES WITH RETRY REQUEST OPTIONS")
   const finalData: string[] = [];
   const retryRequestOptions = {
     objectMode: true,
@@ -2442,6 +2447,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
 async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
   client: SequenceServiceClient
 ) {
+  console.log("TEST SERVER STREAMING RETRIES WITH RETRY REQUEST OPTIONS RESUMPTION STRATEGY")
   const finalData: string[] = [];
   const shouldRetryFn = (error: GoogleError) => {
     return [4, 14].includes(error!.code!);
@@ -2516,6 +2522,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
 async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
   client: SequenceServiceClient
 ) {
+  console.log("TEST SERVER STREAMING RETRIES WITH RETRY REQUEST OPTIONS ERRORS ON BAD RESUMPTION STRATEGY")
   const shouldRetryFn = (error: GoogleError) => {
     return [4, 14].includes(error!.code!);
   };
@@ -2577,6 +2584,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
 async function testServerStreamingThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
+ console.log("TEST SERVER STREAMING THROWS CLASSIFIED TRANSIENT ERROR NOTE")
   const backoffSettings = createBackoffSettings(
     100,
     1.2,
@@ -2626,6 +2634,7 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
 async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
+ console.log("TEST SERVER STREAMING RETRIES AND THROWS CLASSIFIED TRANSIENT ERROR NOTE")
   const backoffSettings = createBackoffSettings(
     100,
     1.2,
@@ -2674,6 +2683,7 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
 async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
   client: SequenceServiceClient
 ) {
+  console.log("TEST SERVER STREAMING THROWS CANNOT SET TOTAL TIMEOUT MILLIS MAX RETRIES :)")
   const backoffSettings = createBackoffSettings(
     100,
     1.2,
@@ -2701,7 +2711,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
+  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -2712,7 +2722,13 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
       attemptRequest,
       settings
     );
+
+    attemptStream.on('end', () =>
+      reject("Close on error not on ending")
+
+    )
     attemptStream.on('error', (e: GoogleError) => {
+      console.log('2722')
       assert.strictEqual(e.code, 3);
       assert.match(
         e.message,
@@ -2726,6 +2742,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
 // The test should not retry when the max retries are set to 0
 // and the emitted error should bubble up to the user when it does not retry.
 async function testErrorMaxRetries0(client: SequenceServiceClient) {
+  console.log("TEST ERROR MAX RETRIES 0")
   const shouldRetryFn = (error: GoogleError) => {
     return [4].includes(error!.code!);
   };
