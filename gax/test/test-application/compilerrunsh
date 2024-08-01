@@ -1,0 +1,4 @@
+rm -rf node_modules package-lock.json google-gax*.tgz
+cd ../.. && npm pack && mv google-gax*.tgz test/test-application/google-gax.tgz
+npm install
+npm run compile && node build/src/index.js

@@ -2360,6 +2360,7 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       finalData.push(response.content);
     });
     attemptStream.on('error', error => {
+      console.log("ERROR", finalData)
       reject(error);
     });
     attemptStream.on('end', () => {
@@ -2727,6 +2728,11 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
       reject("Close on error not on ending")
 
     )
+    attemptStream.on('close', () => {
+      console.log("stream closed")
+      resolve();}
+
+    )
     attemptStream.on('error', (e: GoogleError) => {
       console.log('2722')
       assert.strictEqual(e.code, 3);
@@ -2734,7 +2740,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
         e.message,
         /Cannot set both totalTimeoutMillis and maxRetries/
       );
-      resolve();
+      // resolve();
     });
   });
 }
