@@ -119,6 +119,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     this.gaxServerStreamingRetries = gaxServerStreamingRetries;
   }
 
+  private shouldRetryRequest(error: Error, retry: RetryOptions): boolean {
+    const e = GoogleError.parseGRPCStatusDetails(error);
+    let shouldRetry = this.defaultShouldRetry(e!, retry);
+    if (retry.shouldRetryFn) {
+      shouldRetry = retry.shouldRetryFn(e!);
+    }
+    return shouldRetry;
+  }
+
   cancel() {
     if (this.stream) {
       this.stream.cancel();
@@ -228,13 +237,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
 
     this.retries!++;
-    const e = GoogleError.parseGRPCStatusDetails(error);
-    let shouldRetry = this.defaultShouldRetry(e!, retry);
-    if (retry.shouldRetryFn) {
-      shouldRetry = retry.shouldRetryFn(e!);
-    }
-
-    if (shouldRetry) {
+    if (this.shouldRetryRequest(error, retry)) {
       const toSleep = Math.random() * delay;
       setTimeout(() => {
         now = new Date();
@@ -246,6 +249,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
       }, toSleep);
     } else {
+      const e = GoogleError.parseGRPCStatusDetails(error);
       e.note =
         'Exception occurred in retry method that was ' +
         'not classified as transient';
@@ -377,13 +381,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       const timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
-        const e = GoogleError.parseGRPCStatusDetails(error);
-        let shouldRetry = this.defaultShouldRetry(e!, retry);
-        if (retry.shouldRetryFn) {
-          shouldRetry = retry.shouldRetryFn(e!);
-        }
-
-        if (shouldRetry) {
+        if (this.shouldRetryRequest(error, retry)) {
           if (maxRetries && timeout!) {
             const newError = new GoogleError(
               'Cannot set both totalTimeoutMillis and maxRetries ' +
