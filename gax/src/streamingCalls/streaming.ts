@@ -410,7 +410,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       console.log('stream on error 389', error.message);
       const timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
-
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
         if (this.shouldRetryRequest(error, retry)) {
           if (maxRetries && timeout!) {
