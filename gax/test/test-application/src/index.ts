@@ -1238,6 +1238,7 @@ async function testServerStreamingRetriesImmediatelywithRetryOptions(
     10000
   );
 
+  // allow the two codes we are going to send as errors
   const retryOptions = new RetryOptions([14, 4], backoffSettings);
 
   const settings = {
@@ -1246,6 +1247,7 @@ async function testServerStreamingRetriesImmediatelywithRetryOptions(
 
   client.initialize();
 
+  // errors immediately, then again after sending "This is"
   const request = createStreamingSequenceRequestFactory(
     [Status.UNAVAILABLE, Status.DEADLINE_EXCEEDED, Status.OK],
     [0.1, 0.1, 0.1],
