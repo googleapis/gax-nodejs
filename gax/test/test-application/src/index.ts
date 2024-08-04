@@ -85,7 +85,6 @@ async function testShowcase() {
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
   // assuming gRPC server is started locally
   // await testEcho(grpcClient);
@@ -155,14 +154,25 @@ async function testShowcase() {
   // );
 
   // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
-  // await testServerStreamingRetriesImmediatelywithRetryOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+
 
   // // ensure legacy tests pass with streaming retries client
   // await testEcho(grpcClientWithServerStreamingRetries);
   // await testEchoError(grpcClientWithServerStreamingRetries);
   await testExpand(grpcClientWithServerStreamingRetries);
+  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  await testServerStreamingThrowsClassifiedTransientErrorNote(grpcSequenceClientWithServerStreamingRetries);
+  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  await testServerStreamingRetriesImmediatelywithRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+
   // await testPagedExpand(grpcClientWithServerStreamingRetries);
   // await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
   // await testCollect(grpcClientWithServerStreamingRetries);
@@ -1464,6 +1474,7 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
     attemptStream.on('data', (data) => {
       results.push(data);
     }); 
+
 
     attemptStream.on('end', () => {
       assert.strictEqual(results.length, 100)

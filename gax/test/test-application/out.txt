@@ -1,0 +1,86 @@
+TEST EXPAND
+TEST SERVER STREAMING THROWS CANNOT SET TOTAL TIMEOUT MILLIS MAX RETRIES :)
+set stream
+before forwardeventsretries
+forwardEventsWithRetries
+in new eventforwardhelper
+right before fewr returnretrystream
+retrystream metadata
+event metadata
+emitting response in metadata
+event response
+event status
+emitting response in status
+an error, error
+set stream
+before forwardeventsretries
+forwardEventsWithRetries
+in new eventforwardhelper
+right before fewr returnretrystream
+retrystream metadata
+event metadata
+emitting response in metadata
+event response
+an error, error
+stream on error 389 14 UNAVAILABLE: 14
+before an error emit, bad
+2722
+after destroy 436
+event status
+emitting response in status
+stream on error 389 14 UNAVAILABLE: 14
+before an error emit, bad
+2722
+after destroy 436
+retrystream error
+stream closed
+TEST SERVER STREAMING THROWS CLASSIFIED TRANSIENT ERROR NOTE
+set stream
+before forwardeventsretries
+forwardEventsWithRetries
+in new eventforwardhelper
+right before fewr returnretrystream
+retrystream metadata
+event metadata
+emitting response in metadata
+event response
+an error, error
+stream on error 389 14 UNAVAILABLE: 14
+forwardevents destroy
+event status
+emitting response in status
+stream on error 389 14 UNAVAILABLE: 14
+forwardevents destroy
+retrystream error
+TEST SERVER STREAMING RETRIES AND THROWS CLASSIFIED TRANSIENT ERROR NOTE
+set stream
+before forwardeventsretries
+forwardEventsWithRetries
+in new eventforwardhelper
+right before fewr returnretrystream
+retrystream metadata
+event metadata
+emitting response in metadata
+event response
+an error, error
+stream on error 389 14 UNAVAILABLE: 14
+411 retry!
+right before reset streams
+destroy 442
+after resetStreams
+in streamHandoffHelper
+in eventforwardhelper
+after SHH in retry
+right before return 411
+event status
+emitting response in status
+stream on error 389 14 UNAVAILABLE: 14
+411 retry!
+right before reset streams
+destroy 442
+after resetStreams
+in streamHandoffHelper
+in eventforwardhelper
+after SHH in retry
+right before return 411
+retrystream error
