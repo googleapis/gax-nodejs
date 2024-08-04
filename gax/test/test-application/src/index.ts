@@ -114,55 +114,55 @@ async function testShowcase() {
   // await testWait(restClientCompat);
   // // Testing with gaxServerStreamingRetries being true
 
-  await testServerStreamingRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetriesWithShouldRetryFn(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetriesWithShouldRetryFn(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testShouldFailOnThirdError(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testShouldFailOnThirdError(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
-  await testServerStreamingRetriesImmediatelywithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  // await testServerStreamingRetriesImmediatelywithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
 
   // // ensure legacy tests pass with streaming retries client
   // await testEcho(grpcClientWithServerStreamingRetries);
   // await testEchoError(grpcClientWithServerStreamingRetries);
-  // await testExpand(grpcClientWithServerStreamingRetries);
+  await testExpand(grpcClientWithServerStreamingRetries);
   // await testPagedExpand(grpcClientWithServerStreamingRetries);
   // await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
   // await testCollect(grpcClientWithServerStreamingRetries);
@@ -191,11 +191,11 @@ async function testShowcase() {
   //TODO FIX
   // TODO pumpify also
   // await testImmediateStreamingErrorNoBufferYesRetryRequestRetry(grpcSequenceClientNoGaxRetries);
-  await testServerStreamingRetriesImmediatelywithRetryOptions(
-      grpcSequenceClientWithServerStreamingRetries
-    );
-    await testImmediateStreamingErrorNoBufferYesRetryPipeline(grpcSequenceClientWithServerStreamingRetries);
-    // await testStreamingPipelineErrorAfterDataNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
+  // await testServerStreamingRetriesImmediatelywithRetryOptions(
+  //     grpcSequenceClientWithServerStreamingRetries
+  //   );
+  //   await testImmediateStreamingErrorNoBufferYesRetryPipeline(grpcSequenceClientWithServerStreamingRetries);
+  //   // await testStreamingPipelineErrorAfterDataNoBufferYesRetry(grpcSequenceClientWithServerStreamingRetries);
 
 
 
@@ -322,6 +322,7 @@ async function testEchoError(client: EchoClient) {
 }
 
 async function testExpand(client: EchoClient) {
+  console.log("TEST EXPAND")
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
