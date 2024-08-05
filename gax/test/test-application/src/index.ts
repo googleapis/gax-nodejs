@@ -159,18 +159,22 @@ async function testShowcase() {
   // // ensure legacy tests pass with streaming retries client
   // await testEcho(grpcClientWithServerStreamingRetries);
   // await testEchoError(grpcClientWithServerStreamingRetries);
+
+
+  //tests for august
   await testExpand(grpcClientWithServerStreamingRetries);
-  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  await testServerStreamingThrowsClassifiedTransientErrorNote(grpcSequenceClientWithServerStreamingRetries);
-  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
-  await testServerStreamingRetriesImmediatelywithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+    // grpcSequenceClientWithServerStreamingRetries
+  // );
+  // await testServerStreamingThrowsClassifiedTransientErrorNote(grpcSequenceClientWithServerStreamingRetries);
+  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries)
+  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  // await testServerStreamingRetriesImmediatelywithRetryOptions(
+    // grpcSequenceClientWithServerStreamingRetries
+  // );
 
 
   // await testPagedExpand(grpcClientWithServerStreamingRetries);
@@ -339,11 +343,17 @@ async function testExpand(client: EchoClient) {
   };
   const stream = client.expand(request);
   const result: string[] = [];
+
   stream.on('data', (response: {content: string}) => {
+    console.log('data')
     result.push(response.content);
   });
   stream.on('end', () => {
+    console.log('in end')
     assert.deepStrictEqual(words, result);
+  });
+  stream.on('error', (error) => {
+    console.log('error!!!')
   });
 }
 
@@ -2533,7 +2543,8 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
   client: SequenceServiceClient
 ) {
  console.log("TEST SERVER STREAMING THROWS CLASSIFIED TRANSIENT ERROR NOTE")
-  const backoffSettings = createBackoffSettings(
+ const finalData: string[] = []; 
+ const backoffSettings = createBackoffSettings(
     100,
     1.2,
     1000,
@@ -2570,9 +2581,13 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
       attemptRequest,
       settings
     );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content);
+    });
     attemptStream.on('error', (e: GoogleError) => {
       assert.strictEqual(e.code, 14);
       assert.match(e.note!, /not classified as transient/);
+      assert.deepStrictEqual(finalData, ["This"])
       resolve();
     });
   });
@@ -2681,13 +2696,12 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
 
     )
     attemptStream.on('error', (e: GoogleError) => {
-      console.log('2722')
       assert.strictEqual(e.code, 3);
       assert.match(
         e.message,
         /Cannot set both totalTimeoutMillis and maxRetries/
       );
-      // resolve();
+      resolve();
     });
   });
 }

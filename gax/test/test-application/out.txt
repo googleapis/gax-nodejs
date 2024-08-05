@@ -5,13 +5,6 @@ before forwardeventsretries
 forwardEventsWithRetries
 in new eventforwardhelper
 right before fewr returnretrystream
-retrystream metadata
-event metadata
-emitting response in metadata
-event response
-event status
-emitting response in status
-an error, error
 set stream
 before forwardeventsretries
 forwardEventsWithRetries
@@ -21,18 +14,24 @@ retrystream metadata
 event metadata
 emitting response in metadata
 event response
+event status
+emitting response in status
+an error, error
+retrystream metadata
+event metadata
+emitting response in metadata
+event response
 an error, error
 stream on error 389 14 UNAVAILABLE: 14
 before an error emit, bad
-2722
 after destroy 436
 event status
 emitting response in status
 stream on error 389 14 UNAVAILABLE: 14
 before an error emit, bad
-2722
 after destroy 436
 retrystream error
+2722
 stream closed
 TEST SERVER STREAMING THROWS CLASSIFIED TRANSIENT ERROR NOTE
 set stream
