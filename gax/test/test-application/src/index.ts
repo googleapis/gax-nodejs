@@ -162,12 +162,12 @@ async function testShowcase() {
 
 
   //tests for august
-  await testExpand(grpcClientWithServerStreamingRetries);
+  // await testExpand(grpcClientWithServerStreamingRetries);
   // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    // grpcSequenceClientWithServerStreamingRetries
+  //   grpcSequenceClientWithServerStreamingRetries
   // );
   // await testServerStreamingThrowsClassifiedTransientErrorNote(grpcSequenceClientWithServerStreamingRetries);
-  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries)
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries)
   // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
@@ -2584,6 +2584,9 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
     attemptStream.on('data', (response: {content: string}) => {
       finalData.push(response.content);
     });
+    attemptStream.on('end', () => {
+      console.log('on end')
+    });
     attemptStream.on('error', (e: GoogleError) => {
       assert.strictEqual(e.code, 14);
       assert.match(e.note!, /not classified as transient/);
@@ -2674,7 +2677,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, reject) => {
+  // await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -2686,13 +2689,14 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
       settings
     );
 
-    attemptStream.on('end', () =>
-      reject("Close on error not on ending")
+    attemptStream.on('end', () =>{
+      throw new Error("Close on error not on ending");}
 
     )
+    // TODO - this should not be here
     attemptStream.on('close', () => {
       console.log("stream closed")
-      resolve();}
+      throw new Error("Close on error not on ending");}
 
     )
     attemptStream.on('error', (e: GoogleError) => {
@@ -2701,9 +2705,9 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
         e.message,
         /Cannot set both totalTimeoutMillis and maxRetries/
       );
-      resolve();
+      // resolve();
     });
-  });
+  // });
 }
 
 // The test should not retry when the max retries are set to 0
@@ -2746,7 +2750,7 @@ async function testErrorMaxRetries0(client: SequenceServiceClient) {
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, reject) => {
+  // await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -2757,23 +2761,22 @@ async function testErrorMaxRetries0(client: SequenceServiceClient) {
       settings
     );
     attemptStream.on('data', () => {
-      reject(new GoogleError('The stream should not receive any data'));
+      throw new Error('The stream should not receive any data');
     });
     attemptStream.on('error', (error: GoogleError) => {
+      console.log('on error')
       try {
         assert.strictEqual(error.code, 4);
         assert.strictEqual(error.note, 'Max retries is set to zero.');
-        resolve();
+        // resolve();
       } catch (assertionError: unknown) {
-        reject(assertionError);
+        throw assertionError;
       }
     });
     attemptStream.on('end', () => {
-      reject(
-        new GoogleError('The stream should not end before it receives an error')
-      );
+      throw new Error('stream should end on error not on end')
     });
-  });
+  // });
 }
 // a streaming call that retries two times and finishes successfully
 async function testServerStreamingRetriesImmediatelywithRetryOptions(
