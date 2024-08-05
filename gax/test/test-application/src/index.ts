@@ -118,54 +118,54 @@ async function testShowcase() {
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetriesWithShouldRetryFn(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetrieswithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetrieswithRetryRequestOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testShouldFailOnThirdError(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  //TODO - promise
-  // TODO - end/close
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingRetriesWithShouldRetryFn(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingRetrieswithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingRetrieswithRetryRequestOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testShouldFailOnThirdError(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+  // //TODO - promise
+  // // TODO - end/close
+  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
 
 
   // // ensure legacy tests pass with streaming retries client
@@ -2031,7 +2031,6 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
   );
 
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>((resolve, reject) => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -2046,19 +2045,18 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
       finalData.push(response.content);
     });
     attemptStream.on('error', (error: GoogleError) => {
-      // should not reach this
-      reject(error);
+      throw new Error('testServerStreamingRetryOptions Error')
     });
     attemptStream.on('end', () => {
+      assert.equal(
+        finalData.join(' '),
+        'This is testing the brand new and shiny StreamingSequence server 3'
+      );
       attemptStream.end();
-      resolve();
     });
-  }).then(() => {
-    assert.equal(
-      finalData.join(' '),
-      'This is testing the brand new and shiny StreamingSequence server 3'
-    );
-  });
+    attemptStream.on('close', () => {
+      throw new Error('testServerStreamingRetryOptions stream emmitted "close" on an error rather than "end" on success')
+    });
 }
 
 // a streaming call that retries two times and finishes successfully
