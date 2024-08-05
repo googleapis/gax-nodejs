@@ -129,6 +129,7 @@ async function testShowcase() {
   //   grpcSequenceClientWithServerStreamingRetries
   // );
 
+  // TODO FIX
   // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
@@ -149,9 +150,10 @@ async function testShowcase() {
   //   grpcSequenceClientWithServerStreamingRetries
   // );
 
-  // await testShouldFailOnThirdError(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
+  // TODO: FIX
+  await testShouldFailOnThirdError(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
   // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
 
@@ -159,24 +161,7 @@ async function testShowcase() {
   // // ensure legacy tests pass with streaming retries client
   // await testEcho(grpcClientWithServerStreamingRetries);
   // await testEchoError(grpcClientWithServerStreamingRetries);
-
-
-  //tests for august
   // await testExpand(grpcClientWithServerStreamingRetries);
-  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-  // await testServerStreamingThrowsClassifiedTransientErrorNote(grpcSequenceClientWithServerStreamingRetries);
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries)
-  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
-  // await testServerStreamingRetriesImmediatelywithRetryOptions(
-    // grpcSequenceClientWithServerStreamingRetries
-  // );
-
-
   // await testPagedExpand(grpcClientWithServerStreamingRetries);
   // await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
   // await testCollect(grpcClientWithServerStreamingRetries);
@@ -184,6 +169,8 @@ async function testShowcase() {
   // await testWait(grpcClientWithServerStreamingRetries);
 
 
+  // TODO audit all tests for weird promise syntax
+  // TODO audit all tests to throw errors for erroneous close/end
   /* Series of tests that validate behavior of gax behavior with stream pipelines */ 
 
  
