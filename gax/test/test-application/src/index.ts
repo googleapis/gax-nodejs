@@ -113,49 +113,59 @@ async function testShowcase() {
   // await testWait(restClientCompat);
   // // Testing with gaxServerStreamingRetries being true
 
-  // await testServerStreamingRetryOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingRetriesWithShouldRetryFn(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingRetrieswithRetryOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingRetrieswithRetryRequestOptions(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // TODO FIX
-  // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingThrowsClassifiedTransientErrorNote(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-  //   grpcSequenceClientWithServerStreamingRetries
-  // );
-
-  // TODO: FIX
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetriesWithShouldRetryFn(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetrieswithRetryOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetrieswithRetryRequestOptions(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
+  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+  //TODO - promise
+  // TODO - end/close
   await testShouldFailOnThirdError(
     grpcSequenceClientWithServerStreamingRetries
   );
-
-  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  //TODO - promise
+  // TODO - end/close
+  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
 
 
   // // ensure legacy tests pass with streaming retries client
@@ -168,7 +178,7 @@ async function testShowcase() {
   // await testChat(grpcClientWithServerStreamingRetries);
   // await testWait(grpcClientWithServerStreamingRetries);
 
-
+  // TODO add a test for exceeding the timeout
   // TODO audit all tests for weird promise syntax
   // TODO audit all tests to throw errors for erroneous close/end
   /* Series of tests that validate behavior of gax behavior with stream pipelines */ 
@@ -2471,6 +2481,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
   const shouldRetryFn = (error: GoogleError) => {
     return [4, 14].includes(error!.code!);
   };
+  const finalData: string[] = [];
   const backoffSettings = createBackoffSettings(
     10000,
     2.5,
@@ -2505,7 +2516,6 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     'This is testing the brand new and shiny StreamingSequence server 3'
   );
   const response = await client.createStreamingSequence(request);
-  await new Promise<void>(resolve => {
     const sequence = response[0];
 
     const attemptRequest =
@@ -2516,12 +2526,19 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
       attemptRequest,
       settings
     );
+    attemptStream.on('data', (response: {content: string}) => {
+      finalData.push(response.content)
+    })
+    attemptStream.on('end', () => {
+      console.log('on end')
+      throw new Error('should end on error not on end')
+    })
 
     attemptStream.on('error', (e: GoogleError) => {
+      console.log('errorrrr')
+      assert.deepStrictEqual(finalData, ["This"])
       assert.strictEqual(e.code, 3);
       assert.match(e.note!, /not classified as transient/);
-      resolve();
-    });
   });
 }
 
@@ -2677,12 +2694,6 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
     );
 
     attemptStream.on('end', () =>{
-      throw new Error("Close on error not on ending");}
-
-    )
-    // TODO - this should not be here
-    attemptStream.on('close', () => {
-      console.log("stream closed")
       throw new Error("Close on error not on ending");}
 
     )
