@@ -86,14 +86,7 @@ export enum StreamType {
   /** Both client and server stream objects. */
   BIDI_STREAMING = 3,
 }
-// MIGRATING SRR
-// TODO - maybe bring this inside of the streamproxy class?
-const DEFAULTS = {
-  /*
-    Max # of retries
-  */
-  maxRetries: 2,
-};
+
 // In retry-request, you could pass parameters to request using the requestOpts parameter
 // when we called retry-request from gax, we always passed null
 // passing null here removes an unnecessary parameter from this implementation
@@ -636,37 +629,34 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       console.log('calling newMakerequest', retry);
       let enteredError = false;
       // make the request
+      // TODO also forward status and metadata so we behave like we expect us to behave
       const requestStream = newopts.request!(requestOps);
       // forward data to the outgoing stream
       // TODO - buffer
       requestStream.on('data', (data: ResponseType) => {
         this.retries = 0;
-        // TODO should this be part of retryStream now that we've changed
-        // unclear I am not sure how I would do it.and teh bind has to be here
+        // TODO understand why this is what it is
         this.emit.bind(this, 'data')(data);
       });
       requestStream.on('end', () => {
-        console.log('enteredError', enteredError);
         if (!enteredError) {
           console.log('ending on success');
           retryStream.emit('end');
           retryStream.destroy(); // not sure if needed do I need to cancel?
-          // retryStream.end() // TODO should this be an end or a destroy???
-        } else {
-          console.log('else!');
-        }
+        } 
+        // there is no else case because if enteredError
+        // is true, we will handle stream destruction as part of 
+        // either retrying (where we don't want to end the stream)
+        // or as part of error handling, which will take care of stream destruction
       });
 
       // TODO timeout and deadline calculations
       requestStream.on('error', (error: Error) => {
         enteredError = true;
-        console.log('stream on error 389', error.message);
         let timeout = retry.backoffSettings.totalTimeoutMillis;
         const maxRetries = retry.backoffSettings.maxRetries!;
-        console.log('maxRetries', maxRetries, timeout);
         if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
           if (this.shouldRetryRequest(error, retry)) {
-            console.log('SHOULD RETRY!');
             if (maxRetries && timeout!) {
               const newError = new GoogleError(
                 'Cannot set both totalTimeoutMillis and maxRetries ' +
@@ -674,7 +664,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               );
               newError.code = Status.INVALID_ARGUMENT;
               retryStream.destroy(newError);
-              console.log('after destroy 436');
               return; //end chunk
             } else {
               // check for exceeding timeout or max retries
@@ -750,6 +739,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               };
               opts.request = newRequest;
 
+              // make a request with the updated parameters 
+              // based on the resumption strategy
               return newMakeRequest(opts);
             }
           }
@@ -773,22 +764,19 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             retryStream.destroy(e);
             return; // end chunk
           }
-          console.log('other edge case');
-          // other edge cases?
+          // other edge cases, surface the error to the caller
           const e = GoogleError.parseGRPCStatusDetails(error);
           e.note =
             'Exception occurred in retry method that was ' +
             'not classified as transient';
-          console.log('forwardevents destroy');
           retryStream.destroy(e);
           return;
         }
       });
       // return the stream every time
-      console.log('before returning the stream');
       return retryStream;
     };
-    console.log('calling new make request');
+    // this is the first make request call with the options the user passed in
     return newMakeRequest(opts);
   }
 }
