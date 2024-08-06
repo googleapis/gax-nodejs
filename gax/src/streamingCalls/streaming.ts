@@ -638,6 +638,7 @@ newStreamingRetryRequest(opts: streamingRetryRequestOptions){
   const retry = opts.retry
   const retryStream = new PassThrough({objectMode: true})
   const newMakeRequest = (newopts: streamingRetryRequestOptions) => {
+    console.log('calling newMakerequest', retry)
     let enteredError = false;
     // make the request 
     const requestStream = newopts.request!(requestOps);
@@ -652,8 +653,10 @@ newStreamingRetryRequest(opts: streamingRetryRequestOptions){
     requestStream.on('end', () => {
       console.log("enteredError", enteredError)
       if(!enteredError){
+        console.log('ending on success')
         retryStream.emit('end'); 
         retryStream.destroy();// not sure if needed do I need to cancel?
+        // retryStream.end() // TODO should this be an end or a destroy??? 
       }else{
         console.log('else!')
       }
@@ -665,8 +668,10 @@ newStreamingRetryRequest(opts: streamingRetryRequestOptions){
       console.log('stream on error 389', error.message);
       let timeout = retry.backoffSettings.totalTimeoutMillis;
       const maxRetries = retry.backoffSettings.maxRetries!;
+      console.log("maxRetries", maxRetries, timeout)
       if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
         if (this.shouldRetryRequest(error, retry)) {
+          console.log("SHOULD RETRY!")
           if (maxRetries && timeout!) {
             const newError = new GoogleError(
                 'Cannot set both totalTimeoutMillis and maxRetries ' +
@@ -775,7 +780,13 @@ newStreamingRetryRequest(opts: streamingRetryRequestOptions){
           }
           console.log('other edge case')
           // other edge cases? 
-          return GoogleError.parseGRPCStatusDetails(error);      
+          const e = GoogleError.parseGRPCStatusDetails(error);
+          e.note =
+            'Exception occurred in retry method that was ' +
+            'not classified as transient';
+          console.log('forwardevents destroy');
+          retryStream.destroy(e);
+          return;    
         }
     });
     // return the stream every time

@@ -386,6 +386,15 @@ export function convertRetryOptions(
     // this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
     if (options.retryRequestOptions.totalTimeout !== undefined) {
       totalTimeoutMillis = options.retryRequestOptions.totalTimeout * 1000;
+    } else {
+      if (options.maxRetries === undefined) {
+        totalTimeoutMillis = 30000;
+        warn(
+          'retry_request_options_no_max_retries_timeout',
+          'Neither maxRetries nor totalTimeout were passed. Defaulting to totalTimeout of 30000ms.',
+          'MissingParameterWarning'
+        );
+      }
     }
 
     // for the variables the user wants to override, override in the backoff settings object we made
@@ -409,6 +418,7 @@ export function convertRetryOptions(
       'DeprecationWarning'
     );
   }
+  console.log('Converted options', options);
   return options;
 }
 
@@ -823,6 +833,7 @@ export function constructSettings(
           timeout = overridingMethod.timeout_millis;
         }
       }
+      console.log('calling mergeRetryoptions');
       retry = mergeRetryOptions(
         retry!,
         constructRetry(

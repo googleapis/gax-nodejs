@@ -1,85 +1,50 @@
-TEST EXPAND
-TEST SERVER STREAMING THROWS CANNOT SET TOTAL TIMEOUT MILLIS MAX RETRIES :)
+thisSettings CallSettings {
+  timeout: 30000,
+  retry: {
+    retryCodes: [],
+    backoffSettings: {
+      initialRetryDelayMillis: 100,
+      retryDelayMultiplier: 1.3,
+      maxRetryDelayMillis: 60000,
+      initialRpcTimeoutMillis: null,
+      rpcTimeoutMultiplier: null,
+      maxRpcTimeoutMillis: null,
+      totalTimeoutMillis: null
+    },
+    shouldRetryFn: [Function: shouldRetryFn],
+    getResumptionRequestFn: undefined
+  },
+  autoPaginate: true,
+  maxResults: undefined,
+  otherArgs: {
+    metadataBuilder: [Function: buildMetadata],
+    headers: { 'x-goog-request-params': 'name=streamingSequences%2F108' }
+  },
+  bundleOptions: null,
+  isBundling: true,
+  longrunning: undefined,
+  apiName: 'google.showcase.v1beta1.SequenceService',
+  retryRequestOptions: undefined
+}
+calling new make request
+calling newMakerequest {
+  retryCodes: [],
+  backoffSettings: {
+    initialRetryDelayMillis: 100,
+    retryDelayMultiplier: 1.3,
+    maxRetryDelayMillis: 60000,
+    initialRpcTimeoutMillis: null,
+    rpcTimeoutMultiplier: null,
+    maxRpcTimeoutMillis: null,
+    totalTimeoutMillis: null
+  },
+  shouldRetryFn: [Function: shouldRetryFn],
+  getResumptionRequestFn: undefined
+}
 set stream
-before forwardeventsretries
-forwardEventsWithRetries
-in new eventforwardhelper
-right before fewr returnretrystream
-set stream
-before forwardeventsretries
-forwardEventsWithRetries
-in new eventforwardhelper
-right before fewr returnretrystream
-retrystream metadata
-event metadata
-emitting response in metadata
-event response
-event status
-emitting response in status
-an error, error
-retrystream metadata
-event metadata
-emitting response in metadata
-event response
-an error, error
+before returning the stream
 stream on error 389 14 UNAVAILABLE: 14
-before an error emit, bad
-after destroy 436
-event status
-emitting response in status
-stream on error 389 14 UNAVAILABLE: 14
-before an error emit, bad
-after destroy 436
-retrystream error
-2722
-stream closed
-TEST SERVER STREAMING THROWS CLASSIFIED TRANSIENT ERROR NOTE
-set stream
-before forwardeventsretries
-forwardEventsWithRetries
-in new eventforwardhelper
-right before fewr returnretrystream
-retrystream metadata
-event metadata
-emitting response in metadata
-event response
-an error, error
-stream on error 389 14 UNAVAILABLE: 14
-forwardevents destroy
-event status
-emitting response in status
-stream on error 389 14 UNAVAILABLE: 14
-forwardevents destroy
-retrystream error
-TEST SERVER STREAMING RETRIES AND THROWS CLASSIFIED TRANSIENT ERROR NOTE
-set stream
-before forwardeventsretries
-forwardEventsWithRetries
-in new eventforwardhelper
-right before fewr returnretrystream
-retrystream metadata
-event metadata
-emitting response in metadata
-event response
-an error, error
-stream on error 389 14 UNAVAILABLE: 14
-411 retry!
-right before reset streams
-destroy 442
-after resetStreams
-in streamHandoffHelper
-in eventforwardhelper
-after SHH in retry
-right before return 411
-event status
-emitting response in status
-stream on error 389 14 UNAVAILABLE: 14
-411 retry!
-right before reset streams
-destroy 442
-after resetStreams
-in streamHandoffHelper
-in eventforwardhelper
-after SHH in retry
-right before return 411
-retrystream error
+maxRetries undefined null
+other edge case
+enteredError true
+else!

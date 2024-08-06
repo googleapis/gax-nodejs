@@ -69,7 +69,6 @@
 //         true
 //       );
 
-
 //       // TODO - deal with this
 //       const retryStream = streaming.StreamProxy.prototype.streamingRetryRequest({
 //         request: () => {

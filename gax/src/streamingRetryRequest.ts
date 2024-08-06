@@ -36,7 +36,7 @@
 // /**
 //  * Localized adaptation derived from retry-request
 //  * @param opts - corresponds to https://github.com/googleapis/retry-request#opts-optional
-//  * @returns PassThrough 
+//  * @returns PassThrough
 //  */
 // export function streamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
 //   opts = Object.assign({}, DEFAULTS, opts);
@@ -55,7 +55,6 @@
 //   makeRequest();
 //   console.log('before return', retryStream.destroyed);
 //   return retryStream;
-
 
 //   function makeRequest(): void{
 //     streamResponseHandled = false;
@@ -120,5 +119,3 @@
 //     });
 //   }
 // }
-
-
