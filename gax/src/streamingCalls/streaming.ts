@@ -733,7 +733,7 @@ newStreamingRetryRequest(opts: streamingRetryRequestOptions){
     // forward data to the outgoing stream
     // TODO - buffer
     requestStream.on('data', (data: ResponseType) => {
-      //TODO reset retries to zero
+      this.retries = 0;
       // TODO should this be part of retryStream now that we've changed 
       // unclear I am not sure how I would do it.and teh bind has to be here
       this.emit.bind(this, 'data')(data);

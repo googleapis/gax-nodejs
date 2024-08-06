@@ -112,59 +112,52 @@ async function testShowcase() {
   // await testWait(restClientCompat);
   // // Testing with gaxServerStreamingRetries being true
 
-  //TODO - promise
-  // TODO - end/close
-  await testServerStreamingRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  // //TODO - promise
-  // // TODO - end/close
+  // await testServerStreamingRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
   // await testServerStreamingRetriesWithShouldRetryFn(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
   // await testServerStreamingRetrieswithRetryOptions(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testServerStreamingRetrieswithRetryRequestOptions(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResumptionStrategy(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testServerStreamingThrowsClassifiedTransientErrorNote(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testShouldFailOnThirdError(
   //   grpcSequenceClientWithServerStreamingRetries
   // );
-  // //TODO - promise
-  // // TODO - end/close
+
   // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+
+
+  // await testServerStreamingRetriesImmediatelywithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries
+  // );
+
+  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
 
   // // ensure legacy tests pass with streaming retries client
@@ -209,23 +202,6 @@ async function testShowcase() {
 
 
 
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
-
-  await testServerStreamingRetriesImmediatelywithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
-
-  // ensure legacy tests pass with streaming retries client
-  await testEcho(grpcClientWithServerStreamingRetries);
-  await testEchoError(grpcClientWithServerStreamingRetries);
-  await testExpand(grpcClientWithServerStreamingRetries);
-  await testPagedExpand(grpcClientWithServerStreamingRetries);
-  await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
-  await testCollect(grpcClientWithServerStreamingRetries);
-  await testChat(grpcClientWithServerStreamingRetries);
-  await testWait(grpcClientWithServerStreamingRetries);
 }
 
 function createStreamingSequenceRequestFactory(
@@ -2315,6 +2291,9 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       'This This is This is testing This is testing the This is testing the brand'
     );
     attemptStream.end();
+  });
+  attemptStream.on('close', () => {
+    throw new Error("testResetRetriesToZero closed on an error")
   });
 }
 
