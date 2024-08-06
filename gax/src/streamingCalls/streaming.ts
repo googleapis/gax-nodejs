@@ -16,7 +16,7 @@
 
 /* This file describes the gRPC-streaming. */
 
-import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
+import {Duplex, DuplexOptions, Readable, Stream, Writable, pipeline} from 'stream';
 
 import {
   APICallback,
@@ -140,7 +140,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     this.rest = rest;
     this.gaxServerStreamingRetries = gaxServerStreamingRetries;
   }
-
   private shouldRetryRequest(error: Error, retry: RetryOptions): boolean {
     const e = GoogleError.parseGRPCStatusDetails(error);
     let shouldRetry = this.defaultShouldRetry(e!, retry);
@@ -238,7 +237,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   ): void {
     console.log('in stream hanodfferrorhandler');
     let retryStream = this.stream;
-  const delayMult = retry.backoffSettings.retryDelayMultiplier;
+    const delayMult = retry.backoffSettings.retryDelayMultiplier;
     const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
     const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
     const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
@@ -277,7 +276,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             this.prevDeadline = deadline;
             const newDeadline = deadline ? deadline - now.getTime() : 0;
             timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
-          }, toSleep);    } else {
+          }, toSleep);    
+        } else {
       const e = GoogleError.parseGRPCStatusDetails(error);
       e.note =
         'Exception occurred in retry method that was ' +
@@ -314,6 +314,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     });
 
     stream.on('data', (data: ResponseType) => {
+      console.log('on data')
       this.retries = 0;
       this.emit.bind(this, 'data')(data);
     });
@@ -335,6 +336,19 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     eventsToForward.forEach(event => {
       stream.on(event, () => {
         this.emit.bind(this, event)
+        console.log("event", event)}
+      );
+    });
+  }
+
+  eventForwardHelperRetries(stream: Stream, stream2: PassThrough) { // TODO types
+    console.log('in new eventforwardhelper')
+    const eventsToForward = ['metadata', 'response', 'status'];
+    eventsToForward.forEach(event => {
+      stream.on(event, () => {
+        // this.emit.bind(this, event)
+        this.emit(event)
+        stream2.emit(event)
         console.log("event", event)}
       );
     });
@@ -416,12 +430,25 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     retry: RetryOptions
   ): CancellableStream | undefined {
     console.log('forwardEventsWithRetries');
-    // let retryStream = this.stream;
+    let retryStream2 = new PassThrough({objectMode: true})
     let retryStream = stream;
+    let togetherStream = pipeline([stream,retryStream2], (err) => {
+      if(err){
+        console.log('an error', err.message)
+      }
+      }) //todo better error handling - probably using our error handler
 
-    this.eventForwardHelper(stream);
+
+    // make sure we emit status, metadata, and response 
+    // always - not sure if we need to surface these to retrystream
+    // but we should to be safe
+    this.eventForwardHelperRetries(stream, retryStream2);
+    // this.eventForwardHelper(stream);
+
     this.statusMetadataHelper(stream);
+    // this.statusMetadataHelper(togetherStream as unknown as Stream);
 
+   
     // this only deals with the first error received
     stream.on('error', error => {
       console.log('stream on error 389', error.message);
@@ -435,9 +462,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   'in backoffSettings.'
               );
               newError.code = Status.INVALID_ARGUMENT;
-              console.log('before an error emit, bad')
-              this.emit('error', newError);
-              this.destroy();
+              console.log('before an error emit, bad', newError)
+              this.destroy(newError)
               console.log('after destroy 436')
               return; //end chunk          
             } else {
@@ -466,8 +492,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           }
           return GoogleError.parseGRPCStatusDetails(error);      }
     });
+    // this should only be success case
     console.log('right before fewr returnretrystream')
-    return retryStream;
+
+    //try a palceholder?
+    return togetherStream as unknown as CancellableStream; //TODO types
   }
 
   /**
@@ -512,6 +541,24 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         this.stream = stream;
         this.setReadable(stream);
       } else if (this.gaxServerStreamingRetries) {
+        // const request =  () => {
+        //   if (this._isCancelCalled) {
+        //     if (this.stream) {
+        //       this.stream.cancel();
+        //     }
+        //     console.log('before 488 return')
+        //     return;
+        //   }
+        //   console.log('set stream')
+        //   const stream = apiCall(
+        //     argument,
+        //     this._callback
+        //   ) as CancellableStream;
+        //   this.stream = stream;
+        //   console.log('before forwardeventsretries')
+        //   this.stream = this.forwardEventsWithRetries(stream, retry);
+        //   return this.stream;
+        // };
         const request =  () => {
           if (this._isCancelCalled) {
             if (this.stream) {
@@ -525,12 +572,17 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             argument,
             this._callback
           ) as CancellableStream;
-          this.stream = stream;
-          console.log('before forwardeventsretries')
-          this.stream = this.forwardEventsWithRetries(stream, retry);
-          return this.stream;
+          // this.stream = stream;
+          return stream
+          // console.log('before forwardeventsretries')
+          // this.stream = this.forwardEventsWithRetries(stream, retry);
+          // return this.stream;
         };
-        const retryStream = this.streamingRetryRequest({request, retry}); // TODO - am I even using this retry parameter?
+        // const retryStream = this.streamingRetryRequest({request, retry}); // TODO - am I even using this retry parameter?
+        const retryStream = this.newStreamingRetryRequest({request, retry})
+        // todo typing
+        // TODO error handling
+        this.stream = retryStream as unknown as CancellableStream;
         // const retryStream = request();
         this.setReadable(retryStream!);
       } else {
@@ -669,6 +721,159 @@ streamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
 
 
   
+}
+
+newStreamingRetryRequest(opts: streamingRetryRequestOptions){
+  const retry = opts.retry
+  const retryStream = new PassThrough({objectMode: true})
+  const newMakeRequest = (newopts: streamingRetryRequestOptions) => {
+    let enteredError = false;
+    // make the request 
+    const requestStream = newopts.request!(requestOps);
+    // forward data to the outgoing stream
+    // TODO - buffer
+    requestStream.on('data', (data: ResponseType) => {
+      //TODO reset retries to zero
+      // TODO should this be part of retryStream now that we've changed 
+      // unclear I am not sure how I would do it.and teh bind has to be here
+      this.emit.bind(this, 'data')(data);
+    })
+    requestStream.on('end', () => {
+      console.log("enteredError", enteredError)
+      if(!enteredError){
+        retryStream.emit('end'); 
+        retryStream.destroy();// not sure if needed do I need to cancel?
+      }else{
+        console.log('else!')
+      }
+    })
+
+    // TODO timeout and deadline calculations
+    requestStream.on('error', (error:Error) => {
+      enteredError = true;
+      console.log('stream on error 389', error.message);
+      let timeout = retry.backoffSettings.totalTimeoutMillis;
+      const maxRetries = retry.backoffSettings.maxRetries!;
+      if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
+        if (this.shouldRetryRequest(error, retry)) {
+          if (maxRetries && timeout!) {
+            const newError = new GoogleError(
+                'Cannot set both totalTimeoutMillis and maxRetries ' +
+                  'in backoffSettings.'
+              );
+              newError.code = Status.INVALID_ARGUMENT;
+              retryStream.destroy(newError) 
+              console.log('after destroy 436')
+              return; //end chunk          
+            } 
+            else {
+              // check for exceeding timeout or max retries
+              // TODO put this in a helper function
+              const delayMult = retry.backoffSettings.retryDelayMultiplier;
+              const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
+              const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
+              const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
+              let delay = retry.backoffSettings.initialRetryDelayMillis;
+              let rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis;
+              let now = new Date();
+              let deadline = 0;
+
+              if (timeout){
+                deadline = now.getTime() + timeout;
+              }
+              try {
+                this.throwIfMaxRetriesOrTotalTimeoutExceeded(
+                  deadline,
+                  maxRetries,
+                  timeout!
+                );
+              } catch (error: unknown) {
+                const e = GoogleError.parseGRPCStatusDetails(error as GoogleError); // TODO typecasting
+                e.note =
+                  'Exception occurred in retry method that was ' +
+                  'not classified as transient';
+                console.log('forwardevents destroy');
+                retryStream.destroy(e);
+                return; 
+              }
+              // calculate new deadlines
+              const toSleep = Math.random() * delay;
+              // TODO validate that these are passed to the retried call
+              setTimeout(() => {
+                now = new Date();
+                delay = Math.min(delay * delayMult, maxDelay);
+                const timeoutCal = timeout && timeoutMult ? timeout * timeoutMult : 0;
+                const rpcTimeout = maxTimeout ? maxTimeout : 0;
+                this.prevDeadline = deadline;
+                const newDeadline = deadline ? deadline - now.getTime() : 0;
+                timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
+              }, toSleep);  
+              this.retries!++
+              console.log('retrying')
+              // RESUMPTION STUFF
+              // TODO - helper function
+              let retryArgument = this.argument! as unknown as RequestType;
+              if (typeof retry.getResumptionRequestFn! === 'function') {
+                const resumptionRetryArgument =
+                  retry.getResumptionRequestFn(retryArgument);
+                if (resumptionRetryArgument !== undefined) {
+                  retryArgument = resumptionRetryArgument;
+                }
+              }
+              const newRequest = () => {
+              if (this._isCancelCalled) {
+                if (this.stream) {
+                  this.stream.cancel();
+                }
+                console.log('before 488 return')
+                return;
+              }
+              console.log('set stream')
+              const newStream = this.apiCall!(
+                retryArgument,
+                this._callback
+              ) as CancellableStream;
+              return newStream
+            }
+            opts.request = newRequest;
+
+              return newMakeRequest(opts)
+   
+          }
+        } 
+        // non retryable rror
+        else {
+          const e = GoogleError.parseGRPCStatusDetails(error);
+          e.note =
+            'Exception occurred in retry method that was ' +
+            'not classified as transient';
+          console.log('forwardevents destroy');
+          retryStream.destroy(e);
+          return; 
+        }
+      } 
+      else {
+        // edge case where max retries is zero 
+        if (maxRetries === 0) {
+            console.log('maxRetriesZero)')
+            const e = GoogleError.parseGRPCStatusDetails(error);
+            e.note = 'Max retries is set to zero.';
+            console.log('right before destroy')
+            retryStream.destroy(e);
+            return; // end chunk
+          }
+          console.log('other edge case')
+          // other edge cases? 
+          return GoogleError.parseGRPCStatusDetails(error);      
+        }
+    });
+    // return the stream every time
+    console.log("before returning the stream")
+    return retryStream;
+  }
+  console.log('calling new make request')
+  return newMakeRequest(opts);
+
 }
 }
 
