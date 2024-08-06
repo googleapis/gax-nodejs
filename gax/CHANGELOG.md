@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.3.9](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.8...google-gax-v4.3.9) (2024-08-06)
+
+
+### Bug Fixes
+
+* reduce duplicate code in streaming retries and add a test ([#1636](https://github.com/googleapis/gax-nodejs/issues/1636)) ([83b52e1](https://github.com/googleapis/gax-nodejs/commit/83b52e14ba3bb1e9f0e079ea53e47ec32b4cfd45))
+* test application cleanup ([#1639](https://github.com/googleapis/gax-nodejs/issues/1639)) ([76ac496](https://github.com/googleapis/gax-nodejs/commit/76ac496fe42f1176df733d0adcc755bd4e773b10))
+
 ## [4.3.8](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.7...google-gax-v4.3.8) (2024-07-08)
 
 
