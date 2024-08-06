@@ -578,7 +578,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           // this.stream = this.forwardEventsWithRetries(stream, retry);
           // return this.stream;
         };
-        // const retryStream = this.streamingRetryRequest({request, retry}); // TODO - am I even using this retry parameter?
         const retryStream = this.newStreamingRetryRequest({request, retry})
         // todo typing
         // TODO error handling
@@ -634,94 +633,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   }
 
   
-
-/**
- * Localized adaptation derived from retry-request
- * @param opts - corresponds to https://github.com/googleapis/retry-request#opts-optional
- * @returns PassThrough 
- */
-streamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
-  opts = Object.assign({}, DEFAULTS, opts);
-  if (opts.request === undefined) {
-    throw new Error('A request function must be provided');
-  }
-
-  let numNoResponseAttempts = 0;
-  let streamResponseHandled = false;
-
-  let requestStream: StreamProxy;
-
-  const retryStream = new PassThrough({objectMode: objectMode});
-  const onResponse = (err: GoogleError | null, response: ResponseType = null): void => {
-    // An error such as DNS resolution.
-    if (err) {
-      console.log('if err')
-      numNoResponseAttempts++;
-
-      if (numNoResponseAttempts <= opts.maxRetries!) {
-        makeRequest();
-      } else {
-        console.log('before emit error 99')
-        retryStream.emit('error', err);
-      }
-      console.log('before 99 return')
-      return;
-    }
-
-    // No more attempts need to be made, just continue on.
-    retryStream.emit('response', response);
-    requestStream.on('error', (error) => {
-      console.log('srr destroy on error without error',error.message)
-      // retryStream must be destroyed here for the stream handoff part of retries to function properly
-      // but the error event should not be passed - if it emits as part of .destroy()
-      // it will bubble up early to the caller
-      retryStream.destroy();
-      // this.streamHandoffHelper(requestStream as unknown as CancellableStream, opts.retry)
-    });
-  }
-  makeRequest();
-  return retryStream;
-
-
-
-  function makeRequest(): void{
-    streamResponseHandled = false;
-
-    // delayStream = new PassThrough({objectMode: objectMode});
-    console.log('in make request right before calling request')
-    requestStream = opts.request!(requestOps);
-
-    requestStream
-      // gRPC via google-cloud-node can emit an `error` as well as a `response`
-      // Whichever it emits, we run with-- we can't run with both. That's what
-      // is up with the `streamResponseHandled` tracking.
-      .on('error', (err: GoogleError) => {
-        if (streamResponseHandled) {
-          console.log('before return 73')
-          return;
-        }
-        streamResponseHandled = true;
-        console.log('before onresponse err call 77')
-        onResponse(err);
-      })
-      .on('response', (resp: ResponseType) => {
-        if (streamResponseHandled) {
-          console.log('before 79 return')
-          return;
-        }
-
-        streamResponseHandled = true;
-        console.log('before onresponse null resp');
-        onResponse(null, resp);
-      });
-    console.log("before requestreampipe delaystream")
-    requestStream.pipe(retryStream);
-
-  }
-
-
-  
-}
 
 newStreamingRetryRequest(opts: streamingRetryRequestOptions){
   const retry = opts.retry

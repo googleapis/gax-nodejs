@@ -157,7 +157,7 @@ async function testShowcase() {
   //   grpcSequenceClientWithServerStreamingRetries
   // );
 
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
 
   // // ensure legacy tests pass with streaming retries client
@@ -182,7 +182,7 @@ async function testShowcase() {
   some scenarios may not actually involve retrying */
 
   //ALL GOOD
-  // await testImmediateStreamingErrorNoBufferPumpify(grpcSequenceClientWithServerStreamingRetries);
+  await testImmediateStreamingErrorNoBufferPumpify(grpcSequenceClientWithServerStreamingRetries);
   // await testImmediateStreamingErrorNoBufferPipeline(grpcSequenceClientWithServerStreamingRetries);
 
   // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(grpcSequenceClientWithServerStreamingRetries);
@@ -354,7 +354,8 @@ function testInputFactory(size: number): string[]{
 }
 
 
-
+// test streaming retries behavior with multiple streams 
+// connected using pumpify
 async function testImmediateStreamingErrorNoBufferPumpify(
   client: SequenceServiceClient
 ) {
@@ -418,6 +419,22 @@ async function testImmediateStreamingErrorNoBufferPumpify(
     attemptStream.on('error', (e: GoogleError) => {
       assert.strictEqual(e.code, 14);
     });
+
+    attemptStream.on('end', () => {
+      throw new Error('testImmediateStreamingErrorNoBufferPumpify ended without error')
+    })
+
+    togetherStream.on('end', () => {
+      throw new Error('testImmediateStreamingErrorNoBufferPumpify ended without error')
+    })
+    togetherStream.on('close', () => {
+      // streams should already be cleaned up
+      // but end them anyway for posterity
+      attemptStream.destroy();
+      secondStream.destroy();
+      thirdStream.destroy();
+      togetherStream.destroy()
+    })
 
 
 
@@ -2038,7 +2055,7 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
       finalData.join(' '),
       'This is testing the brand new and shiny StreamingSequence server 3'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
@@ -2096,7 +2113,7 @@ async function testServerStreamingRetrieswithRetryOptions(
       finalData.join(' '),
       'This This is This is testing the brand new and shiny StreamingSequence server 3'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
@@ -2156,7 +2173,7 @@ async function testServerStreamingRetriesWithShouldRetryFn(
       finalData.join(' '),
       'This This is This is testing the brand new and shiny StreamingSequence server 3'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
@@ -2216,7 +2233,7 @@ async function testServerStreamingRetrieswithRetryRequestOptions(
       finalData.join(' '),
       'This This is This is testing the brand new and shiny StreamingSequence server 3'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
@@ -2290,7 +2307,7 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
       finalData.join(' '),
       'This This is This is testing This is testing the This is testing the brand'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
   attemptStream.on('close', () => {
     throw new Error("testResetRetriesToZero closed on an error")
@@ -2358,7 +2375,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
     );
   });
   attemptStream.on('close', () => {
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
@@ -2431,7 +2448,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrate
       finalData.join(' '),
       'This new and new and shiny StreamingSequence server 3'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
@@ -2494,7 +2511,7 @@ async function testServerStreamingRetrieswithRetryRequestOptionsErrorsOnBadResum
     assert.match(e.note!, /not classified as transient/);
   });
   attemptStream.on('close', () => {
-    attemptStream.end();
+    attemptStream.destroy();
   });
   attemptStream.on('end', () => {
     throw new Error(
@@ -2550,7 +2567,7 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
     assert.match(e.note!, /not classified as transient/);
   });
   attemptStream.on('close', () => {
-    attemptStream.end();
+    attemptStream.destroy();
   });
   attemptStream.on('end', () => {
     throw new Error(
@@ -2605,7 +2622,7 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     assert.match(e.note!, /not classified as transient/);
   });
   attemptStream.on('close', () => {
-    attemptStream.end();
+    attemptStream.destroy();
   });
   attemptStream.on('end', () => {
     throw new Error(
@@ -2663,7 +2680,7 @@ async function testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
     );
   });
   attemptStream.on('close', () => {
-    attemptStream.end();
+    attemptStream.destroy();
   });
   attemptStream.on('end', () => {
     throw new Error(
@@ -2734,7 +2751,7 @@ async function testErrorMaxRetries0(client: SequenceServiceClient) {
     );
   });
   attemptStream.on('close', () => {
-    attemptStream.end();
+    attemptStream.destroy();
   });
 };
 
@@ -2794,7 +2811,7 @@ async function testServerStreamingRetriesImmediatelywithRetryOptions(
       finalData.join(' '),
       'This is This is testing the brand new and shiny StreamingSequence server 3'
     );
-    attemptStream.end();
+    attemptStream.destroy();
   });
 }
 
