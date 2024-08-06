@@ -29,7 +29,6 @@ import {
   createBackoffSettings,
   createMaxRetriesBackoffSettings,
   RetryOptions,
-
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import {Duplex, PassThrough, Stream, pipeline} from 'stream';
@@ -527,7 +526,7 @@ async function testImmediateStreamingErrorNoBufferPipeline(
     throw new Error('this is a problem');
   });
 
-  let results = [];
+  const results = [];
   togetherStream.on('error', (e: GoogleError) => {
     results.push('togetherStream');
     assert.strictEqual(e.code, 14);
@@ -617,8 +616,8 @@ async function testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify(
   );
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: String[] = [];
-  let results2: String[] = [];
+  const results: String[] = [];
+  const results2: String[] = [];
 
   const togetherStream = pumpify.obj([
     attemptStream,
@@ -704,8 +703,8 @@ async function testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPipeline(
   );
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: String[] = [];
-  let results2: String[] = [];
+  const results: String[] = [];
+  const results2: String[] = [];
 
   const togetherStream = pipeline(
     [attemptStream, secondStream, thirdStream],
@@ -794,8 +793,8 @@ async function testImmediateStreamingErrorNoBufferYesRetryRequestRetryPipeline(
   );
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: String[] = [];
-  let results2: String[] = [];
+  const results: String[] = [];
+  const results2: String[] = [];
   const togetherStream = pipeline(
     [attemptStream, secondStream, thirdStream],
     err => {
@@ -886,8 +885,8 @@ async function testImmediateStreamingErrorNoBufferYesRetryRequestRetryPumpify(
   );
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: String[] = [];
-  let results2: String[] = [];
+  const results: String[] = [];
+  const results2: String[] = [];
   const togetherStream = pumpify.obj([
     attemptStream,
     secondStream,
@@ -984,8 +983,8 @@ async function testStreamingErrorAfterDataNoBufferYesRetryRequestRetry(
     secondStream,
     thirdStream,
   ]);
-  let results: String[] = [];
-  let results2: String[] = [];
+  const results: String[] = [];
+  const results2: String[] = [];
   attemptStream.on('data', data => {
     results.push(data.content);
   });
@@ -1074,8 +1073,8 @@ async function testStreamingErrorAfterDataYesBufferYesRetryRequestRetry(
     secondStream,
     thirdStream,
   ]);
-  let results: String[] = [];
-  let results2: String[] = [];
+  const results: String[] = [];
+  const results2: String[] = [];
   attemptStream.on('data', data => {
     results.push(data.content);
   });
@@ -1151,8 +1150,8 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
 
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
   const userStream: Duplex = pumpify.obj([
     attemptStream,
     secondStream,
@@ -1161,8 +1160,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
 
   attemptStream.on('data', data => {
     results.push(data.content);
-
-    });
+  });
 
   attemptStream.on('end', () => {
     throw new Error('should not reach this');
@@ -1225,8 +1223,8 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
     allowedCodes,
     backoffSettings,
     undefined,
-    getResumptionRequestFn);
-
+    getResumptionRequestFn
+  );
 
   const settings = {
     retry: retryOptions,
@@ -1261,18 +1259,17 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
 
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
   const togetherStream: Duplex = pumpify.obj([
     attemptStream,
     secondStream,
-    thirdStream])
-
+    thirdStream,
+  ]);
 
   attemptStream.on('data', data => {
     results.push(data.content);
-
-    });
+  });
 
   attemptStream.on('end', () => {
     assert.strictEqual(results.length, 100);
@@ -1331,8 +1328,8 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
     allowedCodes,
     backoffSettings,
     undefined,
-    getResumptionRequestFn);
-
+    getResumptionRequestFn
+  );
 
   const settings = {
     retry: retryOptions,
@@ -1367,25 +1364,27 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
 
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
   const togetherStream = pipeline(
     [attemptStream, secondStream, thirdStream],
     err => {
       if (err) {
-        throw new Error('testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline errored ' + err)
+        throw new Error(
+          'testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline errored ' +
+            err
+        );
       } else {
         // togetherStream.on close gets called when the pipeline finishes without error
         assert.strictEqual(results2.length, 100);
         assert.strictEqual(results.length, 100);
       }
-    });
-
+    }
+  );
 
   attemptStream.on('data', data => {
     results.push(data.content);
-
-    });
+  });
 
   attemptStream.on('end', () => {
     assert.strictEqual(results.length, 100);
@@ -1446,8 +1445,8 @@ async function testStreamingPipelineErrorAfterDataYesBufferYesRetry(
     allowedCodes,
     backoffSettings,
     undefined,
-    getResumptionRequestFn);
-
+    getResumptionRequestFn
+  );
 
   const settings = {
     retry: retryOptions,
@@ -1482,18 +1481,17 @@ async function testStreamingPipelineErrorAfterDataYesBufferYesRetry(
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
 
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
   const userStream: Duplex = pumpify.obj([
     attemptStream,
     secondStream,
-    thirdStream]);
-
+    thirdStream,
+  ]);
 
   attemptStream.on('data', data => {
     results.push(data.content);
-
-    });
+  });
 
   attemptStream.on('end', () => {
     assert.strictEqual(results.length, 100);
@@ -1581,8 +1579,8 @@ async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
     objectMode: true,
     readableHighWaterMark: 10,
   });
-  let results = [];
-  let results2 = [];
+  const results = [];
+  const results2 = [];
 
   const togetherStream = pumpify.obj([
     attemptStream,
@@ -1595,8 +1593,7 @@ async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
 
   attemptStream.on('data', data => {
     results.push(data);
-
-    });
+  });
 
   // userStream.on('drain', () => {
   //   console.log("userStream drain");
@@ -1610,8 +1607,7 @@ async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
   });
 
   attemptStream.on('error', (e: GoogleError) => {
-
-      assert.strictEqual(e.code, 13);
+    assert.strictEqual(e.code, 13);
   });
   userStream.on('data', (data: any) => {
     results2.push(data);
@@ -1681,8 +1677,8 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(
 
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
 
   const togetherStream = pumpify.obj([
     attemptStream,
@@ -1770,8 +1766,8 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
 
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
 
   const togetherStream = pipeline(
     [attemptStream, secondStream, thirdStream],
@@ -1867,8 +1863,8 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryUseSetImmediate
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
 
-  let results = [];
-  let results2 = [];
+  const results = [];
+  const results2 = [];
   const togetherStream = pumpify.obj([
     attemptStream,
     secondStream,
@@ -1944,8 +1940,8 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryPumpify(
 
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
 
   const togetherStream = pumpify.obj([
     attemptStream,
@@ -2030,8 +2026,8 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryPipeline(
 
   const secondStream = new PassThrough({objectMode: true});
   const thirdStream = new PassThrough({objectMode: true});
-  let results: string[] = [];
-  let results2: string[] = [];
+  const results: string[] = [];
+  const results2: string[] = [];
 
   const togetherStream = pipeline(
     [attemptStream, secondStream, thirdStream],
@@ -2114,7 +2110,7 @@ async function testStreamingErrorAfterDataNoBufferNoRetry(
     settings
   );
 
-  let results = [];
+  const results = [];
 
   attemptStream.on('data', data => {
     results.push(data);
@@ -2368,7 +2364,6 @@ async function testServerStreamingRetryOptions(client: SequenceServiceClient) {
 
 // a streaming call that retries two times and finishes successfully
 async function testServerStreamingRetrieswithRetryOptions(
-
   client: SequenceServiceClient
 ) {
   const finalData: string[] = [];
@@ -2613,7 +2608,7 @@ async function testResetRetriesToZero(client: SequenceServiceClient) {
     attemptStream.end();
   });
   attemptStream.on('close', () => {
-    throw new Error('testResetRetriesToZero closed on an error')
+    throw new Error('testResetRetriesToZero closed on an error');
   });
 }
 
