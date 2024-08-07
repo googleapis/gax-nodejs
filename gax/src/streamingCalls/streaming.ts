@@ -394,7 +394,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         if (!enteredError) {
           retryStream.emit('end');
           retryStream.destroy(); // not sure if needed do I need to cancel?
-          this.cancel(); // did this from old implementation
+          // this.cancel(); // did this from old implementation
         } else{
           console.log('end')
         }
