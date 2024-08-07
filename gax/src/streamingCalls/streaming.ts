@@ -192,10 +192,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     console.log("event forward metadata helper")
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
-      stream.on(event, () => {
-        console.log("event", event)
-        this.emit.bind(this, event);
-      });
+      stream.on(event, this.emit.bind(this, event));
     });
   }
 
@@ -241,16 +238,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    *   algorithm.
    */
   forwardEvents(stream: Stream) {
-    console.log('calling forwardEvents');
     this.eventForwardHelper(stream);
     this.statusMetadataHelper(stream);
 
     stream.on('error', error => {
-      console.log('uh oh, an error');
       GoogleError.parseGRPCStatusDetails(error);
     });
   }
 
+  // TODO docstring
   defaultShouldRetry(error: GoogleError, retry: RetryOptions) {
     if (
       (retry.retryCodes.length > 0 &&
