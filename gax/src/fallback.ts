@@ -20,15 +20,7 @@ import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
 import {Status} from './status';
-import {
-  GoogleAuth,
-  OAuth2Client,
-  Compute,
-  JWT,
-  UserRefreshClient,
-  GoogleAuthOptions,
-  BaseExternalAccountClient,
-} from 'google-auth-library';
+import {GoogleAuth, GoogleAuthOptions, AuthClient} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -85,15 +77,8 @@ export interface ServiceMethods {
   [name: string]: protobuf.Method;
 }
 
-export type AuthClient =
-  | OAuth2Client
-  | Compute
-  | JWT
-  | UserRefreshClient
-  | BaseExternalAccountClient;
-
 export class GrpcClient {
-  auth?: OAuth2Client | GoogleAuth;
+  auth?: AuthClient | GoogleAuth;
   authClient?: AuthClient;
   fallback: boolean;
   grpcVersion: string;
@@ -113,13 +98,13 @@ export class GrpcClient {
    * gRPC-fallback version of GrpcClient
    * Implements GrpcClient API for a browser using grpc-fallback protocol (sends serialized protobuf to HTTP/1 $rpc endpoint).
    *
-   * @param {Object=} options.auth - An instance of OAuth2Client to use in browser, or an instance of GoogleAuth from google-auth-library
+   * @param {Object=} options.auth - An instance of AuthClient to use in browser, or an instance of GoogleAuth from google-auth-library
    *  to use in Node.js. Required for browser, optional for Node.js.
    * @constructor
    */
 
   constructor(
-    options: (GrpcClientOptions | {auth: OAuth2Client}) & {
+    options: (GrpcClientOptions | {auth: AuthClient}) & {
       /**
        * Fallback mode to use instead of gRPC.
        * A string is accepted for compatibility, all non-empty string values enable the HTTP REST fallback.
@@ -131,14 +116,12 @@ export class GrpcClient {
       if (!options.auth) {
         throw new Error(
           JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Use OAuth2Client from google-auth-library.'
+            'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Provide a `GoogleAuth` or `AuthClient` instance from `google-auth-library`.'
         );
       }
-      this.auth = options.auth as OAuth2Client;
+      this.auth = options.auth;
     } else {
-      this.auth =
-        (options.auth as GoogleAuth) ||
-        new GoogleAuth(options as GoogleAuthOptions);
+      this.auth = options.auth || new GoogleAuth(options as GoogleAuthOptions);
     }
     this.fallback = options.fallback ? true : false;
     this.grpcVersion = require('../../package.json').version;
@@ -264,7 +247,7 @@ export class GrpcClient {
 
   /**
    * gRPC-fallback version of createStub
-   * Creates a gRPC-fallback stub with authentication headers built from supplied OAuth2Client instance
+   * Creates a gRPC-fallback stub with authentication headers built from supplied AuthClient instance
    *
    * @param {function} CreateStub - The constructor function of the stub.
    * @param {Object} service - A protobufjs Service object (as returned by lookupService)

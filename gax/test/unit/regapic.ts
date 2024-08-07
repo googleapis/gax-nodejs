@@ -24,7 +24,7 @@ import * as stream from 'stream';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import * as transcoding from '../../src/transcoding';
-import {OAuth2Client} from 'google-auth-library';
+import {AuthClient} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
 import {StreamArrayParser} from '../../src/streamArrayParser';
 
@@ -43,7 +43,7 @@ const authStub = {
 const opts = {
   auth: authStub,
   fallback: 'rest', // enabling REGAPIC
-} as unknown as (GrpcClientOptions | {auth: OAuth2Client}) & {
+} as unknown as (GrpcClientOptions | {auth: AuthClient}) & {
   fallback?: boolean | 'rest' | 'proto';
 };
 
