@@ -418,7 +418,6 @@ export function convertRetryOptions(
       'DeprecationWarning'
     );
   }
-  console.log('Converted options', options);
   return options;
 }
 

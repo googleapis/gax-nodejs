@@ -16,14 +16,7 @@
 
 /* This file describes the gRPC-streaming. */
 
-import {
-  Duplex,
-  DuplexOptions,
-  Readable,
-  Stream,
-  Writable,
-  pipeline,
-} from 'stream';
+import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
 
 import {
   APICallback,
@@ -91,7 +84,6 @@ export enum StreamType {
 // when we called retry-request from gax, we always passed null
 // passing null here removes an unnecessary parameter from this implementation
 const requestOps = null;
-const objectMode = true; // we don't support objectMode being false
 
 interface streamingRetryRequestOptions {
   request: Function;
@@ -154,29 +146,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
   }
 
-  // retry(stream: CancellableStream, retry: RetryOptions) {
-  //   let retryArgument = this.argument! as unknown as RequestType;
-  //   if (typeof retry.getResumptionRequestFn! === 'function') {
-  //     const resumptionRetryArgument =
-  //       retry.getResumptionRequestFn(retryArgument);
-  //     if (resumptionRetryArgument !== undefined) {
-  //       retryArgument = resumptionRetryArgument;
-  //     }
-  //   }
-  //   console.log("right before reset streams")
-  //   this.resetStreams(stream);
-
-  //   console.log('after resetStreams')
-  //   const newStream = this.apiCall!(
-  //     retryArgument,
-  //     this._callback
-  //   ) as CancellableStream;
-  //   this.stream = newStream;
-  //   this.streamHandoffHelper(newStream, retry);
-  //   console.log("after SHH in retry")
-  //   return newStream;
-  // }
-
   /**
    * Helper function to handle total timeout + max retry check for server streaming retries
    * @param {number} deadline - the current retry deadline
@@ -218,143 +187,23 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
   }
 
-  /**
-   * Error handler for server streaming retries
-   * @param {CancellableStream} stream - the stream being retried
-   * @param {RetryOptions} retry - Configures the exceptions upon which the
-   *   function should retry, and the parameters to the exponential backoff retry
-   *   algorithm.
-   * @param {Error} error - error to handle
-   */
-
-  // streamHandoffErrorHandler(
-  //   stream: CancellableStream,
-  //   retry: RetryOptions,
-  //   error: Error
-  // ): void {
-  //   console.log('in stream hanodfferrorhandler');
-  //   let retryStream = this.stream;
-  //   const delayMult = retry.backoffSettings.retryDelayMultiplier;
-  //   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
-  //   const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
-  //   const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
-
-  //   let delay = retry.backoffSettings.initialRetryDelayMillis;
-  //   let timeout = retry.backoffSettings.initialRpcTimeoutMillis;
-
-  //   let now = new Date();
-  //   let deadline = 0;
-
-  //   if (retry.backoffSettings.totalTimeoutMillis) {
-  //     deadline = now.getTime() + retry.backoffSettings.totalTimeoutMillis;
-  //   }
-  //   const maxRetries = retry.backoffSettings.maxRetries!;
-  //   try {
-  //     this.throwIfMaxRetriesOrTotalTimeoutExceeded(
-  //       deadline,
-  //       maxRetries,
-  //       retry.backoffSettings.totalTimeoutMillis!
-  //     );
-  //   } catch (error) {
-  //     return;
-  //   }
-
-  //   this.retries!++;
-
-  //   if (this.shouldRetryRequest(error, retry)) {
-  //     console.log('should retry');
-  //     const toSleep = Math.random() * delay;
-  //         setTimeout(() => {
-  //           now = new Date();
-  //           delay = Math.min(delay * delayMult, maxDelay);
-  //           const timeoutCal = timeout && timeoutMult ? timeout * timeoutMult : 0;
-  //           const rpcTimeout = maxTimeout ? maxTimeout : 0;
-  //           this.prevDeadline = deadline;
-  //           const newDeadline = deadline ? deadline - now.getTime() : 0;
-  //           timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
-  //         }, toSleep);
-  //       } else {
-  //     const e = GoogleError.parseGRPCStatusDetails(error);
-  //     e.note =
-  //       'Exception occurred in retry method that was ' +
-  //       'not classified as transient';
-  //     this.emit('error', e);
-  //     this.destroy();
-  //     return;
-  //   }
-
-  //   console.log('this.retry othertime')
-  //   retryStream = this.retry(stream, retry);
-  //   this.stream = retryStream;
-  //   return;
-  // }
-  /**
-   * Used during server streaming retries to handle
-   * event forwarding, errors, and/or stream closure
-   * @param {CancellableStream} stream - the stream that we're doing the retry on
-   * @param {RetryOptions} retry - Configures the exceptions upon which the
-   *   function should retry, and the parameters to the exponential backoff retry
-   *   algorithm.
-   */
-  // streamHandoffHelper(stream: CancellableStream, retry: RetryOptions): void {
-  //   console.log('in streamHandoffHelper')
-
-  //   let enteredError = false;
-  //   this.eventForwardHelper(stream);
-
-  //   stream.on('error', error => {
-  //     console.log('shelper', error.message);
-  //     enteredError = true;
-  //     this.streamHandoffErrorHandler(stream, retry, error);
-  //   });
-
-  //   stream.on('data', (data: ResponseType) => {
-  //     console.log('on data')
-  //     this.retries = 0;
-  //     this.emit.bind(this, 'data')(data);
-  //   });
-
-  //   stream.on('end', () => {
-  //     console.log("end handoff")
-  //     if (!enteredError) {
-  //       console.log('if entered error')
-  //       enteredError = true;
-  //       this.emit('end');
-  //       this.cancel();
-  //     }
-  //   });
-  // }
-
+  // todo docstring
   eventForwardHelper(stream: Stream) {
-    console.log('in eventforwardhelper');
+    console.log("event forward metadata helper")
     const eventsToForward = ['metadata', 'response', 'status'];
     eventsToForward.forEach(event => {
       stream.on(event, () => {
+        console.log("event", event)
         this.emit.bind(this, event);
-        console.log('event', event);
       });
     });
   }
-
-  // eventForwardHelperRetries(stream: Stream, stream2: PassThrough) { // TODO types
-  //   console.log('in new eventforwardhelper')
-  //   const eventsToForward = ['metadata', 'response', 'status'];
-  //   eventsToForward.forEach(event => {
-  //     stream.on(event, () => {
-  //       // this.emit.bind(this, event)
-  //       this.emit(event)
-  //       stream2.emit(event)
-  //       console.log("event", event)}
-  //     );
-  //   });
-  // }
 
   statusMetadataHelper(stream: Stream) {
     // gRPC is guaranteed emit the 'status' event but not 'metadata', and 'status' is the last event to emit.
     // Emit the 'response' event if stream has no 'metadata' event.
     // This avoids the stream swallowing the other events, such as 'end'.
     stream.on('status', () => {
-      console.log('emitting response in status');
       if (!this._responseHasSent) {
         stream.emit('response', {
           code: 200,
