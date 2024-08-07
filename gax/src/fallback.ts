@@ -37,6 +37,7 @@ import * as IamProtos from '../protos/iam_service';
 import * as LocationProtos from '../protos/locations';
 import * as operationsProtos from '../protos/operations';
 
+export {AuthClient};
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
