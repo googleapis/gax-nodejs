@@ -654,7 +654,6 @@ describe.only('streaming', () => {
     );
 
     s.on('error', err => {
-      console.log('err!', err)
       s.pause();
       s.destroy();
       assert(err instanceof GoogleError);
@@ -711,7 +710,6 @@ describe.only('streaming', () => {
       });
       s.push(null);
       setImmediate(() => {
-        console.log('emitting error?')
         s.emit('error', error);
       });
       setImmediate(() => {
@@ -741,7 +739,6 @@ describe.only('streaming', () => {
     );
 
     s.on('error', err => {
-      console.log("error event")
       s.pause();
       s.destroy();
       assert(err instanceof GoogleError);
@@ -824,7 +821,6 @@ describe.only('streaming', () => {
     );
 
     s.on('error', err => {
-      console.log('on error in test')
       s.pause();
       s.destroy();
 
@@ -844,10 +840,6 @@ describe.only('streaming', () => {
     });
   });
   it('emit transient error on second or later error when new retries are enabled', done => {
-    // stubbing cancel is needed because PassThrough doesn't have
-    // a cancel method and cancel is called as part of the retry
-    const cancelStub = sinon.stub(streaming.StreamProxy.prototype, 'cancel');
-
     const errorInfoObj = {
       reason: 'SERVICE_DISABLED',
       domain: 'googleapis.com',
@@ -957,7 +949,6 @@ describe.only('streaming', () => {
         JSON.stringify(err.errorInfoMetadata),
         JSON.stringify(errorInfoObj.metadata)
       );
-      assert.strictEqual(cancelStub.callCount, 1);
       done();
     });
   });

@@ -292,7 +292,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return stream;
         };
         const retryStream = this.newStreamingRetryRequest({request, retry});
-
         // todo typing
         // TODO error handling
         this.stream = retryStream as unknown as CancellableStream;
@@ -449,7 +448,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 e.note =
                   'Exception occurred in retry method that was ' +
                   'not classified as transient';
-                retryStream.destroy(e);
+                this.destroy(e)
+                  // retryStream.destroy(e);
                 return;
               }
               // calculate new deadlines
@@ -503,7 +503,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             e.note =
               'Exception occurred in retry method that was ' +
               'not classified as transient';
-            retryStream.destroy(e);
+            this.destroy(e);
+              // retryStream.destroy(e);
             return;
           }
         } else {
@@ -511,10 +512,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           if (maxRetries === 0) {
             console.log('max retries is zero')
             const e = GoogleError.parseGRPCStatusDetails(error);
-            console.log('after pasring error', e)
             e.note = 'Max retries is set to zero.';
             console.log('before')
-            retryStream.destroy(e);
+            // TODO - understand why this destroy is needed
+            // TODO see if retryStream.destroy(e) can be removed
+            this.destroy(e)
+            // retryStream.destroy(e);
             console.log('after')
             return; // end chunk
           }
