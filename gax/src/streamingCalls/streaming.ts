@@ -394,8 +394,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           console.log('on end')
           retryStream.emit('end');
           retryStream.destroy(); 
-          this.emit('end') // TODO this is maybe needed too? Or instead of hte retryStream end? 
-          this.end();
+          // this.emit('end') // TODO this is maybe needed too? Or instead of hte retryStream end? 
+          // this.end();
           // this.cancel(); // TODO - possibly remove, or move to a different spot did this from old implementation
         } else{
           console.log('end')
@@ -421,7 +421,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   'in backoffSettings.'
               );
               newError.code = Status.INVALID_ARGUMENT;
-              retryStream.destroy(newError);
+              this.destroy(newError)
+              // retryStream.destroy(newError);
               return; //end chunk
             } else {
               // check for exceeding timeout or max retries

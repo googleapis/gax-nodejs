@@ -1094,9 +1094,6 @@ describe.only('streaming', () => {
     });
   });
   it('retries using resumption request function ', done => {
-    // stubbing cancel is needed because PassThrough doesn't have
-    // a cancel method and cancel is called as part of the retry
-    sinon.stub(streaming.StreamProxy.prototype, 'cancel');
     const receivedData: string[] = [];
     const error = Object.assign(new GoogleError('test error'), {
       code: 14,
