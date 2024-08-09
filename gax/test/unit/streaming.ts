@@ -713,7 +713,7 @@ describe.only('streaming', () => {
         s.emit('error', error);
       });
       setImmediate(() => {
-        s.emit('end');
+        s.emit('close'); // we destroy on error which emits close, not end
       });
       return s;
     });
@@ -749,9 +749,8 @@ describe.only('streaming', () => {
         JSON.stringify(err.errorInfoMetadata),
         JSON.stringify(errorInfoObj.metadata)
       );
-      done();
     });
-    s.on('end', () => {
+    s.on('close', () => {
       done();
     });
   });
