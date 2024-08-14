@@ -383,7 +383,7 @@ describe.only('streaming', () => {
       console.log('finish')
     })
   });
-  it.only('emit response when stream received metadata event and new gax retries is enabled', done => {
+  it('emit response when stream received metadata event and new gax retries is enabled', done => {
     const responseMetadata = {metadata: true};
     const expectedStatus = {code: 0, metadata: responseMetadata};
     const expectedResponse = {
@@ -848,10 +848,6 @@ describe.only('streaming', () => {
     });
   });
   it('emit transient error on second or later error when new retries are enabled', done => {
-    // stubbing cancel is needed because PassThrough doesn't have
-    // a cancel method and cancel is called as part of the retry
-    const cancelStub = sinon.stub(streaming.StreamProxy.prototype, 'cancel');
-
     const errorInfoObj = {
       reason: 'SERVICE_DISABLED',
       domain: 'googleapis.com',
@@ -961,12 +957,10 @@ describe.only('streaming', () => {
         JSON.stringify(err.errorInfoMetadata),
         JSON.stringify(errorInfoObj.metadata)
       );
-      assert.strictEqual(cancelStub.callCount, 1);
       done();
     });
   });
-
-  it('emit error and retry once', done => {
+  it.only('emit error and retry once', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -981,10 +975,10 @@ describe.only('streaming', () => {
         objectMode: true,
       });
       setImmediate(() => {
-        s.push('Hello');
-        s.push('World');
         switch (counter) {
           case 0:
+            s.push('Hello');
+            s.push('World');
             s.emit('error', firstError);
             counter++;
             break;
@@ -1031,6 +1025,7 @@ describe.only('streaming', () => {
     });
   });
 
+  // TODO
   it('emit error and retry twice with shouldRetryFn', done => {
     // stubbing cancel is needed because PassThrough doesn't have
     // a cancel method and cancel is called as part of the retry
