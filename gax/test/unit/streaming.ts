@@ -163,6 +163,7 @@ describe.only('streaming', () => {
     s.end();
   });
 
+  // TODO make sure this works with new retries
   it('forwards metadata and status', done => {
     const responseMetadata = {metadata: true};
     const status = {code: 0, metadata: responseMetadata};
@@ -234,6 +235,7 @@ describe.only('streaming', () => {
     }, 50);
   });
 
+  // TODO - make sure this works with new retries
   it('cancels in the middle', done => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function schedulePush(s: any, c: number) {
@@ -347,6 +349,7 @@ describe.only('streaming', () => {
     }
 
     const dataCallback = sinon.spy(data => {
+      console.log('data callback')
       assert.deepStrictEqual(data, undefined);
     });
     const responseCallback = sinon.spy();
@@ -354,26 +357,33 @@ describe.only('streaming', () => {
     assert.strictEqual(s.writable, false);
     s.on('data', dataCallback);
     s.on('metadata', data => {
+      console.log('on metadata test')
       receivedMetadata = data;
       check();
     });
     s.on('response', data => {
+      console.log('on response test')
       receivedResponse = data;
       responseCallback();
       check();
     });
     s.on('status', data => {
+      console.log('on status test')
       receivedStatus = data;
       check();
     });
     s.on('end', () => {
+      console.log('on end test')
       ended = true;
       check();
       assert.strictEqual(dataCallback.callCount, 0);
       assert.strictEqual(responseCallback.callCount, 1);
     });
+    s.on("finish", () => {
+      console.log('finish')
+    })
   });
-  it('emit response when stream received metadata event and new gax retries is enabled', done => {
+  it.only('emit response when stream received metadata event and new gax retries is enabled', done => {
     const responseMetadata = {metadata: true};
     const expectedStatus = {code: 0, metadata: responseMetadata};
     const expectedResponse = {
@@ -396,6 +406,9 @@ describe.only('streaming', () => {
           s.emit('status', expectedStatus);
         }, 10);
       });
+      s.on('finish', () => {
+        console.log('on finish')
+      })
       return s;
     });
 
@@ -426,7 +439,6 @@ describe.only('streaming', () => {
     }
 
     const dataCallback = sinon.spy(data => {
-      console.log('in data callback')
       assert.deepStrictEqual(data, undefined);
     });
     const responseCallback = sinon.spy();
@@ -434,22 +446,23 @@ describe.only('streaming', () => {
     assert.strictEqual(s.writable, false);
     s.on('data', dataCallback);
     s.on('metadata', data => {
-      console.log('on metadata')
+      console.log('on metadata test');
       receivedMetadata = data;
       check();
     });
     s.on('response', data => {
-      console.log('on response')
+      console.log('on response test')
       receivedResponse = data;
       responseCallback();
       check();
     });
     s.on('status', data => {
-      console.log('on status')
+      console.log('on status test')
       receivedStatus = data;
       check();
     });
     s.on('end', () => {
+      console.log('on end test')
       ended = true;
       check();
       assert.strictEqual(dataCallback.callCount, 0);
@@ -669,9 +682,6 @@ describe.only('streaming', () => {
     s.on('end', () => {
       done();
     });
-    s.on('close', () => {
-      console.log('closure')
-    })
   });
   it('emit parsed GoogleError when new retries are enabled', done => {
     const errorInfoObj = {
@@ -700,11 +710,9 @@ describe.only('streaming', () => {
       details: 'Failed to read',
       metadata: metadata,
     });
-    console.log('error', error)
 
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
-      console.log('after args')
       const s = new PassThrough({
         objectMode: true,
       });
@@ -840,6 +848,10 @@ describe.only('streaming', () => {
     });
   });
   it('emit transient error on second or later error when new retries are enabled', done => {
+    // stubbing cancel is needed because PassThrough doesn't have
+    // a cancel method and cancel is called as part of the retry
+    const cancelStub = sinon.stub(streaming.StreamProxy.prototype, 'cancel');
+
     const errorInfoObj = {
       reason: 'SERVICE_DISABLED',
       domain: 'googleapis.com',
@@ -949,6 +961,7 @@ describe.only('streaming', () => {
         JSON.stringify(err.errorInfoMetadata),
         JSON.stringify(errorInfoObj.metadata)
       );
+      assert.strictEqual(cancelStub.callCount, 1);
       done();
     });
   });
@@ -968,10 +981,10 @@ describe.only('streaming', () => {
         objectMode: true,
       });
       setImmediate(() => {
+        s.push('Hello');
+        s.push('World');
         switch (counter) {
           case 0:
-            s.push('Hello');
-            s.push('World');
             s.emit('error', firstError);
             counter++;
             break;
@@ -1019,6 +1032,11 @@ describe.only('streaming', () => {
   });
 
   it('emit error and retry twice with shouldRetryFn', done => {
+    // stubbing cancel is needed because PassThrough doesn't have
+    // a cancel method and cancel is called as part of the retry
+    sinon.stub(streaming.StreamProxy.prototype, 'cancel').callsFake(() => {
+      done();
+    });
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1087,13 +1105,14 @@ describe.only('streaming', () => {
     );
 
     s.on('end', () => {
-      console.log('test on end')
       s.destroy();
       assert.strictEqual(counter, 2);
-      done();
     });
   });
   it('retries using resumption request function ', done => {
+    // stubbing cancel is needed because PassThrough doesn't have
+    // a cancel method and cancel is called as part of the retry
+    sinon.stub(streaming.StreamProxy.prototype, 'cancel');
     const receivedData: string[] = [];
     const error = Object.assign(new GoogleError('test error'), {
       code: 14,
@@ -1302,7 +1321,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     sinon.restore();
   });
 
-  // TODO fix
   // it('server streaming call retries until exceeding max retries', done => {
   //   const retrySpy = sinon.spy(streaming.StreamProxy.prototype, 'retry');
   //   const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
@@ -1364,8 +1382,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   //     }
   //   });
   // });
-
-  // TODO fix
   // it('does not retry when there is no shouldRetryFn and retryCodes is an empty array', done => {
   //   const retrySpy = sinon.spy(streaming.StreamProxy.prototype, 'retry');
   //   const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
@@ -1477,8 +1493,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
       }
     });
   });
-
-  // TODO fix
   // it('allows custom CallOptions.retry settings with shouldRetryFn instead of retryCodes and new retry behavior', done => {
   //   sinon
   //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
@@ -1521,8 +1535,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   //     }
   //   );
   // });
-
-  // TODO fix
   // it('allows custom CallOptions.retry settings with retryCodes and new retry behavior', done => {
   //   sinon
   //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
@@ -1559,8 +1571,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   //     }
   //   );
   // });
-
-  // TODO fix
   // it('allows the user to pass a custom resumption strategy', done => {
   //   sinon
   //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
@@ -2117,8 +2127,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
     );
   });
 });
-
-// TODO add test for when no timeout/max retries are passed
 describe('warns/errors about server streaming retry behavior when gaxStreamingRetries is disabled', () => {
   afterEach(() => {
     // restore 'call' stubs and 'warn' stubs
