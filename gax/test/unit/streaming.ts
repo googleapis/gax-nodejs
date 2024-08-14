@@ -960,7 +960,7 @@ describe.only('streaming', () => {
       done();
     });
   });
-  it.only('emit error and retry once', done => {
+  it('emit error and retry once', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1026,12 +1026,7 @@ describe.only('streaming', () => {
   });
 
   // TODO
-  it('emit error and retry twice with shouldRetryFn', done => {
-    // stubbing cancel is needed because PassThrough doesn't have
-    // a cancel method and cancel is called as part of the retry
-    sinon.stub(streaming.StreamProxy.prototype, 'cancel').callsFake(() => {
-      done();
-    });
+  it.only('emit error and retry twice with shouldRetryFn', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1102,6 +1097,7 @@ describe.only('streaming', () => {
     s.on('end', () => {
       s.destroy();
       assert.strictEqual(counter, 2);
+      done();
     });
   });
   it('retries using resumption request function ', done => {

@@ -255,22 +255,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    */
   forwardEventsRetries(stream: Stream) {
     this.eventForwardHelper(stream);
-    // this.statusMetadataHelper(stream);
-    // this.handleEnd(stream);
+    // TODO - remove this helper function
   }
 
-  //TODO fix
-  // TODO docstring
-  handleEnd(stream: Stream){
-    console.log('handling end')
-    stream.on('close', () => {
-      console.log('closed')
-    })
-    stream.on('end', () => {
-      console.log('handling end')
-    });
-
-  }
   // TODO docstring
   defaultShouldRetry(error: GoogleError, retry: RetryOptions) {
     if (
@@ -375,11 +362,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   newStreamingRetryRequest(opts: streamingRetryRequestOptions) {
     const retry = opts.retry;
     const retryStream = new PassThrough({objectMode: true}); // TODO - make it a cancellable stream?
+    function handleFinish(dataEnd: boolean, enteredError:boolean){
+      // TODO fill in
+
+    }
     const newMakeRequest = (newopts: streamingRetryRequestOptions, retrying: boolean) => {
       let dataEnd = false;
 
       let enteredError = false;
-      console.log("making request, retrying", retrying)
+      console.log("making request, retrying", retrying, enteredError)
       // make the request
   
       const requestStream = newopts.request!(requestOps);
@@ -402,14 +393,20 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
       });
 
-      // in retry-request, end emits after response is emitted
-      // they do it by piping delayStream to retryStream, but we emit directly
+      // in retry-request, "end" emits only after a response is emitted
+      // it's done by piping delayStream to retryStream
+      // instead of complicated pipes, we use a boolean
       requestStream.on('response', () => {
-        if(dataEnd){
-          retryStream.end();
-          // retryStream.emit('end');
-          // retryStream.destroy();
-        }
+        // TODO convert this to function
+        // console.log('on response')
+        // if(dataEnd){
+        //   retryStream.end();
+        //   // retryStream.emit('end');
+        //   // retryStream.destroy();
+        // }else{
+        //   console.log('on response else', dataEnd, enteredError)
+        //   retryStream.destroy();
+        // }
 
       })
      // TODO - clean up - this is the same hting as events forwarding
@@ -417,7 +414,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       requestStream.on('end', () => {
         if (!enteredError) {
           if (retrying){
-          console.log('on end')
+          console.log('on end', enteredError, retrying)
           retryStream.emit('end');
           retryStream.destroy(); 
           // this.emit('end') // TODO this is maybe needed too? Or instead of hte retryStream end? 
@@ -429,7 +426,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             // retryStream.end();
           }
         } else{
+          // we have entered an error 
           console.log('end')
+          return;
         }
         // there is no else case because if enteredError
         // is true, we will handle stream destruction as part of
@@ -439,8 +438,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
       // TODO timeout and deadline calculations
       requestStream.on('error', (error: Error) => {
-        console.log('on error')
         enteredError = true;
+        console.log('on error', enteredError)
+
         let timeout = retry.backoffSettings.totalTimeoutMillis;
         const maxRetries = retry.backoffSettings.maxRetries!;
         if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
