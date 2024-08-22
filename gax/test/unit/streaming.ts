@@ -1488,84 +1488,85 @@ describe.only('handles server streaming retries in gax when gaxStreamingRetries 
       }
     });
   });
-  // it('allows custom CallOptions.retry settings with shouldRetryFn instead of retryCodes and new retry behavior', done => {
-  //   sinon
-  //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
-  //     .callsFake((stream): undefined => {
-  //       assert(stream instanceof internal.Stream);
-  //       done();
-  //     });
-  //   const spy = sinon.spy((...args: Array<{}>) => {
-  //     assert.strictEqual(args.length, 3);
-  //     const s = new PassThrough({
-  //       objectMode: true,
-  //     });
-  //     return s;
-  //   });
+  it('allows custom CallOptions.retry settings with shouldRetryFn instead of retryCodes and new retry behavior', done => {
+    sinon
+      .stub(streaming.StreamProxy.prototype, 'forwardEventsRetries')
+      .callsFake((stream): undefined => {
+        assert(stream instanceof internal.Stream);
+        done();
+      });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      return s;
+    });
 
-  //   const apiCall = createApiCallStreaming(
-  //     spy,
-  //     streaming.StreamType.SERVER_STREAMING,
-  //     false,
-  //     true //gaxStreamingRetries
-  //   );
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true //gaxStreamingRetries
+    );
 
-  //   apiCall(
-  //     {},
-  //     {
-  //       retry: gax.createRetryOptions(
-  //         [],
-  //         {
-  //           initialRetryDelayMillis: 100,
-  //           retryDelayMultiplier: 1.2,
-  //           maxRetryDelayMillis: 1000,
-  //           rpcTimeoutMultiplier: 1.5,
-  //           maxRpcTimeoutMillis: 3000,
-  //           totalTimeoutMillis: 4500,
-  //         },
-  //         () => {
-  //           return true;
-  //         }
-  //       ),
-  //     }
-  //   );
-  // });
-  // it('allows custom CallOptions.retry settings with retryCodes and new retry behavior', done => {
-  //   sinon
-  //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
-  //     .callsFake((stream): undefined => {
-  //       assert(stream instanceof internal.Stream);
-  //       done();
-  //     });
-  //   const spy = sinon.spy((...args: Array<{}>) => {
-  //     assert.strictEqual(args.length, 3);
-  //     const s = new PassThrough({
-  //       objectMode: true,
-  //     });
-  //     return s;
-  //   });
+    // anonymous function is a shouldRetryFn
+    apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions(
+          [],
+          {
+            initialRetryDelayMillis: 100,
+            retryDelayMultiplier: 1.2,
+            maxRetryDelayMillis: 1000,
+            rpcTimeoutMultiplier: 1.5,
+            maxRpcTimeoutMillis: 3000,
+            totalTimeoutMillis: 4500,
+          },
+          () => {
+            return true;
+          }
+        ),
+      }
+    );
+  });
+  it('allows custom CallOptions.retry settings with retryCodes and new retry behavior', done => {
+    sinon
+      .stub(streaming.StreamProxy.prototype, 'forwardEventsRetries')
+      .callsFake((stream): undefined => {
+        assert(stream instanceof internal.Stream);
+        done();
+      });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      return s;
+    });
 
-  //   const apiCall = createApiCallStreaming(
-  //     spy,
-  //     streaming.StreamType.SERVER_STREAMING,
-  //     false,
-  //     true //gaxStreamingRetries
-  //   );
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true //gaxStreamingRetries
+    );
 
-  //   apiCall(
-  //     {},
-  //     {
-  //       retry: gax.createRetryOptions([1, 2, 3], {
-  //         initialRetryDelayMillis: 100,
-  //         retryDelayMultiplier: 1.2,
-  //         maxRetryDelayMillis: 1000,
-  //         rpcTimeoutMultiplier: 1.5,
-  //         maxRpcTimeoutMillis: 3000,
-  //         totalTimeoutMillis: 4500,
-  //       }),
-  //     }
-  //   );
-  // });
+    apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions([1, 2, 3], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 4500,
+        }),
+      }
+    );
+  });
   // it('allows the user to pass a custom resumption strategy', done => {
   //   sinon
   //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
