@@ -18,7 +18,7 @@
 
 import {GrpcClientOptions, ClientStubOptions} from './grpc';
 import * as gax from './gax';
-import {GoogleAuthOptions} from 'google-auth-library';
+import {AuthClient, GoogleAuthOptions} from 'google-auth-library';
 import {
   BundleDescriptor,
   LongrunningDescriptor,
@@ -30,7 +30,7 @@ import * as operationProtos from '../protos/operations';
 
 export interface ClientOptions
   extends GrpcClientOptions,
-    GoogleAuthOptions,
+    GoogleAuthOptions<AuthClient>,
     ClientStubOptions {
   libName?: string;
   libVersion?: string;
