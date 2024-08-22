@@ -349,7 +349,6 @@ describe('streaming', () => {
     }
 
     const dataCallback = sinon.spy(data => {
-      console.log('data callback')
       assert.deepStrictEqual(data, undefined);
     });
     const responseCallback = sinon.spy();
@@ -357,31 +356,24 @@ describe('streaming', () => {
     assert.strictEqual(s.writable, false);
     s.on('data', dataCallback);
     s.on('metadata', data => {
-      console.log('on metadata test')
       receivedMetadata = data;
       check();
     });
     s.on('response', data => {
-      console.log('on response test')
       receivedResponse = data;
       responseCallback();
       check();
     });
     s.on('status', data => {
-      console.log('on status test')
       receivedStatus = data;
       check();
     });
     s.on('end', () => {
-      console.log('on end test')
       ended = true;
       check();
       assert.strictEqual(dataCallback.callCount, 0);
       assert.strictEqual(responseCallback.callCount, 1);
     });
-    s.on("finish", () => {
-      console.log('finish')
-    })
   });
   it('emit response when stream received metadata event and new gax retries is enabled', done => {
     const responseMetadata = {metadata: true};
@@ -406,9 +398,6 @@ describe('streaming', () => {
           s.emit('status', expectedStatus);
         }, 10);
       });
-      s.on('finish', () => {
-        console.log('on finish')
-      })
       return s;
     });
 
@@ -446,23 +435,19 @@ describe('streaming', () => {
     assert.strictEqual(s.writable, false);
     s.on('data', dataCallback);
     s.on('metadata', data => {
-      console.log('on metadata test');
       receivedMetadata = data;
       check();
     });
     s.on('response', data => {
-      console.log('on response test')
       receivedResponse = data;
       responseCallback();
       check();
     });
     s.on('status', data => {
-      console.log('on status test')
       receivedStatus = data;
       check();
     });
     s.on('end', () => {
-      console.log('on end test')
       ended = true;
       check();
       assert.strictEqual(dataCallback.callCount, 0);
@@ -1307,7 +1292,7 @@ describe('streaming', () => {
   });
 });
 
-describe.only('handles server streaming retries in gax when gaxStreamingRetries is enabled', () => {
+describe('handles server streaming retries in gax when gaxStreamingRetries is enabled', () => {
   afterEach(() => {
     sinon.restore();
   });
@@ -1358,7 +1343,6 @@ describe.only('handles server streaming retries in gax when gaxStreamingRetries 
 
     call.on('error', err => {
       try {
-        console.log('err', err);
         assert(err instanceof GoogleError);
         if (err.code !== 14) {
           // ignore the error we are expecting
@@ -1567,53 +1551,54 @@ describe.only('handles server streaming retries in gax when gaxStreamingRetries 
       }
     );
   });
-  // it('allows the user to pass a custom resumption strategy', done => {
-  //   sinon
-  //     .stub(streaming.StreamProxy.prototype, 'forwardEventsWithRetries')
-  //     .callsFake((stream, retry): undefined => {
-  //       assert(stream instanceof internal.Stream);
-  //       assert(retry.getResumptionRequestFn instanceof Function);
-  //       done();
-  //     });
-  //   const spy = sinon.spy((...args: Array<{}>) => {
-  //     assert.strictEqual(args.length, 3);
-  //     const s = new PassThrough({
-  //       objectMode: true,
-  //     });
-  //     return s;
-  //   });
+  it('allows the user to pass a custom resumption strategy', done => {
+    sinon
+      .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest')
+      .callsFake((opts): PassThrough  => {
+        assert(opts.retry.getResumptionRequestFn instanceof Function);
+        done();
+         // we have to return something like newStreamingRetryRequest does
+        return new PassThrough();
+      });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      return s;
+    });
 
-  //   const apiCall = createApiCallStreaming(
-  //     spy,
-  //     streaming.StreamType.SERVER_STREAMING,
-  //     false,
-  //     true //gaxStreamingRetries
-  //   );
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true //gaxStreamingRetries
+    );
 
-  //   // "resumption" strategy is to just return the original request
-  //   const getResumptionRequestFn = (originalRequest: RequestType) => {
-  //     return originalRequest;
-  //   };
+    // "resumption" strategy is to just return the original request
+    const getResumptionRequestFn = (originalRequest: RequestType) => {
+      return originalRequest;
+    };
 
-  //   apiCall(
-  //     {},
-  //     {
-  //       retry: gax.createRetryOptions(
-  //         [1, 2, 3],
-  //         {
-  //           initialRetryDelayMillis: 100,
-  //           retryDelayMultiplier: 1.2,
-  //           maxRetryDelayMillis: 1000,
-  //           rpcTimeoutMultiplier: 1.5,
-  //           maxRpcTimeoutMillis: 3000,
-  //           totalTimeoutMillis: 4500,
-  //         },
-  //         undefined,
-  //         getResumptionRequestFn
-  //       ),
-  //     }
-  //   );
-  // });
+    apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions(
+          [1, 2, 3],
+          {
+            initialRetryDelayMillis: 100,
+            retryDelayMultiplier: 1.2,
+            maxRetryDelayMillis: 1000,
+            rpcTimeoutMultiplier: 1.5,
+            maxRpcTimeoutMillis: 3000,
+            totalTimeoutMillis: 4500,
+          },
+          undefined,
+          getResumptionRequestFn
+        ),
+      }
+    );
+  });
   it('throws an error when both totalTimeoutMillis and maxRetries are passed at call time when new retry behavior is enabled', done => {
     const status = {code: 4, message: 'test'};
     const error = Object.assign(new GoogleError('test error'), {
