@@ -20,7 +20,12 @@ import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
 import {Status} from './status';
-import {GoogleAuth, GoogleAuthOptions, AuthClient} from 'google-auth-library';
+import {
+  GoogleAuth,
+  GoogleAuthOptions,
+  AuthClient,
+  AnyAuthClient,
+} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -37,7 +42,7 @@ import * as IamProtos from '../protos/iam_service';
 import * as LocationProtos from '../protos/locations';
 import * as operationsProtos from '../protos/operations';
 
-export {AuthClient};
+export {AnyAuthClient as AuthClient};
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
