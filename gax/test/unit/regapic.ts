@@ -24,13 +24,11 @@ import * as stream from 'stream';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import * as transcoding from '../../src/transcoding';
-import {GoogleAuth, PassThroughClient} from 'google-auth-library';
+import {PassThroughClient} from 'google-auth-library';
 import {StreamArrayParser} from '../../src/streamArrayParser';
 
 const opts = {
-  auth: new GoogleAuth({
-    authClient: new PassThroughClient({}),
-  }),
+  authClient: new PassThroughClient(),
   fallback: 'rest', // enabling REGAPIC
 };
 

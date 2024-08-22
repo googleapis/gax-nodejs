@@ -20,12 +20,7 @@ import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
 import {Status} from './status';
-import {
-  GoogleAuth,
-  GoogleAuthOptions,
-  AuthClient,
-  AnyAuthClient,
-} from 'google-auth-library';
+import {GoogleAuth, AuthClient, AnyAuthClient} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -118,17 +113,19 @@ export class GrpcClient {
       fallback?: boolean | string;
     } = {}
   ) {
-    if (!isNodeJS()) {
-      if (!options.auth) {
-        throw new Error(
-          JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Provide a `GoogleAuth` or `AuthClient` instance from `google-auth-library`.'
-        );
-      }
+    if (options.auth) {
       this.auth = options.auth;
+    } else if ('authClient' in options) {
+      this.auth = options.authClient;
+    } else if (!isNodeJS()) {
+      throw new Error(
+        JSON.stringify(options) +
+          'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Provide a `GoogleAuth` or `AuthClient` instance from `google-auth-library`.'
+      );
     } else {
-      this.auth = options.auth || new GoogleAuth(options as GoogleAuthOptions);
+      this.auth = new GoogleAuth(options as GrpcClientOptions);
     }
+
     this.fallback = options.fallback ? true : false;
     this.grpcVersion = require('../../package.json').version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
