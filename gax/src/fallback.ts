@@ -84,7 +84,7 @@ export interface ServiceMethods {
 }
 
 export class GrpcClient {
-  auth?: AuthClient | GoogleAuth;
+  auth?: AuthClient | GoogleAuth<AuthClient>;
   authClient?: AuthClient;
   fallback: boolean;
   grpcVersion: string;

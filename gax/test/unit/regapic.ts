@@ -24,27 +24,14 @@ import * as stream from 'stream';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import * as transcoding from '../../src/transcoding';
-import {AuthClient} from 'google-auth-library';
-import {GrpcClientOptions} from '../../src';
+import {GoogleAuth, PassThroughClient} from 'google-auth-library';
 import {StreamArrayParser} from '../../src/streamArrayParser';
 
-const authClient = {
-  async getRequestHeaders() {
-    return {Authorization: 'Bearer SOME_TOKEN'};
-  },
-};
-
-const authStub = {
-  async getClient() {
-    return authClient;
-  },
-};
-
 const opts = {
-  auth: authStub,
+  auth: new GoogleAuth({
+    authClient: new PassThroughClient({}),
+  }),
   fallback: 'rest', // enabling REGAPIC
-} as unknown as (GrpcClientOptions | {auth: AuthClient}) & {
-  fallback?: boolean | 'rest' | 'proto';
 };
 
 describe('REGAPIC', () => {
