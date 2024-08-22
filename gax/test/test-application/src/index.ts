@@ -160,7 +160,7 @@ async function testShowcase() {
 
   await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
-  // // ensure legacy tests pass with streaming retries client
+  // ensure legacy tests pass with streaming retries client
   await testEcho(grpcClientWithServerStreamingRetries);
   await testEchoError(grpcClientWithServerStreamingRetries);
   await testExpand(grpcClientWithServerStreamingRetries);
@@ -2666,6 +2666,10 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
       error.message,
       'Exceeded maximum number of retries before any response was received'
     );
+    assert.strictEqual(
+      error.note,
+      'Underlying error: Error: 6 ALREADY_EXISTS: 6'
+    )
   });
   attemptStream.on('end', () => {
     throw new Error(

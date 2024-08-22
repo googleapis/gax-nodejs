@@ -151,11 +151,13 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @param {number} deadline - the current retry deadline
    * @param {number} maxRetries - maximum total number of retries
    * @param {number} totalTimeoutMillis - total timeout in milliseconds
+   * @param {GoogleError} originalError - underlying error received by the stream
    */
   throwIfMaxRetriesOrTotalTimeoutExceeded(
     deadline: number,
     maxRetries: number,
-    totalTimeoutMillis: number
+    totalTimeoutMillis: number,
+    originalError: GoogleError
   ): void {
     const now = new Date();
 
@@ -168,6 +170,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         `Total timeout of API exceeded ${totalTimeoutMillis} milliseconds before any response was received.`
       );
       error.code = Status.DEADLINE_EXCEEDED;
+      // surface the original error to the user
+      error.note = "Underlying error: " + originalError
+
       this.emit('error', error);
       this.destroy();
       // Without throwing error you get unhandled error since we are returning a new stream
@@ -181,6 +186,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           'response was received'
       );
       error.code = Status.DEADLINE_EXCEEDED;
+      // surface the original error to the user
+      error.note = "Underlying error: " + originalError
+
       this.emit('error', error);
       this.destroy();
       throw error;
@@ -366,7 +374,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // TODO fill in
 
     }
-    const newMakeRequest = (newopts: streamingRetryRequestOptions, retrying: boolean) => {
+     const newMakeRequest = (newopts: streamingRetryRequestOptions, retrying: boolean) => {
       let dataEnd = false;
 
       let enteredError = false;
@@ -399,8 +407,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       requestStream.on('response', () => {
         // TODO convert this to function
         // console.log('on response')
-        // if(dataEnd){
-        //   retryStream.end();
+        if(dataEnd){
+          retryStream.end();
+        }
         //   // retryStream.emit('end');
         //   // retryStream.destroy();
         // }else{
@@ -474,7 +483,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 this.throwIfMaxRetriesOrTotalTimeoutExceeded(
                   deadline,
                   maxRetries,
-                  timeout!
+                  timeout!,
+                  error
                 );
               } catch (error: unknown) {
                 const e = GoogleError.parseGRPCStatusDetails(

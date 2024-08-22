@@ -1026,7 +1026,7 @@ describe.only('streaming', () => {
   });
 
   // TODO
-  it.only('emit error and retry twice with shouldRetryFn', done => {
+  it('emit error and retry twice with shouldRetryFn', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1307,72 +1307,75 @@ describe.only('streaming', () => {
   });
 });
 
-describe('handles server streaming retries in gax when gaxStreamingRetries is enabled', () => {
+describe.only('handles server streaming retries in gax when gaxStreamingRetries is enabled', () => {
   afterEach(() => {
     sinon.restore();
   });
 
-  // it('server streaming call retries until exceeding max retries', done => {
-  //   const retrySpy = sinon.spy(streaming.StreamProxy.prototype, 'retry');
-  //   const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
-  //     code: 14,
-  //     details: 'UNAVAILABLE',
-  //     metadata: new Metadata(),
-  //   });
 
-  //   const spy = sinon.spy((...args: Array<{}>) => {
-  //     assert.strictEqual(args.length, 3);
-  //     const s = new PassThrough({
-  //       objectMode: true,
-  //     });
-  //     setImmediate(() => {
-  //       s.emit('metadata');
-  //     });
-  //     setImmediate(() => {
-  //       s.emit('error', firstError);
-  //     });
-  //     return s;
-  //   });
+  it('server streaming call retries until exceeding max retries and surfaces underlying error in note', done => {
+    const retrySpy = sinon.spy(streaming.StreamProxy.prototype, "throwIfMaxRetriesOrTotalTimeoutExceeded");
+    const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
+      code: 14,
+      details: 'UNAVAILABLE',
+      metadata: new Metadata(),
+    });
 
-  //   const apiCall = createApiCallStreaming(
-  //     spy,
-  //     streaming.StreamType.SERVER_STREAMING,
-  //     false,
-  //     true
-  //   );
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      setImmediate(() => {
+        s.emit('metadata');
+      });
+      setImmediate(() => {
+        s.emit('error', firstError);
+      });
+      return s;
+    });
 
-  //   const call = apiCall(
-  //     {},
-  //     {
-  //       retry: gax.createRetryOptions([14], {
-  //         initialRetryDelayMillis: 100,
-  //         retryDelayMultiplier: 1.2,
-  //         maxRetryDelayMillis: 1000,
-  //         rpcTimeoutMultiplier: 1.5,
-  //         maxRpcTimeoutMillis: 3000,
-  //         maxRetries: 2,
-  //       }),
-  //     }
-  //   );
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true
+    );
 
-  //   call.on('error', err => {
-  //     try {
-  //       assert(err instanceof GoogleError);
-  //       if (err.code !== 14) {
-  //         // ignore the error we are expecting
-  //         assert.strictEqual(err.code, 4);
-  //         assert.strictEqual(retrySpy.callCount, 2);
-  //         assert.strictEqual(
-  //           err.message,
-  //           'Exceeded maximum number of retries before any response was received'
-  //         );
-  //         done();
-  //       }
-  //     } catch (error: unknown) {
-  //       done(error);
-  //     }
-  //   });
-  // });
+    const call = apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions([14], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          maxRetries: 2,
+        }),
+      }
+    );
+
+    call.on('error', err => {
+      try {
+        console.log('err', err);
+        assert(err instanceof GoogleError);
+        if (err.code !== 14) {
+          // ignore the error we are expecting
+          assert.strictEqual(err.code, 4);
+          assert.strictEqual(retrySpy.callCount, 3); // we pass the first two times
+          assert.strictEqual(
+            err.message,
+            'Exceeded maximum number of retries before any response was received'
+          );
+          assert.strictEqual(err.note, "Underlying error: Error: UNAVAILABLE")
+          done();
+        }
+      } catch (error: unknown) {
+        done(error);
+      }
+    });
+  });
   // it('does not retry when there is no shouldRetryFn and retryCodes is an empty array', done => {
   //   const retrySpy = sinon.spy(streaming.StreamProxy.prototype, 'retry');
   //   const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
