@@ -54,7 +54,7 @@ function createApiCallStreaming(
   ) as GaxCallStream;
 }
 
-describe.only('streaming', () => {
+describe('streaming', () => {
   afterEach(() => {
     sinon.restore();
   });
@@ -1376,60 +1376,61 @@ describe.only('handles server streaming retries in gax when gaxStreamingRetries 
       }
     });
   });
-  // it('does not retry when there is no shouldRetryFn and retryCodes is an empty array', done => {
-  //   const retrySpy = sinon.spy(streaming.StreamProxy.prototype, 'retry');
-  //   const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
-  //     code: 14,
-  //     details: 'UNAVAILABLE',
-  //     metadata: new Metadata(),
-  //   });
+  it('does not retry when there is no shouldRetryFn and retryCodes is an empty array', done => {
+    // we don't call the timeout/max retry check on non retryable error codes
+    const retrySpy = sinon.spy(streaming.StreamProxy.prototype, 'throwIfMaxRetriesOrTotalTimeoutExceeded');
+    const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
+      code: 14,
+      details: 'UNAVAILABLE',
+      metadata: new Metadata(),
+    });
 
-  //   const spy = sinon.spy((...args: Array<{}>) => {
-  //     assert.strictEqual(args.length, 3);
-  //     const s = new PassThrough({
-  //       objectMode: true,
-  //     });
-  //     s.push('hello');
-  //     setImmediate(() => {
-  //       s.emit('metadata');
-  //     });
-  //     setImmediate(() => {
-  //       s.emit('error', firstError);
-  //     });
-  //     return s;
-  //   });
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push('hello');
+      setImmediate(() => {
+        s.emit('metadata');
+      });
+      setImmediate(() => {
+        s.emit('error', firstError);
+      });
+      return s;
+    });
 
-  //   const apiCall = createApiCallStreaming(
-  //     spy,
-  //     streaming.StreamType.SERVER_STREAMING,
-  //     false,
-  //     true
-  //   );
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true
+    );
 
-  //   const call = apiCall(
-  //     {},
-  //     {
-  //       // pass an empty array for retryCodes
-  //       retry: gax.createRetryOptions([], {
-  //         initialRetryDelayMillis: 100,
-  //         retryDelayMultiplier: 1.2,
-  //         maxRetryDelayMillis: 1000,
-  //         rpcTimeoutMultiplier: 1.5,
-  //         maxRpcTimeoutMillis: 3000,
-  //         maxRetries: 2,
-  //       }),
-  //     }
-  //   );
+    const call = apiCall(
+      {},
+      {
+        // pass an empty array for retryCodes
+        retry: gax.createRetryOptions([], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          maxRetries: 2,
+        }),
+      }
+    );
 
-  //   call.on('error', err => {
-  //     assert(err instanceof GoogleError);
-  //     if (err.code === 14) {
-  //       assert.strictEqual(err.code, 14);
-  //       assert.strictEqual(retrySpy.callCount, 0);
-  //       done();
-  //     }
-  //   });
-  // });
+    call.on('error', err => {
+      assert(err instanceof GoogleError);
+      if (err.code === 14) {
+        assert.strictEqual(err.code, 14);
+        assert.strictEqual(retrySpy.callCount, 0);
+        done();
+      }
+    });
+  });
 
   it('server streaming call retries until exceeding total timeout', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
