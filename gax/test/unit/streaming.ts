@@ -1027,6 +1027,8 @@ describe('streaming', () => {
       switch (counter) {
         case 0:
           setImmediate(() => {
+            s.push('Hello');
+            s.push('World');
             s.emit('error', firstError);
           });
           setImmediate(() => {
@@ -1036,6 +1038,8 @@ describe('streaming', () => {
           return s;
         case 1:
           setImmediate(() => {
+            s.push('testing');
+            s.push('retries');
             s.emit('error', firstError);
           });
           setImmediate(() => {
@@ -1044,6 +1048,13 @@ describe('streaming', () => {
           counter++;
           return s;
         default:
+          setImmediate(() => {
+            s.emit('metadata');
+          });  
+        // grpc streams always emit status 
+          setImmediate(() => {
+            s.emit('status');
+          });
           setImmediate(() => {
             s.emit('end');
           });

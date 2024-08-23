@@ -378,7 +378,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       let dataEnd = false;
 
       let enteredError = false;
-      console.log("making request, retrying", retrying, enteredError)
+      console.log("making request, retrying", "EE", enteredError, "retrying", retrying)
       // make the request
   
       const requestStream = newopts.request!(requestOps);
@@ -423,7 +423,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       requestStream.on('end', () => {
         if (!enteredError) {
           if (retrying){
-          console.log('on end', enteredError, retrying)
+          console.log('on end', "EE", enteredError, "retrying", retrying)
           retryStream.emit('end');
           retryStream.destroy(); 
           // this.emit('end') // TODO this is maybe needed too? Or instead of hte retryStream end? 
