@@ -4,6 +4,18 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.4.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.9...google-gax-v4.4.0) (2024-08-27)
+
+
+### Features
+
+* Improve `AuthClient` Compatibility ([#1641](https://github.com/googleapis/gax-nodejs/issues/1641)) ([4edd33d](https://github.com/googleapis/gax-nodejs/commit/4edd33db2670eb081f5744907b879d6669d4fad2))
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs-cli to v1.1.3 ([#1645](https://github.com/googleapis/gax-nodejs/issues/1645)) ([1b2ffdf](https://github.com/googleapis/gax-nodejs/commit/1b2ffdfdf2a2eed08c81b1b1be6943424fd15258))
+
 ## [4.3.9](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.8...google-gax-v4.3.9) (2024-08-06)
 
 

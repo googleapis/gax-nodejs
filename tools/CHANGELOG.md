@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.5](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.4...gapic-tools-v0.4.5) (2024-08-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs-cli to v1.1.3 ([#1645](https://github.com/googleapis/gax-nodejs/issues/1645)) ([1b2ffdf](https://github.com/googleapis/gax-nodejs/commit/1b2ffdfdf2a2eed08c81b1b1be6943424fd15258))
+
 ## [0.4.4](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.3...gapic-tools-v0.4.4) (2024-07-08)
 
 
