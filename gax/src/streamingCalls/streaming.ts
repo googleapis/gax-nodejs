@@ -396,17 +396,18 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         console.log('on data')
         this.retries = 0;
         // TODO understand why this is what it is
-        // console.log('this', this)
         this.emit.bind(this, 'data')(data);
+        // retryStream.emit.bind(retryStream, 'data')(data);
 
       });
 
       // in retry-request, "end" emits only after a response is emitted
       // it's done by piping delayStream to retryStream
       // instead of complicated pipes, we use a boolean
-      requestStream.on('response', () => {
+      // we modify this to be after status which is guaranteed to be the last event
+      requestStream.on('status', () => {
         // TODO convert this to function
-        console.log('on response')
+        console.log('on status')
         if(dataEnd){
           retryStream.end();
         }
@@ -455,9 +456,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   'in backoffSettings.'
               );
               newError.code = Status.INVALID_ARGUMENT;
-              this.destroy(newError)
-              // retryStream.destroy(newError);
-              return; //end chunk
+    // TODO - double check cleanup of requestStream/retryStream
+            // clean up the request stream and retryStreams, silently destroy it
+            requestStream.destroy();
+            // retryStream.destroy()
+            // raise the error via the streamProxy stream directly
+            retryStream.destroy(newError);
+            
+            console.log('returning retrystream')
+            return retryStream;
             } else {
               // check for exceeding timeout or max retries
               // TODO put this in a helper function
@@ -487,9 +494,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 e.note =
                   'Exception occurred in retry method that was ' +
                   'not classified as transient';
-                this.destroy(e)
-                  // retryStream.destroy(e);
-                return;
+                // TODO - double check cleanup of requestStream/retryStream
+            // clean up the request stream and retryStreams, silently destroy it
+            requestStream.destroy();
+            // retryStream.destroy()
+            // raise the error via the streamProxy stream directly
+            retryStream.destroy(e);
+            
+            console.log('returning retrystream')
+            return retryStream;
               }
               // calculate new deadlines
               const toSleep = Math.random() * delay;
@@ -546,12 +559,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             // TODO - double check cleanup of requestStream/retryStream
             // clean up the request stream and retryStreams, silently destroy it
             requestStream.destroy();
-            retryStream.destroy()
+            // retryStream.destroy()
             // raise the error via the streamProxy stream directly
-            this.destroy(e);
+            retryStream.destroy(e);
             
-            console.log(retryStream.destroyed)
-            return;
+            console.log('returning retrystream')
+            return retryStream;
           }
         } else {
           // edge case where max retries is zero
@@ -560,9 +573,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
             e.note = 'Max retries is set to zero.';
             // TODO - understand why this destroy is needed
             // TODO see if retryStream.destroy(e) can be removed
-            this.destroy(e)
-            // retryStream.destroy(e);
-            return; // end chunk
+            // TODO - double check cleanup of requestStream/retryStream
+            // clean up the request stream and retryStreams, silently destroy it
+            requestStream.destroy();
+            // retryStream.destroy()
+            // raise the error via the streamProxy stream directly
+            retryStream.destroy(e);
+            
+            console.log('returning retrystream')
+            return retryStream;
           }
           console.log('other edge case')
           // other edge cases, surface the error to the caller
@@ -574,10 +593,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
          // TODO this probably needs to be a this.destroy as well
             retryStream.destroy(e);
           console.log('after destroy')
-          return;
+          return retryStream;
         }
       });
-      // return the stream every time
+      // return the stream if we didn't return it as 
+      // part of an error state
       console.log('return the stream')
       return retryStream;
     };
