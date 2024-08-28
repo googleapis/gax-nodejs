@@ -374,8 +374,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // TODO fill in
 
     }
-     const newMakeRequest = (newopts: streamingRetryRequestOptions, retrying: boolean) => {
+     const newMakeRequest = (newopts: streamingRetryRequestOptions, retrying?: boolean) => {
       let dataEnd = false;
+      let statusReceived = false;
 
       let enteredError = false;
       console.log("making request, retrying", "EE", enteredError, "retrying", retrying)
@@ -405,41 +406,60 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // it's done by piping delayStream to retryStream
       // instead of complicated pipes, we use a boolean
       // we modify this to be after status which is guaranteed to be the last event
+      // TODO - this return tsignore
+      //@ts-ignore
       requestStream.on('status', () => {
         // TODO convert this to function
+        statusReceived = true;
         console.log('on status')
         if(dataEnd){
           retryStream.end();
+          // this.end();
+          return retryStream;
         }
 
       })
-     // TODO - clean up - this is the same hting as events forwarding
-
+      // @ts-ignore - deal with return
       requestStream.on('end', () => {
         if (!enteredError) {
-          if (retrying){
-          console.log('on end', "EE", enteredError, "retrying", retrying)
-          retryStream.emit('end');
-          retryStream.destroy(); 
-          // this.emit('end') // TODO this is maybe needed too? Or instead of hte retryStream end? 
-          // this.end();
-          // this.cancel(); // TODO - possibly remove, or move to a different spot did this from old implementation
-          }else{
-            console.log("else")
-            dataEnd = true;
-            // retryStream.end();
+          console.log('end not on error')
+          dataEnd = true;
+          if (statusReceived){
+            retryStream.end();
+            // TODO - is return needed
+            return retryStream;
           }
-        } else{
-          // we have entered an error 
-          console.log('end')
-          console.log('before return 435')
-          // return;
         }
         // there is no else case because if enteredError
         // is true, we will handle stream destruction as part of
         // either retrying (where we don't want to end the stream)
         // or as part of error handling, which will take care of stream destruction
       });
+      // requestStream.on('end', () => {
+      //   if (!enteredError) {
+      //     if (retrying){
+      //     console.log('on end', "EE", enteredError, "retrying", retrying)
+      //     retryStream.emit('end');
+      //     retryStream.destroy(); 
+      //     // this.emit('end') // TODO this is maybe needed too? Or instead of hte retryStream end? 
+      //     // this.end();
+      //     // this.cancel(); // TODO - possibly remove, or move to a different spot did this from old implementation
+      //     }else{
+      //       console.log("else")
+      //       dataEnd = true;
+      //       // retryStream.end();
+      //     }
+      //   } else{
+      //     // we have entered an error 
+      //     console.log('end')
+      //     console.log('before return 435')
+      //     // return;
+      //   }
+      //   // there is no else case because if enteredError
+      //   // is true, we will handle stream destruction as part of
+      //   // either retrying (where we don't want to end the stream)
+      //   // or as part of error handling, which will take care of stream destruction
+      // });
 
       // TODO timeout and deadline calculations
       requestStream.on('error', (error: Error) => {
@@ -546,7 +566,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
               // make a request with the updated parameters
               // based on the resumption strategy
-              return newMakeRequest(opts, true);
+              return newMakeRequest(opts);
             }
           }
           // non retryable error
@@ -603,6 +623,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       return retryStream;
     };
     // this is the first make request call with the options the user passed in
-    return newMakeRequest(opts, false);
+    return newMakeRequest(opts);
   }
 }
