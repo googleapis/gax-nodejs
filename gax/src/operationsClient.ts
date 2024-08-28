@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {GoogleAuth, AuthClient} from 'google-auth-library';
+import type {GoogleAuth, OAuth2Client} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import type {ClientOptions, Callback} from './clientInterface';
 
@@ -62,7 +62,7 @@ export const ALL_SCOPES: string[] = [];
  * @class
  */
 export class OperationsClient {
-  auth?: GoogleAuth<AuthClient> | AuthClient;
+  auth?: GoogleAuth | OAuth2Client;
   innerApiCalls: {[name: string]: Function};
   descriptor: {[method: string]: PageDescriptor};
   operationsStub: Promise<{[method: string]: Function}>;
