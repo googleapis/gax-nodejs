@@ -432,7 +432,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         } else{
           // we have entered an error 
           console.log('end')
-          return;
+          console.log('before return 435')
+          // return;
         }
         // there is no else case because if enteredError
         // is true, we will handle stream destruction as part of
