@@ -406,16 +406,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // instead of complicated pipes, we use a boolean
       requestStream.on('response', () => {
         // TODO convert this to function
-        // console.log('on response')
+        console.log('on response')
         if(dataEnd){
           retryStream.end();
         }
-        //   // retryStream.emit('end');
-        //   // retryStream.destroy();
-        // }else{
-        //   console.log('on response else', dataEnd, enteredError)
-        //   retryStream.destroy();
-        // }
 
       })
      // TODO - clean up - this is the same hting as events forwarding
@@ -544,12 +538,19 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           // non retryable error
           else {
             console.log('non retryable error')
+
             const e = GoogleError.parseGRPCStatusDetails(error);
             e.note =
               'Exception occurred in retry method that was ' +
               'not classified as transient';
+            // TODO - double check cleanup of requestStream/retryStream
+            // clean up the request stream and retryStreams, silently destroy it
+            requestStream.destroy();
+            retryStream.destroy()
+            // raise the error via the streamProxy stream directly
             this.destroy(e);
-              // retryStream.destroy(e);
+            
+            console.log(retryStream.destroyed)
             return;
           }
         } else {
