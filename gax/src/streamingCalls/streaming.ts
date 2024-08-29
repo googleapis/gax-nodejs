@@ -354,9 +354,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
   }
 
-  // TODO - return type
-  // TODO docstring
-  newStreamingRetryRequest(opts: streamingRetryRequestOptions) {
+  /**
+   * Creates a new retry request stream - 
+   *inner arrow function "newMakeRequest" handles retrying and resumption
+   * @param {streamingRetryRequestOptions} opts
+   *   {request} - the request to be made if the stream errors
+   *   {retry} - the retry options associated with the call
+   * @returns {CancellableStream} - the stream that handles retry logic
+   */
+  newStreamingRetryRequest(opts: streamingRetryRequestOptions): CancellableStream {
     const retry = opts.retry;
     const retryStream = new PassThrough({objectMode: true}); // TODO - make it a cancellable stream?
 
@@ -365,8 +371,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       let statusReceived = false;
 
       let enteredError = false;
-      // make the request
-
+     
+       // make the request
       const requestStream = newopts.request!(requestOps);
 
       const eventsToForward = ['metadata', 'response', 'status'];
@@ -427,7 +433,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         // or as part of error handling, which will take care of stream destruction
       });
 
-      // TODO timeout and deadline calculations
       requestStream.on('error', (error: Error) => {
         enteredError = true;
 
@@ -470,15 +475,19 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   error
                 );
               } catch (error: unknown) {
-                const e = GoogleError.parseGRPCStatusDetails(
-                  error as GoogleError
-                ); // TODO typecasting
-                // clean up the request stream and retryStreams, silently destroy it on the request stream
-                // but do raise it on destruction of the retryStream so the consumer can see it
-                requestStream.destroy();
-                retryStream.destroy(e);
+                if(error instanceof GoogleError){
+                  const e = GoogleError.parseGRPCStatusDetails(
+                    error
+                  );
+                  // clean up the request stream and retryStreams, silently destroy it on the request stream
+                  // but do raise it on destruction of the retryStream so the consumer can see it
+                  requestStream.destroy();
+                  retryStream.destroy(e);
 
-                return retryStream;
+                  return retryStream;
+                }else{
+                  throw(error);
+                }
               }
               // calculate new deadlines
               const toSleep = Math.random() * delay;
@@ -567,6 +576,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       return retryStream;
     };
     // this is the first make request call with the options the user passed in
-    return newMakeRequest(opts);
+    return newMakeRequest(opts) as unknown as CancellableStream; //TODO typecasting, is this super illegal?
   }
 }

@@ -21,7 +21,7 @@ import * as sinon from 'sinon';
 import {afterEach, describe, it} from 'mocha';
 import {PassThrough} from 'stream';
 
-import {GaxCallStream, GRPCCall, RequestType} from '../../src/apitypes';
+import {GaxCallStream, GRPCCall, RequestType, CancellableStream} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
 import {StreamingApiCaller} from '../../src/streamingCalls/streamingApiCaller';
 import * as gax from '../../src/gax';
@@ -1587,11 +1587,11 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows the user to pass a custom resumption strategy', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest')
-      .callsFake((opts): PassThrough => {
+      .callsFake((opts): CancellableStream => {
         assert(opts.retry.getResumptionRequestFn instanceof Function);
         done();
         // we have to return something like newStreamingRetryRequest does
-        return new PassThrough();
+        return new PassThrough() as unknown as CancellableStream;
       });
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
