@@ -32,7 +32,7 @@ import {
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import {Duplex, PassThrough, pipeline} from 'stream';
-const pumpify = require('pumpify');
+import * as pumpify from 'pumpify';
 
 async function testShowcase() {
   const grpcClientOpts = {
@@ -523,7 +523,9 @@ async function testImmediateStreamingErrorNoBufferPipeline(
     }
   );
   attemptStream.on('data', () => {
-    throw new Error('testImmediateStreamingErrorNoBufferPipeline received data, should have errored');
+    throw new Error(
+      'testImmediateStreamingErrorNoBufferPipeline received data, should have errored'
+    );
   });
 
   const results: string[] = [];
@@ -634,7 +636,8 @@ async function testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify(
 
   togetherStream.on('error', (e: GoogleError) => {
     throw new Error(
-      'testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify error ' + e
+      'testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify error ' +
+        e
     );
   });
 
@@ -830,7 +833,10 @@ async function testImmediateStreamingErrorNoBufferYesRetryRequestRetryPipeline(
   // closing on an error. togetherStream.on("close") is handled
   // by the pipeline constructor earlier in the test
   attemptStream.on('close', (e: GoogleError) => {
-    throw new Error('testImmediateStreamingErrorNobufferYesRetryRequestRetryPipeline closed on error and should not have ' + e);
+    throw new Error(
+      'testImmediateStreamingErrorNobufferYesRetryRequestRetryPipeline closed on error and should not have ' +
+        e
+    );
   });
   togetherStream.on('end', () => {
     assert.strictEqual(results.length, 100);
@@ -990,7 +996,7 @@ async function testStreamingErrorAfterDataNoBufferYesRetryRequestRetry(
     results.push(data.content);
   });
 
-  togetherStream.on('data', (data: {content:string}) => {
+  togetherStream.on('data', (data: {content: string}) => {
     results2.push(data.content);
     togetherStream.pause();
     setTimeout(() => {
@@ -1595,14 +1601,6 @@ async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
   attemptStream.on('data', data => {
     results.push(data);
   });
-
-  // userStream.on('drain', () => {
-  //   console.log("userStream drain");
-  // })
-
-  // userStream.on('resume', () => {
-  //   console.log("userStream drain");
-  // })
   attemptStream.on('end', () => {
     assert.strictEqual(results.length, 100);
   });
@@ -2669,7 +2667,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
     assert.strictEqual(
       error.note,
       'Underlying error: Error: 6 ALREADY_EXISTS: 6'
-    )
+    );
   });
   attemptStream.on('end', () => {
     throw new Error(
@@ -2860,14 +2858,14 @@ async function testServerStreamingThrowsClassifiedTransientErrorNote(
     attemptRequest,
     settings
   );
-  attemptStream.on('data', (data: {content: string})=> {
-    finalData.push(data.content)
-  })
+  attemptStream.on('data', (data: {content: string}) => {
+    finalData.push(data.content);
+  });
   attemptStream.on('error', (e: GoogleError) => {
     assert.strictEqual(e.code, 14);
     assert.match(e.note!, /not classified as transient/);
-    finalData.join(' ')
-    assert.equal(finalData, 'This')
+    finalData.join(' ');
+    assert.equal(finalData, 'This');
   });
   attemptStream.on('close', () => {
     attemptStream.end();
@@ -2924,7 +2922,6 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     assert.match(e.note!, /not classified as transient/);
   });
   attemptStream.on('close', () => {
-    console.log('on close')
     attemptStream.end();
   });
   attemptStream.on('end', () => {
