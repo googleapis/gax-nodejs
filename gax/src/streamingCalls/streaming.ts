@@ -16,13 +16,7 @@
 
 /* This file describes the gRPC-streaming. */
 
-import {
-  Duplex,
-  DuplexOptions,
-  Readable,
-  Stream,
-  Writable,
-} from 'stream';
+import {Duplex, DuplexOptions, Readable, Stream, Writable} from 'stream';
 
 import {
   APICallback,
@@ -178,13 +172,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       error.code = Status.DEADLINE_EXCEEDED;
       // surface the original error to the user
       error.note = 'Underlying error: ' + originalError;
-
-      // TODO - refactor these couple of lines
-
-      this.emit('error', error);
-      this.destroy();
-      // Without throwing error you get unhandled error since we are returning a new stream
-      // There might be a better way to do this
       throw error;
     }
 
@@ -196,9 +183,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       error.code = Status.DEADLINE_EXCEEDED;
       // surface the original error to the user
       error.note = 'Underlying error: ' + originalError;
-
-      this.emit('error', error);
-      this.destroy();
       throw error;
     }
   }
@@ -421,7 +405,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       requestStream.on('status', () => {
         statusReceived = true;
         if (dataEnd) {
-          retryStream.end();}
+          retryStream.end();
+        }
           return retryStream;
       });
       requestStream.on('end', () => {
@@ -488,11 +473,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 const e = GoogleError.parseGRPCStatusDetails(
                   error as GoogleError
                 ); // TODO typecasting
-                e.note =
-                  'Exception occurred in retry method that was ' +
-                  'not classified as transient';
                 // clean up the request stream and retryStreams, silently destroy it on the request stream
-                // but do raise it on destructin of the retryStream so the consumer can see it
+                // but do raise it on destruction of the retryStream so the consumer can see it
                 requestStream.destroy();
                 retryStream.destroy(e);
 

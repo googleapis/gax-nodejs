@@ -32,7 +32,7 @@ import {
 } from 'google-gax';
 import {RequestType} from 'google-gax/build/src/apitypes';
 import {Duplex, PassThrough, pipeline} from 'stream';
-const pumpify=require('pumpify');
+const pumpify = require('pumpify');
 async function testShowcase() {
   const grpcClientOpts = {
     grpc,
@@ -361,15 +361,6 @@ async function testExpand(client: EchoClient) {
   stream.on('error', error => {
     throw new Error('testExpand error' + error.message);
   });
-}
-
-function testInputFactory(size: number): string[] {
-  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
-  const output: string[] = [];
-  for (let i = 0; i < size; i++) {
-    output.push(words[i % 5]);
-  }
-  return output;
 }
 
 // sequence that fails on the first error in the sequence
@@ -1003,11 +994,11 @@ async function testStreamingErrorAfterDataNoBufferYesRetryRequestRetry(
     }, 50);
   });
   togetherStream.on('error', (e: GoogleError) => {
-    throw new Error('should not happen!');
+    throw new Error('should not happen!' + e);
   });
 
   attemptStream.on('error', (e: GoogleError) => {
-    throw new Error('should not happen!');
+    throw new Error('should not happen!' + e);
   });
   togetherStream.on('close', () => {
     throw new Error('stream closed prematurely');
@@ -1081,19 +1072,19 @@ async function testStreamingErrorAfterDataYesBufferYesRetryRequestRetry(
   ]);
   const results: String[] = [];
   const results2: String[] = [];
-  attemptStream.on('data', data => {
+  attemptStream.on('data', (data: {content: string}) => {
     results.push(data.content);
   });
 
-  togetherStream.on('data', (data: any) => {
+  togetherStream.on('data', (data: {content: string}) => {
     results2.push(data.content);
   });
   togetherStream.on('error', (e: GoogleError) => {
-    throw new Error('should not happen!');
+    throw new Error('should not happen!' + e);
   });
 
   attemptStream.on('error', (e: GoogleError) => {
-    throw new Error('should not happen!');
+    throw new Error('should not happen!' + e);
   });
   togetherStream.on('close', () => {
     throw new Error('stream closed prematurely');
@@ -1164,7 +1155,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
     thirdStream,
   ]);
 
-  attemptStream.on('data', data => {
+  attemptStream.on('data', (data: {content: string}) => {
     results.push(data.content);
   });
 
@@ -1172,7 +1163,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferNoRetry(
     throw new Error('should not reach this');
   });
 
-  userStream.on('data', (data: any) => {
+  userStream.on('data', (data: {content: string}) => {
     results2.push(data.content);
     userStream.pause();
     setTimeout(() => {
@@ -1273,7 +1264,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
     thirdStream,
   ]);
 
-  attemptStream.on('data', data => {
+  attemptStream.on('data', (data: {content: string}) => {
     results.push(data.content);
   });
 
@@ -1281,7 +1272,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
     assert.strictEqual(results.length, 100);
   });
 
-  togetherStream.on('data', (data: any) => {
+  togetherStream.on('data', (data: {content: string}) => {
     results2.push(data.content);
   });
 
@@ -1388,7 +1379,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
     }
   );
 
-  attemptStream.on('data', data => {
+  attemptStream.on('data', (data: {content: string}) => {
     results.push(data.content);
   });
 
@@ -1396,7 +1387,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
     assert.strictEqual(results.length, 100);
   });
 
-  togetherStream.on('data', (data: any) => {
+  togetherStream.on('data', (data: {content: string}) => {
     results2.push(data.content);
   });
 
@@ -1495,7 +1486,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferYesRetry(
     thirdStream,
   ]);
 
-  attemptStream.on('data', data => {
+  attemptStream.on('data', (data: {content: string}) => {
     results.push(data.content);
   });
 
@@ -1503,7 +1494,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferYesRetry(
     assert.strictEqual(results.length, 100);
   });
 
-  userStream.on('data', (data: any) => {
+  userStream.on('data', (data: {content: string}) => {
     results2.push(data.content);
     userStream.pause();
     setTimeout(() => {
@@ -1524,7 +1515,7 @@ async function testStreamingPipelineErrorAfterDataYesBufferYesRetry(
   });
 
   userStream.on('error', (e: GoogleError) => {
-    throw new Error('should not reach this');
+    throw new Error('should not reach this' + e);
   });
 
   userStream.on('close', () => {
@@ -1597,8 +1588,8 @@ async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
   togetherStream.on('end', originalEnd);
   togetherStream.pipe(userStream, {end: false});
 
-  attemptStream.on('data', data => {
-    results.push(data);
+  attemptStream.on('data', (data: {content: string}) => {
+    results.push(data.content);
   });
   attemptStream.on('end', () => {
     assert.strictEqual(results.length, 100);
@@ -1607,8 +1598,8 @@ async function testStreamingPipelineSuccessAfterDataYesBufferNoRetry(
   attemptStream.on('error', (e: GoogleError) => {
     assert.strictEqual(e.code, 13);
   });
-  userStream.on('data', (data: any) => {
-    results2.push(data);
+  userStream.on('data', (data: {content: string}) => {
+    results2.push(data.content);
     userStream.pause();
     setTimeout(() => {
       userStream.resume();
@@ -1683,8 +1674,8 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(
     secondStream,
     thirdStream,
   ]);
-  attemptStream.on('data', data => {
-    results.push(data);
+  attemptStream.on('data', (data: {content: string}) => {
+    results.push(data.content);
   });
 
   attemptStream.on('end', () => {
@@ -1697,8 +1688,8 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(
         e
     );
   });
-  togetherStream.on('data', (data: any) => {
-    results2.push(data);
+  togetherStream.on('data', (data: {content: string}) => {
+    results2.push(data.content);
   });
   togetherStream.on('error', (e: GoogleError) => {
     throw new Error(
@@ -1781,16 +1772,16 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
       }
     }
   );
-  attemptStream.on('data', data => {
-    results.push(data);
+  attemptStream.on('data', (data: {content: string}) => {
+    results.push(data.content);
   });
 
   attemptStream.on('end', () => {
     assert.strictEqual(results.length, 100);
   });
 
-  togetherStream.on('data', (data: any) => {
-    results2.push(data);
+  togetherStream.on('data', (data: {content: string}) => {
+    results2.push(data.content);
   });
 
   togetherStream.on('end', () => {
@@ -1946,16 +1937,16 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryPumpify(
     secondStream,
     thirdStream,
   ]);
-  attemptStream.on('data', data => {
-    results.push(data);
+  attemptStream.on('data', (data: {content: string}) => {
+    results.push(data.content);
   });
 
   attemptStream.on('error', (e: GoogleError) => {
     assert.strictEqual(results.length, 85);
     assert.strictEqual(e.code, 14);
   });
-  togetherStream.on('data', (data: any) => {
-    results2.push(data);
+  togetherStream.on('data', (data: {content: string}) => {
+    results2.push(data.content);
   });
   togetherStream.on('error', (e: GoogleError) => {
     assert.strictEqual(e.code, 14);
@@ -2038,16 +2029,16 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryPipeline(
       }
     }
   );
-  attemptStream.on('data', data => {
-    results.push(data);
+  attemptStream.on('data', (data: {content: string}) => {
+    results.push(data.content);
   });
 
   attemptStream.on('error', (e: GoogleError) => {
     assert.strictEqual(results.length, 85);
     assert.strictEqual(e.code, 14);
   });
-  togetherStream.on('data', (data: any) => {
-    results2.push(data);
+  togetherStream.on('data', (data: {content: string}) => {
+    results2.push(data.content);
   });
   togetherStream.on('error', (e: GoogleError) => {
     assert.strictEqual(e.code, 14);
