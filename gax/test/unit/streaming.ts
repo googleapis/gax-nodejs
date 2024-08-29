@@ -54,7 +54,7 @@ function createApiCallStreaming(
   ) as GaxCallStream;
 }
 
-describe('streaming', () => {
+describe.only('streaming', () => {
   afterEach(() => {
     sinon.restore();
   });
@@ -876,7 +876,9 @@ describe('streaming', () => {
         case 0:
           e = error;
 
-          s.push(null);
+          setImmediate(() => {
+            s.push('hello');
+          })
           setImmediate(() => {
             s.emit('error', e); // is included in our retry codes
           });
@@ -889,7 +891,9 @@ describe('streaming', () => {
         case 1:
           e = error2; // is not in our retry codes
 
-          s.push(null);
+          setImmediate(() => {
+            s.push('world');
+          })
           setImmediate(() => {
             s.emit('error', e);
           });
@@ -901,6 +905,10 @@ describe('streaming', () => {
 
           return s;
         default:
+          // should not reach this
+          setImmediate(() => {
+            s.emit('status', status);
+          });
           setImmediate(() => {
             s.emit('end');
           });
@@ -1010,8 +1018,8 @@ describe('streaming', () => {
     });
   });
 
-  // TODO
-  it.only('emit error, retry twice, and succeed with shouldRetryFn', done => {
+
+  it('emit error, retry twice, and succeed with shouldRetryFn', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1057,7 +1065,6 @@ describe('streaming', () => {
           });
           // emit end because there is no more data
           setImmediate(() => {
-            console.log('emit end')
             s.emit('end');
           });
           return s;
@@ -1095,17 +1102,7 @@ describe('streaming', () => {
     s.on('data', (data) => {
       finalData.push(data);
     })
-    // s.on('error', () => {
-    //   console.log('error');
-    // })
-    // s.on('close', () => {
-    //   console.log('close');
-    // })
-    // s.on('finish', () => {
-    //   console.log('on finish')
-    // })
     s.on('end', () => {
-      console.log('test on end');
       s.destroy();
       assert.strictEqual(counter, 2);
       assert.strictEqual(finalData.join(' '), 'Hello World testing retries')
@@ -1113,9 +1110,6 @@ describe('streaming', () => {
     });
   });
   it('retries using resumption request function ', done => {
-    // stubbing cancel is needed because PassThrough doesn't have
-    // a cancel method and cancel is called as part of the retry
-    // sinon.stub(streaming.StreamProxy.prototype, 'cancel');
     const receivedData: string[] = [];
     const error = Object.assign(new GoogleError('test error'), {
       code: 14,
@@ -1219,7 +1213,6 @@ describe('streaming', () => {
       assert.deepStrictEqual(err.message, 'test error');
     });
     s.on('end', () => {
-      console.log('on end in test')
       assert.strictEqual(receivedData.length, 4);
       assert.deepStrictEqual(
         receivedData.join(' '),
@@ -1230,9 +1223,6 @@ describe('streaming', () => {
     });
   });
   it('errors when there is a resumption request function an gaxStreamingRetries is not enabled', done => {
-    // stubbing cancel is needed because PassThrough doesn't have
-    // a cancel method and cancel is called as part of the retry
-    sinon.stub(streaming.StreamProxy.prototype, 'cancel');
     const error = Object.assign(new GoogleError('test error'), {
       code: 14,
       details: 'UNAVAILABLE',

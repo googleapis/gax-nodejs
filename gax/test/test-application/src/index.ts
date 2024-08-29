@@ -111,7 +111,7 @@ async function testShowcase() {
   await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
   await testWait(restClientCompat);
-  // // Testing with gaxServerStreamingRetries being true
+  // Testing with gaxServerStreamingRetries being true
   // ALL  GOOD
   await testServerStreamingRetryOptions(
     grpcSequenceClientWithServerStreamingRetries
@@ -2924,6 +2924,7 @@ async function testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     assert.match(e.note!, /not classified as transient/);
   });
   attemptStream.on('close', () => {
+    console.log('on close')
     attemptStream.end();
   });
   attemptStream.on('end', () => {
