@@ -1011,7 +1011,7 @@ describe('streaming', () => {
   });
 
   // TODO
-  it('emit error and retry twice with shouldRetryFn', done => {
+  it.only('emit error, retry twice, and succeed with shouldRetryFn', done => {
     const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
       code: 14,
       details: 'UNAVAILABLE',
@@ -1055,7 +1055,9 @@ describe('streaming', () => {
           setImmediate(() => {
             s.emit('status');
           });
+          // emit end because there is no more data
           setImmediate(() => {
+            console.log('emit end')
             s.emit('end');
           });
           return s;
@@ -1089,17 +1091,31 @@ describe('streaming', () => {
         ),
       }
     );
-
+    let finalData: string[] = [];
+    s.on('data', (data) => {
+      finalData.push(data);
+    })
+    // s.on('error', () => {
+    //   console.log('error');
+    // })
+    // s.on('close', () => {
+    //   console.log('close');
+    // })
+    // s.on('finish', () => {
+    //   console.log('on finish')
+    // })
     s.on('end', () => {
+      console.log('test on end');
       s.destroy();
       assert.strictEqual(counter, 2);
+      assert.strictEqual(finalData.join(' '), 'Hello World testing retries')
       done();
     });
   });
   it('retries using resumption request function ', done => {
     // stubbing cancel is needed because PassThrough doesn't have
     // a cancel method and cancel is called as part of the retry
-    sinon.stub(streaming.StreamProxy.prototype, 'cancel');
+    // sinon.stub(streaming.StreamProxy.prototype, 'cancel');
     const receivedData: string[] = [];
     const error = Object.assign(new GoogleError('test error'), {
       code: 14,
@@ -1116,8 +1132,11 @@ describe('streaming', () => {
       });
       switch (arg) {
         case 0:
-          s.push('Hello');
-          s.push('World');
+          setImmediate(() => {
+            s.push('Hello');
+            s.push('World');
+          })
+
           setImmediate(() => {
             s.emit('metadata');
           });
@@ -1139,10 +1158,16 @@ describe('streaming', () => {
           });
           return s;
         case 2:
-          s.push('testing');
-          s.push('retries');
+          setImmediate(() => {
+            s.push('testing');
+            s.push('retries');
+          })
+
           setImmediate(() => {
             s.emit('metadata');
+          });
+          setImmediate(() => {
+            s.emit('status');
           });
           setImmediate(() => {
             s.emit('end');
@@ -1194,6 +1219,7 @@ describe('streaming', () => {
       assert.deepStrictEqual(err.message, 'test error');
     });
     s.on('end', () => {
+      console.log('on end in test')
       assert.strictEqual(receivedData.length, 4);
       assert.deepStrictEqual(
         receivedData.join(' '),

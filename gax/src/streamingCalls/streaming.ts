@@ -414,8 +414,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         console.log('on status')
         if(dataEnd){
           retryStream.end();
-          // this.end();
           return retryStream;
+        }else{
+          if(enteredError){
+            return retryStream;
+          }
         }
 
       })
