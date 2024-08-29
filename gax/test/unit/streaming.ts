@@ -312,7 +312,9 @@ describe('streaming', () => {
       const s = new PassThrough({
         objectMode: true,
       });
-      s.push(null);
+      setImmediate(() => {
+        s.push(null);
+      });
       setImmediate(() => {
         s.emit('metadata', responseMetadata);
       });

@@ -418,20 +418,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
        *
        *
        */
-      // TODO - this return tsignore
-      //@ts-ignore
       requestStream.on('status', () => {
         statusReceived = true;
         if (dataEnd) {
-          retryStream.end();
+          retryStream.end();}
           return retryStream;
-        } else {
-          if (enteredError) {
-            return retryStream;
-          }
-        }
       });
-      // @ts-ignore - deal with return
       requestStream.on('end', () => {
         if (!enteredError) {
           dataEnd = true;
@@ -440,9 +432,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           // which is the last event from gRPC, so it's cool to end the stream
           if (statusReceived) {
             retryStream.end();
-            return retryStream;
           }
         }
+        return retryStream;
+
         // there is no else case because if enteredError
         // is true, we will handle stream destruction as part of
         // either retrying (where we don't want to end the stream)
