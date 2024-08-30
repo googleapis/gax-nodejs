@@ -45,6 +45,11 @@ async function testShowcase() {
     gaxServerStreamingRetries: true,
   };
 
+  const grpcClientOptsWithRetries = {
+    grpc,
+    sslCreds: grpc.credentials.createInsecure(),
+  };
+
   const fakeGoogleAuth = {
     getClient: async () => {
       return {
@@ -78,10 +83,16 @@ async function testShowcase() {
   const grpcSequenceClientWithServerStreamingRetries =
     new SequenceServiceClient(grpcClientOptsWithServerStreamingRetries);
 
+  const grpcSequenceClientWithRetries = new SequenceServiceClient(
+    grpcClientOptsWithRetries
+  );
+
   const restClient = new EchoClient(restClientOpts);
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
   // assuming gRPC server is started locally
+  await testEchoErrorWithRetries(grpcSequenceClientWithRetries);
+  await testEchoErrorWithTimeout(grpcSequenceClientWithRetries);
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
   await testExpand(grpcClient);
@@ -201,6 +212,33 @@ function createStreamingSequenceRequestFactory(
   return request;
 }
 
+function createSequenceRequestFactory(
+  statusCodeList: Status[],
+  delayList: number[]
+) {
+  const request = new protos.google.showcase.v1beta1.CreateSequenceRequest();
+  const sequence = new protos.google.showcase.v1beta1.Sequence();
+
+  for (let i = 0; i < statusCodeList.length; i++) {
+    const delay = new protos.google.protobuf.Duration();
+    delay.seconds = delayList[i];
+
+    const status = new protos.google.rpc.Status();
+    status.code = statusCodeList[i];
+    status.message = statusCodeList[i].toString();
+
+    const response = new protos.google.showcase.v1beta1.Sequence.Response();
+    response.delay = delay;
+    response.status = status;
+
+    sequence.responses.push(response);
+  }
+
+  request.sequence = sequence;
+
+  return request;
+}
+
 async function testEcho(client: EchoClient) {
   const request = {
     content: 'test',
@@ -277,6 +315,99 @@ async function testEchoError(client: EchoClient) {
     assert.strictEqual(
       JSON.stringify((err as GoogleError).errorInfoMetadata),
       JSON.stringify(errorInfo!.metadata)
+    );
+  }
+}
+
+async function testEchoErrorWithRetries(client: SequenceServiceClient) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    null
+  );
+  const retryOptions = new RetryOptions([14, 4], backoffSettings);
+  backoffSettings.maxRetries = 2;
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createSequenceRequestFactory(
+    [
+      Status.UNAVAILABLE, // Error code 14
+      Status.UNAVAILABLE,
+      Status.UNAVAILABLE,
+      Status.UNAVAILABLE,
+    ],
+    [0.1, 0.1, 0.1, 0.1]
+  );
+
+  const response = await client.createSequence(request);
+  const sequence = response[0];
+
+  const attemptRequest =
+    new protos.google.showcase.v1beta1.AttemptSequenceRequest();
+  attemptRequest.name = sequence.name!;
+
+  try {
+    await client.attemptSequence(attemptRequest, settings);
+  } catch (err) {
+    assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
+    assert.match(
+      JSON.stringify((err as GoogleError).message),
+      /Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received/
+    );
+  }
+}
+
+async function testEchoErrorWithTimeout(client: SequenceServiceClient) {
+  const backoffSettings = createBackoffSettings(
+    100,
+    1.2,
+    1000,
+    null,
+    1.5,
+    3000,
+    1
+  );
+  const retryOptions = new RetryOptions([14, 4], backoffSettings);
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createSequenceRequestFactory(
+    [
+      Status.UNAVAILABLE, // Error code 14
+      Status.UNAVAILABLE,
+      Status.UNAVAILABLE,
+      Status.UNAVAILABLE,
+    ],
+    [0.1, 0.1, 0.1, 0.1]
+  );
+
+  const response = await client.createSequence(request);
+  const sequence = response[0];
+
+  const attemptRequest =
+    new protos.google.showcase.v1beta1.AttemptSequenceRequest();
+  attemptRequest.name = sequence.name!;
+
+  try {
+    await client.attemptSequence(attemptRequest, settings);
+  } catch (err) {
+    assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
+    assert.match(
+      JSON.stringify((err as GoogleError).message),
+      /Total timeout of API google.showcase.v1beta1.SequenceService exceeded 1 milliseconds retrying error Error: 14 UNAVAILABLE: 14 {2}before any response was received./
     );
   }
 }
@@ -847,7 +978,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
   });
 }
 
-// streaming call that retries twice with RetryRequestOpsions and resumes from where it left off
+// streaming call that retries twice with RetryRequestOptions and resumes from where it left off
 async function testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
   client: SequenceServiceClient
 ) {

@@ -551,8 +551,7 @@ describe('retryable', () => {
     });
   });
 
-  // maxRetries is unsupported, and intended for internal use only.
-  it('errors on maxRetries', done => {
+  it('errors on maxRetries and surfaces original error', done => {
     const toAttempt = 5;
     const backoff = gax.createMaxRetriesBackoffSettings(
       0,
@@ -574,18 +573,22 @@ describe('retryable', () => {
       assert.ok(err instanceof GoogleError);
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       assert.strictEqual(spy.callCount, toAttempt);
+      assert.match(
+        err.message,
+        /Exceeded maximum number of retries retrying error Error before any response was received/
+      );
       done();
     });
   });
 
-  it('retry fails for exceeding total timeout', done => {
+  it('retry fails for exceeding total timeout, surfacing original error', done => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
     apiCall({}, undefined, err => {
       assert.ok(err instanceof GoogleError);
-      assert.strictEqual(
+      assert.match(
         err.message,
-        'Total timeout of API TestApi exceeded 100 milliseconds before any response was received.'
+        /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error  before any response was received/
       );
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       done();

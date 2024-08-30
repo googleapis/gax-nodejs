@@ -75,14 +75,19 @@ export function retryable(
     }
     let retries = 0;
     const maxRetries = retry.backoffSettings.maxRetries!;
+    // let lastTwoErrors = [];
     // TODO: define A/B testing values for retry behaviors.
 
     /** Repeat the API call as long as necessary. */
-    function repeat() {
+    function repeat(err?: GoogleError) {
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         const error = new GoogleError(
-          `Total timeout of API ${apiName} exceeded ${retry.backoffSettings.totalTimeoutMillis} milliseconds before any response was received.`
+          `Total timeout of API ${apiName} exceeded ${
+            retry.backoffSettings.totalTimeoutMillis
+          } milliseconds ${
+            err ? `retrying error ${err} ` : ''
+          } before any response was received.`
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -91,8 +96,9 @@ export function retryable(
 
       if (retries && retries >= maxRetries) {
         const error = new GoogleError(
-          'Exceeded maximum number of retries before any ' +
-            'response was received'
+          'Exceeded maximum number of retries ' +
+            (err ? `retrying error ${err} ` : '') +
+            'before any response was received'
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -100,8 +106,13 @@ export function retryable(
       }
 
       retries++;
+      let lastError = err;
       const toCall = addTimeoutArg(func, timeout!, otherArgs);
       canceller = toCall(argument, (err, response, next, rawResponse) => {
+        // Save only the error before deadline exceeded
+        if (err && err.code !== 4) {
+          lastError = err;
+        }
         if (!err) {
           callback(null, response, next, rawResponse);
           return;
@@ -125,7 +136,7 @@ export function retryable(
             const rpcTimeout = maxTimeout ? maxTimeout : 0;
             const newDeadline = deadline ? deadline - now.getTime() : 0;
             timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
-            repeat();
+            repeat(lastError);
           }, toSleep);
         }
       });
