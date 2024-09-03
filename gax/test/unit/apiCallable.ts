@@ -588,7 +588,7 @@ describe('retryable', () => {
       assert.ok(err instanceof GoogleError);
       assert.match(
         err.message,
-        /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error  before any response was received/
+        /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error {2}before any response was received/
       );
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       done();
