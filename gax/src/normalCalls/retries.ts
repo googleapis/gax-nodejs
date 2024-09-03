@@ -75,7 +75,6 @@ export function retryable(
     }
     let retries = 0;
     const maxRetries = retry.backoffSettings.maxRetries!;
-    // let lastTwoErrors = [];
     // TODO: define A/B testing values for retry behaviors.
 
     /** Repeat the API call as long as necessary. */
