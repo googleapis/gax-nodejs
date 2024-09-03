@@ -1324,7 +1324,71 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   afterEach(() => {
     sinon.restore();
   });
+  it.only('server streaming call retries until exceeding timeout and surfaces underlying error in note', done => {
+    const retrySpy = sinon.spy(
+      streaming.StreamProxy.prototype,
+      'throwIfMaxRetriesOrTotalTimeoutExceeded'
+    );
+    const firstError = Object.assign(new GoogleError('UNAVAILABLE'), {
+      code: 14,
+      details: 'UNAVAILABLE',
+      metadata: new Metadata(),
+    });
 
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      setImmediate(() => {
+        s.emit('metadata');
+      });
+      setImmediate(() => {
+        s.emit('error', firstError);
+      });
+      return s;
+    });
+
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true
+    );
+
+    const call = apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions([14], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          totalTimeoutMillis: 2, // super low timeout
+        }),
+      }
+    );
+
+    call.on('error', err => {
+      try {
+        assert(err instanceof GoogleError);
+        if (err.code !== 14) {
+          // ignore the error we are expecting
+          assert.strictEqual(err.code, 4);
+          assert.notStrictEqual(retrySpy.callCount, 0); // it MUST retry at least once
+          assert.strictEqual(
+            err.message,
+            'Total timeout of API exceeded 2 milliseconds before any response was received.'
+          );
+          assert.strictEqual(err.note, 'Underlying error: Error: UNAVAILABLE');
+          done();
+        }
+      } catch (error: unknown) {
+        done(error);
+      }
+    });
+  });
   it('server streaming call retries until exceeding max retries and surfaces underlying error in note', done => {
     const retrySpy = sinon.spy(
       streaming.StreamProxy.prototype,
@@ -1587,11 +1651,11 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows the user to pass a custom resumption strategy', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest')
-      .callsFake((opts): CancellableStream => {
+      .callsFake((opts): PassThrough => {
         assert(opts.retry.getResumptionRequestFn instanceof Function);
         done();
         // we have to return something like newStreamingRetryRequest does
-        return new PassThrough() as unknown as CancellableStream;
+        return new PassThrough()
       });
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);

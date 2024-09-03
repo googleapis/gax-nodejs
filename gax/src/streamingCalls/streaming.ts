@@ -304,9 +304,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return stream;
         };
         const retryStream = this.newStreamingRetryRequest({request, retry});
-        // todo typing
         this.stream = retryStream as unknown as CancellableStream;
-        this.eventForwardHelper(retryStream); // TODO is this obsolete?
+        this.eventForwardHelper(retryStream);
         this.setReadable(retryStream!);
       } else {
         const retryStream = retryRequest(null, {
@@ -362,10 +361,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    *   {retry} - the retry options associated with the call
    * @returns {CancellableStream} - the stream that handles retry logic
    */
-  newStreamingRetryRequest(opts: streamingRetryRequestOptions): CancellableStream {
+  newStreamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
     const retry = opts.retry;
-    const retryStream = new PassThrough({objectMode: true}); // TODO - make it a cancellable stream?
-
+    const retryStream = new PassThrough({objectMode: true});
     const newMakeRequest = (newopts: streamingRetryRequestOptions) => {
       let dataEnd = false;
       let statusReceived = false;
@@ -381,10 +379,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       });
       this.statusMetadataHelper(requestStream);
 
-      // TODO - buffer
+      // TODO - b/353262542 address buffer stuff
       requestStream.on('data', (data: ResponseType) => {
         this.retries = 0;
-        // TODO understand why this is what it is
         this.emit.bind(this, 'data')(data);
       });
 
@@ -460,7 +457,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
               const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
               let delay = retry.backoffSettings.initialRetryDelayMillis;
-              const rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis;
+              const rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis; //TODO make sure this gets used? 
               let now = new Date();
               let deadline = 0;
 
@@ -576,6 +573,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       return retryStream;
     };
     // this is the first make request call with the options the user passed in
-    return newMakeRequest(opts) as unknown as CancellableStream; //TODO typecasting, is this super illegal?
+    return newMakeRequest(opts)
   }
 }
