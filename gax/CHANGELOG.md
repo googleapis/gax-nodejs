@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.4.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.0...google-gax-v4.4.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* expose underlying error with timeouts or retries ([#1650](https://github.com/googleapis/gax-nodejs/issues/1650)) ([f4d037a](https://github.com/googleapis/gax-nodejs/commit/f4d037ac6638b5e9eeb2ee608fe1d8e4cb9a19d3))
+
 ## [4.4.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.9...google-gax-v4.4.0) (2024-08-27)
 
 
