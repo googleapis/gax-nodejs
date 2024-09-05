@@ -106,7 +106,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   apiCall?: SimpleCallbackFunction;
   argument?: {};
   // prevDeadline?: number;
-  retries?: number = 0; // TODO refactor and remove
+  // retries?: number = 0; // TODO refactor and remove
   /**
    * StreamProxy is a proxy to gRPC-streaming method.
    *
@@ -162,23 +162,17 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     maxRetries: number,
     totalTimeoutMillis: number,
     originalError: GoogleError,
-    originalTimeout: number
+    originalTimeout: number,
+    retries: number
   ): void {
     const now = new Date();
 
-    // TODO check this - throw logic if our totalTimeout is somehow zero or less than
-    // if ((totalTimeoutMillis === 0)||(totalTimeoutMillis < 0)||
-    //   this.prevDeadline! !== undefined &&
-    //   deadline &&
-    //   now.getTime() >= this.prevDeadline
-    // ) {
     const nowTime = now.getTime();
     if (
       totalTimeoutMillis === 0 ||
       totalTimeoutMillis < 0 ||
       (deadline && nowTime >= deadline)
     ) {
-      // TODO need to pass proper original timeout amount
       const error = new GoogleError(
         `Total timeout of API exceeded ${originalTimeout} milliseconds before any response was received.`
       );
@@ -188,7 +182,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       throw error;
     }
 
-    if (this.retries && this.retries >= maxRetries) {
+    if (retries && retries >= maxRetries) {
       const error = new GoogleError(
         'Exceeded maximum number of retries before any ' +
           'response was received'
@@ -381,7 +375,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       retryCodes: [],
       backoffSettings: createDefaultBackoffSettings(),
     };
-
+    let retries = 0;
     const retryStream = new PassThrough({objectMode: true});
     let timeout = retry.backoffSettings.totalTimeoutMillis ?? undefined;
     const originalTimeout = timeout ?? 0;
@@ -408,7 +402,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
       // TODO - b/353262542 address buffer stuff
       requestStream.on('data', (data: ResponseType) => {
-        this.retries = 0;
+        retries = 0;
         this.emit.bind(this, 'data')(data);
       });
 
@@ -456,13 +450,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         // either retrying (where we don't want to end the stream)
         // or as part of error handling, which will take care of stream destruction
       });
-      // @ts-ignore todo fix
+      //@ts-ignore fix
       requestStream.on('error', (error: Error) => {
         enteredError = true;
 
         // let timeout = retry.backoffSettings.totalTimeoutMillis;
         const maxRetries = retry.backoffSettings.maxRetries!;
-        // if ((maxRetries && maxRetries > 0) || (timeout && timeout > 0)) {
         if ((maxRetries && maxRetries > 0) || timeout) {
           if (this.shouldRetryRequest(error, retry)) {
             if (maxRetries && timeout!) {
@@ -492,7 +485,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   maxRetries,
                   timeout!,
                   error,
-                  originalTimeout
+                  originalTimeout,
+                  retries
                 );
               } catch (error: unknown) {
                 if (error instanceof GoogleError) {
@@ -509,7 +503,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               }
               // calculate new deadlines
               const toSleep = Math.random() * delay;
-              // const toSleep = 5;
+              // TODO refactor return 
               setTimeout(() => {
                 // only do timeout calculations if not using maxRetries
                 if (timeout) {
@@ -520,11 +514,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   const rpcTimeout = maxTimeout ? maxTimeout : 0;
                   // this.prevDeadline = deadline;
                   const newDeadline = deadline ? deadline - now.getTime() : 0;
-                  // TODO - validate this tiemout thing is needed and how it's used
                   timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
                 }
 
-                this.retries!++;
+                retries++;
                 // RESUMPTION STUFF
                 // TODO - helper function
                 let retryArgument = this.argument! as unknown as RequestType;

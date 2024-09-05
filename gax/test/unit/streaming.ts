@@ -25,7 +25,6 @@ import {
   GaxCallStream,
   GRPCCall,
   RequestType,
-  CancellableStream,
 } from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
 import {StreamingApiCaller} from '../../src/streamingCalls/streamingApiCaller';
@@ -168,7 +167,6 @@ describe('streaming', () => {
     s.end();
   });
 
-  // TODO make sure this works with new retries
   it('forwards metadata and status', done => {
     const responseMetadata = {metadata: true};
     const status = {code: 0, metadata: responseMetadata};
@@ -528,7 +526,6 @@ describe('streaming', () => {
       assert.strictEqual(responseCallback.callCount, 1);
     });
   });
-  // TODO fix
   it('emit response when stream received no metadata event with new gax retries', done => {
     const responseMetadata = {metadata: true};
     const expectedStatus = {code: 0, metadata: responseMetadata};
@@ -1330,7 +1327,6 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   afterEach(() => {
     sinon.restore();
   });
-  // TODO mkae sure all good
   it('server streaming call retries until exceeding timeout and surfaces underlying error in note', done => {
     const retrySpy = sinon.spy(
       streaming.StreamProxy.prototype,
