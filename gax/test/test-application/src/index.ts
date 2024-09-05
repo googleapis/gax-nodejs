@@ -3030,7 +3030,6 @@ async function testErrorMaxRetries0(client: SequenceServiceClient) {
     throw new Error('The stream should not receive any data');
   });
   attemptStream.on('error', (error: GoogleError) => {
-    console.log('error', error.message)
     assert.strictEqual(error.code, 4);
     assert.strictEqual(error.note, 'Max retries is set to zero.');
   });

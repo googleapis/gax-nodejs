@@ -160,16 +160,16 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     maxRetries: number,
     totalTimeoutMillis: number,
     originalError: GoogleError,
-    originalTimeout: number,
+    originalTimeout: number | undefined,
     retries: number
   ): void {
     const now = new Date();
 
     const nowTime = now.getTime();
-    if (
-      totalTimeoutMillis === 0 ||
+    if (originalTimeout &&
+      (totalTimeoutMillis === 0 ||
       totalTimeoutMillis < 0 ||
-      (deadline && nowTime >= deadline)
+      (deadline && nowTime >= deadline))
     ) {
       const error = new GoogleError(
         `Total timeout of API exceeded ${originalTimeout} milliseconds before any response was received.`
@@ -383,17 +383,18 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     };
     let retries = 0;
     const retryStream = new PassThrough({objectMode: true});
-    let timeout = retry.backoffSettings.totalTimeoutMillis ?? undefined;
+    const totalTimeout = retry.backoffSettings.totalTimeoutMillis ?? undefined;
     const maxRetries = retry.backoffSettings.maxRetries ?? undefined;
+    let timeout = retry.backoffSettings.initialRpcTimeoutMillis ?? undefined;
 
-    const originalTimeout = timeout ?? 0;
+    // STEPS - use "totaltimeoutmillis for deadline calcs" for
+    // use rpctimeoutmillis for 
     let now = new Date();
     let deadline = 0;
-    if (timeout) {
-      deadline = now.getTime() + timeout;
+    if (totalTimeout) {
+      deadline = now.getTime() + totalTimeout;
     }
     const transientErrorHelper = (error: Error, requestStream: CancellableStream ) => {
-      // TODO helper function
       const e = GoogleError.parseGRPCStatusDetails(error);
       e.note =
         'Exception occurred in retry method that was ' +
@@ -478,7 +479,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         // type check for undefined instead of for truthiness in case maxRetries or timeout is equal to zero
         if (typeof(maxRetries) !== undefined || typeof(maxRetries) !== undefined) {
           if (this.shouldRetryRequest(error, retry)) {
-            if (maxRetries && timeout) {
+            if (maxRetries && totalTimeout) {
               const newError = new GoogleError(
                 'Cannot set both totalTimeoutMillis and maxRetries ' +
                   'in backoffSettings.'
@@ -499,7 +500,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   maxRetries!,
                   timeout!,
                   error,
-                  originalTimeout,
+                  totalTimeout,
                   retries
                 );
               } catch (error: unknown) {
@@ -512,17 +513,14 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   return retryStream;
 
               }
-              // TODO put this in a helper function
 
               const delayMult = retry.backoffSettings.retryDelayMultiplier;
               const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
               const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
               const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
               let delay = retry.backoffSettings.initialRetryDelayMillis;
-              const rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis; // TODO make sure this is used
               // calculate new deadlines
               const toSleep = Math.random() * delay;
-              // TODO refactor return 
               const calculateTimeoutAndResumptionFunction = () => {
                 setTimeout(() => {
                   // only do timeout calculations if not using maxRetries
