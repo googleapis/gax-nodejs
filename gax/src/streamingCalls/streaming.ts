@@ -25,7 +25,7 @@ import {
   RequestType,
   SimpleCallbackFunction,
 } from '../apitypes';
-import {RetryOptions, RetryRequestOptions} from '../gax';
+import {RetryOptions, RetryRequestOptions, createDefaultBackoffSettings} from '../gax';
 import {GoogleError} from '../googleError';
 import {Status} from '../status';
 import {PassThrough} from 'stream';
@@ -161,7 +161,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     originalTimeout: number
   ): void {
     const now = new Date();
-    console.log("deadline, totalTimeout", deadline,  totalTimeoutMillis)
 
     // TODO check this - throw logic if our totalTimeout is somehow zero or less than
     // if ((totalTimeoutMillis === 0)||(totalTimeoutMillis < 0)||
@@ -174,7 +173,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       deadline &&
       nowTime >= deadline
     ) {
-      console.log("now", nowTime);
       // TODO need to pass proper original timeout amount
       const error = new GoogleError(
         `Total timeout of API exceeded ${originalTimeout} milliseconds before any response was received.`
@@ -372,20 +370,20 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * @returns {CancellableStream} - the stream that handles retry logic
    */
   newStreamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
-    const retry = opts.retry;
+    // at this point, it would be unexpected if retry were undefined
+    // but if it is, provide a logical default so we don't run into trouble
+    const retry = opts.retry ?? {retryCodes: [], backoffSettings: createDefaultBackoffSettings()};
+
     const retryStream = new PassThrough({objectMode: true});
-    let timeout = retry.backoffSettings.totalTimeoutMillis;
+    let timeout = retry.backoffSettings.totalTimeoutMillis ?? undefined;
     const originalTimeout = timeout ?? 0;
     let now = new Date();
     let deadline = 0;
     if (timeout) {
       deadline = now.getTime() + timeout;
     }
-    console.log('original deadline', deadline, 'original time', deadline-timeout!)
-    // const maxRetries = retry.backoffSettings.maxRetries!;
     
     const newMakeRequest = (newopts: streamingRetryRequestOptions) => {
-      console.log('calilng newMakerequest')
 
       let dataEnd = false;
       let statusReceived = false;
@@ -403,7 +401,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
       // TODO - b/353262542 address buffer stuff
       requestStream.on('data', (data: ResponseType) => {
-        console.log('on data')
         this.retries = 0;
         this.emit.bind(this, 'data')(data);
       });
@@ -429,7 +426,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
        *
        */
       requestStream.on('status', () => {
-        console.log('on status')
         statusReceived = true;
         if (dataEnd) {
           retryStream.end();
@@ -437,7 +433,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
           return retryStream;
       });
       requestStream.on('end', () => {
-        console.log('on end')
         if (!enteredError) {
           dataEnd = true;
 
@@ -485,12 +480,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
               let delay = retry.backoffSettings.initialRetryDelayMillis;
               const rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis; // TODO make sure this is used
-              // let now = new Date();
-              // let deadline = 0;
-              console.log('timeout', timeout, "deadline", deadline)
-              // if (timeout) {
-              //   deadline = now.getTime() + timeout;
-              // }
               try {
                 this.throwIfMaxRetriesOrTotalTimeoutExceeded(
                   deadline,
@@ -515,7 +504,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 }
               }
               // calculate new deadlines
-              console.log("calculating new deadlines")
               const toSleep = Math.random() * delay;
               // const toSleep = 5;
               setTimeout(() => {
@@ -528,12 +516,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   const rpcTimeout = maxTimeout ? maxTimeout : 0;
                   // this.prevDeadline = deadline;
                   const newDeadline = deadline ? deadline - now.getTime() : 0;
-                  console.log('three', timeoutCal, rpcTimeout, newDeadline)
                   // TODO - validate this tiemout thing is needed and how it's used
                   timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
                 }
 
-                console.log('new timeout', timeout)
                 this.retries!++;
                 // RESUMPTION STUFF
                 // TODO - helper function
@@ -564,37 +550,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                 // based on the resumption strategy
                 return newMakeRequest(opts);
               }, toSleep);
-              console.log('in else')
-              // this.retries!++;
-              // // RESUMPTION STUFF
-              // // TODO - helper function
-              // let retryArgument = this.argument! as unknown as RequestType;
-              // if (typeof retry.getResumptionRequestFn! === 'function') {
-              //   const resumptionRetryArgument =
-              //     retry.getResumptionRequestFn(retryArgument);
-              //   if (resumptionRetryArgument !== undefined) {
-              //     retryArgument = resumptionRetryArgument;
-              //   }
-              // }
-              // const newRequest = () => {
-              //   if (this._isCancelCalled) {
-              //     if (this.stream) {
-              //       this.stream.cancel();
-              //     }
-              //     return;
-              //   }
-              //   const newStream = this.apiCall!(
-              //     retryArgument,
-              //     this._callback
-              //   ) as CancellableStream;
-              //   return newStream;
-              // };
-              // opts.request = newRequest;
-              
 
-              // // make a request with the updated parameters
-              // // based on the resumption strategy
-              // return newMakeRequest(opts);
             }
           }
           // non retryable error
@@ -623,14 +579,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
             return retryStream;
           }
-          // TODO this is probably not right, dont' increase retries, maybs have this check elsewehre
-          if (timeout && timeout < 0){
-            timeout = 0;
-            return newMakeRequest(opts)
+          
 
-          }
-
-          console.log('else')
           // start here, we end up here when timeout is less than zero
           // other edge cases, surface the error to the caller
           const e = GoogleError.parseGRPCStatusDetails(error);

@@ -1365,7 +1365,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
           maxRetryDelayMillis: 1000,
           rpcTimeoutMultiplier: 1.5,
           maxRpcTimeoutMillis: 3000,
-          totalTimeoutMillis: 2, // super low timeout
+          totalTimeoutMillis: 200, // timeout that ensures it should retry at least once
         }),
       }
     );
@@ -1379,7 +1379,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
           assert.notStrictEqual(retrySpy.callCount, 0); // it MUST retry at least once
           assert.strictEqual(
             err.message,
-            'Total timeout of API exceeded 2 milliseconds before any response was received.'
+            'Total timeout of API exceeded 200 milliseconds before any response was received.'
           );
           assert.strictEqual(err.note, 'Underlying error: Error: UNAVAILABLE');
           done();
