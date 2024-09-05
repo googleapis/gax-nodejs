@@ -166,10 +166,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     const now = new Date();
 
     const nowTime = now.getTime();
-    if (originalTimeout &&
+    if (
+      originalTimeout &&
       (totalTimeoutMillis === 0 ||
-      totalTimeoutMillis < 0 ||
-      (deadline && nowTime >= deadline))
+        totalTimeoutMillis < 0 ||
+        (deadline && nowTime >= deadline))
     ) {
       const error = new GoogleError(
         `Total timeout of API exceeded ${originalTimeout} milliseconds before any response was received.`
@@ -181,7 +182,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
 
     if (retries && retries >= maxRetries) {
-
       const error = new GoogleError(
         'Exceeded maximum number of retries before any ' +
           'response was received'
@@ -190,14 +190,12 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // surface the original error to the user
       error.note = 'Underlying error: ' + originalError;
       throw error;
-    } 
+    }
     if (maxRetries === 0) {
       const error: GoogleError = originalError;
-      error.note = "Max retries is set to zero.";
-      throw error
-
+      error.note = 'Max retries is set to zero.';
+      throw error;
     }
- 
   }
 
   /**
@@ -387,14 +385,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     const maxRetries = retry.backoffSettings.maxRetries ?? undefined;
     let timeout = retry.backoffSettings.initialRpcTimeoutMillis ?? undefined;
 
-    // STEPS - use "totaltimeoutmillis for deadline calcs" for
-    // use rpctimeoutmillis for 
     let now = new Date();
     let deadline = 0;
     if (totalTimeout) {
       deadline = now.getTime() + totalTimeout;
     }
-    const transientErrorHelper = (error: Error, requestStream: CancellableStream ) => {
+    const transientErrorHelper = (
+      error: Error,
+      requestStream: CancellableStream
+    ) => {
       const e = GoogleError.parseGRPCStatusDetails(error);
       e.note =
         'Exception occurred in retry method that was ' +
@@ -405,8 +404,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       retryStream.destroy(e);
 
       return retryStream;
-
-  }
+    };
     const newMakeRequest = (newopts: streamingRetryRequestOptions) => {
       let dataEnd = false;
       let statusReceived = false;
@@ -422,7 +420,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       });
       this.statusMetadataHelper(requestStream);
 
-      
       // TODO - b/353262542 address buffer stuff
       requestStream.on('data', (data: ResponseType) => {
         retries = 0;
@@ -477,7 +474,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         enteredError = true;
 
         // type check for undefined instead of for truthiness in case maxRetries or timeout is equal to zero
-        if (typeof(maxRetries) !== undefined || typeof(maxRetries) !== undefined) {
+        if (
+          typeof maxRetries !== undefined ||
+          typeof maxRetries !== undefined
+        ) {
           if (this.shouldRetryRequest(error, retry)) {
             if (maxRetries && totalTimeout) {
               const newError = new GoogleError(
@@ -504,14 +504,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   retries
                 );
               } catch (error: unknown) {
-                  const e = GoogleError.parseGRPCStatusDetails(error as GoogleError);
-                  // clean up the request stream and retryStreams, silently destroy it on the request stream
-                  // but do raise it on destruction of the retryStream so the consumer can see it
-                  requestStream.destroy();
-                  retryStream.destroy(e);
+                const e = GoogleError.parseGRPCStatusDetails(
+                  error as GoogleError
+                );
+                // clean up the request stream and retryStreams, silently destroy it on the request stream
+                // but do raise it on destruction of the retryStream so the consumer can see it
+                requestStream.destroy();
+                retryStream.destroy(e);
 
-                  return retryStream;
-
+                return retryStream;
               }
 
               const delayMult = retry.backoffSettings.retryDelayMultiplier;
@@ -530,14 +531,15 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                     const timeoutCal =
                       timeout && timeoutMult ? timeout * timeoutMult : 0;
                     const rpcTimeout = maxTimeout ? maxTimeout : 0;
-                    // this.prevDeadline = deadline;
                     const newDeadline = deadline ? deadline - now.getTime() : 0;
                     timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
                   }
-  
+
                   retries++;
-                  // RESUMPTION STUFF
                   let retryArgument = this.argument! as unknown as RequestType;
+                  // if resumption logic is passed, use it to determined the
+                  // new argument for the new request made to the server
+                  // otherwise, the original argument will be passed
                   if (typeof retry.getResumptionRequestFn! === 'function') {
                     const resumptionRetryArgument =
                       retry.getResumptionRequestFn(retryArgument);
@@ -559,26 +561,21 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                     return newStream;
                   };
                   opts.request = newRequest;
-  
+
                   // make a request with the updated parameters
                   // based on the resumption strategy
                   return newMakeRequest(opts);
-  
                 }, toSleep);
-                
-              }
+              };
               return calculateTimeoutAndResumptionFunction();
-              
-
             }
-          }
-          else {
+          } else {
             // non retryable error
-            return transientErrorHelper(error, requestStream)
+            return transientErrorHelper(error, requestStream);
           }
         } else {
           // neither timeout nor maxRetries are defined, surface the error to the caller
-          return transientErrorHelper(error, requestStream)
+          return transientErrorHelper(error, requestStream);
         }
       });
       // return the stream if we didn't return it as

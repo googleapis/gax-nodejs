@@ -21,11 +21,7 @@ import * as sinon from 'sinon';
 import {afterEach, describe, it} from 'mocha';
 import {PassThrough} from 'stream';
 
-import {
-  GaxCallStream,
-  GRPCCall,
-  RequestType,
-} from '../../src/apitypes';
+import {GaxCallStream, GRPCCall, RequestType} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
 import {StreamingApiCaller} from '../../src/streamingCalls/streamingApiCaller';
 import * as gax from '../../src/gax';
@@ -896,7 +892,7 @@ describe('streaming', () => {
           retryDelayMultiplier: 1.2,
           maxRetryDelayMillis: 1000,
           rpcTimeoutMultiplier: 1.5,
-          maxRpcTimeoutMillis: 3000
+          maxRpcTimeoutMillis: 3000,
           // neither maxRetries nor totalTimeoutMillis is defined
         }),
       }
