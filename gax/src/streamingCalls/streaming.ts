@@ -105,8 +105,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   gaxServerStreamingRetries?: boolean;
   apiCall?: SimpleCallbackFunction;
   argument?: {};
-  // prevDeadline?: number;
-  // retries?: number = 0; // TODO refactor and remove
   /**
    * StreamProxy is a proxy to gRPC-streaming method.
    *
@@ -183,6 +181,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     }
 
     if (retries && retries >= maxRetries) {
+
       const error = new GoogleError(
         'Exceeded maximum number of retries before any ' +
           'response was received'
@@ -191,7 +190,14 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       // surface the original error to the user
       error.note = 'Underlying error: ' + originalError;
       throw error;
+    } 
+    if (maxRetries === 0) {
+      const error: GoogleError = originalError;
+      error.note = "Max retries is set to zero.";
+      throw error
+
     }
+ 
   }
 
   /**
@@ -378,13 +384,28 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
     let retries = 0;
     const retryStream = new PassThrough({objectMode: true});
     let timeout = retry.backoffSettings.totalTimeoutMillis ?? undefined;
+    const maxRetries = retry.backoffSettings.maxRetries ?? undefined;
+
     const originalTimeout = timeout ?? 0;
     let now = new Date();
     let deadline = 0;
     if (timeout) {
       deadline = now.getTime() + timeout;
     }
+    const transientErrorHelper = (error: Error, requestStream: CancellableStream ) => {
+      // TODO helper function
+      const e = GoogleError.parseGRPCStatusDetails(error);
+      e.note =
+        'Exception occurred in retry method that was ' +
+        'not classified as transient';
+      // clean up the request stream and retryStreams, silently destroy it on the request stream
+      // but do raise it on destructin of the retryStream so the consumer can see it
+      requestStream.destroy();
+      retryStream.destroy(e);
 
+      return retryStream;
+
+  }
     const newMakeRequest = (newopts: streamingRetryRequestOptions) => {
       let dataEnd = false;
       let statusReceived = false;
@@ -400,6 +421,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       });
       this.statusMetadataHelper(requestStream);
 
+      
       // TODO - b/353262542 address buffer stuff
       requestStream.on('data', (data: ResponseType) => {
         retries = 0;
@@ -450,15 +472,13 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         // either retrying (where we don't want to end the stream)
         // or as part of error handling, which will take care of stream destruction
       });
-      //@ts-ignore fix
       requestStream.on('error', (error: Error) => {
         enteredError = true;
 
-        // let timeout = retry.backoffSettings.totalTimeoutMillis;
-        const maxRetries = retry.backoffSettings.maxRetries!;
-        if ((maxRetries && maxRetries > 0) || timeout) {
+        // type check for undefined instead of for truthiness in case maxRetries or timeout is equal to zero
+        if (typeof(maxRetries) !== undefined || typeof(maxRetries) !== undefined) {
           if (this.shouldRetryRequest(error, retry)) {
-            if (maxRetries && timeout!) {
+            if (maxRetries && timeout) {
               const newError = new GoogleError(
                 'Cannot set both totalTimeoutMillis and maxRetries ' +
                   'in backoffSettings.'
@@ -472,122 +492,95 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
               return retryStream;
             } else {
               // check for exceeding timeout or max retries
-              // TODO put this in a helper function
-              const delayMult = retry.backoffSettings.retryDelayMultiplier;
-              const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
-              const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
-              const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
-              let delay = retry.backoffSettings.initialRetryDelayMillis;
-              const rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis; // TODO make sure this is used
+
               try {
                 this.throwIfMaxRetriesOrTotalTimeoutExceeded(
                   deadline,
-                  maxRetries,
+                  maxRetries!,
                   timeout!,
                   error,
                   originalTimeout,
                   retries
                 );
               } catch (error: unknown) {
-                if (error instanceof GoogleError) {
-                  const e = GoogleError.parseGRPCStatusDetails(error);
+                  const e = GoogleError.parseGRPCStatusDetails(error as GoogleError);
                   // clean up the request stream and retryStreams, silently destroy it on the request stream
                   // but do raise it on destruction of the retryStream so the consumer can see it
                   requestStream.destroy();
                   retryStream.destroy(e);
 
                   return retryStream;
-                } else {
-                  throw error;
-                }
+
               }
+              // TODO put this in a helper function
+
+              const delayMult = retry.backoffSettings.retryDelayMultiplier;
+              const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
+              const timeoutMult = retry.backoffSettings.rpcTimeoutMultiplier;
+              const maxTimeout = retry.backoffSettings.maxRpcTimeoutMillis;
+              let delay = retry.backoffSettings.initialRetryDelayMillis;
+              const rpcTimeout = retry.backoffSettings.initialRpcTimeoutMillis; // TODO make sure this is used
               // calculate new deadlines
               const toSleep = Math.random() * delay;
               // TODO refactor return 
-              setTimeout(() => {
-                // only do timeout calculations if not using maxRetries
-                if (timeout) {
-                  now = new Date();
-                  delay = Math.min(delay * delayMult, maxDelay);
-                  const timeoutCal =
-                    timeout && timeoutMult ? timeout * timeoutMult : 0;
-                  const rpcTimeout = maxTimeout ? maxTimeout : 0;
-                  // this.prevDeadline = deadline;
-                  const newDeadline = deadline ? deadline - now.getTime() : 0;
-                  timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
-                }
-
-                retries++;
-                // RESUMPTION STUFF
-                // TODO - helper function
-                let retryArgument = this.argument! as unknown as RequestType;
-                if (typeof retry.getResumptionRequestFn! === 'function') {
-                  const resumptionRetryArgument =
-                    retry.getResumptionRequestFn(retryArgument);
-                  if (resumptionRetryArgument !== undefined) {
-                    retryArgument = resumptionRetryArgument;
+              const calculateTimeoutAndResumptionFunction = () => {
+                setTimeout(() => {
+                  // only do timeout calculations if not using maxRetries
+                  if (timeout) {
+                    now = new Date();
+                    delay = Math.min(delay * delayMult, maxDelay);
+                    const timeoutCal =
+                      timeout && timeoutMult ? timeout * timeoutMult : 0;
+                    const rpcTimeout = maxTimeout ? maxTimeout : 0;
+                    // this.prevDeadline = deadline;
+                    const newDeadline = deadline ? deadline - now.getTime() : 0;
+                    timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
                   }
-                }
-                const newRequest = () => {
-                  if (this._isCancelCalled) {
-                    if (this.stream) {
-                      this.stream.cancel();
+  
+                  retries++;
+                  // RESUMPTION STUFF
+                  let retryArgument = this.argument! as unknown as RequestType;
+                  if (typeof retry.getResumptionRequestFn! === 'function') {
+                    const resumptionRetryArgument =
+                      retry.getResumptionRequestFn(retryArgument);
+                    if (resumptionRetryArgument !== undefined) {
+                      retryArgument = resumptionRetryArgument;
                     }
-                    return;
                   }
-                  const newStream = this.apiCall!(
-                    retryArgument,
-                    this._callback
-                  ) as CancellableStream;
-                  return newStream;
-                };
-                opts.request = newRequest;
+                  const newRequest = () => {
+                    if (this._isCancelCalled) {
+                      if (this.stream) {
+                        this.stream.cancel();
+                      }
+                      return;
+                    }
+                    const newStream = this.apiCall!(
+                      retryArgument,
+                      this._callback
+                    ) as CancellableStream;
+                    return newStream;
+                  };
+                  opts.request = newRequest;
+  
+                  // make a request with the updated parameters
+                  // based on the resumption strategy
+                  return newMakeRequest(opts);
+  
+                }, toSleep);
+                
+              }
+              return calculateTimeoutAndResumptionFunction();
+              
 
-                // make a request with the updated parameters
-                // based on the resumption strategy
-                return newMakeRequest(opts);
-              }, toSleep);
             }
           }
-          // non retryable error
           else {
-            const e = GoogleError.parseGRPCStatusDetails(error);
-            e.note =
-              'Exception occurred in retry method that was ' +
-              'not classified as transient';
-            // clean up the request stream and retryStreams, silently destroy it on the request stream
-            // but do raise it on destructin of the retryStream so the consumer can see it
-            requestStream.destroy();
-            retryStream.destroy(e);
-
-            return retryStream;
+            // non retryable error
+            return transientErrorHelper(error, requestStream)
           }
         } else {
-          // edge case where max retries is zero
-          // todo - possibly wrap this into the throwing exceeding the maxRetries
-          if (maxRetries === 0) {
-            const e = GoogleError.parseGRPCStatusDetails(error);
-            e.note = 'Max retries is set to zero.';
-            // clean up the request stream and retryStreams, silently destroy it on the request stream
-            // but do raise it on destructin of the retryStream so the consumer can see it
-            requestStream.destroy();
-            retryStream.destroy(e);
-
-            return retryStream;
-          }
-
-          // start here, we end up here when timeout is less than zero
-          // other edge cases, surface the error to the caller
-          const e = GoogleError.parseGRPCStatusDetails(error);
-          e.note =
-            'Exception occurred in retry method that was ' +
-            'not classified as transient';
-          // clean up the request stream and retryStreams, silently destroy it on the request stream
-          // but do raise it on destructin of the retryStream so the consumer can see it
-          requestStream.destroy();
-          retryStream.destroy(e);
-
-          return retryStream;
+          // neither timeout nor maxRetries are defined, surface the error to the caller
+          return transientErrorHelper(error, requestStream)
         }
       });
       // return the stream if we didn't return it as

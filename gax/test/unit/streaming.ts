@@ -837,6 +837,90 @@ describe('streaming', () => {
       done();
     });
   });
+  it('emit transient error message if neither maxRetries nor totaltimeout are defined when new retries are enabled', done => {
+    const errorInfoObj = {
+      reason: 'SERVICE_DISABLED',
+      domain: 'googleapis.com',
+      metadata: {
+        consumer: 'projects/455411330361',
+        service: 'translate.googleapis.com',
+      },
+    };
+    const errorProtoJson = require('../../protos/status.json');
+    const root = protobuf.Root.fromJSON(errorProtoJson);
+    const errorInfoType = root.lookupType('ErrorInfo');
+    const buffer = errorInfoType.encode(errorInfoObj).finish() as Buffer;
+    const any = {
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: buffer,
+    };
+    const status = {code: 3, message: 'test', details: [any]};
+    const Status = root.lookupType('google.rpc.Status');
+    const status_buffer = Status.encode(status).finish() as Buffer;
+    const metadata = new Metadata();
+    metadata.set('grpc-status-details-bin', status_buffer);
+    const error = Object.assign(new GoogleError('test error'), {
+      code: 3,
+      details: 'Failed to read',
+      metadata: metadata,
+    });
+
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push(null);
+      setImmediate(() => {
+        // emits an error not in our included retry codes
+        s.emit('error', error);
+      });
+      setImmediate(() => {
+        s.emit('status', status);
+      });
+
+      return s;
+    });
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true // new retry behavior enabled
+    );
+
+    const s = apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions([5], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000
+          // neither maxRetries nor totalTimeoutMillis is defined
+        }),
+      }
+    );
+
+    s.on('error', err => {
+      s.pause();
+      s.destroy();
+
+      assert(err instanceof GoogleError);
+      assert.deepStrictEqual(err.message, 'test error');
+      assert.deepStrictEqual(
+        err.note,
+        'Exception occurred in retry method that was not classified as transient'
+      );
+      assert.strictEqual(err.domain, errorInfoObj.domain);
+      assert.strictEqual(err.reason, errorInfoObj.reason);
+      assert.strictEqual(
+        JSON.stringify(err.errorInfoMetadata),
+        JSON.stringify(errorInfoObj.metadata)
+      );
+      done();
+    });
+  });
   it('emit transient error on second or later error when new retries are enabled', done => {
     const errorInfoObj = {
       reason: 'SERVICE_DISABLED',
