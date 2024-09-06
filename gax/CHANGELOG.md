@@ -4,6 +4,33 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.4.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.0...google-gax-v4.4.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* expose underlying error with timeouts or retries ([#1650](https://github.com/googleapis/gax-nodejs/issues/1650)) ([f4d037a](https://github.com/googleapis/gax-nodejs/commit/f4d037ac6638b5e9eeb2ee608fe1d8e4cb9a19d3))
+
+## [4.4.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.9...google-gax-v4.4.0) (2024-08-27)
+
+
+### Features
+
+* Improve `AuthClient` Compatibility ([#1641](https://github.com/googleapis/gax-nodejs/issues/1641)) ([4edd33d](https://github.com/googleapis/gax-nodejs/commit/4edd33db2670eb081f5744907b879d6669d4fad2))
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs-cli to v1.1.3 ([#1645](https://github.com/googleapis/gax-nodejs/issues/1645)) ([1b2ffdf](https://github.com/googleapis/gax-nodejs/commit/1b2ffdfdf2a2eed08c81b1b1be6943424fd15258))
+
+## [4.3.9](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.8...google-gax-v4.3.9) (2024-08-06)
+
+
+### Bug Fixes
+
+* reduce duplicate code in streaming retries and add a test ([#1636](https://github.com/googleapis/gax-nodejs/issues/1636)) ([83b52e1](https://github.com/googleapis/gax-nodejs/commit/83b52e14ba3bb1e9f0e079ea53e47ec32b4cfd45))
+* test application cleanup ([#1639](https://github.com/googleapis/gax-nodejs/issues/1639)) ([76ac496](https://github.com/googleapis/gax-nodejs/commit/76ac496fe42f1176df733d0adcc755bd4e773b10))
+
 ## [4.3.8](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.7...google-gax-v4.3.8) (2024-07-08)
 
 
