@@ -832,7 +832,6 @@ export function constructSettings(
           timeout = overridingMethod.timeout_millis;
         }
       }
-      console.log('calling mergeRetryoptions');
       retry = mergeRetryOptions(
         retry!,
         constructRetry(
