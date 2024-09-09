@@ -40,7 +40,7 @@ export class IamClient {
   private _defaults: {[method: string]: gax.CallSettings};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _protos: any;
-  auth?: GoogleAuth<AuthClient> | AuthClient;
+  auth?: GoogleAuth | AuthClient;
   descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}};
   innerApiCalls: {[name: string]: Function} = {};
   iamPolicyStub?: Promise<{[name: string]: Function}>;

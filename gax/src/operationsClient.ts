@@ -62,7 +62,7 @@ export const ALL_SCOPES: string[] = [];
  * @class
  */
 export class OperationsClient {
-  auth?: GoogleAuth<AuthClient> | AuthClient;
+  auth?: GoogleAuth | AuthClient;
   innerApiCalls: {[name: string]: Function};
   descriptor: {[method: string]: PageDescriptor};
   operationsStub: Promise<{[method: string]: Function}>;

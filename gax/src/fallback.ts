@@ -37,7 +37,6 @@ import * as IamProtos from '../protos/iam_service';
 import * as LocationProtos from '../protos/locations';
 import * as operationsProtos from '../protos/operations';
 
-export {AnyAuthClient as AuthClient};
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
 export {routingHeader};
@@ -79,7 +78,7 @@ export interface ServiceMethods {
 }
 
 export class GrpcClient {
-  auth?: AuthClient | GoogleAuth<AuthClient>;
+  auth?: AuthClient | GoogleAuth;
   authClient?: AuthClient;
   fallback: boolean;
   grpcVersion: string;
