@@ -173,11 +173,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         (deadline && nowTime >= deadline))
     ) {
       const error = new GoogleError(
-      `Total timeout of API exceeded ${
-            originalTimeout
-          } milliseconds ${
-            originalError ? `retrying error ${originalError} ` : ''
-          } before any response was received.`);
+        `Total timeout of API exceeded ${originalTimeout} milliseconds ${
+          originalError ? `retrying error ${originalError} ` : ''
+        } before any response was received.`
+      );
       error.code = Status.DEADLINE_EXCEEDED;
       throw error;
     }
@@ -372,7 +371,9 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    *   {retry} - the retry options associated with the call
    * @returns {CancellableStream} - the stream that handles retry logic
    */
-  newStreamingRetryRequest(opts: streamingRetryRequestOptions): PassThrough {
+  newStreamingRetryRequest(
+    opts: streamingRetryRequestOptions
+  ): CancellableStream {
     // at this point, it would be unexpected if retry were undefined
     // but if it is, provide a logical default so we don't run into trouble
     const retry = opts.retry ?? {
@@ -380,7 +381,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       backoffSettings: createDefaultBackoffSettings(),
     };
     let retries = 0;
-    const retryStream = new PassThrough({objectMode: true});
+    const retryStream = new PassThrough({
+      objectMode: true,
+    }) as unknown as CancellableStream;
+
     const totalTimeout = retry.backoffSettings.totalTimeoutMillis ?? undefined;
     const maxRetries = retry.backoffSettings.maxRetries ?? undefined;
     let timeout = retry.backoffSettings.initialRpcTimeoutMillis ?? undefined;
@@ -413,6 +417,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
 
       // make the request
       const requestStream = newopts.request!(requestOps);
+      retryStream.cancel = requestStream.cancel; // make sure the retryStream is also cancellable by the user
 
       const eventsToForward = ['metadata', 'response', 'status'];
       eventsToForward.forEach(event => {

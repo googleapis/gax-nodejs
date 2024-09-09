@@ -149,7 +149,9 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testShouldTimeoutWithNewRetries(grpcSequenceClientWithServerStreamingRetries);
+  await testShouldTimeoutWithNewRetries(
+    grpcSequenceClientWithServerStreamingRetries
+  );
 
   await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
 
@@ -1027,7 +1029,6 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
   );
   const response = await client.createStreamingSequence(request);
   await new Promise<void>((resolve, reject) => {
-
     const sequence = response[0];
 
     const attemptRequest =
@@ -1049,9 +1050,7 @@ async function testShouldFailOnThirdError(client: SequenceServiceClient) {
       );
     });
     attemptStream.on('end', () => {
-      reject(
-        'testShouldFailOnThirdError finished before it received an error'
-      );
+      reject('testShouldFailOnThirdError finished before it received an error');
     });
     attemptStream.on('close', () => {
       attemptStream.end();
@@ -1094,7 +1093,6 @@ async function testShouldTimeoutWithNewRetries(client: SequenceServiceClient) {
   );
   const response = await client.createStreamingSequence(request);
   await new Promise<void>((resolve, reject) => {
-
     const sequence = response[0];
 
     const attemptRequest =
@@ -1114,7 +1112,6 @@ async function testShouldTimeoutWithNewRetries(client: SequenceServiceClient) {
         error.message,
         'Total timeout of API exceeded 2 milliseconds retrying error Error: 6 ALREADY_EXISTS: 6  before any response was received.'
       );
-
     });
     attemptStream.on('end', () => {
       reject(
@@ -2470,7 +2467,6 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
 
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
-
 
     const togetherStream = pipeline(
       [attemptStream, secondStream, thirdStream],

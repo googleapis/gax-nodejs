@@ -21,7 +21,12 @@ import * as sinon from 'sinon';
 import {afterEach, describe, it} from 'mocha';
 import {PassThrough} from 'stream';
 
-import {GaxCallStream, GRPCCall, RequestType} from '../../src/apitypes';
+import {
+  GaxCallStream,
+  GRPCCall,
+  RequestType,
+  CancellableStream,
+} from '../../src/apitypes';
 import {createApiCall} from '../../src/createApiCall';
 import {StreamingApiCaller} from '../../src/streamingCalls/streamingApiCaller';
 import * as gax from '../../src/gax';
@@ -233,7 +238,6 @@ describe('streaming', () => {
     }, 50);
   });
 
-  // TODO - make sure this works with new retries
   it('cancels in the middle', done => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function schedulePush(s: any, c: number) {
@@ -295,8 +299,72 @@ describe('streaming', () => {
       done();
     });
   });
-
-
+  it('cancels in the middle when new retries are enabled', done => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function schedulePush(s: any, c: number) {
+      const intervalId = setInterval(() => {
+        s.push(c);
+        c++;
+      }, 10);
+      s.on('finish', () => {
+        clearInterval(intervalId);
+      });
+    }
+    const cancelError = new Error('cancelled');
+    function func() {
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      schedulePush(s, 0);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (s as any).cancel = () => {
+        s.end();
+        s.emit('error', cancelError);
+      };
+      setImmediate(() => {
+        s.emit('metadata');
+      });
+      setImmediate(() => {
+        s.emit('status');
+      });
+      return s;
+    }
+    const apiCall = createApiCallStreaming(
+      //@ts-ignore
+      func,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true // gax native retries
+    );
+    const s = apiCall(
+      {},
+      {
+        retry: gax.createRetryOptions([5], {
+          initialRetryDelayMillis: 100,
+          retryDelayMultiplier: 1.2,
+          maxRetryDelayMillis: 1000,
+          rpcTimeoutMultiplier: 1.5,
+          maxRpcTimeoutMillis: 3000,
+          maxRetries: 0,
+        }),
+      }
+    );
+    let counter = 0;
+    const expectedCount = 5;
+    s.on('data', data => {
+      assert.strictEqual(data, counter);
+      counter++;
+      if (counter === expectedCount) {
+        s.cancel();
+      } else if (counter > expectedCount) {
+        done(new Error('should not reach'));
+      }
+    });
+    s.on('error', err => {
+      assert.strictEqual(err, cancelError);
+      done();
+    });
+  });
 
   it('emit response when stream received metadata event', done => {
     const responseMetadata = {metadata: true};
@@ -1733,11 +1801,15 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows the user to pass a custom resumption strategy', done => {
     sinon
       .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest')
-      .callsFake((opts): PassThrough => {
+      .callsFake((opts): CancellableStream => {
         assert(opts.retry.getResumptionRequestFn instanceof Function);
         done();
+        const returnStream = new PassThrough() as unknown as CancellableStream;
+        returnStream.cancel = () => {
+          returnStream.destroy();
+        };
         // we have to return something like newStreamingRetryRequest does
-        return new PassThrough();
+        return returnStream;
       });
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
