@@ -20,7 +20,7 @@ import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
 import {Status} from './status';
-import {GoogleAuth, AuthClient, AnyAuthClient} from 'google-auth-library';
+import {GoogleAuth, AuthClient} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';

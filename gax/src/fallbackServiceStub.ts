@@ -20,9 +20,9 @@
 import nodeFetch from 'node-fetch';
 import {Response as NodeFetchResponse} from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
+import {AuthClient} from 'google-auth-library';
 
 import {hasWindowFetch, hasAbortController} from './featureDetection';
-import {AuthClient} from './fallback';
 import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 
