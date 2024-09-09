@@ -28,7 +28,8 @@
     "google-gax": "file:google-gax.tgz",
     "protobufjs": "^7.0.0",
     "showcase-echo-client": "./showcase-echo-client.tgz",
-    "showcase-server": "./showcase-server.tgz"
+    "showcase-server": "./showcase-server.tgz",
+    "pumpify": "^2.0.1"
   },
   "engines": {
     "node": ">=14.0.0"

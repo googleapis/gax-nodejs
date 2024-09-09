@@ -173,22 +173,22 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         (deadline && nowTime >= deadline))
     ) {
       const error = new GoogleError(
-        `Total timeout of API exceeded ${originalTimeout} milliseconds before any response was received.`
-      );
+      `Total timeout of API exceeded ${
+            originalTimeout
+          } milliseconds ${
+            originalError ? `retrying error ${originalError} ` : ''
+          } before any response was received.`);
       error.code = Status.DEADLINE_EXCEEDED;
-      // surface the original error to the user
-      error.note = 'Underlying error: ' + originalError;
       throw error;
     }
 
     if (retries && retries >= maxRetries) {
       const error = new GoogleError(
-        'Exceeded maximum number of retries before any ' +
-          'response was received'
+        'Exceeded maximum number of retries ' +
+          (originalError ? `retrying error ${originalError} ` : '') +
+          'before any response was received'
       );
       error.code = Status.DEADLINE_EXCEEDED;
-      // surface the original error to the user
-      error.note = 'Underlying error: ' + originalError;
       throw error;
     }
     if (maxRetries === 0) {

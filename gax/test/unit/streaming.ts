@@ -36,7 +36,6 @@ import protobuf = require('protobufjs');
 import {GoogleError} from '../../src';
 import {Metadata} from '@grpc/grpc-js';
 
-// TODO uncomment and update retries
 function createApiCallStreaming(
   func:
     | Promise<GRPCCall>
@@ -296,6 +295,8 @@ describe('streaming', () => {
       done();
     });
   });
+
+
 
   it('emit response when stream received metadata event', done => {
     const responseMetadata = {metadata: true};
@@ -1407,7 +1408,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   afterEach(() => {
     sinon.restore();
   });
-  it('server streaming call retries until exceeding timeout and surfaces underlying error in note', done => {
+  it('server streaming call retries until exceeding timeout and surfaces underlying error', done => {
     const retrySpy = sinon.spy(
       streaming.StreamProxy.prototype,
       'throwIfMaxRetriesOrTotalTimeoutExceeded'
@@ -1462,9 +1463,8 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
           assert.notStrictEqual(retrySpy.callCount, 0); // it MUST retry at least once
           assert.strictEqual(
             err.message,
-            'Total timeout of API exceeded 200 milliseconds before any response was received.'
+            'Total timeout of API exceeded 200 milliseconds retrying error Error: UNAVAILABLE  before any response was received.'
           );
-          assert.strictEqual(err.note, 'Underlying error: Error: UNAVAILABLE');
           done();
         }
       } catch (error: unknown) {
@@ -1527,9 +1527,8 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
           assert.strictEqual(retrySpy.callCount, 3); // we pass the first two times
           assert.strictEqual(
             err.message,
-            'Exceeded maximum number of retries before any response was received'
+            'Exceeded maximum number of retries retrying error Error: UNAVAILABLE before any response was received'
           );
-          assert.strictEqual(err.note, 'Underlying error: Error: UNAVAILABLE');
           done();
         }
       } catch (error: unknown) {
@@ -1646,7 +1645,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
         assert.strictEqual(err.code, 4);
         assert.strictEqual(
           err.message,
-          'Total timeout of API exceeded 10 milliseconds before any response was received.'
+          'Total timeout of API exceeded 10 milliseconds retrying error Error: UNAVAILABLE  before any response was received.'
         );
         done();
       }
