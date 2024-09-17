@@ -1800,8 +1800,10 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   });
   it('allows the user to pass a custom resumption strategy', done => {
     sinon
-      .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest')
+      // typecasting to any is a workaround for stubbing private functions in sinon
+      .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest' as any)
       .callsFake((opts): CancellableStream => {
+        // @ts-ignore errors on unknown type because newStreamingRetryRequest is a private function
         assert(opts.retry.getResumptionRequestFn instanceof Function);
         done();
         const returnStream = new PassThrough() as unknown as CancellableStream;
