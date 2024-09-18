@@ -196,7 +196,6 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       error.code = Status.DEADLINE_EXCEEDED;
       throw error;
     }
-
   }
 
   /**
