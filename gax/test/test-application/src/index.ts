@@ -181,11 +181,12 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testImmediateStreamingErrorNoBufferPumpify(
-    grpcSequenceClientWithServerStreamingRetries
-  );
+  // the next few tests explicitly use the pumpify library
+  // which does not throw an error if a stream in the pipeline is destroyed
+  // but does sever the connection. This library is being used because at least one of
+  // our client libraries uses it
 
-  await testImmediateStreamingErrorNoBufferPipeline(
+  await testImmediateStreamingErrorNoBufferPumpify(
     grpcSequenceClientWithServerStreamingRetries
   );
 
@@ -193,18 +194,7 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-
   await testStreamingPipelineErrorAfterDataNoBufferNoRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-  await testStreamingPipelineErrorAfterDataNoBufferNoRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries
-  );
-
-  await testImmediateStreamingErrorNoBufferYesRetryRequestRetryPipeline(
     grpcSequenceClientWithServerStreamingRetries
   );
 
@@ -216,13 +206,33 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
+  await testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  // this series of tests uses the node native "pipeline" instead of pumpify
+  // which unlike pumpify, WILL error if any stream in the pipeline is destroye
+
+  await testImmediateStreamingErrorNoBufferPipeline(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testStreamingPipelineErrorAfterDataNoBufferNoRetryPipeline(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
+  await testImmediateStreamingErrorNoBufferYesRetryRequestRetryPipeline(
+    grpcSequenceClientWithServerStreamingRetries
+  );
+
   await testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPipeline(
     grpcSequenceClientWithServerStreamingRetries
   );
 
-  await testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries
-  );
   await testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
     grpcSequenceClientWithServerStreamingRetries
   );
