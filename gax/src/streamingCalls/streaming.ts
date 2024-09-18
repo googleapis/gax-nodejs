@@ -180,7 +180,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       error.code = Status.DEADLINE_EXCEEDED;
       throw error;
     }
-
+    if (maxRetries === 0) {
+      const error: GoogleError = originalError;
+      error.note = 'Max retries is set to zero.';
+      throw error;
+    }
     if (retries && retries >= maxRetries) {
       const error = new GoogleError(
         'Exceeded maximum number of retries ' +
@@ -190,11 +194,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
       error.code = Status.DEADLINE_EXCEEDED;
       throw error;
     }
-    if (maxRetries === 0) {
-      const error: GoogleError = originalError;
-      error.note = 'Max retries is set to zero.';
-      throw error;
-    }
+
   }
 
   /**
