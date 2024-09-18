@@ -152,8 +152,10 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
    * Helper function to handle total timeout + max retry check for server streaming retries
    * @param {number} deadline - the current retry deadline
    * @param {number} maxRetries - maximum total number of retries
-   * @param {number} totalTimeoutMillis - total timeout in milliseconds
+   * @param {number} totalTimeoutMillis - total timeout in milliseconds used in timeout calculation
    * @param {GoogleError} originalError - underlying error received by the stream
+   * @param {originalTimeout} originalTimeout - the original Timeout set in backoff settings
+   * @param {retries} retries - the number of retries the call has made so far
    */
   throwIfMaxRetriesOrTotalTimeoutExceeded(
     deadline: number,
