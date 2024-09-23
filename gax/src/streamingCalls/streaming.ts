@@ -482,7 +482,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         // type check for undefined instead of for truthiness in case maxRetries or timeout is equal to zero
         if (
           typeof maxRetries !== undefined ||
-          typeof maxRetries !== undefined
+          typeof totalTimeout !== undefined
         ) {
           if (this.shouldRetryRequest(error, retry)) {
             if (maxRetries && totalTimeout) {
@@ -542,7 +542,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   }
 
                   retries++;
-                  let retryArgument = this.argument! as unknown as RequestType;
+                  let retryArgument = this.argument! as RequestType;
                   // if resumption logic is passed, use it to determined the
                   // new argument for the new request made to the server
                   // otherwise, the original argument will be passed
