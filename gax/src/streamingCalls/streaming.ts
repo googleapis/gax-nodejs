@@ -546,12 +546,8 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
                   // if resumption logic is passed, use it to determined the
                   // new argument for the new request made to the server
                   // otherwise, the original argument will be passed
-                  if (typeof retry.getResumptionRequestFn! === 'function') {
-                    const resumptionRetryArgument =
-                      retry.getResumptionRequestFn(retryArgument);
-                    if (resumptionRetryArgument !== undefined) {
-                      retryArgument = resumptionRetryArgument;
-                    }
+                  if (retry.getResumptionRequestFn !== undefined) {
+                    retryArgument = retry.getResumptionRequestFn(retryArgument);
                   }
                   const newRequest = () => {
                     if (this._isCancelCalled) {
