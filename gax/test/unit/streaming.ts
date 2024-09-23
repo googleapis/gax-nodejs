@@ -239,8 +239,7 @@ describe('streaming', () => {
   });
 
   it('cancels in the middle', done => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function schedulePush(s: any, c: number) {
+    function schedulePush(s: CancellableStream, c: number) {
       const intervalId = setInterval(() => {
         s.push(c);
         c++;
@@ -253,10 +252,9 @@ describe('streaming', () => {
     function func() {
       const s = new PassThrough({
         objectMode: true,
-      });
+      }) as unknown as CancellableStream;
       schedulePush(s, 0);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (s as any).cancel = () => {
+      (s).cancel = () => {
         s.end();
         s.emit('error', cancelError);
       };
@@ -300,8 +298,7 @@ describe('streaming', () => {
     });
   });
   it('cancels in the middle when new retries are enabled', done => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function schedulePush(s: any, c: number) {
+    function schedulePush(s: CancellableStream, c: number) {
       const intervalId = setInterval(() => {
         s.push(c);
         c++;
@@ -314,10 +311,9 @@ describe('streaming', () => {
     function func() {
       const s = new PassThrough({
         objectMode: true,
-      });
+      }) as unknown as CancellableStream;
       schedulePush(s, 0);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (s as any).cancel = () => {
+      (s).cancel = () => {
         s.end();
         s.emit('error', cancelError);
       };
