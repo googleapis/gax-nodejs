@@ -254,7 +254,7 @@ describe('streaming', () => {
         objectMode: true,
       }) as unknown as CancellableStream;
       schedulePush(s, 0);
-      (s).cancel = () => {
+      s.cancel = () => {
         s.end();
         s.emit('error', cancelError);
       };
@@ -313,7 +313,7 @@ describe('streaming', () => {
         objectMode: true,
       }) as unknown as CancellableStream;
       schedulePush(s, 0);
-      (s).cancel = () => {
+      s.cancel = () => {
         s.end();
         s.emit('error', cancelError);
       };
@@ -1797,6 +1797,7 @@ describe('handles server streaming retries in gax when gaxStreamingRetries is en
   it('allows the user to pass a custom resumption strategy', done => {
     sinon
       // typecasting to any is a workaround for stubbing private functions in sinon
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .stub(streaming.StreamProxy.prototype, 'newStreamingRetryRequest' as any)
       .callsFake((opts): CancellableStream => {
         // @ts-ignore errors on unknown type because newStreamingRetryRequest is a private function
