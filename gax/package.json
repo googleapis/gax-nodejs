@@ -63,6 +63,11 @@
     "webpack": "^4.0.0",
     "webpack-cli": "^4.0.0"
   },
+  "overrides": {
+    "@compodoc/compodoc": {
+      "pdfmake": "0.2.12"
+    }
+  },
   "scripts": {
     "docs": "compodoc src/",
     "pretest": "npm run prepare",
