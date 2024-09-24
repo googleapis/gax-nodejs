@@ -1118,12 +1118,12 @@ async function testShouldTimeoutWithNewRetries(client: SequenceServiceClient) {
     });
     attemptStream.on('error', (error: GoogleError) => {
       assert.strictEqual(error.code, 4);
-      try{
+      try {
         assert.strictEqual(
           error.message,
           'Total timeout of API exceeded 2 milliseconds retrying error Error: 6 ALREADY_EXISTS: 6  before any response was received.'
         );
-      }catch(AssertionError){
+      } catch (AssertionError) {
         assert.strictEqual(
           error.message,
           'Total timeout of API exceeded 2 milliseconds retrying error Error: 5 NOT_FOUND: 5  before any response was received.'
