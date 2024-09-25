@@ -47,6 +47,7 @@ const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
 export interface GrpcClientOptions extends GoogleAuthOptions {
   auth?: GoogleAuth;
   grpc?: GrpcModule;
+  minifyJson?: boolean;
   protoJson?: protobuf.Root;
   httpRules?: Array<google.api.IHttpRule>;
   numericEnums?: boolean;
