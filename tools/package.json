@@ -1,6 +1,6 @@
 {
   "name": "gapic-tools",
-  "version": "0.4.2",
+  "version": "0.4.6",
   "description": "compiles, updates, and minifies protos",
   "main": "build/src/compileProtos.js",
   "files": [
@@ -32,8 +32,7 @@
     "@babel/traverse": "^7.22.5",
     "google-gax": "^4.3.2",
     "google-proto-files": "^4.2.0",
-    "protobufjs-cli": "1.1.2",
-    "rimraf": "^5.0.1",
+    "protobufjs-cli": "1.1.3",
     "uglify-js": "^3.17.0",
     "walk-up-path": "^3.0.1",
     "walkdir": "^0.4.0"
@@ -55,7 +54,7 @@
     "gts": "^5.0.0",
     "mocha": "^9.0.0",
     "ncp": "^2.0.0",
-    "protobufjs": "7.2.6",
+    "protobufjs": "7.4.0",
     "typescript": "^5.1.6"
   },
   "engines": {

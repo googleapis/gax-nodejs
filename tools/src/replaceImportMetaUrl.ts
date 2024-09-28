@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// eslint-disable-next-line node/no-extraneous-import
+// eslint-disable-next-line n/no-extraneous-import
 import {smart} from '@babel/template';
 import {Statement} from '@babel/types';
 import {Visitor} from '@babel/core';

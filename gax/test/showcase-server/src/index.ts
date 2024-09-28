@@ -17,8 +17,8 @@
 import * as execa from 'execa';
 import * as download from 'download';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import * as path from 'path';
-import {rimraf} from 'rimraf';
 import * as util from 'util';
 
 const mkdir = util.promisify(fs.mkdir);
@@ -41,7 +41,7 @@ export class ShowcaseServer {
     const fallbackServerUrl = `https://github.com/googleapis/gapic-showcase/releases/download/v${showcaseVersion}/${tarballFilename}`;
     const binaryName = './gapic-showcase';
 
-    await rimraf(testDir);
+    await fsp.rm(testDir, {recursive: true, force: true});
     await mkdir(testDir);
     process.chdir(testDir);
     console.log(`Server will be run from ${testDir}.`);
