@@ -1482,52 +1482,58 @@ describe('streaming', () => {
         objectMode: true,
       });
       s.push({resources: [1, 2]});
+      s.push(null);
       setImmediate(() => {
         s.emit('metadata');
       });
       return s;
     });
 
+    // Initial stream.
     const apiCall = createApiCallStreaming(
       spy,
       streaming.StreamType.SERVER_STREAMING
     );
-    const s = apiCall({}, undefined);
+    const s1 = apiCall({}, undefined);
 
-    // Transform stream
+    // Transform stream.
     const transform = new Transform({
       objectMode: true,
       transform: (data, _encoding, callback) => {
         callback(
           null,
-          data.resources.forEach((element: number) => {
-            return element++;
-          })
+          data.resources.map((element: number) => element + 1)
         );
       },
     });
 
-    s.on('error', (err: GoogleError) => {
-      // We must emit this event on transformations or else the `end` event will never be invoked.
-      // https://github.com/nodejs/help/issues/2412
-      s.emit('finish');
+    // Final stream.
+    const s2 = new PassThrough({
+      objectMode: true,
+    });
+
+    const finalResults: Array<{resources: Array<number>}> = [];
+
+    s1.on('error', (err: GoogleError) => {
+      console.log('s1 error');
       done(err);
     });
-    const actualResults: Array<{resources: Array<number>}> = [];
-    s.on('data', data => {
-      console.log(`received ${JSON.stringify(data)}`);
-      actualResults.push(data);
-      done();
+
+    s2.on('error', (err: GoogleError) => {
+      done(err);
     });
-    s.on('end', () => {
+    s2.on('data', data => {
+      finalResults.push(data);
+    });
+    s2.on('end', () => {
       assert.strictEqual(
-        JSON.stringify(actualResults),
-        JSON.stringify([{resources: [2, 3]}])
+        JSON.stringify(finalResults),
+        JSON.stringify([[2, 3]])
       );
       done();
     });
 
-    pipeline(s, transform, s, () => {});
+    pipeline(s1, transform, s2, () => {});
   });
 });
 
