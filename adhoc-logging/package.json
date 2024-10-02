@@ -1,8 +1,8 @@
 {
-  "name": "cloud-common",
+  "name": "@google-cloud/adhoc-logging",
   "version": "0.0.1",
-  "description": "Common functions used by Google Cloud Platform client libraries",
-  "main": "build/src/compileProtos.js",
+  "description": "An ad-hoc debug logger package for other libraries",
+  "main": "build/src/index.js",
   "files": [
     "build/src"
   ],
