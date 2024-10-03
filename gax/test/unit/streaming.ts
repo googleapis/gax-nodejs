@@ -1490,9 +1490,11 @@ describe('streaming', () => {
     });
 
     // Initial stream.
-    const apiCall = createApiCallStreaming(
+  const apiCall = createApiCallStreaming(
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true // new retry behavior disabled
     );
     const s1 = apiCall({}, undefined);
 
