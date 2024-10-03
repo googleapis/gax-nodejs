@@ -1494,7 +1494,7 @@ describe('streaming', () => {
     });
 
     // Initial stream.
-    const apiCall = createApiCallStreaming(
+  const apiCall = createApiCallStreaming(
       spy,
       streaming.StreamType.SERVER_STREAMING,
       false,
