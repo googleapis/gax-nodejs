@@ -1475,7 +1475,7 @@ describe('streaming', () => {
     });
   });
 
-  it.only('properly emits the end event at the end of a pipeline transformation', done => {
+  it('properly emits the end event at the end of a pipeline transformation', done => {
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
       const s = new PassThrough({
@@ -1494,7 +1494,7 @@ describe('streaming', () => {
     });
 
     // Initial stream.
-  const apiCall = createApiCallStreaming(
+    const apiCall = createApiCallStreaming(
       spy,
       streaming.StreamType.SERVER_STREAMING,
       false,
@@ -1520,14 +1520,6 @@ describe('streaming', () => {
 
     const finalResults: Array<{resources: Array<number>}> = [];
 
-    s1.on('error', (err: GoogleError) => {
-      console.log('s1 error');
-      done(err);
-    });
-
-    s2.on('error', (err: GoogleError) => {
-      done(err);
-    });
     s2.on('data', data => {
       finalResults.push(data);
     });
