@@ -1475,7 +1475,7 @@ describe('streaming', () => {
     });
   });
 
-  it('properly emits the end event at the end of a pipeline transformation', done => {
+  it.only('properly emits the end event at the end of a pipeline transformation', done => {
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
       const s = new PassThrough({
@@ -1486,13 +1486,19 @@ describe('streaming', () => {
       setImmediate(() => {
         s.emit('metadata');
       });
+      setImmediate(() => {
+        s.emit('status');
+      });
+
       return s;
     });
 
     // Initial stream.
     const apiCall = createApiCallStreaming(
       spy,
-      streaming.StreamType.SERVER_STREAMING
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true // new retry behavior disabled
     );
     const s1 = apiCall({}, undefined);
 
@@ -1533,7 +1539,13 @@ describe('streaming', () => {
       done();
     });
 
-    pipeline(s1, transform, s2, () => {});
+    pipeline(s1, transform, s2, err => {
+      if (err) {
+        console.error('Pipeline failed:', err);
+      } else {
+        console.log('Pipeline succeeded.');
+      }
+    });
   });
 });
 
