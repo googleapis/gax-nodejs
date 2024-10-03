@@ -1533,9 +1533,9 @@ describe('streaming', () => {
 
     pipeline(s1, transform, s2, err => {
       if (err) {
-        console.error('Pipeline failed:', err);
-      } else {
-        console.log('Pipeline succeeded.');
+        throw new Error(
+          'pipeline in properly emits the end event at the end of a pipeline transformation test failed'
+        );
       }
     });
   });
