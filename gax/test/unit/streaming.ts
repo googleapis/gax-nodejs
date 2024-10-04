@@ -1475,7 +1475,7 @@ describe('streaming', () => {
     });
   });
 
-  it('properly emits the end event at the end of a pipeline transformation', done => {
+  it('properly emits the end event at the end of a pipeline transformation synchronously', done => {
     const spy = sinon.spy((...args: Array<{}>) => {
       assert.strictEqual(args.length, 3);
       const s = new PassThrough({
@@ -1510,6 +1510,73 @@ describe('streaming', () => {
           null,
           data.resources.map((element: number) => element + 1)
         );
+      },
+    });
+
+    // Final stream.
+    const s2 = new PassThrough({
+      objectMode: true,
+    });
+
+    const finalResults: Array<{resources: Array<number>}> = [];
+
+    s2.on('data', data => {
+      finalResults.push(data);
+    });
+    s2.on('end', () => {
+      assert.strictEqual(
+        JSON.stringify(finalResults),
+        JSON.stringify([[2, 3]])
+      );
+      done();
+    });
+
+    pipeline(s1, transform, s2, err => {
+      if (err) {
+        throw new Error(
+          'pipeline in properly emits the end event at the end of a pipeline transformation test failed'
+        );
+      }
+    });
+  });
+
+  it('properly emits the end event at the end of a pipeline transformation asynchronously', done => {
+    const spy = sinon.spy((...args: Array<{}>) => {
+      assert.strictEqual(args.length, 3);
+      const s = new PassThrough({
+        objectMode: true,
+      });
+      s.push({resources: [1, 2]});
+      s.push(null);
+      setImmediate(() => {
+        s.emit('metadata');
+      });
+      setImmediate(() => {
+        s.emit('status');
+      });
+
+      return s;
+    });
+
+    // Initial stream.
+    const apiCall = createApiCallStreaming(
+      spy,
+      streaming.StreamType.SERVER_STREAMING,
+      false,
+      true // new retry behavior disabled
+    );
+    const s1 = apiCall({}, undefined);
+
+    // Transform stream.
+    const transform = new Transform({
+      objectMode: true,
+      transform: (data, _encoding, callback) => {
+        setTimeout(() => {
+          callback(
+            null,
+            data.resources.map((element: number) => element + 1)
+          );
+        }, 10);
       },
     });
 
