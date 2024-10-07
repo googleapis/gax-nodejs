@@ -42,6 +42,9 @@ export enum LogSeverity {
   ERROR = 'ERROR',
 }
 
+/**
+ * A set of suggested log metadata fields.
+ */
 export interface LogFields {
   /**
    * Log level - undefined/null === DEFAULT.
@@ -81,7 +84,8 @@ export declare interface AdhocDebugLogger {
 
 /**
  * Our logger instance. This actually contains the meat of dealing
- * with log lines, including EventEmitter.
+ * with log lines, including EventEmitter. This contains the function
+ * that will be passed back to users of the package.
  */
 export class AdhocDebugLogger extends EventEmitter {
   // The function we'll call with new log lines.
@@ -91,6 +95,10 @@ export class AdhocDebugLogger extends EventEmitter {
   // Self-referential function wrapper that calls invoke() on us.
   func: AdhocDebugLogFunction;
 
+  /**
+   * @param upstream The backend will pass a function that will be
+   *   called whenever our logger function is invoked.
+   */
   constructor(upstream: AdhocDebugLogCallable) {
     super();
 
@@ -136,7 +144,7 @@ export class AdhocDebugLogger extends EventEmitter {
 export const placeholder = new AdhocDebugLogger(() => {}).func;
 
 /**
- * When the user receives a log function (below), this will be the function
+ * When the user receives a log function (below), this will be the basic function
  * call interface for it.
  */
 export interface AdhocDebugLogCallable {
@@ -145,6 +153,12 @@ export interface AdhocDebugLogCallable {
 
 /**
  * Adds typing info for the EventEmitter we're adding to the returned function.
+ *
+ * Note that this interface may change at any time, as we're reserving the
+ * right to add new backends at the logger level.
+ *
+ * @private
+ * @internal
  */
 export interface AdhocDebugLogFunction extends AdhocDebugLogCallable {
   instance: AdhocDebugLogger;
@@ -170,34 +184,88 @@ export interface AdhocDebugLogFunction extends AdhocDebugLogCallable {
  * @internal
  */
 export interface DebugLogBackend {
-  makeLogger(namespace: string): AdhocDebugLogCallable;
-  setEnables(enables: string[]): void;
+  /**
+   * Outputs a log to this backend.
+   *
+   * @param namespace The "system" that will be used for filtering. This may also
+   *   include a "subsystem" in the form "system:subsystem".
+   * @param fields Logging fields to be included as metadata.
+   * @param args Any parameters to passed to a utils.format() type formatter.
+   */
+  log(namespace: string, fields: LogFields, ...args: unknown[]): void;
+
+  /**
+   * Passes in the system/subsystem filters from the global environment variables.
+   * This lets the backend merge with any native ones.
+   *
+   * @param filters A list of wildcards matching systems or system:subsystem pairs.
+   */
+  setFilters(filters: string[]): void;
+}
+
+/**
+ * The base class for debug logging backends. It's possible to use this, but the
+ * same non-guarantees above still apply (unstable interface, etc).
+ *
+ * @private
+ * @internal
+ */
+export abstract class DebugLogBackendBase implements DebugLogBackend {
+  cached = new Map<string, AdhocDebugLogCallable>();
+  filters: string[] = [];
+  filtersSet = false;
+
+  constructor() {
+    // Look for the Node config variable for what systems to enable. We'll store
+    // these for the log method below, which will call setFilters() once.
+    const nodeFlag = process.env[env.nodeEnables] ?? '*';
+    this.filters = nodeFlag.split(',');
+  }
+
+  /**
+   * Creates a callback function that we can call to send log lines out.
+   *
+   * @param namespace The system/subsystem namespace.
+   */
+  abstract makeLogger(namespace: string): AdhocDebugLogCallable;
+
+  /**
+   * Provides a callback for the subclass to hook if it needs to do something
+   * specific with `this.filters`.
+   */
+  abstract setFilters(): void;
+
+  log(namespace: string, fields: LogFields, ...args: unknown[]): void {
+    if (!this.filtersSet) {
+      this.setFilters();
+      this.filtersSet = true;
+    }
+
+    let logger = this.cached.get(namespace);
+    if (!logger) {
+      logger = this.makeLogger(namespace);
+      this.cached.set(namespace, logger);
+    }
+    logger(fields, ...args);
+  }
 }
 
 // The Node util.debuglog-based backend. This one definitely works, but
 // it's less feature-filled.
-class NodeBackend implements DebugLogBackend {
-  varsSet = false;
-
-  constructor() {}
-
+class NodeBackend extends DebugLogBackendBase {
   makeLogger(namespace: string): AdhocDebugLogCallable {
     const nodeLogger = util.debuglog(namespace);
     return (fields: LogFields, ...args: unknown[]) => {
-      // TODO: `fields` needs to be turned into a string here.
-      nodeLogger('', ...args);
+      // TODO: `fields` needs to be turned into a string here, one way or another.
+      nodeLogger(args[0] as string, ...args.slice(1));
     };
   }
 
-  setEnables(enables: string[]): void {
-    if (!this.varsSet) {
-      // Also copy over any GCP global enables.
-      const existingEnables = process.env['NODE_DEBUG'] ?? '';
-      process.env['NODE_DEBUG'] = `${existingEnables}${
-        existingEnables ? ',' : ''
-      }${enables.join(',')}`;
-      this.varsSet = true;
-    }
+  setFilters(): void {
+    const existingFilters = process.env['NODE_DEBUG'] ?? '';
+    process.env['NODE_DEBUG'] = `${existingFilters}${
+      existingFilters ? ',' : ''
+    }${this.filters.join(',')}`;
   }
 }
 
@@ -210,31 +278,27 @@ export function getNodeBackend(): DebugLogBackend {
 
 // Based on the npm "debug" package. Adds colour, time offsets, and other
 // useful things, but requires the user to import another package.
-class DebugBackend implements DebugLogBackend {
+class DebugBackend extends DebugLogBackendBase {
   debugPkg: debug.Debug;
-  varsSet = false;
 
   constructor(pkg: debug.Debug) {
+    super();
     this.debugPkg = pkg;
   }
 
   makeLogger(namespace: string): AdhocDebugLogCallable {
-    const debugLogger = util.debuglog(namespace);
+    const debugLogger = this.debugPkg(namespace);
     return (fields: LogFields, ...args: unknown[]) => {
       // TODO: `fields` needs to be turned into a string here.
-      debugLogger('', ...args);
+      debugLogger(args[0] as string, ...args.slice(1));
     };
   }
 
-  setEnables(enables: string[]): void {
-    if (!this.varsSet) {
-      // Also copy over any GCP global enables.
-      const existingEnables = process.env['NODE_DEBUG'] ?? '';
-      process.env['NODE_DEBUG'] = `${existingEnables}${
-        existingEnables ? ',' : ''
-      }${enables.join(',')}`;
-      this.varsSet = true;
-    }
+  setFilters(): void {
+    const existingFilters = process.env['NODE_DEBUG'] ?? '';
+    process.env['NODE_DEBUG'] = `${existingFilters}${
+      existingFilters ? ',' : ''
+    }${this.filters.join(',')}`;
   }
 }
 
@@ -259,30 +323,37 @@ export function getDebugBackend(debugPkg: debug.Debug): DebugLogBackend {
 
 /**
  * This pretty much works like the Node logger, but it outputs structured
- * logging JSON matching Google Cloud's ingestion specs.
+ * logging JSON matching Google Cloud's ingestion specs. Rather than handling
+ * its own output, it wraps another backend. The passed backend must be a subclass
+ * of `DebugLogBackendBase` (any of the backends exposed by this package will work).
  */
-class StructuredBackend implements DebugLogBackend {
-  varsSet = false;
+class StructuredBackend extends DebugLogBackendBase {
+  upstream: DebugLogBackendBase;
 
-  constructor() {}
+  constructor(upstream?: DebugLogBackend) {
+    super();
+    this.upstream = (upstream as DebugLogBackendBase) ?? new NodeBackend();
+  }
 
   makeLogger(namespace: string): AdhocDebugLogCallable {
-    const debugLogger = util.debuglog(namespace);
+    const debugLogger = this.upstream.makeLogger(namespace);
     return (fields: LogFields, ...args: unknown[]) => {
-      // TODO: `fields` needs to be turned into a JSON string here.
-      debugLogger('', ...args);
+      const severity = fields.severity ?? LogSeverity.INFO;
+      const json = Object.assign(
+        {
+          severity,
+          message: util.format(...args),
+        },
+        fields
+      );
+      const jsonString = JSON.stringify(json);
+
+      debugLogger(fields, jsonString);
     };
   }
 
-  setEnables(enables: string[]): void {
-    if (!this.varsSet) {
-      // Also copy over any GCP global enables.
-      const existingEnables = process.env['NODE_DEBUG'] ?? '';
-      process.env['NODE_DEBUG'] = `${existingEnables}${
-        existingEnables ? ',' : ''
-      }${enables.join(',')}`;
-      this.varsSet = true;
-    }
+  setFilters(): void {
+    this.upstream.setFilters();
   }
 }
 
@@ -295,54 +366,77 @@ class StructuredBackend implements DebugLogBackend {
  *  setBackend(getStructuredBackend())
  * ```
  *
+ * @param upstream If you want to use something besides the Node backend to
+ *   write the actual log lines into, pass that here.
  * @returns A backend based on Google Cloud structured logging.
  */
-export function getStructuredBackend(): DebugLogBackend {
-  return new StructuredBackend();
+export function getStructuredBackend(
+  upstream?: DebugLogBackend
+): DebugLogBackend {
+  return new StructuredBackend(upstream);
 }
 
+/**
+ * The environment variables that we standardized on, for all ad-hoc logging.
+ */
+export const env = {
+  /**
+   * A simple "true" or "false" that disables the entire system.
+   * ("true" vs anything, really.)
+   */
+  globalEnable: 'GOOGLE_SDK_DEBUG_LOGGING',
+
+  /**
+   * Filter wildcards specific to the Node syntax, and similar to the built-in
+   * utils.debuglog() environment variable. If missing, defaults to "*" (all).
+   */
+  nodeEnables: 'GOOGLE_SDK_DEBUG_LOGGING_NODE',
+};
+
+// Keep a copy of all namespaced loggers so users can reliably .on() them.
+// Note that these cached functions will need to deal with changes in the backend.
+const loggerCache = new Map<string, AdhocDebugLogger>();
+
+// Our current global backend. This might be:
 let cachedBackend: DebugLogBackend | null | undefined = undefined;
 
 /**
  * Set the backend to use for our log output.
+ * - A backend object
+ * - null to disable logging
+ * - undefined for "nothing yet", defaults to the Node backend
  *
  * @param backend Results from one of the get*Backend() functions.
  */
 export function setBackend(backend: DebugLogBackend | null) {
   cachedBackend = backend;
+  loggerCache.clear();
 }
-
-export const env = {
-  globalEnable: 'GOOGLE_SDK_DEBUG_LOGGING',
-  nodeEnables: 'GOOGLE_SDK_DEBUG_LOGGING_NODE',
-};
-
-// Keep a copy of all namespaced loggers so users can reliably .on() them.
-const loggerCache = new Map<string, AdhocDebugLogger>();
 
 /**
  * Creates a logging function. Multiple calls to this with the same namespace
  * will produce the same logger, with the same event emitter hooks.
  *
- * Namespaces can be a simple string (module name), or a qualified string
- * (module:submodule), which can be used for filtering, or for "module:*".
+ * Namespaces can be a simple string ("system" name), or a qualified string
+ * (system:subsystem), which can be used for filtering, or for "system:*".
  *
  * @param namespace The namespace, a descriptive text string.
- * @returns A function you can call that works like console.log().
+ * @returns A function you can call that works similar to console.log().
  */
-export function makeLogger(namespace: string): AdhocDebugLogFunction {
+export function log(namespace: string): AdhocDebugLogFunction {
   // If the global enable flag isn't set, do nothing.
   const globalFlag = process.env[env.globalEnable];
   if (!globalFlag || globalFlag !== 'true') {
     return placeholder;
   }
 
-  // Reuse loggers so things like sinks are persistent.
-  if (loggerCache.has(namespace)) {
-    return loggerCache.get(namespace)!.func;
+  // Reuse loggers so things like event sinks are persistent.
+  const existing = loggerCache.get(namespace);
+  if (existing) {
+    return existing.func;
   }
 
-  // Did the user pass a custom backend?
+  // Do we have a backend yet?
   if (cachedBackend === null) {
     // Explicitly disabled.
     return placeholder;
@@ -351,16 +445,30 @@ export function makeLogger(namespace: string): AdhocDebugLogFunction {
     cachedBackend = getNodeBackend();
   }
 
-  // Look for the Node config variable for what systems to enable.
-  const nodeFlag = process.env[env.nodeEnables] ?? '*';
-  const gcpEnv = nodeFlag.split(',');
+  // The logger is further wrapped so we can handle the backend changing out.
+  const logger: AdhocDebugLogger = (() => {
+    let previousBackend: DebugLogBackend | undefined = undefined;
+    const newLogger = new AdhocDebugLogger(
+      (fields: LogFields, ...args: unknown[]) => {
+        if (previousBackend !== cachedBackend) {
+          // Did the user pass a custom backend?
+          if (cachedBackend === null) {
+            // Explicitly disabled.
+            return;
+          } else if (cachedBackend === undefined) {
+            // One hasn't been made yet, so default to Node.
+            cachedBackend = getNodeBackend();
+          }
 
-  const logOutput = cachedBackend.makeLogger(namespace);
-  cachedBackend.setEnables(gcpEnv);
+          previousBackend = cachedBackend;
+        }
 
-  const logger = new AdhocDebugLogger(logOutput);
+        cachedBackend?.log(namespace, fields, ...args);
+      }
+    );
+    return newLogger;
+  })();
+
   loggerCache.set(namespace, logger);
   return logger.func;
 }
-
-export default makeLogger;

@@ -23,8 +23,7 @@ interface TestLog {
   args: unknown[];
 }
 
-class TestSink implements al.DebugLogBackend {
-  enables: string[] = [];
+class TestSink extends al.DebugLogBackendBase {
   logs: TestLog[] = [];
 
   makeLogger(namespace: string): al.AdhocDebugLogCallable {
@@ -33,35 +32,35 @@ class TestSink implements al.DebugLogBackend {
     };
   }
 
-  setEnables(enables: string[]): void {
-    this.enables = enables;
-  }
+  setFilters(): void {}
 
   reset() {
-    this.enables = [];
+    this.filters = [];
     this.logs = [];
   }
 }
 
 describe('adhoc-logging', () => {
   const sink: TestSink = new TestSink();
-  al.setBackend(sink);
 
   describe('Disabled', () => {
+    const system = 'disabled';
+
     beforeEach(() => {
+      al.setBackend(sink);
       sink.reset();
     });
 
     it('obeys a lack of global enable', () => {
       delete process.env[al.env.globalEnable];
-      const logger = al.makeLogger('system');
+      const logger = al.log(system);
       logger({}, 'foo');
       assert.deepStrictEqual(sink.logs, []);
     });
 
     it('obeys a false global enable', () => {
       process.env[al.env.globalEnable] = 'false';
-      const logger = al.makeLogger('system');
+      const logger = al.log(system);
       logger({}, 'foo');
       assert.deepStrictEqual(sink.logs, []);
     });
@@ -69,19 +68,21 @@ describe('adhoc-logging', () => {
 
   describe('Basic enabled', () => {
     let logger: al.AdhocDebugLogFunction;
+    const system = 'basic';
+
     beforeEach(() => {
+      al.setBackend(sink);
       sink.reset();
 
       process.env[al.env.globalEnable] = 'true';
-      logger = al.makeLogger('system');
-      console.log(logger);
+      logger = al.log(system);
     });
 
     it('logs with empty fields', () => {
       logger({}, 'test log', 5, {other: 'foo'});
       assert.deepStrictEqual(sink.logs, [
         {
-          namespace: 'system',
+          namespace: system,
           fields: {},
           args: ['test log', 5, {other: 'foo'}],
         },
@@ -92,7 +93,7 @@ describe('adhoc-logging', () => {
       logger({severity: al.LogSeverity.INFO}, 'test log', 5, {other: 'foo'});
       assert.deepStrictEqual(sink.logs, [
         {
-          namespace: 'system',
+          namespace: system,
           fields: {severity: al.LogSeverity.INFO},
           args: ['test log', 5, {other: 'foo'}],
         },
@@ -106,24 +107,89 @@ describe('adhoc-logging', () => {
       logger.error('test error');
       assert.deepStrictEqual(sink.logs, [
         {
-          namespace: 'system',
+          namespace: system,
           fields: {severity: al.LogSeverity.INFO},
           args: ['test info'],
         },
         {
-          namespace: 'system',
+          namespace: system,
           fields: {severity: al.LogSeverity.WARNING},
           args: ['test warn'],
         },
         {
-          namespace: 'system',
+          namespace: system,
           fields: {severity: al.LogSeverity.DEBUG},
           args: ['test debug'],
         },
         {
-          namespace: 'system',
+          namespace: system,
           fields: {severity: al.LogSeverity.ERROR},
           args: ['test error'],
+        },
+      ]);
+    });
+  });
+
+  describe('Caching', () => {
+    const cached = 'cached';
+
+    it('saves logger with the same system/namespace', () => {
+      const logger = al.log(cached);
+      const logger2 = al.log(cached);
+      assert.strictEqual(logger, logger2);
+    });
+
+    it('deals with the backend being replaced', () => {});
+  });
+
+  describe('Structured logs', () => {
+    const system = 'structured';
+    const structured = al.getStructuredBackend(sink);
+
+    let logger: al.AdhocDebugLogFunction;
+    beforeEach(() => {
+      al.setBackend(structured);
+      sink.reset();
+
+      process.env[al.env.globalEnable] = 'true';
+
+      logger = al.log(system);
+    });
+
+    it('logs with severity', () => {
+      logger.info('test info');
+      logger.warn('test warn');
+      logger.debug('test debug');
+      logger.error('test error');
+
+      assert.deepStrictEqual(sink.logs, [
+        {
+          args: ['{"severity":"INFO","message":"test info"}'],
+          fields: {
+            severity: 'INFO',
+          },
+          namespace: 'structured',
+        },
+        {
+          args: ['{"severity":"WARNING","message":"test warn"}'],
+          fields: {
+            severity: 'WARNING',
+          },
+          namespace: 'structured',
+        },
+        {
+          args: ['{"severity":"DEBUG","message":"test debug"}'],
+          fields: {
+            severity: 'DEBUG',
+          },
+          namespace: 'structured',
+        },
+        {
+          args: ['{"severity":"ERROR","message":"test error"}'],
+          fields: {
+            severity: 'ERROR',
+          },
+          namespace: 'structured',
         },
       ]);
     });
