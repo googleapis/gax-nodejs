@@ -1563,7 +1563,7 @@ describe('streaming', () => {
       spy,
       streaming.StreamType.SERVER_STREAMING,
       false,
-      true // new retry behavior disabled
+      true // new retry behavior enabled
     );
     const s1 = apiCall({}, undefined);
 
