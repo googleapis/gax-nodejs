@@ -72,7 +72,7 @@ if (require.main === module) {
 
   if (process.argv[2] === '--help') {
     usage();
-    // eslint-disable-next-line no-process-exit
+    // eslint-disable-next-line n/no-process-exit
     process.exit(1);
   }
 
