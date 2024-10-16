@@ -15,6 +15,12 @@
 import {EventEmitter} from 'node:events';
 import * as process from 'node:process';
 import * as util from 'node:util';
+import {Colours} from './colours';
+
+// Some functions (as noted) are based on the Node standard library, from
+// the following file:
+//
+// https://github.com/nodejs/node/blob/main/lib/internal/util/debuglog.js
 
 /**
  * This module defines an ad-hoc debug logger for Google Cloud Platform
@@ -236,36 +242,97 @@ export abstract class DebugLogBackendBase implements DebugLogBackend {
   abstract setFilters(): void;
 
   log(namespace: string, fields: LogFields, ...args: unknown[]): void {
-    if (!this.filtersSet) {
-      this.setFilters();
-      this.filtersSet = true;
-    }
+    try {
+      if (!this.filtersSet) {
+        this.setFilters();
+        this.filtersSet = true;
+      }
 
-    let logger = this.cached.get(namespace);
-    if (!logger) {
-      logger = this.makeLogger(namespace);
-      this.cached.set(namespace, logger);
+      let logger = this.cached.get(namespace);
+      if (!logger) {
+        logger = this.makeLogger(namespace);
+        this.cached.set(namespace, logger);
+      }
+      logger(fields, ...args);
+    } catch (e) {
+      // Silently ignore all errors; we don't want them to interfere with
+      // the user's running app.
+      // e;
+      console.error(e);
     }
-    logger(fields, ...args);
   }
 }
 
-// The Node util.debuglog-based backend. This one definitely works, but
-// it's less feature-filled.
+// The basic backend. This one definitely works, but it's less feature-filled.
+//
+// Rather than using util.debuglog, this implements the same basic logic directly.
+// The reason for this decision is that debuglog checks the value of the
+// NODE_DEBUG environment variable before any user code runs; we therefore
+// can't pipe our own enables into it (and util.debuglog will never print unless
+// the user duplicates it into NODE_DEBUG, which isn't reasonable).
+//
 class NodeBackend extends DebugLogBackendBase {
+  // Default to allowing all systems, since we gate based on the other env var.
+  enabledRegexp = /.*/g;
+
+  isEnabled(namespace: string): boolean {
+    return this.enabledRegexp.test(namespace);
+  }
+
   makeLogger(namespace: string): AdhocDebugLogCallable {
-    const nodeLogger = util.debuglog(namespace);
     return (fields: LogFields, ...args: unknown[]) => {
       // TODO: `fields` needs to be turned into a string here, one way or another.
-      nodeLogger(args[0] as string, ...args.slice(1));
+      const nscolour = `${Colours.green}${namespace}${Colours.reset}`;
+      const pid = `${Colours.yellow}${process.pid}${Colours.reset}`;
+      let level: string;
+      switch (fields.severity) {
+        case LogSeverity.ERROR:
+          level = `${Colours.red}${fields.severity}${Colours.reset}`;
+          break;
+        case LogSeverity.INFO:
+          level = `${Colours.magenta}${fields.severity}${Colours.reset}`;
+          break;
+        case LogSeverity.WARNING:
+          level = `${Colours.yellow}${fields.severity}${Colours.reset}`;
+          break;
+        default:
+          level = fields.severity ?? LogSeverity.DEFAULT;
+          break;
+      }
+      const msg = util.formatWithOptions({colors: Colours.enabled}, ...args);
+
+      const filteredFields: LogFields = Object.assign({}, fields);
+      delete filteredFields.severity;
+      const fieldsJson = Object.getOwnPropertyNames(filteredFields).length
+        ? JSON.stringify(filteredFields)
+        : '';
+      const fieldsColour = fieldsJson
+        ? `${Colours.grey}${fieldsJson}${Colours.reset}`
+        : '';
+
+      console.error(
+        '%s [%s|%s] %s%s',
+        pid,
+        nscolour,
+        level,
+        msg,
+        fieldsJson ? ` ${fieldsColour}` : ''
+      );
     };
   }
 
+  // Regexp patterns below are from here:
+  // https://github.com/nodejs/node/blob/c0aebed4b3395bd65d54b18d1fd00f071002ac20/lib/internal/util/debuglog.js#L36
   setFilters(): void {
     const existingFilters = process.env['NODE_DEBUG'] ?? '';
-    process.env['NODE_DEBUG'] = `${existingFilters}${
+    const totalFilters = `${existingFilters}${
       existingFilters ? ',' : ''
     }${this.filters.join(',')}`;
+    const regexp = totalFilters
+      .replace(/[|\\{}()[\]^$+?.]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/,/g, '$|^');
+    this.enabledRegexp = new RegExp(`^${regexp}$`, 'i');
   }
 }
 
@@ -427,6 +494,12 @@ export function log(namespace: string): AdhocDebugLogFunction {
   // If the global enable flag isn't set, do nothing.
   const globalFlag = process.env[env.globalEnable];
   if (!globalFlag || globalFlag !== 'true') {
+    return placeholder;
+  }
+
+  // This might happen mostly if the typings are dropped in a user's code,
+  // or if they're calling from JavaScript.
+  if (!namespace) {
     return placeholder;
   }
 

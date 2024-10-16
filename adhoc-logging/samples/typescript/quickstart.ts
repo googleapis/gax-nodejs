@@ -21,8 +21,8 @@
 import {log} from '@google-cloud/adhoc-logging';
 
 function main() {
-  const test = log();
-  test({}, 'boo');
+  const test = log('testing');
+  test({other: {foo: 'bar'}}, 'boo');
   test.info('info');
 }
 // [END adhoc_logging_quickstart]
