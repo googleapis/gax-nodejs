@@ -142,7 +142,35 @@ describe('adhoc-logging', () => {
     it('deals with the backend being replaced', () => {});
   });
 
-  describe('Structured logs', () => {
+  describe('Tap', () => {
+    let logger: al.AdhocDebugLogFunction;
+    const system = 'taps';
+
+    beforeEach(() => {
+      al.setBackend(sink);
+      sink.reset();
+
+      process.env[al.env.globalEnable] = 'true';
+      logger = al.log(system);
+    });
+
+    it('allows receiving logs', () => {
+      const received = [{fields: {}, args: [] as unknown[]}];
+      received.pop();
+      logger.on('log', (fields: al.LogFields, args: unknown[]) => {
+        received.push({fields, args});
+      });
+      logger.info('cool cool');
+      assert.deepStrictEqual(received, [
+        {
+          fields: {severity: al.LogSeverity.INFO},
+          args: ['cool cool'],
+        },
+      ]);
+    });
+  });
+
+  describe('Structured log', () => {
     const system = 'structured';
     const structured = al.getStructuredBackend(sink);
 
