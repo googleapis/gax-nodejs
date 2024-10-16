@@ -20,6 +20,14 @@
 
 import * as tty from 'node:tty';
 
+/**
+ * Handles figuring out if we can use ANSI colours and handing out the escape codes.
+ *
+ * This is for package-internal use only, and may change at any time.
+ *
+ * @private
+ * @internal
+ */
 export class Colours {
   static enabled = false;
   static reset = '';
