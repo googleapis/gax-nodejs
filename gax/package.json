@@ -61,10 +61,9 @@
     "typescript": "^5.1.6",
     "uglify-js": "^3.17.0",
     "walkdir": "^0.4.0",
-": "^4.0.0",
+    "webpack": "^4.0.0",
     "webpack-cli": "^4.0.0"
   },
-
   "scripts": {
     "docs": "compodoc src/",
     "pretest": "npm run prepare",
@@ -107,7 +106,7 @@
   },
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
-    "node": ">=14 <16.0.1"
+    "node": ">=14 <=18"
   },
   "browser": "build/src/fallback.js"
 }
