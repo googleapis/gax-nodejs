@@ -88,7 +88,7 @@
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
     "update-protos": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/listProtos.js .",
-    "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js",
+    "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js"
   },
   "keywords": [
     "grpc"
