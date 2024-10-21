@@ -63,6 +63,7 @@ export class PageDescriptor implements Descriptor {
     request: {},
     options: CallSettings
   ): Transform {
+    // todo warn on autopag
     const stream = new PassThrough({objectMode: true});
     options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
@@ -137,6 +138,7 @@ export class PageDescriptor implements Descriptor {
     request: RequestType,
     options?: CallSettings
   ): AsyncIterable<{} | undefined> {
+    // todo warn on autopag
     options = Object.assign({}, options, {autoPaginate: false});
     const iterable = this.createIterator(apiCall, request, options);
     return iterable;

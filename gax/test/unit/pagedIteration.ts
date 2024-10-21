@@ -29,6 +29,8 @@ import {describe, it, beforeEach} from 'mocha';
 import * as util from './utils';
 import {Stream} from 'stream';
 import * as gax from '../../src/gax';
+import * as warnings from '../../src/warnings';
+
 
 describe('paged iteration', () => {
   const pageSize = 3;
@@ -58,7 +60,32 @@ describe('paged iteration', () => {
     }
   }
 
+  it('warns when pageSize is configured without configuring autoPaginate', done => {
+    const warnStub = sinon.stub(warnings, 'warn');
+
+    const apiCall = util.createApiCall(func, createOptions);
+    const expected: Array<{}> = [];
+    for (let i = 0; i < pageSize * pagesToStream; ++i) {
+      expected.push(i);
+    }
+    apiCall({pageSize: pageSize}, undefined)
+      .then(results => {
+        assert.ok(Array.isArray(results));
+        assert.deepStrictEqual(results[0], expected);
+        assert.strictEqual(warnStub.callCount,1);
+        assert(
+          warnStub.calledWith(
+            'autoPaginate true',
+            'Providing a pageSize without setting autoPaginate to false will still return all results. See https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure manual paging',
+            'AutopaginateTrueWarning'
+          )
+        );
+        done();
+      })
+      .catch(done);
+  });
   it('returns an Array of results', done => {
+
     const apiCall = util.createApiCall(func, createOptions);
     const expected: Array<{}> = [];
     for (let i = 0; i < pageSize * pagesToStream; ++i) {
@@ -337,8 +364,8 @@ describe('paged iteration', () => {
         0
       );
     });
-
-    it('ignores autoPaginate options, but respects others', done => {
+    // todo warnings for stream and async
+    it('ignores autoPaginate options and warns, but respects others', done => {
       // Specifies autoPaginate: false, which will be ignored, and maxResults:
       // pageSize which will be used.
       const options = {maxResults: pageSize, autoPaginate: false};
@@ -347,6 +374,7 @@ describe('paged iteration', () => {
         descriptor.createStream(apiCall, {}, options),
         () => {
           assert.strictEqual(spy.callCount, 1);
+ 
         },
         done,
         0
