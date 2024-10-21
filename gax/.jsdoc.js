@@ -17,8 +17,8 @@
 
 module.exports = {
   opts: {
-    readme: './gax/README.md',
-    package: './gax/package.json',
+    readme: './README.md',
+    package: './gpackage.json',
     template: './node_modules/jsdoc-fresh',
     recurse: true,
     verbose: true,
@@ -37,7 +37,7 @@ module.exports = {
     includePattern: '\\.js$'
   },
   templates: {
-    copyright: 'Copyright 2019 Google, LLC.',
+    copyright: 'Copyright 2024 Google, LLC.',
     includeDate: false,
     sourceFiles: false,
     systemName: 'google-gax',
