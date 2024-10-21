@@ -17,7 +17,7 @@
 
 module.exports = {
   opts: {
-    readme: './README.md',
+    readme: '../README.md',
     package: './package.json',
     template: './node_modules/jsdoc-fresh',
     recurse: true,
@@ -31,13 +31,13 @@ module.exports = {
   source: {
     excludePattern: '(^|\\/|\\\\)[._]',
     include: [
-      'src',
-      'protos'
+      'build/src',
+      'build/protos'
     ],
     includePattern: '\\.js$'
   },
   templates: {
-    copyright: 'Copyright 2019 Google, LLC.',
+    copyright: 'Copyright 2024 Google, LLC.',
     includeDate: false,
     sourceFiles: false,
     systemName: 'google-gax',

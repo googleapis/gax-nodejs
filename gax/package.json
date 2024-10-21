@@ -26,7 +26,6 @@
   "devDependencies": {
     "@types/uuid": "^9.0.7",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
-    "@compodoc/compodoc": "1.1.23",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
     "@types/node": "^20.5.0",
@@ -44,6 +43,9 @@
     "google-proto-files": "^4.2.0",
     "gts": "^5.0.0",
     "jackspeak": "3.4.3",
+    "jsdoc": "^4.0.0",
+    "jsdoc-fresh": "^3.0.0",
+    "jsdoc-region-tag": "^3.0.0",
     "linkinator": "^4.0.0",
     "lru-cache": "10.4.3",
     "long": "^4.0.0",
@@ -66,7 +68,7 @@
   },
 
   "scripts": {
-    "docs": "compodoc src/",
+    "docs": "jsdoc -c .jsdoc.js",
     "pretest": "npm run prepare",
     "test": "c8 mocha build/test/unit",
     "lint": "gts check src samples test",
@@ -89,8 +91,7 @@
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "gts clean",
     "update-protos": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/listProtos.js .",
-    "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js",
-    "@compodoc/compodoc": "1.1.21"
+    "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js"
   },
   "keywords": [
     "grpc"
