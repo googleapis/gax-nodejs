@@ -14,4 +14,22 @@
 
 import synthtool.languages.node as node
 
-node.owlbot_main(templates_excludes=["LICENSE", "README.md", ".github/sync-repo-settings.yaml", ".github/workflows/ci.yaml", ".github/release-please.yml", ".kokoro/", ".kokoro/continuous/node12/common.cfg", ".kokoro/presubmit/node12/common.cfg", ".kokoro/release/docs.cfg", ".kokoro/release/publish.cfg", ".eslintrc.json", ".mocharc.js", ".nycrc", ".prettierrc.js", ".prettierignore", "release-please-config.json"])
+node.owlbot_main(templates_excludes=["LICENSE", 
+                                     "README.md", 
+                                     ".github/sync-repo-settings.yaml", 
+                                     ".github/workflows/ci.yaml", 
+                                     ".github/release-please.yml", 
+                                     ".kokoro/", 
+                                     ".kokoro/continuous/node12/common.cfg", 
+                                     ".kokoro/presubmit/node12/common.cfg", 
+                                     ".kokoro/release/docs.cfg", 
+                                     ".kokoro/release/publish.cfg", 
+                                     ".eslintrc.json", 
+                                     ".mocharc.js", 
+                                     ".nycrc", 
+                                     ".prettierrc.js", 
+                                     ".prettierignore", 
+                                     "release-please-config.json",
+                                     ".github/ISSUE_TEMPLATE",
+                                     ".github/workflows/issues-no-repro.yaml",
+                                     ".github/close-invalid-link.cjs"])
