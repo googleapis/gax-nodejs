@@ -31,7 +31,6 @@ import {Stream} from 'stream';
 import * as gax from '../../src/gax';
 import * as warnings from '../../src/warnings';
 
-
 describe('paged iteration', () => {
   const pageSize = 3;
   const pagesToStream = 5;
@@ -72,7 +71,7 @@ describe('paged iteration', () => {
       .then(results => {
         assert.ok(Array.isArray(results));
         assert.deepStrictEqual(results[0], expected);
-        assert.strictEqual(warnStub.callCount,1);
+        assert.strictEqual(warnStub.callCount, 1);
         assert(
           warnStub.calledWith(
             'autoPaginate true',
@@ -80,12 +79,12 @@ describe('paged iteration', () => {
             'AutopaginateTrueWarning'
           )
         );
+        warnStub.restore();
         done();
       })
       .catch(done);
   });
   it('returns an Array of results', done => {
-
     const apiCall = util.createApiCall(func, createOptions);
     const expected: Array<{}> = [];
     for (let i = 0; i < pageSize * pagesToStream; ++i) {
@@ -252,7 +251,43 @@ describe('paged iteration', () => {
       );
       assert.strictEqual(resources.length, 10);
     });
+    it('returns an iterable, count to 10, warns if autopaginate is specified', async () => {
+      const warnStub = sinon.stub(warnings, 'warn');
 
+      const spy = sinon.spy(func);
+      const apiCall = util.createApiCall(spy, createOptions);
+
+      async function iterableChecker(iterable: AsyncIterable<{} | undefined>) {
+        let counter = 0;
+        const resources = [];
+        for await (const resource of iterable) {
+          counter++;
+          resources.push(resource);
+          if (counter === 10) {
+            break;
+          }
+        }
+        return resources;
+      }
+
+      const settings = new gax.CallSettings(
+        (createOptions && createOptions.settings) || {}
+      );
+      settings.autoPaginate = true;
+      const resources = await iterableChecker(
+        descriptor.asyncIterate(apiCall, {}, settings)
+      );
+      assert.strictEqual(resources.length, 10);
+      assert.strictEqual(warnStub.callCount, 1);
+      assert(
+        warnStub.calledWith(
+          'autoPaginate true',
+          'Autopaginate will always be set to false in Async paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
+          'AutopaginateTrueWarning'
+        )
+      );
+      warnStub.restore();
+    });
     it('does not stop on empty resources list', async () => {
       function func(
         request: {pageToken?: number},
@@ -364,8 +399,32 @@ describe('paged iteration', () => {
         0
       );
     });
-    // todo warnings for stream and async
     it('ignores autoPaginate options and warns, but respects others', done => {
+      const warnStub = sinon.stub(warnings, 'warn');
+
+      // Specifies autoPaginate: true, which will be ignored, and maxResults:
+      // pageSize which will be used.
+      const options = {maxResults: pageSize, autoPaginate: true};
+      streamChecker(
+        // @ts-ignore incomplete options
+        descriptor.createStream(apiCall, {}, options),
+        () => {
+          assert.strictEqual(spy.callCount, 1);
+          assert.strictEqual(warnStub.callCount, 1);
+          assert(
+            warnStub.calledWith(
+              'autoPaginate true',
+              'Autopaginate will always be set to false in stream paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
+              'AutopaginateTrueWarning'
+            )
+          );
+          warnStub.restore();
+        },
+        done,
+        0
+      );
+    });
+    it('ignores autoPaginate options but respects others', done => {
       // Specifies autoPaginate: false, which will be ignored, and maxResults:
       // pageSize which will be used.
       const options = {maxResults: pageSize, autoPaginate: false};
@@ -374,7 +433,6 @@ describe('paged iteration', () => {
         descriptor.createStream(apiCall, {}, options),
         () => {
           assert.strictEqual(spy.callCount, 1);
- 
         },
         done,
         0

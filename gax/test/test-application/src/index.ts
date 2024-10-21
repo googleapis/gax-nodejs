@@ -128,7 +128,7 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-   await testServerStreamingRetrieswithRetryRequestOptions(
+  await testServerStreamingRetrieswithRetryRequestOptions(
     grpcSequenceClientWithServerStreamingRetries
   );
 
@@ -140,7 +140,7 @@ async function testShowcase() {
     grpcSequenceClientWithServerStreamingRetries
   );
 
-   await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
     grpcSequenceClientWithServerStreamingRetries
   );
 
@@ -534,24 +534,25 @@ async function testPagedExpandAutopaginateOff(client: EchoClient) {
   const words = ['nobody', 'ever', 'reads', 'test', 'input'];
   const request = {
     content: words.join(' '),
-    pageSize: 2
+    pageSize: 2,
   };
   const timer = setTimeout(() => {
     throw new Error('End-to-end testPagedExpand method fails with timeout');
   }, 12000);
-  const [resultArray, nextPageRequest] =
-  await client.pagedExpand(request, {autoPaginate: false});
+  const [resultArray, nextPageRequest] = await client.pagedExpand(request, {
+    autoPaginate: false,
+  });
   clearTimeout(timer);
   const result = resultArray.map(r => r.content);
-  assert.deepStrictEqual(words.slice(0,2), result);
+  assert.deepStrictEqual(words.slice(0, 2), result);
   // manually paginate
-  const [response2] = await client.pagedExpand(nextPageRequest!, {autoPaginate: false});
+  const [response2] = await client.pagedExpand(nextPageRequest!, {
+    autoPaginate: false,
+  });
 
   clearTimeout(timer);
   const result2 = response2.map(r => r.content);
-  assert.deepStrictEqual(words.slice(2,4), result2);
-
-
+  assert.deepStrictEqual(words.slice(2, 4), result2);
 }
 
 async function testCollect(client: EchoClient) {
