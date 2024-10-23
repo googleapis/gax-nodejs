@@ -59,7 +59,7 @@
     "pumpify": "^2.0.0",
     "sinon": "^18.0.0",
     "stream-events": "^1.0.4",
-    "ts-loader": "^8.0.0",
+    "ts-loader": "^9.0.0",
     "typescript": "^5.1.6",
     "uglify-js": "^3.17.0",
     "walkdir": "^0.4.0",
