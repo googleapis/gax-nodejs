@@ -28,6 +28,7 @@ import {
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
+import {warn} from '.././warnings';
 
 import {PagedApiCaller} from './pagedApiCaller';
 
@@ -63,6 +64,13 @@ export class PageDescriptor implements Descriptor {
     request: {},
     options: CallSettings
   ): Transform {
+    if (options?.autoPaginate) {
+      warn(
+        'autoPaginate true',
+        'Autopaginate will always be set to false in stream paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
+        'AutopaginateTrueWarning'
+      );
+    }
     const stream = new PassThrough({objectMode: true});
     options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
@@ -137,6 +145,13 @@ export class PageDescriptor implements Descriptor {
     request: RequestType,
     options?: CallSettings
   ): AsyncIterable<{} | undefined> {
+    if (options?.autoPaginate) {
+      warn(
+        'autoPaginate true',
+        'Autopaginate will always be set to false in Async paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
+        'AutopaginateTrueWarning'
+      );
+    }
     options = Object.assign({}, options, {autoPaginate: false});
     const iterable = this.createIterator(apiCall, request, options);
     return iterable;
