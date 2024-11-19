@@ -1,5 +1,5 @@
 {
   "gax": "4.4.1",
   "tools": "0.4.6",
-  "logging-tools": "0.0.0"
+  "logging-utils": "0.0.0"
 }

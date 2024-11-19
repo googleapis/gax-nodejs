@@ -1,5 +1,5 @@
 {
-  "name": "adhoc-logging-samples",
+  "name": "google-logging-samples",
   "version": "0.0.1",
   "description": "Samples for adhoc debug logger",
   "main": "index.js",
