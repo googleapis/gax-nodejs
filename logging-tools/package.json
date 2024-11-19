@@ -1,6 +1,6 @@
 {
-  "name": "@google-cloud/adhoc-logging",
-  "version": "0.0.1",
+  "name": "google-logging-tools",
+  "version": "0.0.0",
   "description": "An ad-hoc debug logger package for other libraries",
   "main": "build/src/index.js",
   "files": [

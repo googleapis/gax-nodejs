@@ -15,7 +15,7 @@
 import {describe, it} from 'mocha';
 import * as assert from 'assert';
 
-import * as al from '../src/adhoc-logging';
+import * as al from '../src/logging-tools';
 
 interface TestLog {
   namespace: string;

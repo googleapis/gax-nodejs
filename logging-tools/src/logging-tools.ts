@@ -280,6 +280,10 @@ class NodeBackend extends DebugLogBackendBase {
   }
 
   makeLogger(namespace: string): AdhocDebugLogCallable {
+    if (!this.enabledRegexp.test(namespace)) {
+      return () => {};
+    }
+
     return (fields: LogFields, ...args: unknown[]) => {
       // TODO: `fields` needs to be turned into a string here, one way or another.
       const nscolour = `${Colours.green}${namespace}${Colours.reset}`;
