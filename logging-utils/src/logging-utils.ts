@@ -94,6 +94,9 @@ export declare interface AdhocDebugLogger {
  * that will be passed back to users of the package.
  */
 export class AdhocDebugLogger extends EventEmitter {
+  // Our namespace (system/subsystem/etc)
+  namespace: string;
+
   // The function we'll call with new log lines.
   // Should be built in Node util stuff, or the "debug" package, or whatever.
   upstream: AdhocDebugLogCallable;
@@ -105,9 +108,10 @@ export class AdhocDebugLogger extends EventEmitter {
    * @param upstream The backend will pass a function that will be
    *   called whenever our logger function is invoked.
    */
-  constructor(upstream: AdhocDebugLogCallable) {
+  constructor(namespace: string, upstream: AdhocDebugLogCallable) {
     super();
 
+    this.namespace = namespace;
     this.upstream = upstream;
     this.func = Object.assign(this.invoke.bind(this), {
       // Also add an instance pointer back to us.
@@ -127,6 +131,7 @@ export class AdhocDebugLogger extends EventEmitter {
       this.invokeSeverity(LogSeverity.WARNING, ...args);
     this.func.error = (...args) =>
       this.invokeSeverity(LogSeverity.ERROR, ...args);
+    this.func.sublog = (namespace: string) => log(namespace, this.func);
   }
 
   invoke(fields: LogFields, ...args: unknown[]): void {
@@ -147,7 +152,7 @@ export class AdhocDebugLogger extends EventEmitter {
 /**
  * This can be used in place of a real logger while waiting for Promises or disabling logging.
  */
-export const placeholder = new AdhocDebugLogger(() => {}).func;
+export const placeholder = new AdhocDebugLogger('', () => {}).func;
 
 /**
  * When the user receives a log function (below), this will be the basic function
@@ -177,6 +182,7 @@ export interface AdhocDebugLogFunction extends AdhocDebugLogCallable {
   info(...args: unknown[]): void;
   warn(...args: unknown[]): void;
   error(...args: unknown[]): void;
+  sublog(namespace: string): AdhocDebugLogFunction;
 }
 
 /**
@@ -494,7 +500,10 @@ export function setBackend(backend: DebugLogBackend | null) {
  * @param namespace The namespace, a descriptive text string.
  * @returns A function you can call that works similar to console.log().
  */
-export function log(namespace: string): AdhocDebugLogFunction {
+export function log(
+  namespace: string,
+  parent?: AdhocDebugLogFunction
+): AdhocDebugLogFunction {
   // If the global enable flag isn't set, do nothing.
   const globalFlag = process.env[env.globalEnable];
   if (!globalFlag || globalFlag !== 'true') {
@@ -505,6 +514,11 @@ export function log(namespace: string): AdhocDebugLogFunction {
   // or if they're calling from JavaScript.
   if (!namespace) {
     return placeholder;
+  }
+
+  // Handle sub-loggers.
+  if (parent) {
+    namespace = `${parent.instance.namespace}:${namespace}`;
   }
 
   // Reuse loggers so things like event sinks are persistent.
@@ -526,6 +540,7 @@ export function log(namespace: string): AdhocDebugLogFunction {
   const logger: AdhocDebugLogger = (() => {
     let previousBackend: DebugLogBackend | undefined = undefined;
     const newLogger = new AdhocDebugLogger(
+      namespace,
       (fields: LogFields, ...args: unknown[]) => {
         if (previousBackend !== cachedBackend) {
           // Did the user pass a custom backend?

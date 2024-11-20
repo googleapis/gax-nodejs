@@ -222,4 +222,30 @@ describe('adhoc-logging', () => {
       ]);
     });
   });
+
+  describe('sub-logs', () => {
+    let logger: al.AdhocDebugLogFunction;
+    const system = 'sublogs';
+    const subsystem = 'subsys';
+
+    beforeEach(() => {
+      al.setBackend(sink);
+      sink.reset();
+
+      process.env[al.env.globalEnable] = 'true';
+      logger = al.log(system);
+    });
+
+    it('create with the log sub-function ', () => {
+      const sublogger = logger.sublog(subsystem);
+      sublogger({}, 'test log', 5, {other: 'foo'});
+      assert.deepStrictEqual(sink.logs, [
+        {
+          namespace: `${system}:${subsystem}`,
+          fields: {},
+          args: ['test log', 5, {other: 'foo'}],
+        },
+      ]);
+    });
+  });
 });
