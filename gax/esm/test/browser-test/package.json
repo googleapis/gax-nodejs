@@ -1,0 +1,48 @@
+{
+  "name": "google-gax-browser-test",
+  "version": "0.1.0",
+  "description": "",
+  "main": "build/src/index.js",
+  "type": "commonjs",
+  "types": "build/src/index.d.ts",
+  "files": [
+    "build/test"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "license": "Apache-2.0",
+  "keywords": [],
+  "scripts": {
+    "compile": "tsc -p tsconfig.json",
+    "prefetch-cleanup": "rm -rf node_modules package-lock.json google-gax*.tgz showcase-echo-client*.tgz showcase-server*.tgz",
+    "prefetch-google-gax": "cd ../.. && npm pack && mv google-gax*.tgz test/browser-test/google-gax.tgz",
+    "prefetch-showcase-echo-client": "cd ../showcase-echo-client && npm run prefetch && npm install && npm pack && mv showcase-echo-client*.tgz ../browser-test/showcase-echo-client.tgz",
+    "prefetch-showcase-server": "cd ../showcase-server && npm install && npm pack && mv showcase-server*.tgz ../browser-test/showcase-server.tgz",
+    "prefetch": "npm run prefetch-cleanup && npm run prefetch-google-gax && npm run prefetch-showcase-echo-client && npm run prefetch-showcase-server",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "test": "karma start"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^14.11.2",
+    "@types/sinon": "^10.0.13",
+    "google-gax": "./google-gax.tgz",
+    "is-docker": "^2.2.1",
+    "karma": "^6.0.0",
+    "karma-child-process": "^1.0.3",
+    "karma-chrome-launcher": "^3.0.0",
+    "karma-mocha": "^2.0.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^4.0.0",
+    "mocha": "^10.0.0",
+    "puppeteer": "^16.0.0",
+    "showcase-echo-client": "./showcase-echo-client.tgz",
+    "showcase-server": "./showcase-server.tgz",
+    "sinon": "^14.0.0",
+    "typescript": "^4.0.3",
+    "webpack": "^4.0.0",
+    "webpack-cli": "^4.0.0"
+  }
+}

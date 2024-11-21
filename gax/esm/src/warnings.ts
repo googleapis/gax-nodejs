@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-'use strict';
+import {isNodeJS} from './featureDetection.js';
 
-const path = require('path');
-const assert = require('assert');
-const {describe, it} = require('mocha');
-const cp = require('child_process');
+const emittedWarnings = new Set<string>();
 
-const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
+// warnType is the type of warning (e.g. 'DeprecationWarning', 'ExperimentalWarning', etc.)
+export function warn(code: string, message: string, warnType?: string) {
+  // Only show a given warning once
+  if (emittedWarnings.has(code)) {
+    return;
+  }
+  emittedWarnings.add(code);
 
-// eslint-disable-next-line no-undef
-const cwd = path.join(__dirname, '..');
-
-describe('Quickstart', () => {
-  it('should run quickstart sample', async () => {
-    const stdout = execSync('node quickstart.js', {cwd});
-    assert(/This call failed/.test(stdout));
-    assert(/This call succeeded/.test(stdout));
-    assert(/response: 'ok'/.test(stdout));
-  });
-});
+  if (!isNodeJS()) {
+    console.warn(message);
+  } else if (typeof warnType !== 'undefined') {
+    process.emitWarning(message, {
+      type: warnType,
+    });
+  } else {
+    process.emitWarning(message);
+  }
+}

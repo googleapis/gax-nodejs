@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-'use strict';
+import assert from 'assert';
+import {fromParams} from '../../src/routingHeader.js';
+import {describe, it} from 'mocha';
 
-const path = require('path');
-const assert = require('assert');
-const {describe, it} = require('mocha');
-const cp = require('child_process');
+describe('fromParams', () => {
+  it('constructs the routing header', () => {
+    const routingHeader = fromParams({name: 'foo', 'book.read': true});
+    assert.strictEqual(routingHeader, 'name=foo&book.read=true');
+  });
 
-const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
-
-// eslint-disable-next-line no-undef
-const cwd = path.join(__dirname, '..');
-
-describe('Quickstart', () => {
-  it('should run quickstart sample', async () => {
-    const stdout = execSync('node quickstart.js', {cwd});
-    assert(/This call failed/.test(stdout));
-    assert(/This call succeeded/.test(stdout));
-    assert(/response: 'ok'/.test(stdout));
+  it('encodes non-ASCII characters', () => {
+    const routingHeader = fromParams({screaming: '😱', cyrillic: 'тест'});
+    assert.strictEqual(
+      routingHeader,
+      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82'
+    );
   });
 });

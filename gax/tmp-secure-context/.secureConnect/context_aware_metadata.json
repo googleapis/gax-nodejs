@@ -1,0 +1,1 @@
+{"cert_provider_command":["echo","-----BEGIN CERTIFICATE-----\nqwerty\n-----END CERTIFICATE-----","-----BEGIN PRIVATE KEY-----\ndvorak\n-----END PRIVATE KEY-----"]}
