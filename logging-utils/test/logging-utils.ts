@@ -52,17 +52,21 @@ describe('adhoc-logging', () => {
     });
 
     it('obeys a lack of global enable', () => {
-      delete process.env[al.env.globalEnable];
+      delete process.env[al.env.nodeEnables];
       const logger = al.log(system);
       logger({}, 'foo');
       assert.deepStrictEqual(sink.logs, []);
     });
 
-    it('obeys a false global enable', () => {
-      process.env[al.env.globalEnable] = 'false';
+    it('obeys "all"', () => {
+      process.env[al.env.nodeEnables] = 'all';
       const logger = al.log(system);
       logger({}, 'foo');
-      assert.deepStrictEqual(sink.logs, []);
+      assert.deepStrictEqual(sink.logs, [{
+        namespace: system,
+        fields: {},
+        args: ['foo'],
+      }]);
     });
   });
 
@@ -74,7 +78,7 @@ describe('adhoc-logging', () => {
       al.setBackend(sink);
       sink.reset();
 
-      process.env[al.env.globalEnable] = 'true';
+      process.env[al.env.nodeEnables] = '*';
       logger = al.log(system);
     });
 
@@ -150,7 +154,7 @@ describe('adhoc-logging', () => {
       al.setBackend(sink);
       sink.reset();
 
-      process.env[al.env.globalEnable] = 'true';
+      process.env[al.env.nodeEnables] = system;
       logger = al.log(system);
     });
 
@@ -179,7 +183,7 @@ describe('adhoc-logging', () => {
       al.setBackend(structured);
       sink.reset();
 
-      process.env[al.env.globalEnable] = 'true';
+      process.env[al.env.nodeEnables] = system;
 
       logger = al.log(system);
     });
@@ -232,7 +236,7 @@ describe('adhoc-logging', () => {
       al.setBackend(sink);
       sink.reset();
 
-      process.env[al.env.globalEnable] = 'true';
+      process.env[al.env.nodeEnables] = system;
       logger = al.log(system);
     });
 

@@ -230,7 +230,10 @@ export abstract class DebugLogBackendBase implements DebugLogBackend {
   constructor() {
     // Look for the Node config variable for what systems to enable. We'll store
     // these for the log method below, which will call setFilters() once.
-    const nodeFlag = process.env[env.nodeEnables] ?? '*';
+    let nodeFlag = process.env[env.nodeEnables] ?? '*';
+    if (nodeFlag === 'all') {
+      nodeFlag = '*';
+    }
     this.filters = nodeFlag.split(',');
   }
 
@@ -278,7 +281,8 @@ export abstract class DebugLogBackendBase implements DebugLogBackend {
 // the user duplicates it into NODE_DEBUG, which isn't reasonable).
 //
 class NodeBackend extends DebugLogBackendBase {
-  // Default to allowing all systems, since we gate based on the other env var.
+  // Default to allowing all systems, since we gate earlier based on whether the
+  // variable is empty.
   enabledRegexp = /.*/g;
 
   isEnabled(namespace: string): boolean {
@@ -334,10 +338,7 @@ class NodeBackend extends DebugLogBackendBase {
   // Regexp patterns below are from here:
   // https://github.com/nodejs/node/blob/c0aebed4b3395bd65d54b18d1fd00f071002ac20/lib/internal/util/debuglog.js#L36
   setFilters(): void {
-    const existingFilters = process.env['NODE_DEBUG'] ?? '';
-    const totalFilters = `${existingFilters}${
-      existingFilters ? ',' : ''
-    }${this.filters.join(',')}`;
+    const totalFilters = this.filters.join(',');
     const regexp = totalFilters
       .replace(/[|\\{}()[\]^$+?.]/g, '\\$&')
       .replace(/\*/g, '.*')
@@ -458,16 +459,10 @@ export function getStructuredBackend(
  */
 export const env = {
   /**
-   * A simple "true" or "false" that disables the entire system.
-   * ("true" vs anything, really.)
-   */
-  globalEnable: 'GOOGLE_SDK_DEBUG_LOGGING',
-
-  /**
    * Filter wildcards specific to the Node syntax, and similar to the built-in
-   * utils.debuglog() environment variable. If missing, defaults to "*" (all).
+   * utils.debuglog() environment variable. If missing, disables logging.
    */
-  nodeEnables: 'GOOGLE_SDK_DEBUG_LOGGING_NODE',
+  nodeEnables: 'GOOGLE_SDK_NODE_LOGGING',
 };
 
 // Keep a copy of all namespaced loggers so users can reliably .on() them.
@@ -504,9 +499,9 @@ export function log(
   namespace: string,
   parent?: AdhocDebugLogFunction
 ): AdhocDebugLogFunction {
-  // If the global enable flag isn't set, do nothing.
-  const globalFlag = process.env[env.globalEnable];
-  if (!globalFlag || globalFlag !== 'true') {
+  // If the enable flag isn't set, do nothing.
+  const enablesFlag = process.env[env.nodeEnables];
+  if (!enablesFlag) {
     return placeholder;
   }
 
