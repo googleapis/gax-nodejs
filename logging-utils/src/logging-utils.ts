@@ -356,10 +356,14 @@ export function getNodeBackend(): DebugLogBackend {
 
 // Based on the npm "debug" package. Adds colour, time offsets, and other
 // useful things, but requires the user to import another package.
+//
+// Note: using the proper types here introduces an extra dependency
+// we don't want, so for the moment, they'll be notational only.
+type DebugPackage = any; // debug.Debug
 class DebugBackend extends DebugLogBackendBase {
-  debugPkg: debug.Debug;
+  debugPkg: DebugPackage;
 
-  constructor(pkg: debug.Debug) {
+  constructor(pkg: DebugPackage) {
     super();
     this.debugPkg = pkg;
   }
@@ -395,7 +399,7 @@ class DebugBackend extends DebugLogBackendBase {
  *
  * @returns A backend based on the npm "debug" package.
  */
-export function getDebugBackend(debugPkg: debug.Debug): DebugLogBackend {
+export function getDebugBackend(debugPkg: DebugPackage): DebugLogBackend {
   return new DebugBackend(debugPkg);
 }
 
