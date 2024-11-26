@@ -93,6 +93,7 @@ async function testShowcase() {
   await testExpand(grpcClient);
   await testPagedExpand(grpcClient);
   await testPagedExpandAsync(grpcClient);
+  await testPagedExpandAutopaginateOff(grpcClient);
   await testCollect(grpcClient);
   await testChat(grpcClient);
   await testWait(grpcClient);
@@ -101,6 +102,7 @@ async function testShowcase() {
   await testExpand(restClient); // REGAPIC supports server streaming
   await testPagedExpand(restClient);
   await testPagedExpandAsync(restClient);
+  await testPagedExpandAutopaginateOff(restClient);
   await testCollectThrows(restClient); // REGAPIC does not support client streaming
   await testChatThrows(restClient); // REGAPIC does not support bidi streaming
   await testWait(restClient);
@@ -109,6 +111,7 @@ async function testShowcase() {
   await testExpand(restClientCompat); // REGAPIC supports server streaming
   await testPagedExpand(restClientCompat);
   await testPagedExpandAsync(restClientCompat);
+  await testPagedExpandAutopaginateOff(restClientCompat);
   await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
   await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
   await testWait(restClientCompat);
@@ -167,6 +170,7 @@ async function testShowcase() {
   await testExpand(grpcClientWithServerStreamingRetries);
   await testPagedExpand(grpcClientWithServerStreamingRetries);
   await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
+  await testPagedExpandAutopaginateOff(grpcClientWithServerStreamingRetries);
   await testCollect(grpcClientWithServerStreamingRetries);
   await testChat(grpcClientWithServerStreamingRetries);
   await testWait(grpcClientWithServerStreamingRetries);
@@ -524,6 +528,31 @@ async function testPagedExpandAsync(client: EchoClient) {
   }
   clearTimeout(timer);
   assert.deepStrictEqual(words, response);
+}
+
+async function testPagedExpandAutopaginateOff(client: EchoClient) {
+  const words = ['nobody', 'ever', 'reads', 'test', 'input'];
+  const request = {
+    content: words.join(' '),
+    pageSize: 2,
+  };
+  const timer = setTimeout(() => {
+    throw new Error('End-to-end testPagedExpand method fails with timeout');
+  }, 12000);
+  const [resultArray, nextPageRequest] = await client.pagedExpand(request, {
+    autoPaginate: false,
+  });
+  clearTimeout(timer);
+  const result = resultArray.map(r => r.content);
+  assert.deepStrictEqual(words.slice(0, 2), result);
+  // manually paginate
+  const [response2] = await client.pagedExpand(nextPageRequest!, {
+    autoPaginate: false,
+  });
+
+  clearTimeout(timer);
+  const result2 = response2.map(r => r.content);
+  assert.deepStrictEqual(words.slice(2, 4), result2);
 }
 
 async function testCollect(client: EchoClient) {
