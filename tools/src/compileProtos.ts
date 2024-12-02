@@ -147,8 +147,9 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
         `${typeName}|keyof typeof ${typeName}`
       );
     } else if (typeName === 'Uint8Array') {
-      // bytes: Uint8Array => Uint8Array|string to allow base64-encoded strings
-      replaced = replaced.replace(typeName, `${typeName}|string`);
+      // bytes: Uint8Array => Uint8Array|Buffer|string to allow base64-encoded strings
+      // and byte field can also come as a Buffer when pbjs uses $util.newBuffer.
+      replaced = replaced.replace(typeName, `${typeName}|Buffer|string`);
     } else if (typeName === 'Long') {
       // Longs can be passed as strings :(
       // number|Long => number|Long|string
