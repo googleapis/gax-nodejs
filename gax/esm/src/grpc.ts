@@ -50,7 +50,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 // GoogleProtoFilesRoot below)
 //@ts-ignore
 import commonProtoFiles from './protosList.json' with {type: 'json'};
-import {google} from '../../protos/http';
+import {google} from '../../protos/http.js';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
   file.replace(/[/\\]/g, path.sep)

@@ -141,30 +141,30 @@ describe('createApiCall', () => {
       done();
     });
   });
-  it.only('override just custom retry.retryCodes with retry codes', async () => {
+  it('override just custom retry.retryCodes with retry codes', async () => {
     const initialRetryCodes = [1];
     const overrideRetryCodes = [1, 2, 3];
-    // const {retryable} = await esmock('../../src/normalCalls/retries.js', {
-    //   retryable: (func: any, retry: any): any => {
-    //     assert.strictEqual(retry.retryCodes, overrideRetryCodes);
-    //     return func;
-    //   },
-    // });
+
+    const isEsm = true;
+    const relativePath = isEsm
+      ? '../../src/normalCalls/retries.js'
+      : '../src/normalCalls/retries.js';
+
     const {createApiCall} = await esmock('../../src/createApiCall.js', {
-      retryable: (func: any, retry: any): any => {
+      [relativePath]: (func: any, retry: any): any => {
         assert.strictEqual(retry.retryCodes, overrideRetryCodes);
-        return func;
+        return Promise.resolve(func);
       },
     });
 
     const {createApiCallTest} = await esmock('./utils.js', {
-      createApiCall,
+      '../../src/createApiCall.js': createApiCall,
     });
 
     function func() {
       return;
     }
-    const apiCall = createApiCallTest(func, {
+    const apiCall = await createApiCallTest(func, {
       settings: {
         retry: gax.createRetryOptions(initialRetryCodes, {
           initialRetryDelayMillis: 100,
@@ -227,7 +227,7 @@ describe('createApiCall', () => {
     }
   });
 
-  it('override just custom retry.backoffSettings', done => {
+  it('override just custom retry.backoffSettings', async () => {
     const initialBackoffSettings = gax.createDefaultBackoffSettings();
     const overriBackoffSettings = gax.createBackoffSettings(
       100,
@@ -238,17 +238,27 @@ describe('createApiCall', () => {
       3000,
       4500
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
-      assert.strictEqual(retry.backoffSettings, overriBackoffSettings);
-      return func;
+    const isEsm = true;
+    const relativePath = isEsm
+      ? '../../src/normalCalls/retries.js'
+      : '../src/normalCalls/retries.js';
+
+    const {createApiCall} = await esmock('../../src/createApiCall.js', {
+      [relativePath]: (func: any, retry: any): any => {
+        assert.strictEqual(retry.backoffSettings, overriBackoffSettings);
+        return Promise.resolve(func);
+      },
+    });
+
+    const {createApiCallTest} = await esmock('./utils.js', {
+      '../../src/createApiCall.js': createApiCall,
     });
 
     function func() {
-      done();
+      return;
     }
 
-    const apiCall = createApiCall(func, {
+    const apiCall = createApiCallTest(func, {
       settings: {
         retry: gax.createRetryOptions([1], initialBackoffSettings),
       },

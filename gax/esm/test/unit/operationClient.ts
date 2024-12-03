@@ -21,7 +21,7 @@ import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {OperationsClientBuilder} from '../../src/operationsClient.js';
-import * as protobuf from 'protobufjs';
+import protobuf from 'protobufjs';
 import {GrpcClient} from '../../src/grpc.js';
 import {PassThrough} from 'stream';
 import {ResultTuple} from '../../src/apitypes.js';

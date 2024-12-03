@@ -169,7 +169,10 @@ describe('deepCopyForResponse', () => {
 
   it('deep copies special values', () => {
     class Copyable {
-      constructor(public id: {}) {}
+      id: object;
+      constructor(id: any) {
+        this.id = id;
+      }
       copy() {
         return new Copyable(this.id);
       }
@@ -908,11 +911,12 @@ describe('bundleable', () => {
     const apiCall = createApiCallTest(spy, settings);
 
     function error(err: Error) {
-      warnStub.restore();
       done(err);
     }
     apiCall({field2: 'id1'}, undefined).then(callback, error);
     apiCall({field2: 'id2'}, undefined).then(callback, error);
+    warnStub.restore();
+    done();
   });
 
   it('suppresses bundling behavior by call options', done => {

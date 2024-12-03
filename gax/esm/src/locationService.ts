@@ -31,7 +31,7 @@ import {PageDescriptor} from './paginationCalls/pageDescriptor.js';
 // @ts-ignore
 import jsonProtos from '../../protos/locations.json' with {type: 'json'};
 // @ts-ignore
-import pkg from '../../package.json' with {type: 'json'};
+import pkg from '../../../package.json' with {type: 'json'};
 
 import {GaxCall, RequestType} from './apitypes.js';
 
@@ -41,7 +41,7 @@ import {GaxCall, RequestType} from './apitypes.js';
 //@ts-ignore
 import gapicConfig from './locations_client_config.json' with {type: 'json'};
 
-const version = pkg.version;
+const version = (pkg as any).version;
 
 /**
  *  Google Cloud Locations Client.

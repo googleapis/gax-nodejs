@@ -126,11 +126,18 @@ describe('grpc', () => {
   });
 
   class DummyStub {
+    address: any;
+    creds: any;
+    options: any;
     constructor(
-      public address: {},
-      public creds: {},
-      public options: {[index: string]: string | number | Function}
-    ) {}
+      address: any,
+      creds: any,
+      options: any
+    ) {
+      this.address = address;
+      this.creds = creds;
+      this.options = options;
+    }
   }
 
   describe('createStub', () => {
@@ -574,7 +581,7 @@ describe('grpc', () => {
 
       it('should throw an error if a file is not found', async () => {
         const findIncludePath = (
-          await esmock('../../src/grpc', {
+          await esmock('../../src/grpc.js', {
             fs: {
               existsSync: () => {
                 return false;
@@ -588,7 +595,7 @@ describe('grpc', () => {
       it('should return the correct resolved import path', async () => {
         const correctPath = path.join('test', 'example', 'import.proto');
         const findIncludePath = (
-          await esmock('../../src/grpc', {
+          await esmock('../../src/grpc.js', {
             fs: {
               existsSync(path: string) {
                 return path === correctPath;
@@ -673,11 +680,18 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      sandbox.stub(os, 'homedir').returns(tmpFolder);
+      // sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const client = gaxGrpc();
-      const [cert, key] = await client._detectClientCertificate();
+      const {GrpcClient} = await esmock('../../src/grpc.js', {
+        os: {
+          homedir: () => {
+            return tmpFolder;
+          },
+        },
+      });
+      const clientMock = new GrpcClient();
+      const [cert, key] = await clientMock._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
@@ -690,13 +704,21 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      sandbox.stub(os, 'homedir').returns(tmpFolder);
+
+      process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
+      const {GrpcClient} = await esmock('../../src/grpc.js', {
+        os: {
+          homedir: () => {
+            return tmpFolder;
+          },
+        },
+      });
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const client = gaxGrpc();
+      const clientMock = new GrpcClient();
       assert.rejects(
         // @ts-ignore
-        client.createStub(DummyStub, {universeDomain: 'example.com'}),
+        clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
         /configured universe domain/
       );
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.

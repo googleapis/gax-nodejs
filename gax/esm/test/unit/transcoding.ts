@@ -33,10 +33,10 @@ import {
   overrideHttpRules,
 } from '../../src/transcoding.js';
 import assert from 'assert';
-import * as protobuf from 'protobufjs';
+import protobuf from 'protobufjs';
 //@ts-ignore
 import echoProtoJson from '../fixtures/echo.json' with {type: 'json'};
-import {google} from '../../../protos/http';
+import {google} from '../../../protos/http.js';
 
 describe('gRPC to HTTP transcoding', () => {
   const parsedOptions: ParsedOptionsType = [

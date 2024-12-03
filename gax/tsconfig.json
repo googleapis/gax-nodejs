@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "emitDeclarationOnly": true,
+    "allowSyntheticDefaultImports": true,
     "lib": [
       "es2018",
       "dom"
@@ -26,5 +27,8 @@
     "esm/src/*/*.ts",
     "esm/test/system-test/*.ts",
     "esm/test/unit/*.ts",
+    // "esm/test/browser-test/**/*.ts",
+    // "esm/test/showcase-echo-client/**/*.ts",
+    // "esm/test/showcase-server/**/*.ts"
   ]
 }

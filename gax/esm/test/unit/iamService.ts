@@ -21,7 +21,7 @@ import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {IamClient} from '../../src/iamService.js';
-import * as protobuf from 'protobufjs';
+import protobuf from 'protobufjs';
 import {GrpcClient} from '../../src/grpc.js';
 
 function generateSampleMessage<T extends object>(instance: T) {
@@ -57,6 +57,9 @@ describe('IAM service', () => {
         projectId: 'bogus',
       });
       client.initialize();
+      console.log('what is protos?')
+      console.log(protos);
+      console.log(protos.google);
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );

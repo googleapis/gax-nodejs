@@ -35,8 +35,8 @@ import {overrideHttpRules} from './transcoding.js';
 
 export const SERVICE_ADDRESS = 'longrunning.googleapis.com';
 // @ts-ignore
-import pkg from '../../package.json' with {type: 'json'};
-const version = pkg.version;
+import pkg from '../../../package.json' with {type: 'json'};
+const version = (pkg as any).version;
 
 const DEFAULT_SERVICE_PORT = 443;
 const CODE_GEN_NAME_VERSION = 'gapic/0.7.1';

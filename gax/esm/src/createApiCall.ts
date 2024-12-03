@@ -29,7 +29,7 @@ import {
 } from './apitypes.js';
 import {Descriptor} from './descriptor.js';
 import {CallOptions, CallSettings, convertRetryOptions} from './gax.js';
-import {retryable} from './normalCalls/retries.js';
+import retryable from './normalCalls/retries.js';
 import {addTimeoutArg} from './normalCalls/timeout.js';
 import {StreamingApiCaller} from './streamingCalls/streamingApiCaller.js';
 import {warn} from './warnings.js';

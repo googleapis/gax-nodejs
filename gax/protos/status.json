@@ -1,4 +1,7 @@
 {
+  "options": {
+    "syntax": "proto3"
+  },
   "nested": {
     "google": {
       "nested": {
@@ -57,6 +60,23 @@
                 }
               }
             },
+            "ErrorInfo": {
+              "fields": {
+                "reason": {
+                  "type": "string",
+                  "id": 1
+                },
+                "domain": {
+                  "type": "string",
+                  "id": 2
+                },
+                "metadata": {
+                  "keyType": "string",
+                  "type": "string",
+                  "id": 3
+                }
+              }
+            },
             "RetryInfo": {
               "fields": {
                 "retryDelay": {
@@ -98,23 +118,6 @@
                       "id": 2
                     }
                   }
-                }
-              }
-            },
-            "ErrorInfo": {
-              "fields": {
-                "reason": {
-                  "type": "string",
-                  "id": 1
-                },
-                "domain": {
-                  "type": "string",
-                  "id": 2
-                },
-                "metadata": {
-                  "keyType": "string",
-                  "type": "string",
-                  "id": 3
                 }
               }
             },

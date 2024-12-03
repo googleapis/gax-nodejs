@@ -55,8 +55,8 @@ export {
   createDefaultBackoffSettings,
 } from './gax.js';
 // @ts-ignore
-import pkg from '../../package.json' with {type: 'json'};
-export const version = `${pkg.version}-fallback`;
+import pkg from '../../../package.json' with {type: 'json'};
+export const version = `${(pkg as any).version}-fallback`;
 
 export {
   BundleDescriptor,
@@ -143,7 +143,7 @@ export class GrpcClient {
         new GoogleAuth(options as GoogleAuthOptions);
     }
     this.fallback = options.fallback ? true : false;
-    this.grpcVersion = pkg.version;
+    this.grpcVersion = (pkg as any).version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
     this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
   }

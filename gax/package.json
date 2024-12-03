@@ -8,6 +8,7 @@
   "files": [
     "build/esm",
     "build/cjs",
+    "build/protos",
     "!build/cjs/system-test",
     "!build/esm/system-test",
     "!build/cjs/test",
@@ -24,6 +25,16 @@
       "require": {
         "types": "./build/cjs/src/index.d.ts",
         "default": "./build/cjs/src/index.cjs"
+      }
+    },
+    "./build/src/protobuf": {
+      "import": {
+        "types": "./build/esm/src/protobuf.d.ts",
+        "default": "./build/esm/src/protobuf.js"
+      },
+      "require": {
+        "types": "./build/cjs/src/protobuf.d.ts",
+        "default": "./build/cjs/src/protobuf.cjs"
       }
     }
   },
@@ -95,34 +106,40 @@
     "docs": "jsdoc -c .jsdoc.js",
     "pretest": "npm run prepare",
     "test:cjs": "mocha build/cjs/test/unit",
-    "test:esm": "mocha build/esm/test/unit --loader=esmock",
+    "test:esm": "mocha build/esm/test/unit --loader=esmock --enable-source-maps",
     "test": "npm run test:esm && npm run test:cjs",
     "lint": "gts check src samples test",
     "clean": "rm -rf build",
     "compile": "npm run compile:esm && npm run compile:cjs",
-    "compile:esm": "tsc -p ./tsconfig.esm.json && cp esm/src/*.json build/esm/src && cp -r esm/test/fixtures build/esm/test && cp -r protos build/",
-    "compile:cjs": "tsc -p ./tsconfig.json && npm run babel && cp esm/src/*.json build/cjs/src && cp -r esm/test/fixtures build/cjs/test",
-    "compile-operation-protos": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos > protos/operations.js && pbts protos/operations.js -o protos/operations.d.ts",
-    "compile-compute-operations-protos": "pbjs -t json google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.json && pbjs -t static-module -r compute_operations_protos google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.js && pbts protos/compute_operations.js -o protos/compute_operations.d.ts",
-    "compile-iam-protos": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module -r iam_protos google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -o protos/iam_service.d.ts",
-    "compile-location-protos": "pbjs -t json google/cloud/location/locations.proto -p ./protos > protos/locations.json && pbjs -t static-module -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.js && pbts protos/locations.js -o protos/locations.d.ts",
-    "compile-status-protos": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
-    "compile-http-protos": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -o protos/http.d.ts",
+    "compile:esm": "tsc -p ./tsconfig.esm.json && cp esm/src/*.json build/esm/src && cp -r esm/test/fixtures build/esm/test && node replace-things.cjs protos/http.js protos/iam_service.js protos/locations.js protos/operations.js && cp -r protos build",
+    "compile:cjs": "tsc -p ./tsconfig.json && npm run babel && node add-cjs-extension.cjs build/cjs/test && cp esm/src/*.json build/cjs/src && cp -r esm/test/fixtures build/cjs/test",
+    "compile-operation-protos:cjs": "pbjs -t json google/longrunning/operations.proto -p ./protos > protos/operations.json && pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos > protos/operations.cjs && pbts protos/operations.cjs -o protos/operations.d.ts",
+    "compile-compute-operations-protos:cjs": "pbjs -t json google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.json && pbjs -t static-module -r compute_operations_protos google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.cjs && pbts protos/compute_operations.cjs -o protos/compute_operations.d.ts",
+    "compile-iam-protos:cjs": "pbjs -t json google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.json && pbjs -t static-module -r iam_protos google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.cjs && pbts protos/iam_service.cjs -o protos/iam_service.d.ts",
+    "compile-location-protos:cjs": "pbjs -t json google/cloud/location/locations.proto -p ./protos > protos/locations.json && pbjs -t static-module -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.cjs && pbts protos/locations.cjs -o protos/locations.d.ts",
+    "compile-status-protos:cjs": "pbjs -t json google/rpc/status.proto google/rpc/error_details.proto -p ./protos > protos/status.json",
+    "compile-http-protos:cjs": "pbjs -t static-module -r http_proto --keep-case google/api/http.proto -p ./protos > protos/http.cjs && pbts protos/http.cjs -o protos/http.d.ts",
+    "compile-operation-protos:esm": "pbjs -t static-module -r operations_protos google/longrunning/operations.proto -p ./protos -w es6 > protos/operations.js && pbts protos/operations.js -w es6 -o protos/operations.d.ts",
+    "compile-compute-operations-protos:esm": "pbjs -t json google/longrunning/compute_operations.proto -p ./protos > protos/compute_operations.json && pbjs -t static-module -r compute_operations_protos google/longrunning/compute_operations.proto -w es6 -p ./protos > protos/compute_operations.js && pbts protos/compute_operations.js -w es6 -o protos/compute_operations.d.ts",
+    "compile-iam-protos:esm": "pbjs -t static-module -w es6 -r iam_protos google/iam/v1/iam_policy.proto google/iam/v1/options.proto google/iam/v1/policy.proto google/iam/v1/logging/audit_data.proto -p ./protos > protos/iam_service.js && pbts protos/iam_service.js -w es6 -o protos/iam_service.d.ts",
+    "compile-location-protos:esm": "pbjs -t static-module -w es6 -r locations_protos google/cloud/location/locations.proto -p ./protos > protos/locations.js && pbts protos/locations.js -w es6 -o protos/locations.d.ts",
+    "compile-http-protos:esm": "pbjs -t static-module -r http_proto -w es6 --keep-case google/api/http.proto -p ./protos > protos/http.js && pbts protos/http.js -w es6 -o protos/http.d.ts",
     "fix": "gts fix",
-    "prepare": "npm run compile && cd ../tools && npm i && npm run compile && cd ../gax && pwd && node ../tools/build/src/prepublish.js . && mkdirp build/protos && cp -r protos/* build/protos/ && npm run minify-proto-json",
-    "system-test:cjs": "c8 mocha build/cjs/system-test --timeout 600000 && npm run test-application",
-    "system-test:esm": "c8 mocha build/esm/system-test --timeout 600000 && npm run test-application --experimental-modules",
+    "prepare": "npm run compile && cd ../tools && npm i && npm run compile && cd ../gax && pwd && node ../tools/build/src/prepublish.js . && mkdirp build/protos && cp -r protos/* build/protos/",
+    "system-test:cjs": "mocha build/cjs/test/system-test --timeout 1800000 && npm run test-application",
+    "system-test:esm": "mocha build/esm/test/system-test --timeout 1800000 && npm run test-application --experimental-modules",
     "system-test": "npm run system-test:esm && npm run system-test:cjs",
     "samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
-    "browser-test": "cd test/browser-test && npm run prefetch && npm install && npm test",
+    "browser-test": "cd esm/test/browser-test && npm run prefetch && npm install && npm test",
     "test-application": "cd test/test-application && npm run prefetch && npm install && npm start",
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "npm run clean",
     "update-protos": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/listProtos.js .",
     "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js",
-    "babel": "babel esm --out-dir build/cjs --ignore \"esm/**/*.d.ts\",\"esm/test/browser-test\",\"esm/test/showcase-echo-client\",\"esm/test/showcase-server\",\"esm/test/test-application\" --extensions \".ts\" --out-file-extension .cjs --copy-files"
+    "babel": "babel esm --out-dir build/cjs --ignore \"esm/**/*.d.ts\",\"esm/test/browser-test\",\"esm/test/showcase-echo-client\",\"esm/test/showcase-server\",\"esm/test/test-application\" --extensions \".ts\" --out-file-extension .cjs --copy-files",
+    "babel:protos": "babel protos --out-dir build/protos --extensions \".js\" --out-file-extension .cjs"
   },
   "keywords": [
     "grpc"

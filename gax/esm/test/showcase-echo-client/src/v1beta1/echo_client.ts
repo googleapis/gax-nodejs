@@ -33,7 +33,7 @@ import type {
   LocationProtos,
 } from 'google-gax';
 import {Transform, PassThrough} from 'stream';
-import * as protos from '../../protos/protos';
+import * as protos from '../../protos/protos.js';
 //@ts-ignore
 import jsonProtos from '../../protos/protos.json' with {type: 'json'};
 

@@ -25,12 +25,12 @@ import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as routingHeader from './routingHeader.js';
 //@ts-ignore
 import gapicConfig from './iam_policy_service_client_config.json' with {type: 'json'};
-import * as protos from '../../protos/iam_service';
+import * as protos from '../../protos/iam_service.js';
 import * as fallback from './fallback.js';
 import type {Descriptors, ClientOptions, Callback} from './clientInterface.js';
 //@ts-ignore
-import pkg from '../../package.json' with {type: 'json'};
-let version = pkg.version;
+import pkg from '../../../package.json' with {type: 'json'};
+let version = (pkg as any).version;
 //@ts-ignore
 import jsonProtos from '../../protos/iam_service.json' with {type: 'json'};
 

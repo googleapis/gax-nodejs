@@ -4,7 +4,8 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "lib": ["ES2018", "DOM"]
+    "lib": ["ES2018", "DOM"],
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*.ts",

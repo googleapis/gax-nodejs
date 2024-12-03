@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as protobuf from 'protobufjs';
+import protobuf from 'protobufjs';
 import {Descriptor} from '../descriptor.js';
 import {OperationsClient} from '../operationsClient.js';
 import {LongrunningApiCaller} from './longRunningApiCaller.js';

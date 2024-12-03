@@ -42,7 +42,7 @@ import {addTimeoutArg} from './timeout.js';
  * @param {GRPCCallOtherArgs} otherArgs - the additional arguments to be passed to func.
  * @return {SimpleCallbackFunction} A function that will retry.
  */
-export function retryable(
+export default function retryable(
   func: GRPCCall,
   retry: RetryOptions,
   otherArgs: GRPCCallOtherArgs,

@@ -229,6 +229,8 @@ async function buildListOfProtos(
     const directory = path.dirname(file);
     const content = await readFile(file);
     const list = JSON.parse(content.toString()).map((filePath: string) =>
+      // console.log(esm);
+      // console.log(path.join(directory, '..', normalizePath(filePath)));
       // If we're in ESM, we're going to be in a directory level below normal
       esm
         ? path.join(directory, '..', normalizePath(filePath))
