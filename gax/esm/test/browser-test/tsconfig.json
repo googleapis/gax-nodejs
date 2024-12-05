@@ -4,10 +4,8 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "target": "ES2021",
     "lib": ["ES2018", "DOM"],
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "src/**/*.ts",

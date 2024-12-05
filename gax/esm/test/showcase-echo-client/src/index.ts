@@ -16,12 +16,12 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-import * as v1beta1 from './v1beta1/index.js';
+import * as v1beta1 from './v1beta1';
 const EchoClient = v1beta1.EchoClient;
 type EchoClient = v1beta1.EchoClient;
 const SequenceServiceClient = v1beta1.SequenceServiceClient;
 type SequenceServiceClient = v1beta1.SequenceServiceClient;
 export {v1beta1, EchoClient, SequenceServiceClient};
 export default {v1beta1, EchoClient, SequenceServiceClient};
-import * as protos from '../../protos/protos.js';
+import * as protos from '../protos/protos';
 export {protos};

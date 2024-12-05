@@ -5,26 +5,9 @@
   "repository": "googleapis/nodejs-showcase",
   "license": "Apache-2.0",
   "author": "Google LLC",
-  "type": "module",
-  "main": "./build/cjs/src/index.cjs",
-  "types": "./build/cjs/src/index.d.ts",
   "files": [
-    "build/esm",
-    "build/cjs",
-    "build/protos"
+    "build/src"
   ],
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./build/esm/src/index.d.ts",
-        "default": "./build/esm/src/index.js"
-      },
-      "require": {
-        "types": "./build/cjs/src/index.d.ts",
-        "default": "./build/cjs/src/index.cjs"
-      }
-    }
-  },
   "keywords": [
     "google apis client",
     "google api client",
@@ -41,11 +24,8 @@
   ],
   "scripts": {
     "clean": "rm -rf build",
-    "compile:cjs": "tsc -p ./tsconfig.json && npm run babel && minifyProtoJson",
-    "babel": "babel esm --out-dir build/cjs --extensions \".ts\" --ignore \"esm/**/*.d.ts\" --out-file-extension .cjs --copy-files",
-    "compile:esm": "tsc -p ./tsconfig.esm.json && cp -r ./protos build/ && minifyProtoJson",
-    "compile": "npm run compile:esm && npm run compile:cjs",
-    "compile-protos": "compileProtos esm/src --esm",
+    "compile": "tsc -p ./tsconfig.json && minifyProtoJson",
+    "compile-protos": "compileProtos src",
     "prefetch": "rm -rf node_modules package-lock.json google-gax*.tgz gapic-tools*.tgz && cd ../../.. && npm pack && mv google-gax*.tgz esm/test/showcase-echo-client/google-gax.tgz && cd ../tools && npm install && npm pack && mv gapic-tools*.tgz ../gax/esm/test/showcase-echo-client/gapic-tools.tgz",
     "prepare": "npm run clean && npm run compile-protos && npm run compile "
   },

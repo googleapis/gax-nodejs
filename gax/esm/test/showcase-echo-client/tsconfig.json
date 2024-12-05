@@ -1,18 +1,9 @@
 {
   "extends": "../../../node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "rootDir": "esm",
+    "rootDir": ".",
+    "outDir": "build",
     "resolveJsonModule": true,
-    "moduleResolution": "node",
-    "allowJs": true,
-    "esModuleInterop": true,
-    "sourceMap": false,
-    "module": "CommonJS",
-    "declaration": true,
-    "strict": true,
-    "isolatedModules": true,
-    "skipLibCheck": true,
-    "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "lib": [
       "es2018",
@@ -20,11 +11,7 @@
     ]
   },
   "include": [
-    "esm/src/*.ts",
-    "esm/src/**/*.ts",
-  ],
-  "exclude": [
-    "../../../node_modules",
-    "node_modules"
+    "src/*.ts",
+    "src/**/*.ts",
   ]
 }

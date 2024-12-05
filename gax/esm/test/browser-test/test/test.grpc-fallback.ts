@@ -20,8 +20,9 @@ import assert from 'assert';
 import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
 import {protobuf, GoogleAuth, fallback} from 'google-gax';
+//@ts-ignore
 import {EchoClient} from 'showcase-echo-client';
-
+//@ts-ignore
 import echoProtoJson = require('showcase-echo-client/build/protos/protos.json');
 
 const authStub = {

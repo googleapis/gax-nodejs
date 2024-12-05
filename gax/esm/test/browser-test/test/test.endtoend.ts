@@ -17,6 +17,7 @@
 import assert from 'assert';
 import {describe, it, before} from 'mocha';
 import {GoogleAuth} from 'google-gax';
+//@ts-ignore
 import {EchoClient} from 'showcase-echo-client';
 
 function sleep(timeout: number) {
@@ -101,7 +102,7 @@ describe('Run tests against gRPC server', () => {
       pageSize: 2,
     };
     const [response] = await client.pagedExpand(request);
-    const result = response.map(r => r.content);
+    const result = response.map((r: any) => r.content);
     assert.deepStrictEqual(words, result);
   });
 
