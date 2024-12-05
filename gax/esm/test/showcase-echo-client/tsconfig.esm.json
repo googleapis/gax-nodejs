@@ -1,5 +1,5 @@
 {
-    "extends": "./node_modules/gts/tsconfig-google.json",
+    "extends": "../../../node_modules/gts/tsconfig-google.json",
     "compilerOptions": {
       "rootDir": ".",
       "outDir": "build",
@@ -9,6 +9,7 @@
       "esModuleInterop": true,
       "sourceMap": false,
       "allowJs": true,
+      "allowSyntheticDefaultImports": true,
       "lib": [
         "es2020",
         "DOM"
@@ -16,11 +17,9 @@
     },
     "include": [
         "esm/src/*.ts",
-        "tools/src/listProtos.ts",
-        "tools/src/minify.ts",
-        "tools/src/prepublish.ts",
-        "esm/src/*/*.ts",
-        "esm/test/system-test/*.ts",
-        "esm/test/unit/*.ts",
-      ]
+        "esm/src/**/*.ts",
+      ],
+    "exclude": [
+      "node_modules"
+    ]
 }

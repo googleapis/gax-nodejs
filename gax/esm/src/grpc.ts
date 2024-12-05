@@ -27,12 +27,20 @@ import protobuf from 'protobufjs';
 import objectHash from 'object-hash';
 import {fileURLToPath} from 'url';
 //@ts-ignore
-import grpcPkg from '@grpc/grpc-js/package.json' with {type: 'json'};
+// import grpcPkg from '@grpc/grpc-js/package.json' with {type: 'json'};
 import * as gax from './gax.js';
-import {ClientOptions} from '@grpc/grpc-js/build/src/client';
+import {ClientOptions} from '@grpc/grpc-js/build/src/client.js';
 //@ts-ignore
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const grpcPkg = fs.readFile('your_file.txt', 'utf8', (err, data) => {
+  if (err) {
+    console.error(err);
+    return '';
+  }
+
+  return data;
+});
 const googleProtoFilesDir = path.join(
   dirname,
   '..',
@@ -127,7 +135,7 @@ export class ClientStub extends grpc.Client {
 export class GrpcClient {
   auth: GoogleAuth;
   grpc: GrpcModule;
-  grpcVersion: string;
+  grpcVersion!: string;
   fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
   httpRules?: Array<google.api.IHttpRule>;
@@ -193,8 +201,14 @@ export class GrpcClient {
       this.grpcVersion = '';
     } else {
       this.grpc = grpc;
-      this.grpcVersion = grpcPkg.version;
+      this.getVersion();
     }
+  }
+
+  async getVersion() {
+    this.grpcVersion =
+      JSON.parse(await readFileAsync('@grpc/grpc-js/package.json')).version ||
+      '';
   }
 
   /**

@@ -15,7 +15,7 @@
  */
 
 import execa from 'execa';
-import * as download from 'download';
+import download from 'download';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';

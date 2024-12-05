@@ -28,6 +28,7 @@ export const gaxProtos = path.join(
   require.resolve('google-gax'),
   '..',
   '..',
+  '..',
   'protos'
 );
 const readdir = util.promisify(fs.readdir);
@@ -67,6 +68,7 @@ async function findProtoJsonFiles(directory: string): Promise<string[]> {
   const files = await readdir(directory);
   for (const file of files) {
     const fullPath = path.join(directory, file);
+    console.log(fullPath);
     const fileStat = await stat(fullPath);
     if (fileStat.isFile() && file.match(PROTO_LIST_REGEX)) {
       result.push(fullPath);
@@ -229,8 +231,6 @@ async function buildListOfProtos(
     const directory = path.dirname(file);
     const content = await readFile(file);
     const list = JSON.parse(content.toString()).map((filePath: string) =>
-      // console.log(esm);
-      // console.log(path.join(directory, '..', normalizePath(filePath)));
       // If we're in ESM, we're going to be in a directory level below normal
       esm
         ? path.join(directory, '..', normalizePath(filePath))
@@ -393,6 +393,8 @@ export async function generateRootName(directories: string[]): Promise<string> {
  * `./src` folder of the given client library.
  */
 export async function main(parameters: string[]): Promise<void> {
+  console.log("PWD")
+  console.log(process.cwd());
   const protoJsonFiles: string[] = [];
   let skipJson = false;
   let esm = false;

@@ -138,8 +138,7 @@
     "precompile": "npm run clean",
     "update-protos": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/listProtos.js .",
     "minify-proto-json": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/minify.js",
-    "babel": "babel esm --out-dir build/cjs --ignore \"esm/**/*.d.ts\",\"esm/test/browser-test\",\"esm/test/showcase-echo-client\",\"esm/test/showcase-server\",\"esm/test/test-application\" --extensions \".ts\" --out-file-extension .cjs --copy-files",
-    "babel:protos": "babel protos --out-dir build/protos --extensions \".js\" --out-file-extension .cjs"
+    "babel": "babel esm --out-dir build/cjs --ignore \"esm/**/*.d.ts\",\"esm/test/browser-test\",\"esm/test/showcase-echo-client\",\"esm/test/showcase-server\",\"esm/test/test-application\" --extensions \".ts\" --out-file-extension .cjs --copy-files"
   },
   "keywords": [
     "grpc"

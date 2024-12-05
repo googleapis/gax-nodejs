@@ -33,9 +33,9 @@ import type {
   LocationProtos,
 } from 'google-gax';
 import {Transform, PassThrough} from 'stream';
-import * as protos from '../../protos/protos.js';
+import * as protos from '../../../protos/protos.js';
 //@ts-ignore
-import jsonProtos from '../../protos/protos.json' with {type: 'json'};
+import jsonProtos from '../../../protos/protos.json' with {type: 'json'};
 
 /**
  * Client JSON configuration object, loaded from
@@ -45,7 +45,7 @@ import jsonProtos from '../../protos/protos.json' with {type: 'json'};
 //@ts-ignore
 import gapicConfig from './echo_client_config.json' with {type: 'json'};
 //@ts-ignore
-import pkg from '../../../package.json' with {type: 'json'};
+import pkg from '../../../../package.json' with {type: 'json'};
 const version = pkg.version;
 
 /**
@@ -171,6 +171,7 @@ export class EchoClient {
     }
 
     // Choose either gRPC or proto-over-HTTP implementation of google-gax.
+    // @ts-ignore
     this._gaxModule = opts.fallback ? gaxInstance.fallback : gaxInstance;
 
     // Create a `gaxGrpc` object, with any grpc-specific options sent to the client.

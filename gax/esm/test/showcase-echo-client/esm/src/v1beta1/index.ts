@@ -16,5 +16,5 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-export {EchoClient} from './echo_client';
-export {SequenceServiceClient} from './sequence_service_client';
+export {EchoClient} from './echo_client.js';
+export {SequenceServiceClient} from './sequence_service_client.js';
