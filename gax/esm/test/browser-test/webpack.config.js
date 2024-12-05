@@ -13,20 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const path = require('path');
 
 module.exports = {
-  entry: './build/test/test.endtoend.js',
+  entry: './build/src/index.js',
   resolve: {
     extensions: ['.ts', '.js', '.json'],
-    fallback: {
-      dns: false,
-      http2: false,
-      net: false,
-      tls: false,
-      fs: false,
-      child_process: false,
-    },
   },
   devtool: 'inline-source-map',
   module: {
@@ -49,10 +40,20 @@ module.exports = {
         use: 'null-loader',
       },
       {
-        test: /build[\\/]src[\\/]grpc\.js$/,
+        test: /build[\\/]cjs[\\/]src[\\/]grpc\.cjs/,
         use: 'null-loader',
       },
     ],
+  },
+  node: {
+    fs: 'empty',
+    child_process: 'empty',
+    http2: 'empty',
+    net: 'empty',
+    dns: 'empty',
+    tls: 'empty',
+    './framer': 'empty',
+    framer: 'empty'
   },
   mode: 'production',
 };

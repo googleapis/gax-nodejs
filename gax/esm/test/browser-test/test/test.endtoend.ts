@@ -15,13 +15,39 @@
  */
 
 import assert from 'assert';
-import {describe, it, before, afterEach} from 'mocha';
+import {describe, it, before, beforeEach, afterEach} from 'mocha';
 import {GoogleAuth} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 import * as dns from 'dns';
 import * as http2 from 'http2';
 import * as net from 'net';
 import * as tls from 'tls';
+import * as sinon from 'sinon'; // Import Sinon.JS for mocking
+import { createByteLengthFunction } from 'google-gax';
+
+// Mock the http2 module with constants
+const http2Mock = {
+  // ... other http2 mocks if needed ...
+  constants: {
+    HTTP2_HEADER_AUTHORITY: ':authority', 
+    HTTP2_HEADER_STATUS: ':status', // Add this line
+    // ... other constants as needed ...
+  },
+};
+
+
+// ... in your afterEach hook:
+
+// ... (rest of your code) ...
+
+// Mock the http2 module with constants (using Sinon.JS)
+// const http2Mock = {
+//   constants: {
+//     HTTP2_HEADER_AUTHORITY: ':authority',
+//     // ... add other necessary constants from http2.constants ...
+//   },
+//   // ... other http2 mocks if needed ...
+// };
 
 // // Mock 'dns.lookup'
 // (dns.lookup as any).__original = dns.lookup;
@@ -35,17 +61,6 @@ import * as tls from 'tls';
 //   }
 // );
 
-// // Mock 'http2.connect'
-// (http2.connect as any).__original = http2.connect;
-// (http2.connect as any).mockImplementation(
-//   (hostname: any, options: any, callback: any) => {
-//     if (hostname === 'localhost') {
-//       callback(null, '127.0.0.1', 4);
-//     } else {
-//       callback(new Error('DNS lookup failed'));
-//     }
-//   }
-// );
 
 // // Mock 'net.createConnection'
 // (net.createConnection as any).__original = net.createConnection;
@@ -78,6 +93,7 @@ function sleep(timeout: number) {
 }
 
 describe('Run tests against gRPC server', () => {
+  let http2ConstantsStub: any;
   const authStub = {
     getClient: async () => {
       return {
@@ -90,13 +106,6 @@ describe('Run tests against gRPC server', () => {
     },
   };
 
-  // afterEach(() => {
-  //   // Restore original functions after each test
-  //   (dns.lookup as any).mockRestore();
-  //   (http2.connect as any).mockRestore();
-  //   (net.createConnection as any).mockRestore();
-  //   (tls.connect as any).mockRestore();
-  // });
 
   const opts = {
     auth: authStub as unknown as GoogleAuth,

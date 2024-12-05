@@ -215,4 +215,19 @@ describe('Run system tests for some libraries', () => {
       }
     });
   });
+
+  // Tasks is currently published in dual-format
+  describe('tasks', () => {
+    before(async () => {
+      await preparePackage('tasks', true);
+    });
+    it('should pass system tests', async function () {
+      const result = await runSystemTest('tasks', true);
+      if (result === TestResult.SKIP) {
+        this.skip();
+      } else if (result === TestResult.FAIL) {
+        throw new Error('Test failed');
+      }
+    });
+  });
 });

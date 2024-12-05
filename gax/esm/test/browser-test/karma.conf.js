@@ -33,7 +33,7 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'child-process', 'webpack'],
+    frameworks: ['mocha', 'child-process'],
 
     client: {
       childProcess: {

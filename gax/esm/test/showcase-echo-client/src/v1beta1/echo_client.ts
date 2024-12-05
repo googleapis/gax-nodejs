@@ -163,7 +163,7 @@ export class EchoClient {
 
     // Load google-gax module synchronously if needed
     if (!gaxInstance) {
-      gaxInstance = gax as typeof gax;
+      gaxInstance = require('google-gax') as typeof gax;
     }
 
     // Choose either gRPC or proto-over-HTTP implementation of google-gax.

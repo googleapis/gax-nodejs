@@ -74,7 +74,7 @@ export {OperationsClient} from './operationsClient.js';
 export {IamClient} from './iamService.js';
 export {LocationsClient} from './locationService.js';
 
-export const createByteLengthFunction = GrpcClient.createByteLengthFunction;
+export const createByteLengthFunction = GrpcClient?.createByteLengthFunction;
 //@ts-ignore
 import pkg from '../../../package.json' with {type: 'json'};
 export const version = (pkg as any).version;

@@ -4,10 +4,10 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "module": "commonjs",
     "lib": ["ES2018", "DOM"],
     "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*.ts",

@@ -197,6 +197,7 @@ export class GrpcClient {
     }
   }
 
+
   /**
    * Creates a gRPC credentials. It asks the auth data if necessary.
    * @private
