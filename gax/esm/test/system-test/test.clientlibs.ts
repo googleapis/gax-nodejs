@@ -34,8 +34,7 @@ const clonedRepos: Array<string> = []; // keeps track of already cloned repos
 const monoRepoDirectory = 'google-cloud-node';
 const testDir = path.join(process.cwd(), '.system-test-run.js');
 const gaxDir = path.resolve(dirname, '..', '..', '..', '..');
-console.log("GAX DIR")
-console.log(gaxDir)
+
 // We will pack google-gax using `npm pack`, defining some constants to make it
 // easier to consume that tarball
 // eslint-disable-next-line @typescript-eslint/no-var-requires

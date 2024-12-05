@@ -4,7 +4,9 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
+    "module": "commonjs",
     "lib": ["ES2018", "DOM"],
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true
   },
   "include": [

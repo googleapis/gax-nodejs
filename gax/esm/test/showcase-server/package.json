@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "keywords": [],
   "scripts": {
-    "compile": "tsc",
+    "compile": "tsc --skipDefaultLibCheck",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run lint",

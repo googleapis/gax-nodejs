@@ -17,7 +17,7 @@
 // ** All changes to this file may be overwritten. **
 
 /* global window */
-import * as gax from 'google-gax';
+import type * as gax from 'google-gax';
 import type {
   Callback,
   CallOptions,
@@ -30,19 +30,14 @@ import type {
 } from 'google-gax';
 import {PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
-//@ts-ignore
-import jsonProtos from '../../protos/protos.json' with {type: 'json'};
-
+import jsonProtos = require('../../protos/protos.json');
 /**
  * Client JSON configuration object, loaded from
  * `src/v1beta1/sequence_service_client_config.json`.
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
-//@ts-ignore
-import gapicConfig from './sequence_service_client_config.json' with {type: 'json'};
-//@ts-ignore
-import pkg from '../../../package.json' with {type: 'json'};
-const version = pkg.version;
+import * as gapicConfig from './sequence_service_client_config.json';
+const version = require('../../../package.json').version;
 /**
  * @class
  * @memberof v1beta1
@@ -154,7 +149,7 @@ export class SequenceServiceClient {
 
     // Load google-gax module synchronously if needed
     if (!gaxInstance) {
-      gaxInstance = gax as typeof gax;
+      gaxInstance = require('google-gax') as typeof gax;
     }
 
     // Choose either gRPC or proto-over-HTTP implementation of google-gax.

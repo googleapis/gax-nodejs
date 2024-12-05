@@ -47,7 +47,7 @@ function gaxGrpc(options?: GrpcClientOptions) {
   return new GrpcClient(options);
 }
 
-describe('grpc', () => {
+describe.only('grpc', () => {
   describe('grpcVersion', () => {
     it('holds the proper grpc version', () => {
       assert.strictEqual(gaxGrpc().grpcVersion, grpcVersion);

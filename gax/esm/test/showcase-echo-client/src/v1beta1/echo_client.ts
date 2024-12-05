@@ -34,19 +34,15 @@ import type {
 } from 'google-gax';
 import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
-//@ts-ignore
-import jsonProtos from '../../protos/protos.json' with {type: 'json'};
+import jsonProtos = require('../../protos/protos.json');
 
 /**
  * Client JSON configuration object, loaded from
  * `src/v1beta1/echo_client_config.json`.
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
-//@ts-ignore
-import gapicConfig from './echo_client_config.json' with {type: 'json'};
-//@ts-ignore
-import pkg from '../../../package.json' with {type: 'json'};
-const version = pkg.version;
+import * as gapicConfig from './echo_client_config.json';
+const version = require('../../../package.json').version;
 
 /**
  *  This service is used showcase the four main types of rpcs - unary, server

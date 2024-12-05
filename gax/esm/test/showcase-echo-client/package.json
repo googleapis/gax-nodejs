@@ -5,8 +5,10 @@
   "repository": "googleapis/nodejs-showcase",
   "license": "Apache-2.0",
   "author": "Google LLC",
+  "main": "build/src/index.js",
   "files": [
-    "build/src"
+    "build/src",
+    "build/protos"
   ],
   "keywords": [
     "google apis client",
@@ -24,7 +26,7 @@
   ],
   "scripts": {
     "clean": "rm -rf build",
-    "compile": "tsc -p ./tsconfig.json && minifyProtoJson",
+    "compile": "tsc -p ./tsconfig.json && cp -r protos build/ && minifyProtoJson",
     "compile-protos": "compileProtos src",
     "prefetch": "rm -rf node_modules package-lock.json google-gax*.tgz gapic-tools*.tgz && cd ../../.. && npm pack && mv google-gax*.tgz esm/test/showcase-echo-client/google-gax.tgz && cd ../tools && npm install && npm pack && mv gapic-tools*.tgz ../gax/esm/test/showcase-echo-client/gapic-tools.tgz",
     "prepare": "npm run clean && npm run compile-protos && npm run compile "

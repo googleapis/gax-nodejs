@@ -33,7 +33,7 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'child-process'],
+    frameworks: ['mocha', 'child-process', 'webpack'],
 
     client: {
       childProcess: {
@@ -56,7 +56,7 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      './test/*.ts': ['webpack', 'sourcemap'],
+      './test/*.ts': ['webpack', 'sourcemap', 'typescript'],
     },
 
     webpack: webpackConfig,
@@ -77,7 +77,7 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: false,
+    autoWatch: true,
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher

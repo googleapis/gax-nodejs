@@ -15,10 +15,61 @@
  */
 
 import assert from 'assert';
-import {describe, it, before} from 'mocha';
+import {describe, it, before, afterEach} from 'mocha';
 import {GoogleAuth} from 'google-gax';
-//@ts-ignore
 import {EchoClient} from 'showcase-echo-client';
+import * as dns from 'dns';
+import * as http2 from 'http2';
+import * as net from 'net';
+import * as tls from 'tls';
+
+// // Mock 'dns.lookup'
+// (dns.lookup as any).__original = dns.lookup;
+// (dns.lookup as any).mockImplementation(
+//   (hostname: any, options: any, callback: any) => {
+//     if (hostname === 'localhost') {
+//       callback(null, '127.0.0.1', 4);
+//     } else {
+//       callback(new Error('DNS lookup failed'));
+//     }
+//   }
+// );
+
+// // Mock 'http2.connect'
+// (http2.connect as any).__original = http2.connect;
+// (http2.connect as any).mockImplementation(
+//   (hostname: any, options: any, callback: any) => {
+//     if (hostname === 'localhost') {
+//       callback(null, '127.0.0.1', 4);
+//     } else {
+//       callback(new Error('DNS lookup failed'));
+//     }
+//   }
+// );
+
+// // Mock 'net.createConnection'
+// (net.createConnection as any).__original = net.createConnection;
+// (net.createConnection as any).mockImplementation(
+//   (hostname: any, options: any, callback: any) => {
+//     if (hostname === 'localhost') {
+//       callback(null, '127.0.0.1', 4);
+//     } else {
+//       callback(new Error('DNS lookup failed'));
+//     }
+//   }
+// );
+
+// // Mock 'tls.connect'
+// (tls.connect as any).__original = tls.connect;
+// (tls.connect as any).mockImplementation(
+//   (hostname: any, options: any, callback: any) => {
+//     if (hostname === 'localhost') {
+//       callback(null, '127.0.0.1', 4);
+//     } else {
+//       callback(new Error('DNS lookup failed'));
+//     }
+//   }
+// );
 
 function sleep(timeout: number) {
   return new Promise(resolve => {
@@ -38,6 +89,14 @@ describe('Run tests against gRPC server', () => {
       };
     },
   };
+
+  // afterEach(() => {
+  //   // Restore original functions after each test
+  //   (dns.lookup as any).mockRestore();
+  //   (http2.connect as any).mockRestore();
+  //   (net.createConnection as any).mockRestore();
+  //   (tls.connect as any).mockRestore();
+  // });
 
   const opts = {
     auth: authStub as unknown as GoogleAuth,

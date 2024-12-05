@@ -26,21 +26,13 @@ import * as path from 'path';
 import protobuf from 'protobufjs';
 import objectHash from 'object-hash';
 import {fileURLToPath} from 'url';
-//@ts-ignore
-// import grpcPkg from '@grpc/grpc-js/package.json' with {type: 'json'};
 import * as gax from './gax.js';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client.js';
 //@ts-ignore
+import grpcModulePackageJson from '@grpc/grpc-js/package.json' with {type: 'json'};
+//@ts-ignore
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const grpcPkg = fs.readFile('your_file.txt', 'utf8', (err, data) => {
-  if (err) {
-    console.error(err);
-    return '';
-  }
-
-  return data;
-});
 const googleProtoFilesDir = path.join(
   dirname,
   '..',
@@ -127,7 +119,7 @@ export interface ClientStubOptions {
   key?: string;
   universeDomain?: string;
 }
-
+console.log(typeof grpc.Client);
 export class ClientStub extends grpc.Client {
   [name: string]: Function;
 }
@@ -201,14 +193,8 @@ export class GrpcClient {
       this.grpcVersion = '';
     } else {
       this.grpc = grpc;
-      this.getVersion();
+      this.grpcVersion = grpcModulePackageJson.version;
     }
-  }
-
-  async getVersion() {
-    this.grpcVersion =
-      JSON.parse(await readFileAsync('@grpc/grpc-js/package.json')).version ||
-      '';
   }
 
   /**
@@ -588,8 +574,6 @@ export class GrpcClient {
   }
 }
 
-// console.log('PROTOBUF:')
-// console.log(protobuf)
 export class GoogleProtoFilesRoot extends protobuf.Root {
   constructor(...args: Array<{}>) {
     super(...args);
