@@ -2,9 +2,9 @@
   "name": "google-gax",
   "version": "4.5.0",
   "description": "Google API Extensions",
-  "main": "./build/cjs/src/index.cjs",
+  "main": "./build/esm/src/index.js",
   "type": "module",
-  "types": "./build/cjs/src/index.d.ts",
+  "types": "./build/esm/src/index.d.ts",
   "files": [
     "build/esm",
     "build/cjs",

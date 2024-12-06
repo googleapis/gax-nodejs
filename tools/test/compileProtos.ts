@@ -103,7 +103,7 @@ describe('compileProtos tool', () => {
     assert(
       js
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes('require("google-gax/build/cjs/src/protobuf").protobufMinimal')
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
@@ -148,7 +148,7 @@ describe('compileProtos tool', () => {
     assert(
       cjs
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes('require("google-gax/build/cjs/src/protobuf").protobufMinimal')
     );
     assert(!cjs.toString().includes('require("protobufjs/minimal")'));
 
@@ -165,7 +165,7 @@ describe('compileProtos tool', () => {
       js
         .toString()
         .includes(
-          'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
+          'import {protobufMinimal  as $protobuf} from "google-gax/build/esm/src/protobuf.js"'
         )
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
@@ -208,7 +208,7 @@ describe('compileProtos tool', () => {
     assert(
       js
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes('require("google-gax/build/cjs/src/protobuf").protobufMinimal')
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
