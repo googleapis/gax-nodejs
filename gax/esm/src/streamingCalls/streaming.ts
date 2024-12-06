@@ -319,7 +319,7 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
         this.eventForwardHelper(retryStream);
         this.setReadable(retryStream!);
       } else {
-        const retryStream = retryRequest(null, {
+        const retryStream = retryRequest(null!, {
           objectMode: true,
           request: () => {
             if (this._isCancelCalled) {
