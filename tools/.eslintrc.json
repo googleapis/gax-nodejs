@@ -1,12 +1,4 @@
 {
   "extends": "./node_modules/gts",
-  "root": true,
-  "globals": {
-    "require": true
-  },
-  "env": {
-    "browser": true,
-    "node": true,
-    "es6": true
-  },
+  "root": true
 }
