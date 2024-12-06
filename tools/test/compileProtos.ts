@@ -63,7 +63,6 @@ describe('compileProtos tool', () => {
   // After publishing dual-format, we can re-enable this test to see it works.
   // In the meantime, since gax uses compileProtos, we'll see it work in system tests
   it.skip('fetches gax from the appropriate place', async () => {
-    console.log(__dirname)
     assert.deepStrictEqual(fs.readdirSync(compileProtos.gaxProtos), [
       'compute_operations.d.ts',
       'compute_operations.js',
