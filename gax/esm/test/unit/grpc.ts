@@ -47,7 +47,7 @@ function gaxGrpc(options?: GrpcClientOptions) {
   return new GrpcClient(options);
 }
 
-describe.only('grpc', () => {
+describe('grpc', () => {
   describe('grpcVersion', () => {
     it('holds the proper grpc version', () => {
       assert.strictEqual(gaxGrpc().grpcVersion, grpcVersion);
@@ -129,11 +129,7 @@ describe.only('grpc', () => {
     address: any;
     creds: any;
     options: any;
-    constructor(
-      address: any,
-      creds: any,
-      options: any
-    ) {
+    constructor(address: any, creds: any, options: any) {
       this.address = address;
       this.creds = creds;
       this.options = options;

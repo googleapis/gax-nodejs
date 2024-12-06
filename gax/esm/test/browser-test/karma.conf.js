@@ -18,7 +18,6 @@
 // Use `npm run browser-test` in the main google-gax package to run browser tests with Karma.
 
 const path = require('path');
-// eslint-disable-next-line n/no-missing-require
 const isDocker = require('is-docker')();
 const webpackConfig = require('./webpack.config.js');
 webpackConfig.performance = {hints: false};

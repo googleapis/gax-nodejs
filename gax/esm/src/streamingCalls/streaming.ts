@@ -37,7 +37,7 @@ import {ResponseType} from '../apitypes.js';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import duplexify from 'duplexify';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-import retryRequest, { Options } from 'retry-request';
+import retryRequest, {Options} from 'retry-request';
 
 // Directly copy over Duplexify interfaces
 export interface DuplexifyOptions extends DuplexOptions {

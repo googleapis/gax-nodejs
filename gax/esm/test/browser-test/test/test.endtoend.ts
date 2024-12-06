@@ -23,18 +23,17 @@ import * as http2 from 'http2';
 import * as net from 'net';
 import * as tls from 'tls';
 import * as sinon from 'sinon'; // Import Sinon.JS for mocking
-import { createByteLengthFunction } from 'google-gax';
+import {createByteLengthFunction} from 'google-gax';
 
 // Mock the http2 module with constants
 const http2Mock = {
   // ... other http2 mocks if needed ...
   constants: {
-    HTTP2_HEADER_AUTHORITY: ':authority', 
+    HTTP2_HEADER_AUTHORITY: ':authority',
     HTTP2_HEADER_STATUS: ':status', // Add this line
     // ... other constants as needed ...
   },
 };
-
 
 // ... in your afterEach hook:
 
@@ -60,7 +59,6 @@ const http2Mock = {
 //     }
 //   }
 // );
-
 
 // // Mock 'net.createConnection'
 // (net.createConnection as any).__original = net.createConnection;
@@ -105,7 +103,6 @@ describe('Run tests against gRPC server', () => {
       };
     },
   };
-
 
   const opts = {
     auth: authStub as unknown as GoogleAuth,

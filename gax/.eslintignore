@@ -8,3 +8,6 @@ samples/generated/
 **/*.d.ts
 *.d.ts
 **/**.d.ts
+samples
+esm/test/browser-test/karma.conf.js
+esm/test/browser-test/webpack.config.js

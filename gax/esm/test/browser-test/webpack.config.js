@@ -53,7 +53,7 @@ module.exports = {
     dns: 'empty',
     tls: 'empty',
     './framer': 'empty',
-    framer: 'empty'
+    framer: 'empty',
   },
   mode: 'production',
 };

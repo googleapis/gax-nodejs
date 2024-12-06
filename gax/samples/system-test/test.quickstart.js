@@ -1,3 +1,4 @@
+
 /**
  * Copyright 2020 Google LLC
  *
@@ -23,7 +24,6 @@ const cp = require('child_process');
 
 const execSync = cmd => cp.execSync(cmd, {encoding: 'utf-8'});
 
-// eslint-disable-next-line no-undef
 const cwd = path.join(__dirname, '..');
 
 describe('Quickstart', () => {
