@@ -46,43 +46,44 @@ import toolsPkg from '../../../../../tools/package.json' with {type: 'json'};
 const toolsBasename = `${toolsPkg.name}-${toolsPkg.version}.tgz`;
 const toolsTarball = path.join(gaxDir, toolsBasename);
 
-async function latestRelease(
-  cwd: string,
-  inMonorepo: boolean
-): Promise<string> {
-  // tags in the monorepo follow the format <libraryname>-major.minor.patch e.g. batch-0.0.1
-  // or the format <libraryname>-vmajor.minor.patch e.g. batch-v0.0.1
-  // tags in individual repos follow the format vmajor.minor.patch e.g. v0.0.1
-  const {stdout} = inMonorepo
-    ? await execa('git', ['tag', '--list', `${cwd}-*`], {
-        cwd: monoRepoDirectory,
-      })
-    : await execa('git', ['tag', '--list'], {cwd});
-  // regex escape characters in template literal need to be escaped twice
-  const filterPattern = inMonorepo
-    ? new RegExp(`^${cwd}-v{0,1}(\\d+)\\.(\\d)+\\.(\\d+)$`)
-    : new RegExp('^v(\\d+)\\.(\\d+)\\.(\\d+)$');
-  const tags = stdout
-    .split('\n')
-    .filter(str => str.match(filterPattern))
-    .sort((tag1: string, tag2: string): number => {
-      const match1 = tag1.match(filterPattern);
-      const match2 = tag2.match(filterPattern);
-      if (!match1 || !match2) {
-        throw new Error(`Cannot compare git tags ${tag1} and ${tag2}`);
-      }
-      // compare major version, then minor versions, then patch versions.
-      // return positive number, zero, or negative number
-      for (let idx = 1; idx <= 3; ++idx) {
-        if (match1[idx] !== match2[idx]) {
-          return Number(match1[idx]) - Number(match2[idx]);
-        }
-      }
-      return 0;
-    });
-  // the last tag in the list is the latest release
-  return tags[tags.length - 1];
-}
+// TODO: uncomment this once new versions of tasks and speech have been published
+// async function latestRelease(
+//   cwd: string,
+//   inMonorepo: boolean
+// ): Promise<string> {
+//   // tags in the monorepo follow the format <libraryname>-major.minor.patch e.g. batch-0.0.1
+//   // or the format <libraryname>-vmajor.minor.patch e.g. batch-v0.0.1
+//   // tags in individual repos follow the format vmajor.minor.patch e.g. v0.0.1
+//   const {stdout} = inMonorepo
+//     ? await execa('git', ['tag', '--list', `${cwd}-*`], {
+//         cwd: monoRepoDirectory,
+//       })
+//     : await execa('git', ['tag', '--list'], {cwd});
+//   // regex escape characters in template literal need to be escaped twice
+//   const filterPattern = inMonorepo
+//     ? new RegExp(`^${cwd}-v{0,1}(\\d+)\\.(\\d)+\\.(\\d+)$`)
+//     : new RegExp('^v(\\d+)\\.(\\d+)\\.(\\d+)$');
+//   const tags = stdout
+//     .split('\n')
+//     .filter(str => str.match(filterPattern))
+//     .sort((tag1: string, tag2: string): number => {
+//       const match1 = tag1.match(filterPattern);
+//       const match2 = tag2.match(filterPattern);
+//       if (!match1 || !match2) {
+//         throw new Error(`Cannot compare git tags ${tag1} and ${tag2}`);
+//       }
+//       // compare major version, then minor versions, then patch versions.
+//       // return positive number, zero, or negative number
+//       for (let idx = 1; idx <= 3; ++idx) {
+//         if (match1[idx] !== match2[idx]) {
+//           return Number(match1[idx]) - Number(match2[idx]);
+//         }
+//       }
+//       return 0;
+//     });
+//   // the last tag in the list is the latest release
+//   return tags[tags.length - 1];
+// }
 
 // if a package in the monorepo has a hyphen in the name, its corresponding
 // directory in packages/ does not
@@ -114,11 +115,11 @@ async function preparePackage(
     }
   }
 
-  const tag = await latestRelease(packageName, inMonorepo);
-  await execa('git', ['checkout', tag], {
-    cwd: inMonorepo ? monoRepoDirectory : packageName,
-    stdio: 'inherit',
-  });
+  // const tag = await latestRelease(packageName, inMonorepo);
+  // await execa('git', ['checkout', tag], {
+  //   cwd: inMonorepo ? monoRepoDirectory : packageName,
+  //   stdio: 'inherit',
+  // });
 
   const packagePath = monoRepoPackageSubdirectory(packageName); // used if in monoRepo
   const packageJson = path.join(
