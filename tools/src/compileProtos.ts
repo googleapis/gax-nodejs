@@ -31,8 +31,6 @@ export const gaxProtos = path.join(
   '..',
   'protos'
 );
-console.log('GAX PROTOS PATH:')
-console.log(gaxProtos)
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -394,7 +392,6 @@ export async function generateRootName(directories: string[]): Promise<string> {
  * `./src` folder of the given client library.
  */
 export async function main(parameters: string[]): Promise<void> {
-  console.log('we are in local gapic tools')
   const protoJsonFiles: string[] = [];
   let skipJson = false;
   let esm = false;

@@ -108,7 +108,7 @@
     "test:cjs": "mocha build/cjs/test/unit",
     "test:esm": "mocha build/esm/test/unit --loader=esmock --enable-source-maps",
     "test": "npm run test:esm && npm run test:cjs",
-    "lint": "gts check src samples test",
+    "lint": "gts check esm/src samples esm/test",
     "clean": "rm -rf build",
     "compile": "npm run compile:esm && npm run compile:cjs",
     "compile:esm": "tsc -p ./tsconfig.esm.json && cp esm/src/*.json build/esm/src && cp -r esm/test/fixtures build/esm/test && node replace-things.cjs protos/http.js protos/iam_service.js protos/locations.js protos/operations.js && cp -r protos build",
