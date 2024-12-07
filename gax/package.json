@@ -27,7 +27,7 @@
         "default": "./build/cjs/src/index.cjs"
       }
     },
-    "./build/src/protobuf": {
+    "./build/cjs/src/protobuf": {
       "import": {
         "types": "./build/esm/src/protobuf.d.ts",
         "default": "./build/esm/src/protobuf.js"
@@ -37,7 +37,7 @@
         "default": "./build/cjs/src/protobuf.cjs"
       }
     },
-    "./build/src/protobuf.js": {
+    "./build/esm/src/protobuf.js": {
       "import": {
         "types": "./build/esm/src/protobuf.d.ts",
         "default": "./build/esm/src/protobuf.js"
