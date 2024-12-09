@@ -144,7 +144,7 @@
     "docs-test": "linkinator docs",
     "predocs-test": "npm run docs",
     "browser-test": "cd esm/test/browser-test && npm run prefetch && npm install && npm test",
-    "test-application": "cd test/test-application && npm run prefetch && npm install && npm start",
+    "test-application": "cd test/esm/test-application && npm run prefetch && npm install && npm start",
     "prelint": "cd samples; npm link ../; npm install",
     "precompile": "npm run clean",
     "update-protos": "cd ../tools && npm i && npm run compile && cd ../gax && node ../tools/build/src/listProtos.js .",
