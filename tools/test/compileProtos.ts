@@ -169,12 +169,12 @@ describe('compileProtos tool', () => {
       js
         .toString()
         .includes(
-          'import {protobufMinimal  as $protobuf} from "google-gax/build/esm/src/protobuf.js"'
+          'import {protobufMinimal  as protobuf} from "google-gax/build/esm/src/protobuf.js";\nconst $protobuf = protobuf.default;'
         )
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
     assert(
-      !js.toString().includes('import * as $protobuf from "protobufjs/minimal"')
+      !js.toString().includes('import {protobufMinimal  as protobuf} from "google-gax/build/esm/src/protobuf.js";\nconst $protobuf = protobuf.default;')
     );
 
     // check that it uses proper root object; it's taken from fixtures/package.json

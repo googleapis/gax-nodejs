@@ -169,8 +169,8 @@ function fixJsFile(js: string): string {
   // 0. fix protobufjs import: we don't want the libraries to
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
-    'import * as $protobuf from "protobufjs/minimal"',
-    'import {protobufMinimal  as $protobuf} from "google-gax/build/esm/src/protobuf.js"'
+    'import * as $protobuf from "protobufjs/minimal";',
+    'import {protobufMinimal  as protobuf} from "google-gax/build/esm/src/protobuf.js";\nconst $protobuf = protobuf.default;'
   );
 
   // 1. fix protobufjs require: we don't want the libraries to
@@ -320,7 +320,7 @@ async function compileProtos(
     jsOutputEsm = path.join('protos', 'protos.js');
     const pbjsArgs4jsEsm = [
       '-r',
-      rootName,
+      `${rootName}_1`,
       '--target',
       'static-module',
       ...extraArgs,
