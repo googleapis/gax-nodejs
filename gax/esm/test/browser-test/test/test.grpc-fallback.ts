@@ -16,7 +16,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import assert from 'assert';
+import * as assert from 'assert';
 import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
 import {protobuf, GoogleAuth, fallback} from 'google-gax';
@@ -45,19 +45,19 @@ describe('loadProto', () => {
     const gaxGrpc = new fallback.GrpcClient(opts);
     const protos = gaxGrpc.loadProto(echoProtoJson);
 
-    assert(protos instanceof protobuf.Root);
+    assert.ok(protos instanceof protobuf.Root);
 
     // assert(typeof protos.lookupService('Echo') === protobuf.Service.prototype);
-    assert(protos.lookupType('EchoRequest') instanceof protobuf.Type);
+    assert.ok(protos.lookupType('EchoRequest') instanceof protobuf.Type);
   });
 
   it('should be able to load no files', () => {
     // @ts-ignore incomplete options
     const gaxGrpc = new fallback.GrpcClient(opts);
     const protos = gaxGrpc.loadProto({});
-    assert(protos instanceof protobuf.Root);
+    assert.ok(protos instanceof protobuf.Root);
 
-    assert(protos.nested === undefined);
+    assert.ok(protos.nested === undefined);
     assert.strictEqual(protos.nested, undefined);
   });
 });
@@ -89,9 +89,9 @@ describe('createStub', () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
 
     // The stub should consist of service methods
-    assert(echoStub.echo instanceof Function);
-    assert(echoStub.pagedExpand instanceof Function);
-    assert(echoStub.wait instanceof Function);
+    assert.ok(echoStub.echo instanceof Function);
+    assert.ok(echoStub.pagedExpand instanceof Function);
+    assert.ok(echoStub.wait instanceof Function);
 
     // There should be 11 methods for the echo service
     assert.strictEqual(Object.keys(echoStub).length, 11);
@@ -105,9 +105,9 @@ describe('createStub', () => {
     const echoStub = await gaxGrpc.createStub(echoService, stubExtraOptions);
 
     // The stub should consist of methods
-    assert(echoStub.echo instanceof Function);
-    assert(echoStub.collect instanceof Function);
-    assert(echoStub.chat instanceof Function);
+    assert.ok(echoStub.echo instanceof Function);
+    assert.ok(echoStub.collect instanceof Function);
+    assert.ok(echoStub.chat instanceof Function);
 
     // There should be 11 methods for the echo service
     assert.strictEqual(Object.keys(echoStub).length, 11);
@@ -273,7 +273,7 @@ describe('grpc-fallback', () => {
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof Error);
+        assert.ok(err instanceof Error);
         done();
       });
     });

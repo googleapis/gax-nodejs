@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import assert from 'assert';
+import * as assert from 'assert';
 import {describe, it, before, beforeEach, afterEach} from 'mocha';
 import {GoogleAuth} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';

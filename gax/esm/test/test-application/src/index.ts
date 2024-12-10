@@ -17,7 +17,7 @@
 'use strict';
 import {EchoClient, SequenceServiceClient, protos} from 'showcase-echo-client';
 import {ShowcaseServer} from 'showcase-server';
-import assert from 'assert';
+import * as assert from 'assert';
 import {promises as fsp} from 'fs';
 import * as path from 'path';
 import {
@@ -608,7 +608,7 @@ async function testCollectThrows(client: EchoClient) {
   // We expect the promise to be rejected
   promise.then(
     () => {
-      assert(false);
+      assert.ok(false);
     },
     (err: Error) => {
       assert.match(err.message, /currently does not support/);
@@ -683,7 +683,7 @@ async function testChatThrows(client: EchoClient) {
   // We expect the promise to be rejected
   promise.then(
     () => {
-      assert(false);
+      assert.ok(false);
     },
     (err: Error) => {
       assert.match(err.message, /currently does not support/);
@@ -1609,7 +1609,7 @@ async function testImmediateStreamingErrorNoBufferPumpify(
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
 
-    const togetherStream = pumpify.obj([
+    const togetherStream = new pumpify.obj([
       attemptStream,
       secondStream,
       thirdStream,
@@ -1812,7 +1812,7 @@ async function testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify(
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
 
-    const togetherStream = pumpify.obj([
+    const togetherStream = new pumpify.obj([
       attemptStream,
       secondStream,
       thirdStream,
@@ -2103,7 +2103,7 @@ async function testImmediateStreamingErrorNoBufferYesRetryRequestRetryPumpify(
     );
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
-    const togetherStream = pumpify.obj([
+    const togetherStream = new pumpify.obj([
       attemptStream,
       secondStream,
       thirdStream,
@@ -2210,7 +2210,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
 
-    const togetherStream: Duplex = pumpify.obj([
+    const togetherStream: Duplex = new pumpify.obj([
       attemptStream,
       secondStream,
       thirdStream,
@@ -2421,7 +2421,7 @@ async function testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
 
-    const togetherStream = pumpify.obj([
+    const togetherStream = new pumpify.obj([
       attemptStream,
       secondStream,
       thirdStream,
@@ -2617,7 +2617,7 @@ async function testStreamingPipelineErrorAfterDataNoBufferNoRetryPumpify(
     const secondStream = new PassThrough({objectMode: true});
     const thirdStream = new PassThrough({objectMode: true});
 
-    const togetherStream = pumpify.obj([
+    const togetherStream = new pumpify.obj([
       attemptStream,
       secondStream,
       thirdStream,
