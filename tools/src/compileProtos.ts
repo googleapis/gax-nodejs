@@ -320,7 +320,7 @@ async function compileProtos(
     jsOutputEsm = path.join('protos', 'protos.js');
     const pbjsArgs4jsEsm = [
       '-r',
-      `${rootName}_1`,
+      rootName,
       '--target',
       'static-module',
       ...extraArgs,

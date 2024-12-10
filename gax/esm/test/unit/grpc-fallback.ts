@@ -19,7 +19,6 @@
 
 import assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
-import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import protobuf from 'protobufjs';
 //@ts-ignore
@@ -448,19 +447,53 @@ describe('grpc-fallback', () => {
     });
   });
 
-  it('should be able to cancel an API call using AbortController', async () => {
+  it.only('should be able to cancel an API call using AbortController', async () => {
     const {GrpcClient} = await esmock('../../src/fallback.js', {
       'node-fetch': () => {
-        return Promise.resolve({});
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify({})));
+          },
+        });
       },
     });
 
     const gaxGrpcMock = new GrpcClient();
-    const echoStub = await gaxGrpcMock.createStub(echoService, stubOptions);
+    const echoStub = gaxGrpcMock.createStub(echoService, stubOptions);
+    // const call = gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    //   echoStub.echo({content: 'content' + new Date().toString()}, {}, {}, () => {});
+    // });
+
     const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
+    // // gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    // //   echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+    // //     assert.strictEqual(err?.message, 'fetch error');
+    // //   });
+    // // });
     call.cancel();
+
+    // const gaxGrpcMock = new GrpcClient(opts);
+
+    // gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    //   echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+    //     assert(err instanceof GoogleError);
+    //     assert.strictEqual(
+    //       JSON.stringify(err.statusDetails?.length),
+    //       JSON.stringify(serverError['error']['details'].length)
+    //     );
+    //     assert.strictEqual(err.code, 7);
+    //     assert.strictEqual(err.message, serverError['error']['message']);
+    //     assert.strictEqual(err.reason, errorInfo.reason);
+    //     assert.strictEqual(err.domain, errorInfo.domain);
+    //     assert.strictEqual(
+    //       JSON.stringify(err.errorInfoMetadata),
+    //       JSON.stringify(errorInfo.metadata)
+    //     );
+    //   });
+    // });
 
     assert.strictEqual((createdAbortControllers[0] as any).abortCalled, true);
   });
