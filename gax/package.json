@@ -167,6 +167,5 @@
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
     "node": ">=18"
-  },
-  "browser": "build/cjs/src/fallback.cjs"
+  }
 }

@@ -51,7 +51,7 @@ module.exports = {
     http2: 'empty',
     net: 'empty',
     dns: 'empty',
-    tls: 'empty',
+    tls: 'empty'
   },
   mode: 'production',
 };
