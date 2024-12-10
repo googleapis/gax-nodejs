@@ -330,6 +330,7 @@ async function testEchoError(client: EchoClient) {
     '..',
     '..',
     '..',
+    '..',
     'build',
     'protos',
     'google',

@@ -119,7 +119,6 @@ export interface ClientStubOptions {
   key?: string;
   universeDomain?: string;
 }
-console.log(typeof grpc.Client);
 export class ClientStub extends grpc.Client {
   [name: string]: Function;
 }
@@ -127,7 +126,7 @@ export class ClientStub extends grpc.Client {
 export class GrpcClient {
   auth: GoogleAuth;
   grpc: GrpcModule;
-  grpcVersion!: string;
+  grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
   httpRules?: Array<google.api.IHttpRule>;
