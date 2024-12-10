@@ -356,6 +356,27 @@ describe('grpc-fallback', () => {
       });
     });
   });
+  it('should handle a null response from the API ', done => {
+    const requestObject = {content: 'test-content'};
+    const expectedMessage = 'Received null response from RPC Echo';
+
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(''));
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.message, expectedMessage);
+        done();
+      });
+    });
+  });
 
   it('should handle a fetch error', done => {
     const requestObject = {content: 'test-content'};
