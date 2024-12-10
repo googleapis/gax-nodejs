@@ -86,7 +86,6 @@ describe('paged iteration', () => {
       assert.ok(Array.isArray(results));
       assert.deepStrictEqual(results[0], expected);
     });
-    // console.log(count);
     done();
   });
   it('returns an Array of results', done => {
@@ -257,7 +256,6 @@ describe('paged iteration', () => {
       assert.strictEqual(resources.length, 10);
     });
     it('returns an iterable, count to 10, warns if autopaginate is specified', async () => {
-      // const warnStub = sinon.stub(warnings, 'warn');
       let count = 0;
       const spy = sinon.spy(func);
       const apiCall = util.createApiCallTest(spy, createOptions);
@@ -277,16 +275,16 @@ describe('paged iteration', () => {
 
       process.on('warning', warning => {
         count++;
-        if (count === 2) {
-          assert.match(
-            warning.toString(),
-            /AutopaginateTrueWarning: Providing a pageSize without setting autoPaginate to false will still return all results/
-          );
-        }
         if (count === 1) {
           assert.match(
             warning.toString(),
             /UnsupportedParameterWarning: objectMode override is not supported. It is set to true internally by default in gax/
+          );
+        }
+        if (count === 2) {
+          assert.match(
+            warning.toString(),
+            /AutopaginateTrueWarning: Providing a pageSize without setting autoPaginate to false will still return all results/
           );
         }
       });

@@ -57,9 +57,6 @@ describe('IAM service', () => {
         projectId: 'bogus',
       });
       client.initialize();
-      console.log('what is protos?');
-      console.log(protos);
-      console.log(protos.google);
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest()
       );

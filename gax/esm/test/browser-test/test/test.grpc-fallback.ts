@@ -47,7 +47,10 @@ describe('loadProto', () => {
 
     assert.ok(protos instanceof protobuf.Root);
 
-    // assert(typeof protos.lookupService('Echo') === protobuf.Service.prototype);
+    assert.ok(
+      typeof protos.lookupService('Echo') ===
+        protobuf.Service.prototype.toString()
+    );
     assert.ok(protos.lookupType('EchoRequest') instanceof protobuf.Type);
   });
 

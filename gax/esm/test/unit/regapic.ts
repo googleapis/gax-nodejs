@@ -176,11 +176,6 @@ describe('REGAPIC', () => {
 
   it('should handle fetch failure', async () => {
     const requestObject = {content: 'test-content'};
-    // sinon
-    //   // incomplete types for nodeFetch, so...
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   .stub(nodeFetch, 'Promise' as any)
-    //   .returns(Promise.reject(new Error('Fetch error')));
 
     const {GrpcClient} = await esmock(
       '../../src/fallback.js',
@@ -203,11 +198,6 @@ describe('REGAPIC', () => {
 
   it('should handle streaming request failure', async () => {
     const requestObject = {content: 'test content'};
-    // sinon
-    //   // incomplete types for nodeFetch, so...
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //   .stub(nodeFetch, 'Promise' as any)
-    //   .returns(Promise.reject(new Error('Fetch error')));
 
     const {GrpcClient} = await esmock(
       '../../src/fallback.js',
@@ -237,16 +227,6 @@ describe('REGAPIC', () => {
         type: 1,
       };
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // sinon.stub(nodeFetch, 'Promise' as any).returns(
-      //   Promise.resolve({
-      //     ok: true,
-      //     arrayBuffer: () => {
-      //       return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
-      //     },
-      //   })
-      // );
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
@@ -294,8 +274,6 @@ describe('REGAPIC', () => {
       };
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
@@ -314,14 +292,7 @@ describe('REGAPIC', () => {
       );
 
       const gaxGrpcMock = new GrpcClient();
-      // sinon.stub(nodeFetch, 'Promise' as any).returns(
-      //   Promise.resolve({
-      //     ok: true,
-      //     arrayBuffer: () => {
-      //       return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-      //     },
-      //   })
-      // );
+
       gaxGrpcMock
         .createStub(libraryService, stubOptions)
         .then((libStub: any) => {
@@ -340,16 +311,7 @@ describe('REGAPIC', () => {
       };
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // sinon.stub(nodeFetch, 'Promise' as any).returns(
-      //   Promise.resolve({
-      //     ok: true,
-      //     arrayBuffer: () => {
-      //       return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-      //     },
-      //   })
-      // );
+
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
         {},
@@ -387,16 +349,6 @@ describe('REGAPIC', () => {
         type: 100, // unknown enum value
       };
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // sinon.stub(nodeFetch, 'Promise' as any).returns(
-      //   Promise.resolve({
-      //     ok: true,
-      //     arrayBuffer: () => {
-      //       return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
-      //     },
-      //   })
-      // );
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
@@ -450,16 +402,6 @@ describe('REGAPIC', () => {
       };
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // sinon.stub(nodeFetch, 'Promise' as any).returns(
-      //   Promise.resolve({
-      //     ok: true,
-      //     arrayBuffer: () => {
-      //       return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-      //     },
-      //   })
-      // );
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
@@ -505,16 +447,6 @@ describe('REGAPIC', () => {
         queryStringParameter: 'must-be-preserved',
       };
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // sinon.stub(nodeFetch, 'Promise' as any).returns(
-      //   Promise.resolve({
-      //     ok: true,
-      //     arrayBuffer: () => {
-      //       return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-      //     },
-      //   })
-      // );
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
@@ -557,8 +489,6 @@ describe('REGAPIC', () => {
       };
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',
@@ -604,8 +534,6 @@ describe('REGAPIC', () => {
         read: true,
         bookId: 9007199254740992,
       };
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
       const {GrpcClient} = await esmock(
         '../../src/fallback.js',

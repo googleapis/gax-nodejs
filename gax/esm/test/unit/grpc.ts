@@ -676,7 +676,6 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      // sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const {GrpcClient} = await esmock('../../src/grpc.js', {
@@ -713,7 +712,6 @@ dvorak
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const clientMock = new GrpcClient();
       assert.rejects(
-        // @ts-ignore
         clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
         /configured universe domain/
       );
