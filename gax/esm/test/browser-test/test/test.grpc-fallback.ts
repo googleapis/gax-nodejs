@@ -46,11 +46,7 @@ describe('loadProto', () => {
     const protos = gaxGrpc.loadProto(echoProtoJson);
 
     assert.ok(protos instanceof protobuf.Root);
-
-    assert.ok(
-      typeof protos.lookupService('Echo') ===
-        protobuf.Service.prototype.toString()
-    );
+    assert.ok(protos.lookupService('Echo') instanceof protobuf.Service);
     assert.ok(protos.lookupType('EchoRequest') instanceof protobuf.Type);
   });
 
