@@ -7,7 +7,7 @@
     "allowJs": true,
     "esModuleInterop": true,
     "sourceMap": false,
-    "module": "CommonJS",
+    "module": "ESNext",
     "declaration": true,
     "strict": true,
     "isolatedModules": true,
