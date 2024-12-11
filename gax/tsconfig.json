@@ -28,8 +28,5 @@
     "esm/src/*/*.ts",
     "esm/test/system-test",
     "esm/test/unit/*.ts",
-  ],
-  "exclude": [
-    "esm/importNodeFetchDynamically.ts"
   ]
 }
