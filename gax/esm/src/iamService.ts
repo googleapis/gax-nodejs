@@ -21,7 +21,7 @@ import type {GrpcClient, ClientStubOptions} from './grpc.js';
 import type {GrpcClient as FallbackGrpcClient} from './fallback.js';
 import {createApiCall} from './createApiCall.js';
 import {GoogleAuth, OAuth2Client} from 'google-auth-library';
-import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
+import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth.js';
 import * as routingHeader from './routingHeader.js';
 //@ts-ignore
 import gapicConfig from './iam_policy_service_client_config.json' with {type: 'json'};

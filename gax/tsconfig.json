@@ -3,11 +3,12 @@
   "compilerOptions": {
     "rootDir": "esm",
     "resolveJsonModule": true,
-    "moduleResolution": "node",
     "allowJs": true,
     "esModuleInterop": true,
     "sourceMap": false,
-    "module": "ESNext",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "esnext",
     "declaration": true,
     "strict": true,
     "isolatedModules": true,
@@ -15,7 +16,7 @@
     "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "lib": [
-      "es2018",
+      "es2020",
       "dom"
     ]
   },
@@ -25,7 +26,10 @@
     "tools/src/minify.ts",
     "tools/src/prepublish.ts",
     "esm/src/*/*.ts",
-    "esm/test/system-test/*.ts",
+    "esm/test/system-test",
     "esm/test/unit/*.ts",
+  ],
+  "exclude": [
+    "esm/importNodeFetchDynamically.ts"
   ]
 }

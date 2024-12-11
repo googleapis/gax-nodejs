@@ -15,7 +15,7 @@
  */
 
 import type {GoogleAuth, OAuth2Client} from 'google-auth-library';
-import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
+import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth.js';
 import type {ClientOptions, Callback} from './clientInterface.js';
 
 import {GaxCall, ResultTuple, RequestType} from './apitypes.js';

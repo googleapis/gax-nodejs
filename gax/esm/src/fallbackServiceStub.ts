@@ -17,6 +17,7 @@
 /* global window */
 /* global AbortController */
 
+import {getNodeFetch} from '../importNodeFetchDynamically.js';
 import {Response as NodeFetchResponse} from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
 
@@ -41,9 +42,6 @@ export interface FallbackServiceStub {
 
 export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-async function getNodeFetch() {
-    return await import('node-fetch');
-}
 export interface FetchParameters {
   headers: {[key: string]: string};
   body: Buffer | Uint8Array | string;
