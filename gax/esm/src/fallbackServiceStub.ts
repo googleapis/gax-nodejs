@@ -42,7 +42,12 @@ export interface FallbackServiceStub {
 export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 async function getNodeFetch() {
-  return await import('node-fetch');
+  const isEsm = true;
+  if (isEsm) {
+    return await import('node-fetch');
+  } else {
+    return require('node-fetch');
+  }
 }
 export interface FetchParameters {
   headers: {[key: string]: string};
