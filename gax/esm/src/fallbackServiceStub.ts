@@ -74,7 +74,7 @@ export function generateServiceStub(
 ) {
   const fetch = hasWindowFetch()
     ? window.fetch
-    : getNodeFetch() as unknown as NodeFetchType;
+    : (getNodeFetch() as unknown as NodeFetchType);
 
   const serviceStub: FallbackServiceStub = {
     // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
