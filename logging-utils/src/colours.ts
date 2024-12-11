@@ -18,7 +18,7 @@
 //
 // https://github.com/nodejs/node/blob/73414f34e8f3e1f4dac3bb35e137c4030afb4267/lib/internal/util/colors.js#L9
 
-import * as tty from 'node:tty';
+import * as tty from 'tty';
 
 /**
  * Handles figuring out if we can use ANSI colours and handing out the escape codes.

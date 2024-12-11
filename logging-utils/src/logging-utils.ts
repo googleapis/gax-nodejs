@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import {EventEmitter} from 'node:events';
-import * as process from 'node:process';
-import * as util from 'node:util';
+import {EventEmitter} from 'events';
+import * as process from 'process';
+import * as util from 'util';
 import {Colours} from './colours';
 
 // Some functions (as noted) are based on the Node standard library, from
