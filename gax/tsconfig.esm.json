@@ -9,6 +9,7 @@
       "esModuleInterop": true,
       "sourceMap": false,
       "allowJs": true,
+      "allowSyntheticDefaultImports": true,
       "lib": [
         "es2020",
         "DOM"

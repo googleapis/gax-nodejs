@@ -16,7 +16,6 @@
 
 import assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
-import * as nodeFetch from 'node-fetch';
 import protobuf from 'protobufjs';
 import * as path from 'path';
 import * as sinon from 'sinon';

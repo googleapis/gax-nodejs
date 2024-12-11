@@ -17,7 +17,6 @@
 /* global window */
 /* global AbortController */
 
-import nodeFetch from 'node-fetch';
 import {Response as NodeFetchResponse} from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
 
@@ -42,6 +41,9 @@ export interface FallbackServiceStub {
 
 export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+async function getNodeFetch() {
+  return await import('node-fetch');
+}
 export interface FetchParameters {
   headers: {[key: string]: string};
   body: Buffer | Uint8Array | string;
@@ -72,7 +74,7 @@ export function generateServiceStub(
 ) {
   const fetch = hasWindowFetch()
     ? window.fetch
-    : (nodeFetch as unknown as NodeFetchType);
+    : getNodeFetch() as unknown as NodeFetchType;
 
   const serviceStub: FallbackServiceStub = {
     // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
