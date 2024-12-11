@@ -1,4 +1,4 @@
 // @ts-nocheck
 export async function getNodeFetch() {
-    return await import('node-fetch');
-};
+  return await import('node-fetch');
+}
