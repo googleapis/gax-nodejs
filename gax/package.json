@@ -2,9 +2,9 @@
   "name": "google-gax",
   "version": "4.5.0",
   "description": "Google API Extensions",
-  "main": "./build/esm/src/index.js",
+  "main": "./build/cjs/src/index.cjs",
   "type": "module",
-  "types": "./build/esm/src/index.d.ts",
+  "types": "./build/cjs/src/index.d.ts",
   "files": [
     "build/esm",
     "build/cjs",
@@ -169,6 +169,5 @@
   "homepage": "https://github.com/googleapis/gax-nodejs#readme",
   "engines": {
     "node": ">=18"
-  },
-  "browser": "build/cjs/src/fallback.cjs"
+  }
 }
