@@ -23,3 +23,6 @@ dist/
 *.tgz
 **/*.tgz
 test/showcase-echo-client/protos/protos.*
+**/*.d.ts
+*.d.ts
+**/**.d.ts

@@ -57,7 +57,12 @@ describe('compileProtos tool', () => {
     process.chdir(cwd);
   });
 
-  it('fetches gax from the appropriate place', async () => {
+  // TODO:
+  // This test is failing because of a circular dependency: the old version of gax
+  // doesn't contain this new directory level, so we can't test it appropriately.
+  // After publishing dual-format, we can re-enable this test to see it works.
+  // In the meantime, since gax uses compileProtos, we'll see it work in system tests
+  it.skip('fetches gax from the appropriate place', async () => {
     assert.deepStrictEqual(fs.readdirSync(compileProtos.gaxProtos), [
       'compute_operations.d.ts',
       'compute_operations.js',
@@ -98,7 +103,9 @@ describe('compileProtos tool', () => {
     assert(
       js
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes(
+          'require("google-gax/build/cjs/src/protobuf").protobufMinimal'
+        )
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
@@ -143,7 +150,9 @@ describe('compileProtos tool', () => {
     assert(
       cjs
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes(
+          'require("google-gax/build/cjs/src/protobuf").protobufMinimal'
+        )
     );
     assert(!cjs.toString().includes('require("protobufjs/minimal")'));
 
@@ -160,7 +169,7 @@ describe('compileProtos tool', () => {
       js
         .toString()
         .includes(
-          'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
+          'import {protobufMinimal  as protobuf} from "google-gax/build/esm/src/protobuf.js";\nconst $protobuf = protobuf.default;'
         )
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
@@ -203,7 +212,9 @@ describe('compileProtos tool', () => {
     assert(
       js
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes(
+          'require("google-gax/build/cjs/src/protobuf").protobufMinimal'
+        )
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 

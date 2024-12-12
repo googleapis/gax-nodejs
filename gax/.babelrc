@@ -1,0 +1,20 @@
+{
+    "presets": [
+      "@babel/preset-typescript",
+      ["@babel/preset-env", { "exclude": ["proposal-dynamic-import"] }]
+    ],
+    "plugins": [
+      [
+        "replace-import-extension",
+        {
+          "extMapping": {
+            ".js": ".cjs"
+          }
+        }
+      ],
+      "@babel/plugin-syntax-dynamic-import",
+      "./node_modules/gapic-tools/build/src/replaceESMMockingLib.js",
+      "./node_modules/gapic-tools/build/src/replaceImportMetaUrl.js",
+      "./node_modules/gapic-tools/build/src/toggleESMFlagVariable.js"
+    ]
+  }

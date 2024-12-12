@@ -11,10 +11,10 @@ branchProtectionRules:
       - docs
       - lint-gax
       - lint-tools
-      - test-gax (14)
-      - test-gax (16)
-      - test-tools (14)
-      - test-tools (16)
+      - test-gax (18)
+      - test-gax (20)
+      - test-tools (18)
+      - test-tools (20)
       - cla/google
       - windows-gax
       - windows-tools

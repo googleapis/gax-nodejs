@@ -1,19 +1,32 @@
 {
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
-    "lib": ["es2018", "dom"],
-    "rootDir": ".",
-    "outDir": "build",
-    "noImplicitAny": true,
-    "resolveJsonModule": true
+    "rootDir": "esm",
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "esnext",
+    "declaration": true,
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "emitDeclarationOnly": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "es2020",
+      "dom"
+    ]
   },
   "include": [
-    "src/*.ts",
+    "esm/src/*.ts",
     "tools/src/listProtos.ts",
     "tools/src/minify.ts",
     "tools/src/prepublish.ts",
-    "src/*/*.ts",
-    "test/system-test/*.ts",
-    "test/unit/*.ts",
+    "esm/src/*/*.ts",
+    "esm/test/system-test",
+    "esm/test/unit/*.ts",
   ]
 }
