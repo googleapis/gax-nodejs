@@ -42,7 +42,7 @@ export interface FallbackServiceStub {
 export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 async function getNodeFetch() {
-  return await import('node-fetch');
+  return (await import('node-fetch')).default;
 }
 export interface FetchParameters {
   headers: {[key: string]: string};
@@ -72,10 +72,6 @@ export function generateServiceStub(
   ) => {},
   numericEnums: boolean
 ) {
-  const fetch = hasWindowFetch()
-    ? window.fetch
-    : (getNodeFetch() as unknown as NodeFetchType);
-
   const serviceStub: FallbackServiceStub = {
     // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
     close: () => {
@@ -127,30 +123,35 @@ export function generateServiceStub(
       }
       const streamArrayParser = new StreamArrayParser(rpc);
 
-      authClient
-        .getRequestHeaders()
-        .then(authHeader => {
-          const fetchRequest: RequestInit = {
-            headers: {
-              ...authHeader,
-              ...headers,
-            },
-            body: fetchParameters.body as
-              | string
-              | Buffer
-              | Uint8Array
-              | undefined,
-            method: fetchParameters.method,
-            signal: cancelSignal,
-          };
-          if (
-            fetchParameters.method === 'GET' ||
-            fetchParameters.method === 'DELETE'
-          ) {
-            delete fetchRequest['body'];
-          }
-          return fetch(url, fetchRequest);
-        })
+      const makeRequest = async () => {
+        const fetch = hasWindowFetch()
+          ? window.fetch
+          : ((await getNodeFetch()) as unknown as NodeFetchType);
+        const authHeader = await authClient.getRequestHeaders();
+        const fetchRequest: RequestInit = {
+          headers: {
+            ...authHeader,
+            ...headers,
+          },
+          body: fetchParameters.body as
+            | string
+            | Buffer
+            | Uint8Array
+            | undefined,
+          method: fetchParameters.method,
+          signal: cancelSignal,
+        };
+        if (
+          fetchParameters.method === 'GET' ||
+          fetchParameters.method === 'DELETE'
+        ) {
+          delete fetchRequest['body'];
+        }
+
+        return await fetch(url, fetchRequest);
+      };
+
+      makeRequest()
         .then((response: Response | NodeFetchResponse) => {
           if (response.ok && rpc.responseStream) {
             pipeline(
