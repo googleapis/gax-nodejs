@@ -5,11 +5,7 @@
     "outDir": "build",
     "resolveJsonModule": true,
     "lib": ["ES2018", "DOM"],
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   },
-  "include": [
-    "src/**/*.ts",
-    "test/**/*.ts"
-  ]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

@@ -14,11 +14,7 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "emitDeclarationOnly": true,
-    "allowSyntheticDefaultImports": true,
-    "lib": [
-      "es2020",
-      "dom"
-    ]
+    "lib": ["es2020", "dom"]
   },
   "include": [
     "esm/src/*.ts",
@@ -27,6 +23,6 @@
     "tools/src/prepublish.ts",
     "esm/src/*/*.ts",
     "esm/test/system-test",
-    "esm/test/unit/*.ts",
+    "esm/test/unit/*.ts"
   ]
 }
