@@ -242,7 +242,9 @@ describe('compileProtos tool', () => {
       ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
     );
     assert(ts.toString().includes('longField?: (number|Long|string|null);'));
-    assert(ts.toString().includes('bytesField?: (Uint8Array|string|null);'));
+    assert(
+      ts.toString().includes('bytesField?: (Uint8Array|Buffer|string|null);')
+    );
     assert(
       ts
         .toString()
@@ -258,7 +260,9 @@ describe('compileProtos tool', () => {
         )
     );
     assert(ts.toString().includes('public longField: (number|Long|string);'));
-    assert(ts.toString().includes('public bytesField: (Uint8Array|string);'));
+    assert(
+      ts.toString().includes('public bytesField: (Uint8Array|Buffer|string);')
+    );
     assert(
       ts
         .toString()
