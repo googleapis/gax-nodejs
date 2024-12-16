@@ -34,8 +34,7 @@ import {GoogleError} from '../googleError.js';
 import {Status} from '../status.js';
 import {PassThrough} from 'stream';
 import {ResponseType} from '../apitypes.js';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-import duplexify from 'duplexify';
+import * as duplexify from 'duplexify';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 import retryRequest, {Options} from 'retry-request';
 
@@ -95,7 +94,7 @@ interface streamingRetryRequestOptions {
   maxRetries?: number;
 }
 
-export class StreamProxy extends duplexify implements GRPCCallResult {
+export class StreamProxy extends duplexify.default implements GRPCCallResult {
   type: StreamType;
   private _callback: APICallback;
   private _isCancelCalled: boolean;

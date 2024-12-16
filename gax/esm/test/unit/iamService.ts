@@ -21,7 +21,7 @@ import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {IamClient} from '../../src/iamService.js';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 import {GrpcClient} from '../../src/grpc.js';
 
 function generateSampleMessage<T extends object>(instance: T) {

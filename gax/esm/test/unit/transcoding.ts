@@ -33,7 +33,7 @@ import {
   overrideHttpRules,
 } from '../../src/transcoding.js';
 import assert from 'assert';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 //@ts-ignore
 import echoProtoJson from '../fixtures/echo.json' with {type: 'json'};
 import {google} from '../../../protos/http.js';

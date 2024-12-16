@@ -18,7 +18,7 @@ import assert from 'assert';
 import {describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as path from 'path';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 import {GoogleError, GoogleErrorDecoder} from '../../src/googleError.js';
 import {fileURLToPath} from 'url';
 //@ts-ignore

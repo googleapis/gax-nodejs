@@ -23,7 +23,7 @@ import * as os from 'os';
 import {join} from 'path';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
-import protobuf from 'protobufjs';
+import {protobuf} from './protobuf.js';
 import objectHash from 'object-hash';
 import {fileURLToPath} from 'url';
 import * as gax from './gax.js';
@@ -574,10 +574,6 @@ export class GrpcClient {
 }
 
 export class GoogleProtoFilesRoot extends protobuf.Root {
-  constructor(...args: Array<{}>) {
-    super(...args);
-  }
-
   // Causes the loading of an included proto to check if it is a common
   // proto. If it is a common proto, use the bundled proto.
   resolvePath(originPath: string, includePath: string) {

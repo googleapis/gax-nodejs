@@ -16,7 +16,7 @@
 
 import {OutgoingHttpHeaders} from 'http';
 import objectHash from 'object-hash';
-import protobuf from 'protobufjs';
+import {protobuf} from './protobuf.js';
 import * as gax from './gax.js';
 import * as routingHeader from './routingHeader.js';
 import {Status} from './status.js';

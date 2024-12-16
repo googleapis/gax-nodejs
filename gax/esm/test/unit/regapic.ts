@@ -16,7 +16,7 @@
 
 import assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import * as stream from 'stream';

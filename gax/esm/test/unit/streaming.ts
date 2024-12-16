@@ -40,7 +40,7 @@ import * as warnings from '../../src/warnings.js';
 import internal from 'stream';
 import {StreamArrayParser} from '../../src/streamArrayParser.js';
 import path from 'path';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 import {GoogleError} from '../../src/index.js';
 import {Metadata} from '@grpc/grpc-js';
 //@ts-ignore

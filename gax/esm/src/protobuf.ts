@@ -20,4 +20,14 @@
 // Usage:
 //   const {protobufMinimal} = require('google-gax/build/src/protobuf');
 
+import * as protobuf from 'protobufjs';
+
 export * as protobufMinimal from 'protobufjs/minimal.js';
+
+// The manually-created protobuf types are incorrect. Overriding here.
+const protobufFixed: typeof import('protobufjs') =
+  'default' in protobuf
+    ? (protobuf.default as unknown as typeof import('protobufjs'))
+    : protobuf;
+
+export {protobufFixed as protobuf};

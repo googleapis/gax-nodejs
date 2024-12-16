@@ -19,7 +19,7 @@ import {StreamArrayParser} from '../../src/streamArrayParser.js';
 import {before, describe, it} from 'mocha';
 import {pipeline} from 'stream';
 import path from 'path';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 import {PassThrough} from 'stream';
 import {toProtobufJSON} from './utils.js';
 import {fileURLToPath} from 'url';

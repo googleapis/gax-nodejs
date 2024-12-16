@@ -79,7 +79,7 @@ export const createByteLengthFunction = GrpcClient?.createByteLengthFunction;
 import pkg from '../../../package.json' with {type: 'json'};
 export const version = (pkg as any).version;
 
-import protobuf from 'protobufjs';
+import {protobuf} from './protobuf.js';
 export {protobuf};
 export * as protobufMinimal from 'protobufjs/minimal.js';
 

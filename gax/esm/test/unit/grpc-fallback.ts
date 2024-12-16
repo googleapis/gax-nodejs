@@ -20,7 +20,7 @@
 import assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
 import * as abortController from 'abort-controller';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 //@ts-ignore
 import echoProtoJson from '../fixtures/echo.json' with {type: 'json'};
 import {GrpcClient} from '../../src/fallback.js';

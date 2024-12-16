@@ -15,7 +15,7 @@
  */
 
 import {Status, rpcCodeFromHttpStatusCode} from './status.js';
-import protobuf from 'protobufjs';
+import {protobuf} from './protobuf.js';
 import {Metadata} from './grpc.js';
 import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback.js';

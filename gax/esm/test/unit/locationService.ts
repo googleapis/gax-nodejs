@@ -20,7 +20,7 @@ import {describe, it} from 'mocha';
 import {LocationsClient} from '../../src/locationService.js';
 import {GrpcClient} from '../../src/grpc.js';
 
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (

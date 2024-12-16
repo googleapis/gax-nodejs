@@ -18,7 +18,7 @@ import assert from 'assert';
 import {describe, it} from 'mocha';
 import * as fs from 'fs';
 import * as util from 'util';
-import protobuf from 'protobufjs';
+import {protobuf} from '../../src/protobuf.js';
 import * as path from 'path';
 import {GoogleError, GoogleErrorDecoder} from '../../src/googleError.js';
 import {Metadata} from '@grpc/grpc-js';
