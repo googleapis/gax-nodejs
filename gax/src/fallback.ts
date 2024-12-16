@@ -100,6 +100,7 @@ export class GrpcClient {
   private static protoCache = new Map<string, protobuf.Root>();
   httpRules?: Array<google.api.IHttpRule>;
   numericEnums: boolean;
+  minifyJson: boolean;
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -144,6 +145,7 @@ export class GrpcClient {
     this.grpcVersion = require('../../package.json').version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
     this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
+    this.minifyJson = (options as GrpcClientOptions).minifyJson ?? false;
   }
 
   /**
@@ -343,7 +345,8 @@ export class GrpcClient {
       this.authClient,
       encoder,
       decoder,
-      this.numericEnums
+      this.numericEnums,
+      this.minifyJson
     );
 
     return serviceStub;
