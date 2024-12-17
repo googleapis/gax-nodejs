@@ -15,7 +15,7 @@
  */
 
 import {OutgoingHttpHeaders} from 'http';
-import * as objectHash from 'object-hash';
+import objectHash from 'object-hash';
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
