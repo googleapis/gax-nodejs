@@ -1,19 +1,7 @@
 {
-  "extends": "./node_modules/gts/tsconfig-google.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["es2018", "dom"],
-    "rootDir": ".",
-    "outDir": "build",
-    "noImplicitAny": true,
-    "resolveJsonModule": true
-  },
-  "include": [
-    "src/*.ts",
-    "tools/src/listProtos.ts",
-    "tools/src/minify.ts",
-    "tools/src/prepublish.ts",
-    "src/*/*.ts",
-    "test/system-test/*.ts",
-    "test/unit/*.ts",
-  ]
+    "module": "Preserve",
+    "outDir": "build/esm"
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["es2018", "dom"],
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "outDir": "build/cjs"
+  },
+  "include": [
+    "src/*.ts",
+    "tools/src/listProtos.ts",
+    "tools/src/minify.ts",
+    "tools/src/prepublish.ts",
+    "src/*/*.ts",
+    "test/system-test/*.ts",
+    "test/unit/*.ts",
+  ]
+}
