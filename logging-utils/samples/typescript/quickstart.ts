@@ -17,7 +17,7 @@
 //   description: A quick introduction to using the Pub/Sub client library.
 //   usage: node quickstart.js <project-id> <topic-name-or-id> <subscription-name-or-id>
 
-// [START adhoc_logging_quickstart]
+// [!START logging_utils_quickstart]
 import {log} from 'google-logging-utils';
 
 function main() {
@@ -25,6 +25,6 @@ function main() {
   test({other: {foo: 'bar'}}, 'boo');
   test.info('info');
 }
-// [END adhoc_logging_quickstart]
+// [!END logging_utils_quickstart]
 
 main();
