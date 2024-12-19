@@ -29,7 +29,7 @@ import {Colours} from './colours';
  * variables) to determine what logging they want to see at runtime. This
  * isn't necessarily fed into the console, but is meant to be under the
  * control of the user. The kind of logging that will be produced by this
- * is more like "call retry happened", not "event you'd want to record
+ * is more like "call retry happened", not "events you'd want to record
  * in Cloud Logger".
  *
  * More for Googlers implementing libraries with it:

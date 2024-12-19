@@ -58,15 +58,17 @@ describe('adhoc-logging', () => {
       assert.deepStrictEqual(sink.logs, []);
     });
 
-    it('obeys "all"', () => {
+    it('obeys "all" as an alias for "*"', () => {
       process.env[al.env.nodeEnables] = 'all';
       const logger = al.log(system);
       logger({}, 'foo');
-      assert.deepStrictEqual(sink.logs, [{
-        namespace: system,
-        fields: {},
-        args: ['foo'],
-      }]);
+      assert.deepStrictEqual(sink.logs, [
+        {
+          namespace: system,
+          fields: {},
+          args: ['foo'],
+        },
+      ]);
     });
   });
 
