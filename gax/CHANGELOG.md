@@ -4,6 +4,14 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.6.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.5.0...google-gax-v4.6.0) (2024-12-19)
+
+
+### Features
+
+* add error check for null response from API ([#1681](https://github.com/googleapis/gax-nodejs/issues/1681)) ([bdfef64](https://github.com/googleapis/gax-nodejs/commit/bdfef6465f2d0e23952a9d5499f27d4607e748cd))
+* add helpful warnings on paged calls ([#1668](https://github.com/googleapis/gax-nodejs/issues/1668)) ([9efaf46](https://github.com/googleapis/gax-nodejs/commit/9efaf46e21edc6b5e31f5a0d2d674eedc15846d1))
+
 ## [4.5.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.1...google-gax-v4.5.0) (2024-10-25)
 
 
