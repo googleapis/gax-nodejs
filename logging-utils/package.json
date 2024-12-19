@@ -1,7 +1,7 @@
 {
   "name": "google-logging-utils",
   "version": "0.0.3",
-  "description": "An ad-hoc debug logger package for other libraries",
+  "description": "A debug logger package for other Google libraries",
   "main": "build/src/index.js",
   "files": [
     "build/src"

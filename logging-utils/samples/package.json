@@ -1,10 +1,11 @@
 {
   "name": "google-logging-samples",
   "version": "0.0.1",
-  "description": "Samples for adhoc debug logger",
+  "description": "Samples for debug logger",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "c8 mocha build/system-test",
+    "pretest": "npm run compile",
     "compile": "tsc -p .",
     "typeless": "npx typeless-sample-bot --outputpath javascript --targets typescript --recursive",
     "posttypeless": "npx eslint --fix javascript",
@@ -15,20 +16,22 @@
     "typescript/*.ts"
   ],
   "private": true,
-  "author": "Google API Authors",
+  "author": "Google LLC",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/googleapis/gax-nodejs.git",
-    "directory": "adhoc-logging/samples"
+    "directory": "logging-utils/samples"
   },
   "engines": {
     "node": ">=14"
   },
   "dependencies": {
-    "@google-cloud/adhoc-logging": "0.0.1"
+    "google-logging-utils": "0.0.2"
   },
   "devDependencies": {
-    "@google-cloud/typeless-sample-bot": "^2.1.0"
+    "@google-cloud/typeless-sample-bot": "^2.1.0",
+    "gts": "^5.0.0",
+    "mocha": "^9.0.0"
   }
 }

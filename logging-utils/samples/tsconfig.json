@@ -11,7 +11,9 @@
     "moduleResolution": "node"
   },
   "include": [
-    "typescript/*.ts"
+    "system-test/*.ts"
   ], 
-  "exclude": []
+  "exclude": [
+    "typescript/*.ts"
+  ]
 }
