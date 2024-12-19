@@ -24,7 +24,7 @@
     "protobufjs": "^7.3.2"
   },
   "devDependencies": {
-    "@types/uuid": "^9.0.7",
+    "@types/uuid": "^10.0.0",
     "@babel/plugin-proposal-private-methods": "^7.18.6",
     "@types/mocha": "^9.0.0",
     "@types/ncp": "^2.0.1",
