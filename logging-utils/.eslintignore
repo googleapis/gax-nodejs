@@ -5,3 +5,5 @@ build/
 docs/
 protos/
 samples/generated/
+samples/typescript/**
+samples/system-test/**
