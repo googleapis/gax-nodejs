@@ -83,7 +83,7 @@ export interface LogFields {
 export declare interface AdhocDebugLogger {
   on(
     event: 'log',
-    listener: (fields: LogFields, args: unknown[]) => void,
+    listener: (fields: LogFields, args: unknown[]) => void
   ): this;
   on(event: string, listener: Function): this;
 }
@@ -175,7 +175,7 @@ export interface AdhocDebugLogFunction extends AdhocDebugLogCallable {
   instance: AdhocDebugLogger;
   on(
     event: 'log',
-    listener: (fields: LogFields, args: unknown[]) => void,
+    listener: (fields: LogFields, args: unknown[]) => void
   ): this;
 
   debug(...args: unknown[]): void;
@@ -330,7 +330,7 @@ class NodeBackend extends DebugLogBackendBase {
         nscolour,
         level,
         msg,
-        fieldsJson ? ` ${fieldsColour}` : '',
+        fieldsJson ? ` ${fieldsColour}` : ''
       );
     };
   }
@@ -427,7 +427,7 @@ class StructuredBackend extends DebugLogBackendBase {
           severity,
           message: util.format(...args),
         },
-        fields,
+        fields
       );
       const jsonString = JSON.stringify(json);
 
@@ -454,7 +454,7 @@ class StructuredBackend extends DebugLogBackendBase {
  * @returns A backend based on Google Cloud structured logging.
  */
 export function getStructuredBackend(
-  upstream?: DebugLogBackend,
+  upstream?: DebugLogBackend
 ): DebugLogBackend {
   return new StructuredBackend(upstream);
 }
@@ -502,7 +502,7 @@ export function setBackend(backend: DebugLogBackend | null) {
  */
 export function log(
   namespace: string,
-  parent?: AdhocDebugLogFunction,
+  parent?: AdhocDebugLogFunction
 ): AdhocDebugLogFunction {
   // If the enable flag isn't set, do nothing.
   const enablesFlag = process.env[env.nodeEnables];
@@ -556,7 +556,7 @@ export function log(
         }
 
         cachedBackend?.log(namespace, fields, ...args);
-      },
+      }
     );
     return newLogger;
   })();
