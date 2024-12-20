@@ -22,6 +22,7 @@
 //   usage: node quickstart.js <project-id> <topic-name-or-id> <subscription-name-or-id>
 
 // [!START logging_utils_quickstart]
+// eslint-disable-next-line n/no-missing-require
 const {log} = require('google-logging-utils');
 
 function main() {
