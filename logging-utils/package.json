@@ -11,7 +11,7 @@
     "test": "c8 mocha build/test",
     "lint": "gts check test src samples",
     "clean": "gts clean",
-    "compile": "tsc -p . && cp -r test/fixtures build/test",
+    "compile": "tsc -p .",
     "fix": "gts fix",
     "prepare": "npm run compile",
     "precompile": "gts clean",
