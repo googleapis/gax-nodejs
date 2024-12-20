@@ -359,6 +359,7 @@ export function getNodeBackend(): DebugLogBackend {
 //
 // Note: using the proper types here introduces an extra dependency
 // we don't want, so for the moment, they'll be notational only.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DebugPackage = any; // debug.Debug
 class DebugBackend extends DebugLogBackendBase {
   debugPkg: DebugPackage;
