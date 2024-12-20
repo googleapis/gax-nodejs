@@ -47,6 +47,27 @@ jobs:
       - run: cd logging-utils; npm test
         env:
           MOCHA_THROW_DEPRECATION: false
+  test-logging-utils-samples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [14, 16]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --version
+      # The first installation step ensures that all of our production
+      # dependencies work on the given Node.js version, this helps us find
+      # dependencies that don't match our engines field:
+      - run: cd logging-utils; npm install --production --engine-strict --ignore-scripts --no-package-lock
+      # Clean up the production install, before installing dev/production:
+      - run: cd logging-utils; rm -rf node_modules
+      - run: cd logging-utils; npm install
+      - run: cd logging-utils; npm run samples-test
+        env:
+          MOCHA_THROW_DEPRECATION: false
   test-tools:
     runs-on: ubuntu-latest
     strategy:
