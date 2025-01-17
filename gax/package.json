@@ -20,7 +20,7 @@
     "object-hash": "^3.0.0",
     "proto3-json-serializer": "^2.0.2",
     "retry-request": "^7.0.0",
-    "uuid": "^9.0.1",
+    "uuid": "^11.0.0",
     "protobufjs": "^7.3.2"
   },
   "devDependencies": {
