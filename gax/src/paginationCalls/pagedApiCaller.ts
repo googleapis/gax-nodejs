@@ -153,7 +153,6 @@ export class PagedApiCaller implements APICaller {
       ongoingCall.call(apiCall, request);
       return;
     }
-    console.log('155', request, settings);
     if (request.pageSize && settings.autoPaginate) {
       warn(
         'autoPaginate true',
@@ -161,7 +160,6 @@ export class PagedApiCaller implements APICaller {
         'AutopaginateTrueWarning'
       );
     }
-    console.log(request.pageSize && settings.autoPaginate);
 
     const maxResults = settings.maxResults || -1;
 
