@@ -216,6 +216,16 @@ export interface DebugLogBackend {
 }
 
 /**
+ * Retrieves an environment variable value
+ * 
+ * @param key - The environment variable key to look up
+ * @returns The value of the environment variable if found, undefined otherwise
+ */
+const getEnvVar = (key: string): string | undefined => {
+  return process?.env?.[key];
+};
+
+/**
  * The base class for debug logging backends. It's possible to use this, but the
  * same non-guarantees above still apply (unstable interface, etc).
  *
@@ -230,7 +240,7 @@ export abstract class DebugLogBackendBase implements DebugLogBackend {
   constructor() {
     // Look for the Node config variable for what systems to enable. We'll store
     // these for the log method below, which will call setFilters() once.
-    let nodeFlag = process.env[env.nodeEnables] ?? '*';
+    let nodeFlag = getEnvVar(env.nodeEnables) ?? '*';
     if (nodeFlag === 'all') {
       nodeFlag = '*';
     }
@@ -378,8 +388,8 @@ class DebugBackend extends DebugLogBackendBase {
   }
 
   setFilters(): void {
-    const existingFilters = process.env['NODE_DEBUG'] ?? '';
-    process.env['NODE_DEBUG'] = `${existingFilters}${
+    const existingFilters = getEnvVar('NODE_DEBUG') ?? '';
+    getEnvVar('NODE_DEBUG') = `${existingFilters}${
       existingFilters ? ',' : ''
     }${this.filters.join(',')}`;
   }
@@ -505,7 +515,7 @@ export function log(
   parent?: AdhocDebugLogFunction
 ): AdhocDebugLogFunction {
   // If the enable flag isn't set, do nothing.
-  const enablesFlag = process.env[env.nodeEnables];
+  const enablesFlag = getEnvVar(env.nodeEnables);
   if (!enablesFlag) {
     return placeholder;
   }
