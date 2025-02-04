@@ -28,6 +28,7 @@ import {CallOptions} from '../gax';
 import {GoogleError} from '../googleError';
 import {PageDescriptor} from './pageDescriptor';
 import {ResourceCollector} from './resourceCollector';
+import {warn} from '.././warnings';
 
 export class PagedApiCaller implements APICaller {
   pageDescriptor: PageDescriptor;
@@ -151,6 +152,13 @@ export class PagedApiCaller implements APICaller {
       // they don't want auto-pagination this time - okay, just call once
       ongoingCall.call(apiCall, request);
       return;
+    }
+    if (request.pageSize && settings.autoPaginate) {
+      warn(
+        'autoPaginate true',
+        'Providing a pageSize without setting autoPaginate to false will still return all results. See https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure manual paging',
+        'AutopaginateTrueWarning'
+      );
     }
 
     const maxResults = settings.maxResults || -1;

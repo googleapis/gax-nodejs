@@ -21,6 +21,7 @@ import * as path from 'path';
 import * as util from 'util';
 import * as pbjs from 'protobufjs-cli/pbjs';
 import * as pbts from 'protobufjs-cli/pbts';
+import * as crypto from 'crypto';
 import {walkUp} from 'walk-up-path';
 
 export const gaxProtos = path.join(
@@ -353,13 +354,13 @@ async function compileProtos(
  *
  * @param directories List of directories to process. Normally, just the
  * `./src` folder of the given client library.
- * @return {Promise<string>} Resolves to a unique name for protobuf root to use in the JS static module, or 'default'.
+ * @return {Promise<string>} Resolves to a unique name for protobuf root to use in the JS static module, or a hashed id.
  */
 export async function generateRootName(directories: string[]): Promise<string> {
   // We need to provide `-r root` option to `pbjs -t static-module`, otherwise
   // we'll have big problems if two different libraries are used together.
   // It's OK to play some guessing game here: if we locate `package.json`
-  // with a package name, we'll use it; otherwise, we'll fallback to 'default'.
+  // with a package name, we'll use it; otherwise, we'll fallback to a hashed id.
   for (const directory of directories) {
     for (const p of walkUp(path.resolve(directory, '..'))) {
       const packageJson = path.join(p, 'package.json');
@@ -373,7 +374,9 @@ export async function generateRootName(directories: string[]): Promise<string> {
       }
     }
   }
-  return 'default';
+  const sha1 = crypto.createHash('sha1');
+  sha1.update(directories.join(','));
+  return `default_${sha1.digest('hex').slice(0, 8)}`;
 }
 
 /**

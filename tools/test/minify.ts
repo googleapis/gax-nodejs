@@ -16,7 +16,6 @@ import * as assert from 'assert';
 import {describe, it, beforeEach} from 'mocha';
 import * as fs from 'fs';
 import {promises as fsp} from 'fs';
-import {rimraf} from 'rimraf';
 import * as path from 'path';
 import * as minify from '../src/minify';
 
@@ -26,7 +25,7 @@ const fixturesDir = path.join(__dirname, '..', 'test', 'fixtures');
 describe('minify tool', () => {
   beforeEach(async () => {
     if (fs.existsSync(testDir)) {
-      await rimraf(testDir);
+      await fsp.rm(testDir, {recursive: true, force: true});
     }
     await fsp.mkdir(testDir);
   });

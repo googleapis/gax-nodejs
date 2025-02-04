@@ -16,8 +16,8 @@
 
 import * as execa from 'execa';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import * as path from 'path';
-import {rimraf} from 'rimraf';
 import * as util from 'util';
 import {describe, it, before} from 'mocha';
 
@@ -189,7 +189,7 @@ describe('Run system tests for some libraries', () => {
       throw new Error(`npm pack tarball ${toolsTarball} does not exist`);
     }
 
-    await rimraf(testDir);
+    await fsp.rm(testDir, {recursive: true, force: true});
     await mkdir(testDir);
     process.chdir(testDir);
     console.log(`Running tests in ${testDir}.`);

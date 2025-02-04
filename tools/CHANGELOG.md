@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.6](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.5...gapic-tools-v0.4.6) (2024-08-28)
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs to v7.4.0 ([#1644](https://github.com/googleapis/gax-nodejs/issues/1644)) ([09cf4de](https://github.com/googleapis/gax-nodejs/commit/09cf4de2765e87466a587230477c81a0007ae795))
+
+## [0.4.5](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.4...gapic-tools-v0.4.5) (2024-08-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs-cli to v1.1.3 ([#1645](https://github.com/googleapis/gax-nodejs/issues/1645)) ([1b2ffdf](https://github.com/googleapis/gax-nodejs/commit/1b2ffdfdf2a2eed08c81b1b1be6943424fd15258))
+
+## [0.4.4](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.3...gapic-tools-v0.4.4) (2024-07-08)
+
+
+### Bug Fixes
+
+* **deps:** remove rimraf in favor of native node rm function ([#1626](https://github.com/googleapis/gax-nodejs/issues/1626)) ([dd87646](https://github.com/googleapis/gax-nodejs/commit/dd87646618d5026549920e224df7f85cbb5ff6a8))
+* Use a hashed id for default root name ([#1575](https://github.com/googleapis/gax-nodejs/issues/1575)) ([e3cf430](https://github.com/googleapis/gax-nodejs/commit/e3cf430d02bc855df27edf3e0f93454ca8196fdf))
+
 ## [0.4.3](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.2...gapic-tools-v0.4.3) (2024-06-19)
 
 
