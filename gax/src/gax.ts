@@ -333,20 +333,6 @@ export function convertRetryOptions(
   // if a user provided retry AND retryRequestOptions at call time, throw an error
   // otherwise, convert supported parameters
   if (!gaxStreamingRetries) {
-    if (options.retry) {
-      warn(
-        'legacy_streaming_retry_behavior',
-        'Legacy streaming retry behavior will not honor settings passed at call time or via client configuration. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will be set to true by default in future releases.',
-        'DeprecationWarning'
-      );
-    }
-    if (options.retryRequestOptions) {
-      warn(
-        'legacy_streaming_retry_request_behavior',
-        'Legacy streaming retry behavior will not honor retryRequestOptions passed at call time. Please set gaxStreamingRetries to true to utilize passed retry settings. gaxStreamingRetries behavior will convert retryRequestOptions to retry parameters by default in future releases.',
-        'DeprecationWarning'
-      );
-    }
     return options;
   }
   if (options.retry && options.retryRequestOptions) {
@@ -400,6 +386,15 @@ export function convertRetryOptions(
     // this is in seconds and needs to be converted to milliseconds and the totalTimeoutMillis parameter
     if (options.retryRequestOptions.totalTimeout !== undefined) {
       totalTimeoutMillis = options.retryRequestOptions.totalTimeout * 1000;
+    } else {
+      if (options.maxRetries === undefined) {
+        totalTimeoutMillis = 30000;
+        warn(
+          'retry_request_options_no_max_retries_timeout',
+          'Neither maxRetries nor totalTimeout were passed. Defaulting to totalTimeout of 30000ms.',
+          'MissingParameterWarning'
+        );
+      }
     }
 
     // for the variables the user wants to override, override in the backoff settings object we made

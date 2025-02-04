@@ -18,11 +18,12 @@
 // Use `npm run browser-test` in the main google-gax package to run browser tests with Karma.
 
 const path = require('path');
+// eslint-disable-next-line n/no-missing-require
 const isDocker = require('is-docker')();
 const webpackConfig = require('./webpack.config.js');
 webpackConfig.performance = {hints: false};
 delete webpackConfig.entry;
-// eslint-disable-next-line node/no-missing-require
+// eslint-disable-next-line n/no-missing-require
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
 module.exports = function (config) {
@@ -38,7 +39,7 @@ module.exports = function (config) {
       childProcess: {
         path: path.relative(
           process.cwd(),
-          // eslint-disable-next-line node/no-missing-require
+          // eslint-disable-next-line n/no-missing-require
           require.resolve('showcase-server/build/src/index.js')
         ),
         args: [],

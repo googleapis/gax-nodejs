@@ -4,6 +4,142 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.6.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.5.0...google-gax-v4.6.0) (2024-12-19)
+
+
+### Features
+
+* add error check for null response from API ([#1681](https://github.com/googleapis/gax-nodejs/issues/1681)) ([bdfef64](https://github.com/googleapis/gax-nodejs/commit/bdfef6465f2d0e23952a9d5499f27d4607e748cd))
+* add helpful warnings on paged calls ([#1668](https://github.com/googleapis/gax-nodejs/issues/1668)) ([9efaf46](https://github.com/googleapis/gax-nodejs/commit/9efaf46e21edc6b5e31f5a0d2d674eedc15846d1))
+
+## [4.5.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.1...google-gax-v4.5.0) (2024-10-25)
+
+
+### Features
+
+* adds unit tests for sync and async reads of a pipeline transformation  ([#1663](https://github.com/googleapis/gax-nodejs/issues/1663)) ([c7995c4](https://github.com/googleapis/gax-nodejs/commit/c7995c40cd6552daa51a94e3b740b42e1da69285))
+
+
+### Bug Fixes
+
+* add dependency to fix tests ([#1658](https://github.com/googleapis/gax-nodejs/issues/1658)) ([564e9e7](https://github.com/googleapis/gax-nodejs/commit/564e9e75bfa85f45cef58fd178d27474752d0c65))
+* overhaul of server streaming retries ([#1653](https://github.com/googleapis/gax-nodejs/issues/1653)) ([629f4c4](https://github.com/googleapis/gax-nodejs/commit/629f4c409d6df8130662d5d27ada7fd743a3492a))
+
+## [4.4.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.0...google-gax-v4.4.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* expose underlying error with timeouts or retries ([#1650](https://github.com/googleapis/gax-nodejs/issues/1650)) ([f4d037a](https://github.com/googleapis/gax-nodejs/commit/f4d037ac6638b5e9eeb2ee608fe1d8e4cb9a19d3))
+
+## [4.4.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.9...google-gax-v4.4.0) (2024-08-27)
+
+
+### Features
+
+* Improve `AuthClient` Compatibility ([#1641](https://github.com/googleapis/gax-nodejs/issues/1641)) ([4edd33d](https://github.com/googleapis/gax-nodejs/commit/4edd33db2670eb081f5744907b879d6669d4fad2))
+
+
+### Bug Fixes
+
+* **deps:** update dependency protobufjs-cli to v1.1.3 ([#1645](https://github.com/googleapis/gax-nodejs/issues/1645)) ([1b2ffdf](https://github.com/googleapis/gax-nodejs/commit/1b2ffdfdf2a2eed08c81b1b1be6943424fd15258))
+
+## [4.3.9](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.8...google-gax-v4.3.9) (2024-08-06)
+
+
+### Bug Fixes
+
+* reduce duplicate code in streaming retries and add a test ([#1636](https://github.com/googleapis/gax-nodejs/issues/1636)) ([83b52e1](https://github.com/googleapis/gax-nodejs/commit/83b52e14ba3bb1e9f0e079ea53e47ec32b4cfd45))
+* test application cleanup ([#1639](https://github.com/googleapis/gax-nodejs/issues/1639)) ([76ac496](https://github.com/googleapis/gax-nodejs/commit/76ac496fe42f1176df733d0adcc755bd4e773b10))
+
+## [4.3.8](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.7...google-gax-v4.3.8) (2024-07-08)
+
+
+### Bug Fixes
+
+* **deps:** remove rimraf in favor of native node rm function ([#1626](https://github.com/googleapis/gax-nodejs/issues/1626)) ([dd87646](https://github.com/googleapis/gax-nodejs/commit/dd87646618d5026549920e224df7f85cbb5ff6a8))
+
+## [4.3.7](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.6...google-gax-v4.3.7) (2024-06-19)
+
+
+### Bug Fixes
+
+* update various dependencies and linting ([#1622](https://github.com/googleapis/gax-nodejs/issues/1622)) ([227b296](https://github.com/googleapis/gax-nodejs/commit/227b296dfe7820de1777afe4699ecdc09487b1df))
+
+## [4.3.6](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.5...google-gax-v4.3.6) (2024-06-06)
+
+
+### Bug Fixes
+
+* reduce duplicate code ([#1612](https://github.com/googleapis/gax-nodejs/issues/1612)) ([c540ef6](https://github.com/googleapis/gax-nodejs/commit/c540ef610abae9717b6346a0354c05168bedc649))
+
+## [4.3.5](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.4...google-gax-v4.3.5) (2024-05-28)
+
+
+### Bug Fixes
+
+* fix lint warning ([#1608](https://github.com/googleapis/gax-nodejs/issues/1608)) ([863d563](https://github.com/googleapis/gax-nodejs/commit/863d563beb21325eeb080906b48fe3c3f48bcc98))
+* raise error on retryable error when max retries is 0 ([#1605](https://github.com/googleapis/gax-nodejs/issues/1605)) ([b4f2f30](https://github.com/googleapis/gax-nodejs/commit/b4f2f3085d20120f4c449218a6fb1843bcdd6a8c))
+* Reset the retry counter to 0 when receiving data ([#1604](https://github.com/googleapis/gax-nodejs/issues/1604)) ([13b5d23](https://github.com/googleapis/gax-nodejs/commit/13b5d23c6faca88386f66ad5c75a37ecf9ae31e7))
+
+## [4.3.4](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.3...google-gax-v4.3.4) (2024-05-22)
+
+
+### Bug Fixes
+
+* Counter does increment first retry ([#1601](https://github.com/googleapis/gax-nodejs/issues/1601)) ([4b77bf3](https://github.com/googleapis/gax-nodejs/commit/4b77bf349e5fec46f9ad7934e4cce334b79e8013))
+* don't emit error event during stream handoff ([#1592](https://github.com/googleapis/gax-nodejs/issues/1592)) ([2e7d30a](https://github.com/googleapis/gax-nodejs/commit/2e7d30a1671aa667f7c000c737dfa40824f7b9f1))
+* Only call getResumptionRequestFn once ([#1593](https://github.com/googleapis/gax-nodejs/issues/1593)) ([e1755a9](https://github.com/googleapis/gax-nodejs/commit/e1755a920e789270dcb41b87290bab16c273d25f))
+
+## [4.3.3](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.2...google-gax-v4.3.3) (2024-04-19)
+
+
+### Bug Fixes
+
+* don't retry server streaming calls if retryCodes is the empty array ([#1578](https://github.com/googleapis/gax-nodejs/issues/1578)) ([150a683](https://github.com/googleapis/gax-nodejs/commit/150a683514fe8c310d03d5f1a82a80160438effb))
+* update minimum grpc-js to 1.10.3 to skip potentially problematic 1.10.2 ([#1576](https://github.com/googleapis/gax-nodejs/issues/1576)) ([43e6fc0](https://github.com/googleapis/gax-nodejs/commit/43e6fc09c05ece5279ff8f28fc646285260673ce))
+
+## [4.3.2](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.1...google-gax-v4.3.2) (2024-03-26)
+
+
+### Bug Fixes
+
+* **deps:** include new proto changes ([#1573](https://github.com/googleapis/gax-nodejs/issues/1573)) ([87b5718](https://github.com/googleapis/gax-nodejs/commit/87b5718941fbde95bc878447d5adc84344611f26))
+
+## [4.3.1](https://github.com/googleapis/gax-nodejs/compare/v4.3.0...v4.3.1) (2024-02-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/grpc-js to ~1.10.0 ([#1558](https://github.com/googleapis/gax-nodejs/issues/1558)) ([ea84b7b](https://github.com/googleapis/gax-nodejs/commit/ea84b7bc723fbc333b809cc4fb0a0615774738ea))
+* **deps:** update google-auth-library to 9.3.0 ([#1559](https://github.com/googleapis/gax-nodejs/issues/1559)) ([81978ac](https://github.com/googleapis/gax-nodejs/commit/81978ac52d40559258281a3a9d98508401a1822c))
+
+## [4.3.0](https://github.com/googleapis/gax-nodejs/compare/v4.2.1...v4.3.0) (2024-01-31)
+
+
+### Features
+
+* implement support for Trusted Partner Cloud ([#1552](https://github.com/googleapis/gax-nodejs/issues/1552)) ([d51218c](https://github.com/googleapis/gax-nodejs/commit/d51218c23d4afe437285a55a44a39f64bdb3736d))
+
+
+### Bug Fixes
+
+* do not throw DeprecationWarnings for legacy retry behavior ([#1551](https://github.com/googleapis/gax-nodejs/issues/1551)) ([2f39306](https://github.com/googleapis/gax-nodejs/commit/2f39306a441ce08374fe069ab1e1892871715a77))
+
+## [4.2.1](https://github.com/googleapis/gax-nodejs/compare/v4.2.0...v4.2.1) (2024-01-26)
+
+
+### Bug Fixes
+
+* run update-protos to include new field_info.proto ([#1547](https://github.com/googleapis/gax-nodejs/issues/1547)) ([ae37986](https://github.com/googleapis/gax-nodejs/commit/ae37986ddc9f6c822ff557248cdf68529931abc6))
+
+## [4.2.0](https://github.com/googleapis/gax-nodejs/compare/v4.1.0...v4.2.0) (2024-01-18)
+
+
+### Features
+
+* expose uuid for autopopulation of request_id ([#1542](https://github.com/googleapis/gax-nodejs/issues/1542)) ([6c66e22](https://github.com/googleapis/gax-nodejs/commit/6c66e224919e1bb7a8c044927e1c70f9d32bddb4))
+
 ## [4.1.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.0.5...google-gax-v4.1.0) (2024-01-11)
 
 
@@ -22,7 +158,10 @@
 ### Bug Fixes
 
 * **deps:** update dependency retry-request to v7 ([#1515](https://github.com/googleapis/gax-nodejs/issues/1515)) ([85a83a3](https://github.com/googleapis/gax-nodejs/commit/85a83a310dd2c9e70b23c2ac2fe9ea5664947040))
+<<<<<<< HEAD
+=======
 * **deps:** update grpc-js to 1.9.6 ([#1518](https://github.com/googleapis/gax-nodejs/issues/1518)) ([4e1f365](https://github.com/googleapis/gax-nodejs/commit/4e1f36591c23787cb70aa52fe77276dbd7a0448a))
+>>>>>>> 082a42d9e9135ef898f9ba8916a6762c93002e2b
 
 ## [4.0.4](https://github.com/googleapis/gax-nodejs/compare/v4.0.3...v4.0.4) (2023-09-07)
 

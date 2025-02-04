@@ -31,6 +31,7 @@ import {GoogleError} from '../../src';
 const hasAbortController = typeof AbortController !== 'undefined';
 
 const authClient = {
+  universeDomain: 'googleapis.com',
   async getRequestHeaders() {
     return {Authorization: 'Bearer SOME_TOKEN'};
   },
@@ -133,6 +134,24 @@ describe('createStub', () => {
 
     // Each of the service methods should take 4 arguments (so that it works with createApiCall)
     assert.strictEqual(echoStub.echo.length, 4);
+  });
+
+  it('validates universe domain if set', async () => {
+    const opts = {...stubOptions, universeDomain: 'example.com'};
+    assert.rejects(
+      gaxGrpc.createStub(echoService, opts),
+      /configured universe domain/
+    );
+  });
+
+  it('validates universe domain if unset', async () => {
+    authClient.universeDomain = 'example.com';
+    assert.rejects(
+      gaxGrpc.createStub(echoService, stubOptions),
+      /configured universe domain/
+    );
+    // reset to default value
+    authClient.universeDomain = 'googleapis.com';
   });
 
   it('should support optional parameters', async () => {
@@ -333,6 +352,27 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(expectedError.details)
         );
+        done();
+      });
+    });
+  });
+  it('should handle a null response from the API ', done => {
+    const requestObject = {content: 'test-content'};
+    const expectedMessage = 'Received null response from RPC Echo';
+
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(''));
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert(err instanceof Error);
+        assert.strictEqual(err.message, expectedMessage);
         done();
       });
     });
