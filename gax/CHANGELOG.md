@@ -4,6 +4,34 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.6.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.5.0...google-gax-v4.6.0) (2024-12-19)
+
+
+### Features
+
+* add error check for null response from API ([#1681](https://github.com/googleapis/gax-nodejs/issues/1681)) ([bdfef64](https://github.com/googleapis/gax-nodejs/commit/bdfef6465f2d0e23952a9d5499f27d4607e748cd))
+* add helpful warnings on paged calls ([#1668](https://github.com/googleapis/gax-nodejs/issues/1668)) ([9efaf46](https://github.com/googleapis/gax-nodejs/commit/9efaf46e21edc6b5e31f5a0d2d674eedc15846d1))
+
+## [4.5.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.1...google-gax-v4.5.0) (2024-10-25)
+
+
+### Features
+
+* adds unit tests for sync and async reads of a pipeline transformation  ([#1663](https://github.com/googleapis/gax-nodejs/issues/1663)) ([c7995c4](https://github.com/googleapis/gax-nodejs/commit/c7995c40cd6552daa51a94e3b740b42e1da69285))
+
+
+### Bug Fixes
+
+* add dependency to fix tests ([#1658](https://github.com/googleapis/gax-nodejs/issues/1658)) ([564e9e7](https://github.com/googleapis/gax-nodejs/commit/564e9e75bfa85f45cef58fd178d27474752d0c65))
+* overhaul of server streaming retries ([#1653](https://github.com/googleapis/gax-nodejs/issues/1653)) ([629f4c4](https://github.com/googleapis/gax-nodejs/commit/629f4c409d6df8130662d5d27ada7fd743a3492a))
+
+## [4.4.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.4.0...google-gax-v4.4.1) (2024-09-04)
+
+
+### Bug Fixes
+
+* expose underlying error with timeouts or retries ([#1650](https://github.com/googleapis/gax-nodejs/issues/1650)) ([f4d037a](https://github.com/googleapis/gax-nodejs/commit/f4d037ac6638b5e9eeb2ee608fe1d8e4cb9a19d3))
+
 ## [4.4.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.3.9...google-gax-v4.4.0) (2024-08-27)
 
 

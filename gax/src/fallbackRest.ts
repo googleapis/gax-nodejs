@@ -93,6 +93,9 @@ export function decodeResponse(
 ): {} {
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   const decodedString = new TextDecoder().decode(response);
+  if (!decodedString) {
+    throw new Error(`Received null response from RPC ${rpc.name}`);
+  }
   const json = JSON.parse(decodedString);
   if (!ok) {
     const error = GoogleError.parseHttpError(json);
@@ -100,7 +103,9 @@ export function decodeResponse(
   }
   const message = serializer.fromProto3JSON(rpc.resolvedResponseType!, json);
   if (!message) {
-    throw new Error(`Received null response from RPC ${rpc.name}`);
+    throw new Error(
+      `Received null or malformed response from JSON serializer from RPC ${rpc.name}`
+    );
   }
   return rpc.resolvedResponseType!.toObject(message, defaultToObjectOptions);
 }
