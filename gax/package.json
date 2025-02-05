@@ -42,7 +42,7 @@
     "glob": "10.4.5",
     "google-proto-files": "^4.2.0",
     "gts": "^6.0.2",
-    "jackspeak": "^4.0.2",
+    "jackspeak": "^3.0.2",
     "jsdoc": "^4.0.4",
     "jsdoc-fresh": "^3.0.0",
     "jsdoc-region-tag": "^3.0.0",
