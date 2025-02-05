@@ -22,7 +22,7 @@ import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import {GoogleError, GoogleErrorDecoder} from '../../src/googleError';
 import {Metadata} from '@grpc/grpc-js';
-import {rpcCodeFromHttpStatusCode} from '../../src/status';
+import {rpcCodeFromHttpStatusCode, Status} from '../../src/status';
 
 interface MyObj {
   type: string;
@@ -291,16 +291,38 @@ describe('map http status code to gRPC status code', () => {
     assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
   });
 
-  it('error without http status code', () => {
+  it('error without http error code or status', () => {
     const json = {
       error: {
         message:
           'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
-        status: 'PERMISSION_DENIED',
       },
     };
     const error = GoogleError.parseHttpError(json);
     assert.deepStrictEqual(error.code, undefined);
+  });
+
+  it('prefers http error status over error code', () => {
+    const errorJsonAborted = {
+      error: {
+        code: 409,
+        message: 'This is a placeholder message.',
+        status: 'ABORTED',
+      },
+    };
+    const errorAborted = GoogleError.parseHttpError(errorJsonAborted);
+    const errorJsonAlreadyExistss = {
+      error: {
+        code: 409,
+        message: 'This is a placeholder message.',
+        status: 'ALREADY_EXISTS',
+      },
+    };
+    const errorAlreadyExists = GoogleError.parseHttpError(
+      errorJsonAlreadyExistss
+    );
+    assert.deepStrictEqual(errorAborted.code, Status.ABORTED);
+    assert.deepStrictEqual(errorAlreadyExists.code, Status.ALREADY_EXISTS);
   });
 });
 
