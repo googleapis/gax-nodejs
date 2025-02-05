@@ -19,7 +19,8 @@
 
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
-import * as nodeFetch from 'node-fetch';
+const nodeFetch = (url: any, request: any) =>
+  import('node-fetch').then(({default: fetch}) => fetch(url, request));
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
