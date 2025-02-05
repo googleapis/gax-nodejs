@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /**
  * Copyright 2021 Google LLC
  *
@@ -17,8 +18,11 @@
 /* global window */
 /* global AbortController */
 
-import nodeFetch from 'node-fetch';
-import {Response as NodeFetchResponse, RequestInit} from 'node-fetch';
+import {
+  Response as NodeFetchResponse,
+  RequestInfo,
+  RequestInit,
+} from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
@@ -27,6 +31,8 @@ import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
+const nodeFetch = (url: URL | RequestInfo, request: RequestInit | undefined) =>
+  import('node-fetch').then(({default: fetch}) => fetch(url, request));
 
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
@@ -161,7 +167,6 @@ export function generateServiceStub(
             body: fetchParameters.body as
               | string
               | Buffer
-              | Uint8Array
               | undefined,
             method: fetchParameters.method,
             signal: cancelSignal,

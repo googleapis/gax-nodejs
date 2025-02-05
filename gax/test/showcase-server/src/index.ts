@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as execa from 'execa';
+import {execa} from 'execa';
 import * as download from 'download';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
