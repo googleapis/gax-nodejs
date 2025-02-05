@@ -90,8 +90,14 @@ export class GoogleError extends Error {
       new GoogleError(json['error']['message']),
       proto3Error
     );
-    // Map Http Status Code to gRPC Status Code
-    if (json['error']['code']) {
+    // Get gRPC Status Code
+    if (
+      json['error']['status'] &&
+      Status[json['error']['status'] as keyof typeof Status]
+    ) {
+      error.code = Status[json['error']['status'] as keyof typeof Status];
+    } else if (json['error']['code']) {
+      // Map Http Status Code to gRPC Status Code
       error.code = rpcCodeFromHttpStatusCode(json['error']['code']);
     } else {
       // If error code is absent, proto3 message default value is 0. We should
