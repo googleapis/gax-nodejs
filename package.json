@@ -17,5 +17,8 @@
   "engines": {
     "node": ">=18"
   },
-  "homepage": "https://github.com/googleapis/gax-nodejs#readme"
+  "homepage": "https://github.com/googleapis/gax-nodejs#readme",
+  "devDependencies": {
+    "esmock": "^2.7.0"
+  }
 }
