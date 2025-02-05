@@ -25,9 +25,7 @@ import {GrpcClient} from '../../src/fallback';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
 import {StreamArrayParser} from '../../src/streamArrayParser';
-import esmock from 'esmock';
-const nodeFetch = (url: any, request: any) =>
-  import('node-fetch').then(({default: fetch}) => fetch(url, request));
+import * as proxyquire from 'proxyquire';
 
 const authClient = {
   async getRequestHeaders() {
@@ -90,22 +88,16 @@ describe('REGAPIC', () => {
   it('should make a request', async () => {
     const requestObject = {content: 'test-content'};
 
-    const {GrpcClient} = await esmock(
-      '../../src/fallback.js',
-      {},
-      {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(
-                Buffer.from(JSON.stringify(requestObject))
-              );
-            },
-          });
-        },
-      }
-    );
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(requestObject)));
+          },
+        });
+      },
+    });
 
     const gaxGrpcMock = new GrpcClient();
 
@@ -132,18 +124,14 @@ describe('REGAPIC', () => {
     responseStream.push(null);
     // incomplete types for nodeFetch, so...
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const {GrpcClient} = await esmock(
-      '../../src/fallback.js',
-      {},
-      {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            body: responseStream,
-          });
-        },
-      }
-    );
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          body: responseStream,
+        });
+      },
+    });
 
     const gaxGrpcMock = new GrpcClient();
 
@@ -170,15 +158,11 @@ describe('REGAPIC', () => {
   it('should handle fetch failure', async () => {
     const requestObject = {content: 'test-content'};
 
-    const {GrpcClient} = await esmock(
-      '../../src/fallback.js',
-      {},
-      {
-        'node-fetch': () => {
-          return Promise.reject(new Error('Fetch error'));
-        },
-      }
-    );
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.reject(new Error('Fetch error'));
+      },
+    });
 
     const gaxGrpcMock = new GrpcClient();
 
@@ -192,15 +176,11 @@ describe('REGAPIC', () => {
   it('should handle streaming request failure', async () => {
     const requestObject = {content: 'test content'};
 
-    const {GrpcClient} = await esmock(
-      '../../src/fallback.js',
-      {},
-      {
-        'node-fetch': () => {
-          return Promise.reject(new Error('Fetch error'));
-        },
-      }
-    );
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.reject(new Error('Fetch error'));
+      },
+    });
 
     const gaxGrpcMock = new GrpcClient();
     gaxGrpc.createStub(echoService, stubOptions).then((echoStub: any) => {
@@ -221,23 +201,19 @@ describe('REGAPIC', () => {
       };
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(
-                  Buffer.from(JSON.stringify(responseObject))
-                );
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(
+                Buffer.from(JSON.stringify(responseObject))
+              );
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcMock = new GrpcClient();
 
@@ -268,21 +244,17 @@ describe('REGAPIC', () => {
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcMock = new GrpcClient();
 
@@ -305,21 +277,17 @@ describe('REGAPIC', () => {
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcMock = new GrpcClient();
       gaxGrpcMock
@@ -343,23 +311,19 @@ describe('REGAPIC', () => {
       };
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(
-                  Buffer.from(JSON.stringify(responseObject))
-                );
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(
+                Buffer.from(JSON.stringify(responseObject))
+              );
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
         ...opts,
@@ -396,21 +360,17 @@ describe('REGAPIC', () => {
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
         ...opts,
@@ -441,21 +401,17 @@ describe('REGAPIC', () => {
       };
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
         ...opts,
@@ -483,21 +439,17 @@ describe('REGAPIC', () => {
       const requestObject = {shelf: shelf};
       const spy = sinon.spy();
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-              },
-            });
-          },
-          '../../src/transcoding.js': {transcode: spy},
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
+            },
+          });
+        },
+        '../../src/transcoding.js': {transcode: spy},
+      });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
         ...opts,
@@ -528,22 +480,18 @@ describe('REGAPIC', () => {
         bookId: 9007199254740992,
       };
 
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(
-                  Buffer.from(JSON.stringify(responseObject))
-                );
-              },
-            });
-          },
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(
+                Buffer.from(JSON.stringify(responseObject))
+              );
+            },
+          });
+        },
+      });
 
       const gaxGrpcMock = new GrpcClient();
       gaxGrpcMock
@@ -589,22 +537,18 @@ describe('REGAPIC', () => {
         bookId: 42,
       };
       // incomplete types for nodeFetch, so...
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(
-                  Buffer.from(JSON.stringify(responseObject))
-                );
-              },
-            });
-          },
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(
+                Buffer.from(JSON.stringify(responseObject))
+              );
+            },
+          });
+        },
+      });
 
       const gaxGrpcMock = new GrpcClient();
       gaxGrpcMock
@@ -652,22 +596,18 @@ describe('REGAPIC', () => {
       };
       // incomplete types for nodeFetch, so...
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const {GrpcClient} = await esmock(
-        '../../src/fallback.js',
-        {},
-        {
-          'node-fetch': () => {
-            return Promise.resolve({
-              ok: true,
-              arrayBuffer: () => {
-                return Promise.resolve(
-                  Buffer.from(JSON.stringify(responseObject))
-                );
-              },
-            });
-          },
-        }
-      );
+      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+        'node-fetch': () => {
+          return Promise.resolve({
+            ok: true,
+            arrayBuffer: () => {
+              return Promise.resolve(
+                Buffer.from(JSON.stringify(responseObject))
+              );
+            },
+          });
+        },
+      });
 
       const gaxGrpcMock = new GrpcClient();
       gaxGrpcMock
