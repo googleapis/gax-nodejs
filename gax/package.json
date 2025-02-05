@@ -48,7 +48,7 @@
     "jsdoc-region-tag": "^3.0.0",
     "linkinator": "^6.1.2",
     "long": "^5.2.4",
-    "lru-cache": "^11.0.2",
+    "lru-cache": "^10.0.0",
     "mkdirp": "^3.0.1",
     "mocha": "^11.1.0",
     "ncp": "^2.0.0",
