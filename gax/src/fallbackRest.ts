@@ -28,7 +28,8 @@ export function encodeRequest(
   servicePath: string,
   servicePort: number,
   request: {},
-  numericEnums: boolean
+  numericEnums: boolean,
+  minifyJson: boolean
 ): FetchParameters {
   const headers: {[key: string]: string} = {
     'Content-Type': 'application/json',
@@ -59,6 +60,13 @@ export function encodeRequest(
     transcoded.queryString =
       (transcoded.queryString ? `${transcoded.queryString}&` : '') +
       '$alt=json%3Benum-encoding=int';
+  }
+
+  // If minifyJson feature is requested, disable pretty-print JSON responses
+  if (minifyJson) {
+    transcoded.queryString =
+      (transcoded.queryString ? `${transcoded.queryString}&` : '') +
+      '$prettyPrint=0';
   }
 
   // Converts httpMethod to method that permitted in standard Fetch API spec
