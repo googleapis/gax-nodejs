@@ -16,7 +16,6 @@
 
 import * as assert from 'assert';
 import {describe, it, afterEach, before} from 'mocha';
-import * as nodeFetch from 'node-fetch';
 import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import * as sinon from 'sinon';
@@ -27,6 +26,8 @@ import * as transcoding from '../../src/transcoding';
 import {OAuth2Client} from 'google-auth-library';
 import {GrpcClientOptions} from '../../src';
 import {StreamArrayParser} from '../../src/streamArrayParser';
+const nodeFetch = (url: any, request: any) =>
+  import('node-fetch').then(({default: fetch}) => fetch(url, request));
 
 const authClient = {
   async getRequestHeaders() {
