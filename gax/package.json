@@ -39,7 +39,7 @@
     "cheerio": "^1.0.0",
     "codecov": "^3.8.3",
     "execa": "^9.5.2",
-    "glob": "^11.0.1",
+    "glob": "10.4.5",
     "google-proto-files": "^4.2.0",
     "gts": "^6.0.2",
     "jackspeak": "^4.0.2",
