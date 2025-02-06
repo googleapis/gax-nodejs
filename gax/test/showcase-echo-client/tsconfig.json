@@ -13,7 +13,7 @@
     "src/*.ts",
     "src/**/*.ts",
     "*/*.json",
-    "*.json",
+    "./*.json",
     "'../../protos/protos.json"
   ]
 }
