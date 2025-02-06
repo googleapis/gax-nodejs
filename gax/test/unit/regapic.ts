@@ -212,7 +212,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcMock = new GrpcClient();
@@ -253,7 +253,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcMock = new GrpcClient();
@@ -286,7 +286,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcMock = new GrpcClient();
@@ -322,7 +322,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
@@ -369,7 +369,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
@@ -410,7 +410,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
@@ -448,7 +448,7 @@ describe('REGAPIC', () => {
             },
           });
         },
-        '../../src/transcoding.js': {transcode: spy},
+        'transcoding.js': {transcode: spy},
       });
 
       const gaxGrpcNumericEnumsMock = new GrpcClient({
