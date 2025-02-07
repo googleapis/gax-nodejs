@@ -18,11 +18,11 @@
 /* global window */
 /* global AbortController */
 
-import type {
-  Response as NodeFetchResponse,
-  RequestInfo,
-  RequestInit,
-} from 'node-fetch';
+// import type {
+//   Response as NodeFetchResponse,
+//   RequestInfo,
+//   RequestInit,
+// } from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
@@ -31,7 +31,7 @@ import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
-const nodeFetch = (url: URL | RequestInfo, request: RequestInit | undefined) =>
+const nodeFetch = (url: any, request: any) =>
   import('node-fetch').then(({default: fetch}) => fetch(url, request));
 
 interface NodeFetchType {
@@ -159,7 +159,7 @@ export function generateServiceStub(
       authClient
         .getRequestHeaders()
         .then(authHeader => {
-          const fetchRequest: RequestInit = {
+          const fetchRequest: any = {
             headers: {
               ...authHeader,
               ...headers,
@@ -182,7 +182,7 @@ export function generateServiceStub(
           }
           return fetch(url, fetchRequest as {});
         })
-        .then((response: Response | NodeFetchResponse) => {
+        .then((response: any) => {
           if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,
