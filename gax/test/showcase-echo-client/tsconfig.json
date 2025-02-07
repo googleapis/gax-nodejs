@@ -12,9 +12,7 @@
   "include": [
     "src/*.ts",
     "src/**/*.ts",
-    "./*.json",
-    "./echo_client_config.json",
-    "./sequence_service_client_config.json",
-    "../../protos/protos.json"
+    "src/**/*.json",
+    "protos/protos.json"
   ]
 }
