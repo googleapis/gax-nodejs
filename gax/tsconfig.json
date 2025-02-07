@@ -16,6 +16,7 @@
     "test/system-test/*.ts",
     "test/unit/*.ts",
     "*/*.json",
-    "test/fixtures/*.json"
+    "test/fixtures/*.json",
+    "test/showcase-echo-client/*/*.json"
   ]
 }

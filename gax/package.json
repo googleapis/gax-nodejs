@@ -98,7 +98,8 @@
   "exports": {
     ".": "./build/src/index.js",
     "./fallback": "./build/src/fallback.js",
-    "./gax": "./build/src/gax.js"
+    "./gax": "./build/src/gax.js",
+    "./build/src/protobuf": "./build/src/protobuf"
   },
   "repository": {
     "type": "git",
