@@ -18,7 +18,7 @@
 /* global window */
 /* global AbortController */
 
-import {
+import type {
   Response as NodeFetchResponse,
   RequestInfo,
   RequestInit,
