@@ -28,7 +28,8 @@ export function encodeRequest(
   servicePath: string,
   servicePort: number,
   request: {},
-  numericEnums: boolean
+  numericEnums: boolean,
+  minifyJson: boolean
 ): FetchParameters {
   const headers: {[key: string]: string} = {
     'Content-Type': 'application/json',
@@ -61,6 +62,13 @@ export function encodeRequest(
       '$alt=json%3Benum-encoding=int';
   }
 
+  // If minifyJson feature is requested, disable pretty-print JSON responses
+  if (minifyJson) {
+    transcoded.queryString =
+      (transcoded.queryString ? `${transcoded.queryString}&` : '') +
+      '$prettyPrint=0';
+  }
+
   // Converts httpMethod to method that permitted in standard Fetch API spec
   // https://fetch.spec.whatwg.org/#methods
   const method = transcoded.httpMethod.toUpperCase() as FetchParametersMethod;
@@ -85,6 +93,9 @@ export function decodeResponse(
 ): {} {
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   const decodedString = new TextDecoder().decode(response);
+  if (!decodedString) {
+    throw new Error(`Received null response from RPC ${rpc.name}`);
+  }
   const json = JSON.parse(decodedString);
   if (!ok) {
     const error = GoogleError.parseHttpError(json);
@@ -92,7 +103,9 @@ export function decodeResponse(
   }
   const message = serializer.fromProto3JSON(rpc.resolvedResponseType!, json);
   if (!message) {
-    throw new Error(`Received null response from RPC ${rpc.name}`);
+    throw new Error(
+      `Received null or malformed response from JSON serializer from RPC ${rpc.name}`
+    );
   }
   return rpc.resolvedResponseType!.toObject(message, defaultToObjectOptions);
 }
