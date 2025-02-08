@@ -19,15 +19,13 @@
 
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
-const nodeFetch = (url: any, request: any) =>
-  import('node-fetch').then(({default: fetch}) => fetch(url, request));
+import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import {GoogleError} from '../../src';
-import * as proxyquire from 'proxyquire';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
@@ -277,36 +275,33 @@ describe('grpc-fallback', () => {
     assert(headers['x-goog-api-client'][0].match('grpc-web/'));
   });
 
-  it('should make a request', async () => {
+  it('should make a request', done => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve(Buffer.from(JSON.stringify(response)));
-          },
-        });
-      },
-    });
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: true,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(JSON.stringify(response)));
+        },
+      })
+    );
 
-    const gaxGrpcMock = new GrpcClient();
-    gaxGrpcMock
-      .createStub(echoService, stubOptions)
-      .then((echoStub: {echo: any}) => {
-        echoStub.echo(requestObject, {}, {}, (err?: Error, result?: {}) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual(
-            requestObject.content,
-            (result as {content: string}).content
-          );
-        });
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error, result?: {}) => {
+        assert.strictEqual(err, null);
+        assert.strictEqual(
+          requestObject.content,
+          (result as {content: string}).content
+        );
+        done();
       });
+    });
   });
 
-  it('should handle an API error', async () => {
+  it('should handle an API error', done => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Language API
     const expectedMessage =
@@ -339,21 +334,16 @@ describe('grpc-fallback', () => {
         },
       ],
     };
-
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve(Buffer.from(JSON.stringify(jsonError)));
-          },
-        });
-      },
-    });
-
-    const gaxGrpcMock = new GrpcClient();
-
-    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(JSON.stringify(jsonError)));
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
         assert.strictEqual(err.message, expectedMessage);
@@ -362,48 +352,45 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(expectedError.details)
         );
+        done();
       });
     });
   });
-  it('should handle a null response from the API ', async () => {
+  it('should handle a null response from the API ', done => {
     const requestObject = {content: 'test-content'};
     const expectedMessage = 'Received null response from RPC Echo';
 
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve(Buffer.from(JSON.stringify(expectedMessage)));
-          },
-        });
-      },
-    });
-
-    const gaxGrpcMock = new GrpcClient();
-
-    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(''));
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof Error);
         assert.strictEqual(err.message, expectedMessage);
+        done();
       });
     });
   });
 
-  it('should handle a fetch error', async () => {
+  it('should handle a fetch error', done => {
     const requestObject = {content: 'test-content'};
-
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.reject(new Error('fetch error'));
-      },
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').rejects(new Error('fetch error'));
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+        assert.strictEqual(err?.message, 'fetch error');
+        done();
+      });
     });
-
-    const gaxGrpcMock = new GrpcClient();
-    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
   });
 
-  it('should promote ErrorInfo if exist in fallback-rest error', async () => {
+  it('should promote ErrorInfo if exist in fallback-rest error', done => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Translate API
     const errorInfo = {
@@ -439,21 +426,18 @@ describe('grpc-fallback', () => {
       auth: authStub,
       fallback: 'rest',
     };
-   
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
-          },
-        });
-      },
-    });
-
-    const gaxGrpcMock = new GrpcClient(opts);
-
-    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    // @ts-ignore incomplete options
+    gaxGrpc = new GrpcClient(opts);
+    //@ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(
+      Promise.resolve({
+        ok: false,
+        arrayBuffer: () => {
+          return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
+        },
+      })
+    );
+    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
         assert.strictEqual(
@@ -468,30 +452,16 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.errorInfoMetadata),
           JSON.stringify(errorInfo.metadata)
         );
+        done();
       });
     });
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
-    const opts = {
-      auth: authStub,
-      fallback: 'rest',
-    };
+    // @ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
 
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve(Buffer.from(JSON.stringify({})));
-          },
-        });
-      },
-    });
-
-    const gaxGrpcMock = new GrpcClient(opts);
-    const echoStub = await gaxGrpcMock.createStub(echoService, stubOptions);
-
+    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
     const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
@@ -501,23 +471,12 @@ describe('grpc-fallback', () => {
     assert.strictEqual(createdAbortControllers[0].abortCalled, true);
   });
 
-  it('should have close method', async () => {
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve({});
-          },
-        });
-      },
-    });
-
-    const gaxGrpcMock = new GrpcClient();
-
-    gaxGrpcMock.createStub(echoService, stubOptions).then((stub: any) => {
+  it('should have close method', done => {
+    // @ts-ignore
+    sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
+    gaxGrpc.createStub(echoService, stubOptions).then(stub => {
       stub.close({}, {}, {}, () => {});
+      done();
     });
   });
-});
 });
