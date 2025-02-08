@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 /**
  * Copyright 2021 Google LLC
  *
@@ -18,11 +17,8 @@
 /* global window */
 /* global AbortController */
 
-// import type {
-//   Response as NodeFetchResponse,
-//   RequestInfo,
-//   RequestInit,
-// } from 'node-fetch';
+import nodeFetch from 'node-fetch';
+import {Response as NodeFetchResponse, RequestInit} from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
@@ -31,14 +27,7 @@ import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
-// const nodeFetch = (url: any, request: any) =>
-//   import('node-fetch').then(({default: fetch}) => fetch(url, request));
 
-async function loadNodeFetch() {
-    return await import('node-fetch'); // Path to the module
-}
-
-const nodeFetch = loadNodeFetch();
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
 }
@@ -164,7 +153,7 @@ export function generateServiceStub(
       authClient
         .getRequestHeaders()
         .then(authHeader => {
-          const fetchRequest: any = {
+          const fetchRequest: RequestInit = {
             headers: {
               ...authHeader,
               ...headers,
@@ -172,6 +161,7 @@ export function generateServiceStub(
             body: fetchParameters.body as
               | string
               | Buffer
+              | Uint8Array
               | undefined,
             method: fetchParameters.method,
             signal: cancelSignal,
@@ -187,7 +177,7 @@ export function generateServiceStub(
           }
           return fetch(url, fetchRequest as {});
         })
-        .then((response: any) => {
+        .then((response: Response | NodeFetchResponse) => {
           if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,

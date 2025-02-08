@@ -2,13 +2,10 @@
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "lib": ["es2018", "dom"],
-    "module": "commonjs",
-    "target": "es2018",
     "rootDir": ".",
     "outDir": "build",
     "noImplicitAny": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "node"
+    "resolveJsonModule": true
   },
   "include": [
     "src/*.ts",
@@ -18,8 +15,5 @@
     "src/*/*.ts",
     "test/system-test/*.ts",
     "test/unit/*.ts",
-    "*/*.json",
-    "test/fixtures/*.json",
-    "test/showcase-echo-client/*/*.json"
   ]
 }
