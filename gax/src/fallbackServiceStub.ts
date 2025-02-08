@@ -31,9 +31,14 @@ import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
-const nodeFetch = (url: any, request: any) =>
-  import('node-fetch').then(({default: fetch}) => fetch(url, request));
+// const nodeFetch = (url: any, request: any) =>
+//   import('node-fetch').then(({default: fetch}) => fetch(url, request));
 
+async function loadNodeFetch() {
+    return await import('node-fetch'); // Path to the module
+}
+
+const nodeFetch = loadNodeFetch();
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
 }
