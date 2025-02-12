@@ -4,7 +4,7 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "lib": ["DOM"]
+    "lib": ["ES2018", "DOM"]
   },
   "include": [
     "src/**/*.ts",
