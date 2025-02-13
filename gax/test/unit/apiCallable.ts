@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable typescript-eslint/no-floating-promises */
 
 import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';
@@ -53,7 +54,7 @@ describe('createApiCall', () => {
     });
   });
 
-  it('is customized by call options', async () => {
+  it('is customized by call options', done => {
     function func(
       argument: {},
       metadata: {},
@@ -62,13 +63,14 @@ describe('createApiCall', () => {
     ) {
       callback(null, options.deadline.getTime());
     }
-    const apiCall = await createApiCall(func, {settings: {timeout: 100}});
+    const apiCall = createApiCall(func, {settings: {timeout: 100}});
     apiCall({}, {timeout: 200}, (err, resp) => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
       assert((resp as unknown as number)! > originalDeadline);
       assert((resp as unknown as number)! <= expectedDeadline);
+      done();
     });
   });
 
