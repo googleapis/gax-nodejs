@@ -21,6 +21,7 @@ import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
 import {protobuf, GoogleAuth, fallback} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
+import 'core-js/stable';
 
 import echoProtoJson = require('showcase-echo-client/build/protos/protos.json');
 

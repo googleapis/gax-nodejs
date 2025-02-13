@@ -13,12 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+const webpack = require('webpack');
 module.exports = {
   entry: './build/src/index.js',
   resolve: {
     extensions: ['.ts', '.js', '.json'],
+    fallback: {
+      fs: 'empty',
+      child_process: 'empty',
+      // eslint-disable-next-line n/no-extraneous-require
+      assert: require.resolve('assert/'),
+      util: require.resolve('util'),
+      stream: require.resolve('stream-browserify'),
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      querystring: require.resolve('querystring-es3'),
+      url: require.resolve('url/'),
+    },
   },
+  plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
+  ],
   module: {
     rules: [
       {
@@ -44,9 +64,6 @@ module.exports = {
       },
     ],
   },
-  node: {
-    fs: 'empty',
-    child_process: 'empty',
-  },
-  mode: 'production',
+  cache: false,
+  mode: 'development',
 };
