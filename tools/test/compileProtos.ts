@@ -93,12 +93,12 @@ describe('compileProtos tool', () => {
     assert(js.toString().includes('TestMessage'));
     assert(js.toString().includes('LibraryService'));
     assert(
-      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       js
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes('require("google-gax/build/src/protobuf").protobufMinimal'),
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
@@ -111,12 +111,12 @@ describe('compileProtos tool', () => {
     assert(ts.toString().includes('import Long = require'));
     assert(!ts.toString().includes('import * as Long'));
     assert(
-      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       ts
         .toString()
-        .includes('import type {protobuf as $protobuf} from "google-gax"')
+        .includes('import type {protobuf as $protobuf} from "google-gax"'),
     );
     assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
@@ -138,12 +138,12 @@ describe('compileProtos tool', () => {
     assert(cjs.toString().includes('TestMessage'));
     assert(cjs.toString().includes('LibraryService'));
     assert(
-      cjs.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      cjs.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       cjs
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes('require("google-gax/build/src/protobuf").protobufMinimal'),
     );
     assert(!cjs.toString().includes('require("protobufjs/minimal")'));
 
@@ -154,18 +154,20 @@ describe('compileProtos tool', () => {
     assert(js.toString().includes('TestMessage'));
     assert(js.toString().includes('LibraryService'));
     assert(
-      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       js
         .toString()
         .includes(
-          'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
-        )
+          'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"',
+        ),
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
     assert(
-      !js.toString().includes('import * as $protobuf from "protobufjs/minimal"')
+      !js
+        .toString()
+        .includes('import * as $protobuf from "protobufjs/minimal"'),
     );
 
     // check that it uses proper root object; it's taken from fixtures/package.json
@@ -177,12 +179,12 @@ describe('compileProtos tool', () => {
     assert(ts.toString().includes('import Long = require'));
     assert(!ts.toString().includes('import * as Long'));
     assert(
-      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       ts
         .toString()
-        .includes('import type {protobuf as $protobuf} from "google-gax"')
+        .includes('import type {protobuf as $protobuf} from "google-gax"'),
     );
     assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
@@ -198,12 +200,12 @@ describe('compileProtos tool', () => {
     assert(js.toString().includes('TestMessage'));
     assert(js.toString().includes('LibraryService'));
     assert(
-      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      js.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       js
         .toString()
-        .includes('require("google-gax/build/src/protobuf").protobufMinimal')
+        .includes('require("google-gax/build/src/protobuf").protobufMinimal'),
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
 
@@ -216,12 +218,12 @@ describe('compileProtos tool', () => {
     assert(ts.toString().includes('import Long = require'));
     assert(!ts.toString().includes('import * as Long'));
     assert(
-      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(
       ts
         .toString()
-        .includes('import type {protobuf as $protobuf} from "google-gax"')
+        .includes('import type {protobuf as $protobuf} from "google-gax"'),
     );
     assert(!ts.toString().includes('import * as $protobuf from "protobufjs"'));
   });
@@ -239,43 +241,43 @@ describe('compileProtos tool', () => {
     assert(ts.toString().includes('import Long = require'));
     assert(!ts.toString().includes('import * as Long'));
     assert(
-      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0')
+      ts.toString().includes('http://www.apache.org/licenses/LICENSE-2.0'),
     );
     assert(ts.toString().includes('longField?: (number|Long|string|null);'));
     assert(
-      ts.toString().includes('bytesField?: (Uint8Array|Buffer|string|null);')
+      ts.toString().includes('bytesField?: (Uint8Array|Buffer|string|null);'),
     );
     assert(
       ts
         .toString()
         .includes(
-          'enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);'
-        )
+          'enumField?: (google.TestEnum|keyof typeof google.TestEnum|null);',
+        ),
     );
     assert(
       ts
         .toString()
         .includes(
-          '"case"?: (google.TestEnum|keyof typeof google.TestEnum|null);'
-        )
+          '"case"?: (google.TestEnum|keyof typeof google.TestEnum|null);',
+        ),
     );
     assert(ts.toString().includes('public longField: (number|Long|string);'));
     assert(
-      ts.toString().includes('public bytesField: (Uint8Array|Buffer|string);')
+      ts.toString().includes('public bytesField: (Uint8Array|Buffer|string);'),
     );
     assert(
       ts
         .toString()
         .includes(
-          'public enumField: (google.TestEnum|keyof typeof google.TestEnum);'
-        )
+          'public enumField: (google.TestEnum|keyof typeof google.TestEnum);',
+        ),
     );
     assert(
       ts
         .toString()
         .includes(
-          'public case: (google.TestEnum|keyof typeof google.TestEnum);'
-        )
+          'public case: (google.TestEnum|keyof typeof google.TestEnum);',
+        ),
     );
   });
 

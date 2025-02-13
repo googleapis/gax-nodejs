@@ -205,11 +205,11 @@ describe('grpc-fallback', () => {
         this.abortCalled = true;
       };
       // @ts-ignore
+      // eslint-disable-next-line no-global-assign
       createdAbortControllers.push(this);
     };
 
     if (hasAbortController) {
-      // eslint-ignore
       // @ts-ignore
       AbortController = FakeAbortController;
     } else {
@@ -229,6 +229,7 @@ describe('grpc-fallback', () => {
   after(() => {
     if (hasAbortController) {
       // @ts-ignore
+      // eslint-disable-next-line no-global-assign
       AbortController = savedAbortController;
     } else {
       // @ts-ignore
