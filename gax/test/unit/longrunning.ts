@@ -15,7 +15,7 @@
  */
 
 /* eslint-disable no-prototype-builtins */
-/* eslint-disable typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';

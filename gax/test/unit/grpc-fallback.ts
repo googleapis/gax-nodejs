@@ -16,7 +16,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-undef */
-/* eslint-disable typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import * as assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';

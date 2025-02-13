@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* eslint-disable typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import * as assert from 'assert';
 import {status} from '@grpc/grpc-js';
