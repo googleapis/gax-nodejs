@@ -41,7 +41,7 @@ import * as commonProtoFiles from './protosList.json';
 import {google} from '../protos/http';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
-  file.replace(/[/\\]/g, path.sep)
+  file.replace(/[/\\]/g, path.sep),
 );
 
 export interface GrpcClientOptions extends GoogleAuthOptions {
@@ -131,7 +131,7 @@ export class GrpcClient {
    */
   private static protoCacheKey(
     filename: string | string[],
-    options: grpcProtoLoader.Options
+    options: grpcProtoLoader.Options,
   ) {
     if (
       !filename ||
@@ -204,13 +204,13 @@ export class GrpcClient {
         ? grpc.credentials.createSsl(
             null,
             Buffer.from(opts.key),
-            Buffer.from(opts.cert)
+            Buffer.from(opts.cert),
           )
         : grpc.credentials.createSsl();
     const client = await this.auth.getClient();
     const credentials = grpc.credentials.combineChannelCredentials(
       sslCreds,
-      grpc.credentials.createFromGoogleCredential(client)
+      grpc.credentials.createFromGoogleCredential(client),
     );
     return credentials;
   }
@@ -243,7 +243,7 @@ export class GrpcClient {
   loadFromProto(
     filename: string | string[],
     options: grpcProtoLoader.Options,
-    ignoreCache = false
+    ignoreCache = false,
   ) {
     const cacheKey = GrpcClient.protoCacheKey(filename, options);
     let grpcPackage = cacheKey
@@ -275,7 +275,7 @@ export class GrpcClient {
   loadProto(
     protoPath: string,
     filename?: string | string[],
-    ignoreCache = false
+    ignoreCache = false,
   ) {
     if (!filename) {
       filename = path.basename(protoPath);
@@ -325,7 +325,7 @@ export class GrpcClient {
     }
     return function buildMetadata(
       abTests?: {},
-      moreHeaders?: OutgoingHttpHeaders
+      moreHeaders?: OutgoingHttpHeaders,
     ) {
       // TODO: bring the A/B testing info into the metadata.
       let copied = false;
@@ -365,14 +365,14 @@ export class GrpcClient {
     serviceName: string,
     clientConfig: gax.ClientConfig,
     configOverrides: gax.ClientConfig,
-    headers: OutgoingHttpHeaders
+    headers: OutgoingHttpHeaders,
   ) {
     return gax.constructSettings(
       serviceName,
       clientConfig,
       configOverrides,
       this.grpc.status,
-      {metadataBuilder: this.metadataBuilder(headers)}
+      {metadataBuilder: this.metadataBuilder(headers)},
     );
   }
 
@@ -392,7 +392,7 @@ export class GrpcClient {
   async createStub(
     CreateStub: typeof ClientStub,
     options: ClientStubOptions,
-    customServicePath?: boolean
+    customServicePath?: boolean,
   ) {
     // The following options are understood by grpc-gcp and need a special treatment
     // (should be passed without a `grpc.` prefix)
@@ -403,12 +403,12 @@ export class GrpcClient {
     ];
     const [cert, key] = await this._detectClientCertificate(
       options,
-      options.universeDomain
+      options.universeDomain,
     );
     const servicePath = this._mtlsServicePath(
       options.servicePath,
       customServicePath,
-      cert && key
+      cert && key,
     );
     const opts = Object.assign({}, options, {cert, key, servicePath});
     const serviceAddress = servicePath + ':' + opts.port;
@@ -420,7 +420,7 @@ export class GrpcClient {
       if (universeFromAuth && options.universeDomain !== universeFromAuth) {
         throw new Error(
           `The configured universe domain (${options.universeDomain}) does not match the universe domain found in the credentials (${universeFromAuth}). ` +
-            "If you haven't configured the universe domain explicitly, googleapis.com is the default."
+            "If you haven't configured the universe domain explicitly, googleapis.com is the default.",
         );
       }
     }
@@ -453,7 +453,7 @@ export class GrpcClient {
     const stub = new CreateStub(
       serviceAddress,
       creds,
-      grpcOptions as ClientOptions
+      grpcOptions as ClientOptions,
     );
     return stub;
   }
@@ -467,7 +467,7 @@ export class GrpcClient {
    */
   async _detectClientCertificate(
     opts?: ClientOptions,
-    universeDomain?: string
+    universeDomain?: string,
   ) {
     const certRegex =
       /(?<cert>-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----)/s;
@@ -480,7 +480,7 @@ export class GrpcClient {
     ) {
       if (universeDomain && universeDomain !== 'googleapis.com') {
         throw new Error(
-          'mTLS is not supported outside of googleapis.com universe domain.'
+          'mTLS is not supported outside of googleapis.com universe domain.',
         );
       }
       if (opts?.cert && opts?.key) {
@@ -491,7 +491,7 @@ export class GrpcClient {
       const metadataPath = join(
         os.homedir(),
         '.secureConnect',
-        'context_aware_metadata.json'
+        'context_aware_metadata.json',
       );
       const metadata = JSON.parse(await readFileAsync(metadataPath));
       if (!metadata.cert_provider_command) {
@@ -499,7 +499,7 @@ export class GrpcClient {
       }
       const stdout = await execFileAsync(
         metadata.cert_provider_command[0],
-        metadata.cert_provider_command.slice(1)
+        metadata.cert_provider_command.slice(1),
       );
       const matchCert = stdout.toString().match(certRegex);
       const matchKey = stdout.toString().match(keyRegex);
@@ -526,7 +526,7 @@ export class GrpcClient {
   _mtlsServicePath(
     servicePath: string | undefined,
     customServicePath: boolean | undefined,
-    hasCertificate: boolean
+    hasCertificate: boolean,
   ): string | undefined {
     // If user provides a custom service path, return the current service
     // path and do not attempt to add mtls subdomain:

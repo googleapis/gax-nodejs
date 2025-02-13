@@ -46,7 +46,7 @@ describe('gRPC-fallback error decoding', () => {
     assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
       JSON.stringify(decodedError.statusDetails),
-      JSON.stringify(expectedError.details)
+      JSON.stringify(expectedError.details),
     );
   });
 
@@ -56,7 +56,7 @@ describe('gRPC-fallback error decoding', () => {
     const errorBin = fs.readFileSync(fixtureName);
     const expectedError = Object.assign(
       new Error(
-        '3 INVALID_ARGUMENT: One of content, or gcs_content_uri must be set.'
+        '3 INVALID_ARGUMENT: One of content, or gcs_content_uri must be set.',
       ),
       {
         code: 3,
@@ -70,7 +70,7 @@ describe('gRPC-fallback error decoding', () => {
             ],
           },
         ],
-      }
+      },
     );
     const decoder = new GoogleErrorDecoder();
     const decodedError = decoder.decodeErrorFromBuffer(errorBin);
@@ -80,7 +80,7 @@ describe('gRPC-fallback error decoding', () => {
     assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
       JSON.stringify(decodedError.statusDetails),
-      JSON.stringify(expectedError.details)
+      JSON.stringify(expectedError.details),
     );
   });
 
@@ -91,7 +91,7 @@ describe('gRPC-fallback error decoding', () => {
       '..',
       'protos',
       'google',
-      'rpc'
+      'rpc',
     );
     const root = protobuf.loadSync([
       path.join(protos_path, 'error_details.proto'),
@@ -115,7 +115,7 @@ describe('gRPC-fallback error decoding', () => {
         reason: errorInfo.reason,
         domain: errorInfo.domain,
         errorInfoMetadata: errorInfo.metadata,
-      }
+      },
     );
     const status = Object.assign(new Error('mock error.'), {
       code: 7,
@@ -134,7 +134,7 @@ describe('gRPC-fallback error decoding', () => {
     assert.strictEqual(decodedError.message, expectedError.message);
     assert.strictEqual(
       JSON.stringify(decodedError.statusDetails),
-      JSON.stringify(expectedError.details)
+      JSON.stringify(expectedError.details),
     );
   });
 });

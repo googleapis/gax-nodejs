@@ -52,11 +52,11 @@ export class PathTemplate {
       // if the path contains a wildcard, then the length may differ by 1.
       if (!this.data.includes('**')) {
         throw new TypeError(
-          `This path ${path} does not match path template ${this.data}, the number of parameters is not same.`
+          `This path ${path} does not match path template ${this.data}, the number of parameters is not same.`,
         );
       } else if (pathSegments.length !== this.segments.length + 1) {
         throw new TypeError(
-          `This path ${path} does not match path template ${this.data}, the number of parameters is not same with one wildcard.`
+          `This path ${path} does not match path template ${this.data}, the number of parameters is not same with one wildcard.`,
         );
       }
     }
@@ -68,18 +68,18 @@ export class PathTemplate {
       if (this.segments[index] !== pathSegments[0]) {
         if (!this.segments[index].includes('*')) {
           throw new TypeError(
-            `segment does not match, ${this.segments[index]} and  ${pathSegments[index]}.`
+            `segment does not match, ${this.segments[index]} and  ${pathSegments[index]}.`,
           );
         } else {
           let segment = this.segments[index];
           const matches = segment.match(/\{[$0-9a-zA-Z_]+=.*?\}/g);
           if (!matches) {
             throw new Error(
-              `Error processing path template segment ${segment}`
+              `Error processing path template segment ${segment}`,
             );
           }
           const variables = matches.map(str =>
-            str.replace(/^\{/, '').replace(/=.*/, '')
+            str.replace(/^\{/, '').replace(/=.*/, ''),
           );
           if (segment.includes('**')) {
             bindings[variables[0]] = pathSegments[0] + '/' + pathSegments[1];
@@ -96,7 +96,7 @@ export class PathTemplate {
               const value = pathSegments[0].split(/[-_.~]/);
               if (value.length !== variables.length) {
                 throw new Error(
-                  `segment ${segment} does not match ${pathSegments[0]}`
+                  `segment ${segment} does not match ${pathSegments[0]}`,
                 );
               }
               for (const v of variables) {
@@ -107,7 +107,7 @@ export class PathTemplate {
               // segment: {blurb_id=*}.{legacy_user=*} matching pathSegments: ['bar~user2'] should fail
               if (segment !== pathSegments[0]) {
                 throw new TypeError(
-                  `non slash resource pattern ${this.segments[index]} and ${pathSegments[0]} should have same separator`
+                  `non slash resource pattern ${this.segments[index]} and ${pathSegments[0]} should have same separator`,
                 );
               }
             }
@@ -136,7 +136,7 @@ export class PathTemplate {
           Object.keys(bindings).length
         } does not match the number of needed variables ${
           Object.keys(this.bindings).length
-        }`
+        }`,
       );
     }
     let path = this.inspect();
@@ -195,11 +195,11 @@ export class PathTemplate {
       } else if ((matches = segment.match(/\{[0-9a-zA-Z-.~_]+(?:=.*?)?\}/g))) {
         for (const subsegment of matches) {
           const pairMatch = subsegment.match(
-            /^\{([0-9a-zA-Z-.~_]+)(?:=(.*?))?\}$/
+            /^\{([0-9a-zA-Z-.~_]+)(?:=(.*?))?\}$/,
           );
           if (!pairMatch) {
             throw new Error(
-              `Cannot process path template segment ${subsegment}`
+              `Cannot process path template segment ${subsegment}`,
             );
           }
           const key = pairMatch[1];

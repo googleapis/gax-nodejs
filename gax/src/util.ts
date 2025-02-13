@@ -88,7 +88,7 @@ export function toCamelCase(str: string) {
         return '_' + w;
       }
       return capitalize(w);
-    })
+    }),
   );
   return result.join('');
 }

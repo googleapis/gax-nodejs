@@ -45,7 +45,7 @@ describe('paged iteration', () => {
     request: {pageToken?: number},
     metadata: {},
     options: {},
-    callback: APICallback
+    callback: APICallback,
   ) {
     const pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
@@ -76,8 +76,8 @@ describe('paged iteration', () => {
           warnStub.calledWith(
             'autoPaginate true',
             'Providing a pageSize without setting autoPaginate to false will still return all results. See https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure manual paging',
-            'AutopaginateTrueWarning'
-          )
+            'AutopaginateTrueWarning',
+          ),
         );
         warnStub.restore();
         done();
@@ -154,7 +154,7 @@ describe('paged iteration', () => {
       err: {},
       resources: {},
       next: {},
-      rawResponse: {nums: {}}
+      rawResponse: {nums: {}},
     ) {
       if (err) {
         done(err);
@@ -170,7 +170,7 @@ describe('paged iteration', () => {
         apiCall(
           next,
           {autoPaginate: false},
-          callback as unknown as APICallback
+          callback as unknown as APICallback,
         );
       } else {
         assert.strictEqual(counter, pagesToStream + 1);
@@ -186,7 +186,7 @@ describe('paged iteration', () => {
       request: {},
       metadata: {},
       options: {},
-      callback: APICallback
+      callback: APICallback,
     ) {
       callCount++;
       if (callCount % 2 === 0) {
@@ -244,10 +244,10 @@ describe('paged iteration', () => {
       }
 
       const settings = new gax.CallSettings(
-        (createOptions && createOptions.settings) || {}
+        (createOptions && createOptions.settings) || {},
       );
       const resources = await iterableChecker(
-        descriptor.asyncIterate(apiCall, {}, settings)
+        descriptor.asyncIterate(apiCall, {}, settings),
       );
       assert.strictEqual(resources.length, 10);
     });
@@ -271,11 +271,11 @@ describe('paged iteration', () => {
       }
 
       const settings = new gax.CallSettings(
-        (createOptions && createOptions.settings) || {}
+        (createOptions && createOptions.settings) || {},
       );
       settings.autoPaginate = true;
       const resources = await iterableChecker(
-        descriptor.asyncIterate(apiCall, {}, settings)
+        descriptor.asyncIterate(apiCall, {}, settings),
       );
       assert.strictEqual(resources.length, 10);
       assert.strictEqual(warnStub.callCount, 1);
@@ -283,8 +283,8 @@ describe('paged iteration', () => {
         warnStub.calledWith(
           'autoPaginate true',
           'Autopaginate will always be set to false in Async paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
-          'AutopaginateTrueWarning'
-        )
+          'AutopaginateTrueWarning',
+        ),
       );
       warnStub.restore();
     });
@@ -293,7 +293,7 @@ describe('paged iteration', () => {
         request: {pageToken?: number},
         metadata: {},
         options: {},
-        callback: APICallback
+        callback: APICallback,
       ) {
         const responsePages = [
           [1, 2, 3],
@@ -318,7 +318,7 @@ describe('paged iteration', () => {
       }
       const apiCall = util.createApiCall(func, createOptions);
       const settings = new gax.CallSettings(
-        (createOptions && createOptions.settings) || {}
+        (createOptions && createOptions.settings) || {},
       );
       const iterable = descriptor.asyncIterate(apiCall, {}, settings);
       const results = [];
@@ -342,7 +342,7 @@ describe('paged iteration', () => {
       stream: Stream,
       onEnd: Function,
       done: (...args: string[]) => void,
-      start: number
+      start: number,
     ) {
       let counter = start;
       stream
@@ -365,7 +365,7 @@ describe('paged iteration', () => {
           assert.strictEqual(spy.callCount, pagesToStream + 1);
         },
         done,
-        0
+        0,
       );
     });
 
@@ -378,7 +378,7 @@ describe('paged iteration', () => {
         stream,
         () => assert.strictEqual(onResponse.callCount, pagesToStream + 1),
         done,
-        0
+        0,
       );
     });
 
@@ -396,7 +396,7 @@ describe('paged iteration', () => {
           assert.strictEqual(spy.callCount, 2);
         },
         done,
-        0
+        0,
       );
     });
     it('ignores autoPaginate options and warns, but respects others', done => {
@@ -415,13 +415,13 @@ describe('paged iteration', () => {
             warnStub.calledWith(
               'autoPaginate true',
               'Autopaginate will always be set to false in stream paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
-              'AutopaginateTrueWarning'
-            )
+              'AutopaginateTrueWarning',
+            ),
           );
           warnStub.restore();
         },
         done,
-        0
+        0,
       );
     });
     it('ignores autoPaginate options but respects others', done => {
@@ -435,7 +435,7 @@ describe('paged iteration', () => {
           assert.strictEqual(spy.callCount, 1);
         },
         done,
-        0
+        0,
       );
     });
 
@@ -454,7 +454,7 @@ describe('paged iteration', () => {
           assert.strictEqual(onResponse.callCount, spy.callCount);
         },
         done,
-        0
+        0,
       );
     });
 
@@ -469,7 +469,7 @@ describe('paged iteration', () => {
             assert.strictEqual(spy.callCount, pagesToStream + 1);
           },
           done,
-          0
+          0,
         );
       }, 50);
     });
@@ -520,7 +520,7 @@ describe('paged iteration', () => {
         request: {pageToken?: number},
         metadata: {},
         options: {},
-        callback: APICallback
+        callback: APICallback,
       ) {
         const pageToken = request.pageToken || 0;
         if (pageToken >= pageSize * pagesToStream) {
@@ -552,7 +552,7 @@ describe('paged iteration', () => {
             assert.strictEqual(onResponseSpy.callCount, spy.callCount);
           },
           done,
-          0
+          0,
         );
       });
     });
@@ -596,7 +596,7 @@ describe('REGAPIC Pagination', () => {
     request: {pageToken?: number},
     metadata: {},
     options: {},
-    callback: APICallback
+    callback: APICallback,
   ) {
     const pageToken = request.pageToken || 0;
     if (pageToken >= pageSize * pagesToStream) {
@@ -628,10 +628,10 @@ describe('REGAPIC Pagination', () => {
 
     it('return an tuple iterable, count to 10', async () => {
       const settings = new gax.CallSettings(
-        (createOptions && createOptions.settings) || {}
+        (createOptions && createOptions.settings) || {},
       );
       const resources = await iterableChecker(
-        descriptor.asyncIterate(apiCall, {}, settings)
+        descriptor.asyncIterate(apiCall, {}, settings),
       );
       assert.strictEqual(resources.length, 10);
       for await (const [key, value] of resources as [string, ResponseType]) {

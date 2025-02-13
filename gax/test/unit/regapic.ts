@@ -80,7 +80,7 @@ describe('REGAPIC', () => {
       '..',
       'test',
       'fixtures',
-      'library.json'
+      'library.json',
     );
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     libProtos = gaxGrpc.loadProtoJSON(require(TEST_JSON));
@@ -101,7 +101,7 @@ describe('REGAPIC', () => {
         arrayBuffer: () => {
           return Promise.resolve(Buffer.from(JSON.stringify(requestObject)));
         },
-      })
+      }),
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
@@ -109,7 +109,7 @@ describe('REGAPIC', () => {
         assert.strictEqual(err, null);
         assert.strictEqual(
           requestObject.content,
-          (result as {content: string}).content
+          (result as {content: string}).content,
         );
         done();
       });
@@ -130,7 +130,7 @@ describe('REGAPIC', () => {
       Promise.resolve({
         ok: true,
         body: responseStream,
-      })
+      }),
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
@@ -138,7 +138,7 @@ describe('REGAPIC', () => {
         requestObject,
         {},
         {},
-        () => {}
+        () => {},
       ) as StreamArrayParser;
       const results: {}[] = [];
       stream.on('data', data => {
@@ -202,7 +202,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
 
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
@@ -211,11 +211,11 @@ describe('REGAPIC', () => {
           assert.strictEqual(err, null);
           assert.strictEqual(
             'shelf-name',
-            (result as {name: {}; theme: {}; type: {}}).name
+            (result as {name: {}; theme: {}; type: {}}).name,
           );
           assert.strictEqual(
             'TYPEONE',
-            (result as {name: {}; theme: {}; type: {}}).type
+            (result as {name: {}; theme: {}; type: {}}).type,
           );
           done();
         });
@@ -238,7 +238,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
           },
-        })
+        }),
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
@@ -265,7 +265,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
           },
-        })
+        }),
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
@@ -294,7 +294,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
 
       gaxGrpcNumericEnums
@@ -303,16 +303,16 @@ describe('REGAPIC', () => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+              '$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
             assert.strictEqual(
               'shelf-name',
-              (result as {name: {}; theme: {}; type: {}}).name
+              (result as {name: {}; theme: {}; type: {}}).name,
             );
             assert.strictEqual(
               100,
-              (result as {name: {}; theme: {}; type: {}}).type
+              (result as {name: {}; theme: {}; type: {}}).type,
             );
             done();
           });
@@ -335,7 +335,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
           },
-        })
+        }),
       );
       gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
@@ -343,11 +343,11 @@ describe('REGAPIC', () => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               'string',
-              typeof spy.getCall(0).returnValue?.queryString
+              typeof spy.getCall(0).returnValue?.queryString,
             );
             assert.match(
               <string>spy.getCall(0).returnValue?.queryString,
-              /\$alt=json%3Benum-encoding=int(&.*)?$/
+              /\$alt=json%3Benum-encoding=int(&.*)?$/,
             );
             assert.strictEqual(err, null);
             done();
@@ -374,7 +374,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
           },
-        })
+        }),
       );
       gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
@@ -382,7 +382,7 @@ describe('REGAPIC', () => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int'
+              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
             done();
@@ -406,7 +406,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
           },
-        })
+        }),
       );
       gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
@@ -414,7 +414,7 @@ describe('REGAPIC', () => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+              '$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
             done();
@@ -441,7 +441,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
@@ -456,7 +456,7 @@ describe('REGAPIC', () => {
                 read: false;
                 bookId: {};
               }
-            ).name
+            ).name,
           );
           assert.strictEqual(
             '9007199254740992',
@@ -468,7 +468,7 @@ describe('REGAPIC', () => {
                 read: false;
                 bookId: {};
               }
-            ).bookId
+            ).bookId,
           );
           done();
         });
@@ -492,7 +492,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
@@ -507,7 +507,7 @@ describe('REGAPIC', () => {
                 read: false;
                 bookId: {};
               }
-            ).name
+            ).name,
           );
           assert.strictEqual(
             '42',
@@ -519,7 +519,7 @@ describe('REGAPIC', () => {
                 read: false;
                 bookId: {};
               }
-            ).bookId
+            ).bookId,
           );
           done();
         });
@@ -544,7 +544,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
@@ -559,7 +559,7 @@ describe('REGAPIC', () => {
                 read: false;
                 bookId: {};
               }
-            ).name
+            ).name,
           );
           assert.strictEqual(
             bookId.toString(),
@@ -571,7 +571,7 @@ describe('REGAPIC', () => {
                 read: false;
                 bookId: {};
               }
-            ).bookId
+            ).bookId,
           );
           done();
         });
@@ -596,7 +596,7 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
 
       gaxGrpcMinifyJson
@@ -605,20 +605,20 @@ describe('REGAPIC', () => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
             assert.strictEqual(
               'string',
-              typeof spy.getCall(0).returnValue?.queryString
+              typeof spy.getCall(0).returnValue?.queryString,
             );
             assert.match(
               <string>spy.getCall(0).returnValue?.queryString,
-              /\$prettyPrint=0(&.*)?$/
+              /\$prettyPrint=0(&.*)?$/,
             );
             assert.strictEqual(err, null);
             assert.strictEqual(
               'shelf-name',
-              (result as {name: {}; theme: {}; type: {}}).name
+              (result as {name: {}; theme: {}; type: {}}).name,
             );
             assert.strictEqual(
               100,
-              (result as {name: {}; theme: {}; type: {}}).type
+              (result as {name: {}; theme: {}; type: {}}).type,
             );
             done();
           });
@@ -641,27 +641,27 @@ describe('REGAPIC', () => {
           arrayBuffer: () => {
             return Promise.resolve(Buffer.from(JSON.stringify(responseObject)));
           },
-        })
+        }),
       );
 
       gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
         libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
           assert.strictEqual(
             'string',
-            typeof spy.getCall(0).returnValue?.queryString
+            typeof spy.getCall(0).returnValue?.queryString,
           );
           assert.doesNotMatch(
             <string>spy.getCall(0).returnValue?.queryString,
-            /prettyPrint/
+            /prettyPrint/,
           );
           assert.strictEqual(err, null);
           assert.strictEqual(
             'shelf-name',
-            (result as {name: {}; theme: {}; type: {}}).name
+            (result as {name: {}; theme: {}; type: {}}).name,
           );
           assert.strictEqual(
             100,
-            (result as {name: {}; theme: {}; type: {}}).type
+            (result as {name: {}; theme: {}; type: {}}).type,
           );
           done();
         });

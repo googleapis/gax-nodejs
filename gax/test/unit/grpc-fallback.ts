@@ -140,7 +140,7 @@ describe('createStub', () => {
     const opts = {...stubOptions, universeDomain: 'example.com'};
     assert.rejects(
       gaxGrpc.createStub(echoService, opts),
-      /configured universe domain/
+      /configured universe domain/,
     );
   });
 
@@ -148,7 +148,7 @@ describe('createStub', () => {
     authClient.universeDomain = 'example.com';
     assert.rejects(
       gaxGrpc.createStub(echoService, stubOptions),
-      /configured universe domain/
+      /configured universe domain/,
     );
     // reset to default value
     authClient.universeDomain = 'googleapis.com';
@@ -268,7 +268,7 @@ describe('grpc-fallback', () => {
       'google.showcase.v1beta1.Echo',
       gapicConfig,
       {},
-      {}
+      {},
     );
     const metadataBuilder = settings.echo.otherArgs.metadataBuilder;
     const headers = metadataBuilder();
@@ -286,7 +286,7 @@ describe('grpc-fallback', () => {
         arrayBuffer: () => {
           return Promise.resolve(Buffer.from(JSON.stringify(response)));
         },
-      })
+      }),
     );
 
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
@@ -294,7 +294,7 @@ describe('grpc-fallback', () => {
         assert.strictEqual(err, null);
         assert.strictEqual(
           requestObject.content,
-          (result as {content: string}).content
+          (result as {content: string}).content,
         );
         done();
       });
@@ -341,7 +341,7 @@ describe('grpc-fallback', () => {
         arrayBuffer: () => {
           return Promise.resolve(Buffer.from(JSON.stringify(jsonError)));
         },
-      })
+      }),
     );
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
@@ -350,7 +350,7 @@ describe('grpc-fallback', () => {
         assert.strictEqual(err.code, expectedError.code);
         assert.strictEqual(
           JSON.stringify(err.statusDetails),
-          JSON.stringify(expectedError.details)
+          JSON.stringify(expectedError.details),
         );
         done();
       });
@@ -367,7 +367,7 @@ describe('grpc-fallback', () => {
         arrayBuffer: () => {
           return Promise.resolve(Buffer.from(''));
         },
-      })
+      }),
     );
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
@@ -435,14 +435,14 @@ describe('grpc-fallback', () => {
         arrayBuffer: () => {
           return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
         },
-      })
+      }),
     );
     gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
         assert.strictEqual(
           JSON.stringify(err.statusDetails?.length),
-          JSON.stringify(serverError['error']['details'].length)
+          JSON.stringify(serverError['error']['details'].length),
         );
         assert.strictEqual(err.code, 7);
         assert.strictEqual(err.message, serverError['error']['message']);
@@ -450,7 +450,7 @@ describe('grpc-fallback', () => {
         assert.strictEqual(err.domain, errorInfo.domain);
         assert.strictEqual(
           JSON.stringify(err.errorInfoMetadata),
-          JSON.stringify(errorInfo.metadata)
+          JSON.stringify(errorInfo.metadata),
         );
         done();
       });

@@ -31,7 +31,7 @@ function generateSampleMessage<T extends object>(instance: T) {
     instance.constructor as typeof protobuf.Message
   ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject
+    filledObject,
   ) as T;
 }
 
@@ -43,7 +43,7 @@ function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
 
 function stubSimpleCallWithCallback<ResponseType>(
   response?: ResponseType,
-  error?: Error
+  error?: Error,
 ) {
   return error
     ? sinon.stub().callsArgWith(2, error)
@@ -51,7 +51,7 @@ function stubSimpleCallWithCallback<ResponseType>(
 }
 function stubPageStreamingCall<ResponseType>(
   responses?: ResponseType[],
-  error?: Error
+  error?: Error,
 ) {
   const pagingStub = sinon.stub();
   if (responses) {
@@ -89,7 +89,7 @@ function stubPageStreamingCall<ResponseType>(
 
 function stubAsyncIterationCall<ResponseType>(
   responses?: ResponseType[],
-  error?: Error
+  error?: Error,
 ) {
   let counter = 0;
   const asyncIterable = {
@@ -119,14 +119,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.GetOperationRequest()
+        new protos.google.longrunning.GetOperationRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.getOperation = stubSimpleCall(expectedResponse);
       const response = await client.getOperation(request);
@@ -134,7 +134,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
 
@@ -145,14 +145,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.GetOperationRequest()
+        new protos.google.longrunning.GetOperationRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.Operation()
+        new protos.google.longrunning.Operation(),
       );
       client.innerApiCalls.getOperation =
         stubSimpleCallWithCallback(expectedResponse);
@@ -162,14 +162,14 @@ describe('operation client', () => {
           undefined,
           (
             err?: Error | null,
-            result?: protos.google.longrunning.Operation | null
+            result?: protos.google.longrunning.Operation | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -177,7 +177,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
           .getCall(0)
-          .calledWith(request /* callback function above */)
+          .calledWith(request /* callback function above */),
       );
     });
 
@@ -188,15 +188,15 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
       const request = generateSampleMessage(
-        new protos.google.longrunning.GetOperationRequest()
+        new protos.google.longrunning.GetOperationRequest(),
       );
       const expectedError = new Error('expected');
       client.innerApiCalls.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(async () => {
         await client.getOperation(request);
@@ -204,7 +204,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
   });
@@ -216,11 +216,11 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.GetOperationRequest()
+        new protos.google.longrunning.GetOperationRequest(),
       );
       const expectedResponse: ResultTuple = [
         new protos.google.longrunning.Operation(),
@@ -233,7 +233,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
 
@@ -244,11 +244,11 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.GetOperationRequest()
+        new protos.google.longrunning.GetOperationRequest(),
       );
       const expectedResponse: ResultTuple = [
         new protos.google.longrunning.Operation(),
@@ -263,14 +263,14 @@ describe('operation client', () => {
           undefined,
           (
             err?: Error | null,
-            result?: protos.google.longrunning.Operation | null
+            result?: protos.google.longrunning.Operation | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -278,7 +278,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
           .getCall(0)
-          .calledWith(request /* callback function above */)
+          .calledWith(request /* callback function above */),
       );
     });
 
@@ -289,15 +289,15 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
       const request = generateSampleMessage(
-        new protos.google.longrunning.GetOperationRequest()
+        new protos.google.longrunning.GetOperationRequest(),
       );
       const expectedError = new Error('expected');
       client.innerApiCalls.getOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(async () => {
         await client.getOperationInternal(request);
@@ -305,7 +305,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.getOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
   });
@@ -317,14 +317,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsResponse()
+        new protos.google.longrunning.ListOperationsResponse(),
       );
       client.innerApiCalls.listOperations = stubSimpleCall(expectedResponse);
       const response = await client.listOperations(request);
@@ -332,7 +332,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.listOperations as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
 
@@ -343,14 +343,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsResponse()
+        new protos.google.longrunning.ListOperationsResponse(),
       );
       client.innerApiCalls.listOperations =
         stubSimpleCallWithCallback(expectedResponse);
@@ -360,14 +360,14 @@ describe('operation client', () => {
           undefined,
           (
             err?: Error | null,
-            result?: protos.google.longrunning.ListOperationsResponse | null
+            result?: protos.google.longrunning.ListOperationsResponse | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -375,7 +375,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.listOperations as SinonStub)
           .getCall(0)
-          .calledWith(request /* callback function above */)
+          .calledWith(request /* callback function above */),
       );
     });
 
@@ -386,15 +386,15 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedError = new Error('expected');
       client.innerApiCalls.listOperations = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(async () => {
         await client.listOperations(request);
@@ -402,7 +402,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.listOperations as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
 
@@ -413,11 +413,11 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedResponse = [
         generateSampleMessage(new protos.google.longrunning.Operation()),
@@ -444,7 +444,7 @@ describe('operation client', () => {
       assert(
         (client.descriptor.listOperations.createStream as SinonStub)
           .getCall(0)
-          .calledWith(client.innerApiCalls.listOperations, request)
+          .calledWith(client.innerApiCalls.listOperations, request),
       );
     });
 
@@ -455,16 +455,16 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedError = new Error('expected');
       client.descriptor.listOperations.createStream = stubPageStreamingCall(
         undefined,
-        expectedError
+        expectedError,
       );
       const stream = client.listOperationsStream(request);
       const promise = new Promise((resolve, reject) => {
@@ -485,7 +485,7 @@ describe('operation client', () => {
       assert(
         (client.descriptor.listOperations.createStream as SinonStub)
           .getCall(0)
-          .calledWith(client.innerApiCalls.listOperations, request)
+          .calledWith(client.innerApiCalls.listOperations, request),
       );
     });
 
@@ -496,21 +496,21 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedResponse = [
         generateSampleMessage(
-          new protos.google.longrunning.ListOperationsResponse()
+          new protos.google.longrunning.ListOperationsResponse(),
         ),
         generateSampleMessage(
-          new protos.google.longrunning.ListOperationsResponse()
+          new protos.google.longrunning.ListOperationsResponse(),
         ),
         generateSampleMessage(
-          new protos.google.longrunning.ListOperationsResponse()
+          new protos.google.longrunning.ListOperationsResponse(),
         ),
       ];
       client.descriptor.listOperations.asyncIterate =
@@ -524,7 +524,7 @@ describe('operation client', () => {
       assert.deepStrictEqual(
         (client.descriptor.listOperations.asyncIterate as SinonStub).getCall(0)
           .args[1],
-        request
+        request,
       );
     });
 
@@ -535,15 +535,15 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
       const request = generateSampleMessage(
-        new protos.google.longrunning.ListOperationsRequest()
+        new protos.google.longrunning.ListOperationsRequest(),
       );
       const expectedError = new Error('expected');
       client.descriptor.listOperations.asyncIterate = stubAsyncIterationCall(
         undefined,
-        expectedError
+        expectedError,
       );
       const iterable = client.listOperationsAsync(request);
       await assert.rejects(async () => {
@@ -555,7 +555,7 @@ describe('operation client', () => {
       });
       assert.deepStrictEqual(
         (client.descriptor.listOperations.asyncIterate as SinonStub).args[0][1],
-        request
+        request,
       );
     });
   });
@@ -567,14 +567,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.CancelOperationRequest()
+        new protos.google.longrunning.CancelOperationRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.cancelOperation = stubSimpleCall(expectedResponse);
       const response = await client.cancelOperation(request);
@@ -582,7 +582,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.cancelOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
 
@@ -593,14 +593,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.CancelOperationRequest()
+        new protos.google.longrunning.CancelOperationRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.cancelOperation =
         stubSimpleCallWithCallback(expectedResponse);
@@ -610,14 +610,14 @@ describe('operation client', () => {
           undefined,
           (
             err?: Error | null,
-            result?: protos.google.protobuf.Empty | null
+            result?: protos.google.protobuf.Empty | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -625,7 +625,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.cancelOperation as SinonStub)
           .getCall(0)
-          .calledWith(request /* callback function above */)
+          .calledWith(request /* callback function above */),
       );
     });
 
@@ -636,15 +636,15 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
       const request = generateSampleMessage(
-        new protos.google.longrunning.CancelOperationRequest()
+        new protos.google.longrunning.CancelOperationRequest(),
       );
       const expectedError = new Error('expected');
       client.innerApiCalls.cancelOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(async () => {
         await client.cancelOperation(request);
@@ -652,7 +652,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.cancelOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
   });
@@ -664,14 +664,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.DeleteOperationRequest()
+        new protos.google.longrunning.DeleteOperationRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteOperation = stubSimpleCall(expectedResponse);
       const response = await client.deleteOperation(request);
@@ -679,7 +679,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.deleteOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
 
@@ -690,14 +690,14 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
 
       const request = generateSampleMessage(
-        new protos.google.longrunning.DeleteOperationRequest()
+        new protos.google.longrunning.DeleteOperationRequest(),
       );
       const expectedResponse = generateSampleMessage(
-        new protos.google.protobuf.Empty()
+        new protos.google.protobuf.Empty(),
       );
       client.innerApiCalls.deleteOperation =
         stubSimpleCallWithCallback(expectedResponse);
@@ -707,14 +707,14 @@ describe('operation client', () => {
           undefined,
           (
             err?: Error | null,
-            result?: protos.google.protobuf.Empty | null
+            result?: protos.google.protobuf.Empty | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -722,7 +722,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.deleteOperation as SinonStub)
           .getCall(0)
-          .calledWith(request /* callback function above */)
+          .calledWith(request /* callback function above */),
       );
     });
 
@@ -733,15 +733,15 @@ describe('operation client', () => {
         projectId: 'bogus',
       };
       const client = new OperationsClientBuilder(grpcClient).operationsClient(
-        clientOptions
+        clientOptions,
       );
       const request = generateSampleMessage(
-        new protos.google.longrunning.DeleteOperationRequest()
+        new protos.google.longrunning.DeleteOperationRequest(),
       );
       const expectedError = new Error('expected');
       client.innerApiCalls.deleteOperation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(async () => {
         await client.deleteOperation(request);
@@ -749,7 +749,7 @@ describe('operation client', () => {
       assert(
         (client.innerApiCalls.deleteOperation as SinonStub)
           .getCall(0)
-          .calledWith(request)
+          .calledWith(request),
       );
     });
   });
