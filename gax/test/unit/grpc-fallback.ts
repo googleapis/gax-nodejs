@@ -205,12 +205,12 @@ describe('grpc-fallback', () => {
         this.abortCalled = true;
       };
       // @ts-ignore
-      // eslint-disable-next-line no-global-assign
       createdAbortControllers.push(this);
     };
 
     if (hasAbortController) {
       // @ts-ignore
+      // eslint-disable-next-line no-global-assign
       AbortController = FakeAbortController;
     } else {
       // @ts-ignore
