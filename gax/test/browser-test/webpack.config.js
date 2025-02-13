@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/* eslint-disable n/no-missing-require */
+
 const webpack = require('webpack');
 module.exports = {
   entry: './build/src/index.js',

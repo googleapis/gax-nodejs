@@ -209,6 +209,7 @@ describe('grpc-fallback', () => {
     };
 
     if (hasAbortController) {
+      // eslint-ignore
       // @ts-ignore
       AbortController = FakeAbortController;
     } else {
