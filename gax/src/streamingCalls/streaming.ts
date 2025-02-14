@@ -248,6 +248,11 @@ export class StreamProxy extends duplexify implements GRPCCallResult {
   }
   /**
    * Forward events from an API request stream to the user's stream.
+   *  gRPC is guaranteed emit the 'status' event but not 'metadata'
+   * 'status' is the last event to emit; if 'metadata' emits, it will
+   * be the first event to emit. It should only emit once; if it emits
+   * more than once, unexpected side effects will occur.
+   *
    * @param {Stream} stream - The API request stream.
    * @param {RetryOptions} retry - Configures the exceptions upon which the
    *   function should retry, and the parameters to the exponential backoff retry
