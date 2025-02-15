@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'crypto';
 
 function words(str: string, normalize = false) {
   if (normalize) {
@@ -110,5 +110,5 @@ export function toLowerCamelCase(str: string) {
  * in lower case).
  */
 export function makeUUID() {
-  return uuidv4();
+  return randomUUID();
 }

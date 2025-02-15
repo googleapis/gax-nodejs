@@ -16,11 +16,9 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-undef */
-/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
-import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import echoProtoJson = require('../fixtures/echo.json');

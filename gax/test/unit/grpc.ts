@@ -17,7 +17,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-floating-promises */
 
 import assert from 'assert';
 import * as os from 'os';
