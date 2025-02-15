@@ -158,20 +158,22 @@ describe('operation client', () => {
       client.innerApiCalls.getOperation =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.getOperation(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.longrunning.Operation | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .getOperation(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.longrunning.Operation | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -259,20 +261,22 @@ describe('operation client', () => {
       client.innerApiCalls.getOperation =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.getOperationInternal(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.longrunning.Operation | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .getOperationInternal(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.longrunning.Operation | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -356,20 +360,22 @@ describe('operation client', () => {
       client.innerApiCalls.listOperations =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.listOperations(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.longrunning.ListOperationsResponse | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .listOperations(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.longrunning.ListOperationsResponse | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -606,20 +612,22 @@ describe('operation client', () => {
       client.innerApiCalls.cancelOperation =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.cancelOperation(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.protobuf.Empty | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .cancelOperation(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.protobuf.Empty | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -703,20 +711,22 @@ describe('operation client', () => {
       client.innerApiCalls.deleteOperation =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.deleteOperation(
-          request,
-          undefined,
-          (
-            err?: Error | null,
-            result?: protos.google.protobuf.Empty | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .deleteOperation(
+            request,
+            undefined,
+            (
+              err?: Error | null,
+              result?: protos.google.protobuf.Empty | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);

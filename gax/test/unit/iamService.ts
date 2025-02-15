@@ -57,7 +57,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest(),
       );
@@ -88,7 +88,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest(),
       );
@@ -107,17 +107,22 @@ describe('IAM service', () => {
       client.innerApiCalls.getIamPolicy =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.getIamPolicy(
-          request,
-          expectedOptions,
-          (err?: Error | null, result?: protos.google.iam.v1.Policy | null) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .getIamPolicy(
+            request,
+            expectedOptions,
+            (
+              err?: Error | null,
+              result?: protos.google.iam.v1.Policy | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -133,7 +138,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.GetIamPolicyRequest(),
       );
@@ -168,7 +173,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest(),
       );
@@ -199,7 +204,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest(),
       );
@@ -218,17 +223,22 @@ describe('IAM service', () => {
       client.innerApiCalls.setIamPolicy =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.setIamPolicy(
-          request,
-          expectedOptions,
-          (err?: Error | null, result?: protos.google.iam.v1.Policy | null) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .setIamPolicy(
+            request,
+            expectedOptions,
+            (
+              err?: Error | null,
+              result?: protos.google.iam.v1.Policy | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -244,7 +254,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.SetIamPolicyRequest(),
       );
@@ -279,7 +289,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest(),
       );
@@ -314,7 +324,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest(),
       );
@@ -333,20 +343,22 @@ describe('IAM service', () => {
       client.innerApiCalls.testIamPermissions =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.testIamPermissions(
-          request,
-          expectedOptions,
-          (
-            err?: Error | null,
-            result?: protos.google.iam.v1.TestIamPermissionsResponse | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .testIamPermissions(
+            request,
+            expectedOptions,
+            (
+              err?: Error | null,
+              result?: protos.google.iam.v1.TestIamPermissionsResponse | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -362,7 +374,7 @@ describe('IAM service', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.iam.v1.TestIamPermissionsRequest(),
       );

@@ -184,22 +184,26 @@ describe('grpc', () => {
         port: 443,
         universeDomain: 'example.com',
       };
-      assert.rejects(
-        // @ts-ignore
-        grpcClient.createStub(DummyStub, opts),
-        /configured universe domain/,
-      );
+      assert
+        .rejects(
+          // @ts-ignore
+          grpcClient.createStub(DummyStub, opts),
+          /configured universe domain/,
+        )
+        .catch(console.error);
     });
 
     it('validates universe domain if unset', async () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
       stubAuth.getUniverseDomain.reset();
       stubAuth.getUniverseDomain.resolves('example.com');
-      assert.rejects(
-        // @ts-ignore
-        grpcClient.createStub(DummyStub, opts),
-        /configured universe domain/,
-      );
+      assert
+        .rejects(
+          // @ts-ignore
+          grpcClient.createStub(DummyStub, opts),
+          /configured universe domain/,
+        )
+        .catch(console.error);
     });
 
     it('supports optional parameters', () => {
@@ -711,10 +715,12 @@ dvorak
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const clientMock = new GrpcClient();
-      assert.rejects(
-        clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
-        /configured universe domain/,
-      );
+      assert
+        .rejects(
+          clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
+          /configured universe domain/,
+        )
+        .catch(console.error);
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });
   });

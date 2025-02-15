@@ -77,7 +77,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.GetLocationRequest(),
       );
@@ -109,7 +109,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.GetLocationRequest(),
       );
@@ -128,19 +128,21 @@ describe('LocationsClient', () => {
       client.innerApiCalls.getLocation =
         stubSimpleCallWithCallback(expectedResponse);
       const promise = new Promise((resolve, reject) => {
-        client.getLocation(
-          request,
-          (
-            err?: Error | null,
-            result?: protos.google.cloud.location.ILocation | null,
-          ) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
-            }
-          },
-        );
+        client
+          .getLocation(
+            request,
+            (
+              err?: Error | null,
+              result?: protos.google.cloud.location.ILocation | null,
+            ) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
+            },
+          )
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -156,7 +158,7 @@ describe('LocationsClient', () => {
       const client = new LocationsClient(grpcClient, {
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.GetLocationRequest(),
       );
@@ -193,7 +195,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -227,7 +229,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -277,7 +279,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -312,7 +314,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -351,7 +353,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize();
+      client.initialize().catch(console.error);
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );

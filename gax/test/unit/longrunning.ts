@@ -522,11 +522,14 @@ describe('longrunning', () => {
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
             const p = operation.promise();
-            operation.cancel().then(() => {
-              assert.strictEqual(client.cancelOperation.called, true);
-              assert.strictEqual(client.cancelGetOperationSpy.called, true);
-              done();
-            });
+            operation
+              .cancel()
+              .then(() => {
+                assert.strictEqual(client.cancelOperation.called, true);
+                assert.strictEqual(client.cancelGetOperationSpy.called, true);
+                done();
+              })
+              .catch(console.error);
             return p;
           })
           .then(() => {

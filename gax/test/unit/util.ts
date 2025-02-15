@@ -81,7 +81,7 @@ describe('util.ts', () => {
     );
   });
 
-  it('returns UUID', () => {
-    assert.match(makeUUID(), /[a-z0-9-]{36}/);
+  it('returns UUID', async () => {
+    assert.match(await makeUUID(), /[a-z0-9-]{36}/);
   });
 });

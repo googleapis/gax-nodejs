@@ -193,7 +193,7 @@ describe('REGAPIC', () => {
       stream.on('error', (err: Error) => {
         assert.strictEqual((err as Error).message, 'Fetch error');
       });
-    });
+    }).catch(console.error);
   });
 
   describe('should support enum conversion in proto message', () => {

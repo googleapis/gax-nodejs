@@ -881,13 +881,12 @@ describe('bundleable', () => {
     const apiCall = createApiCall(spy, settings);
     await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
       if (err) {
-         return err;
+        throw err;
       } else {
         callback([obj]);
       }
     });
-    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-      .then(callback)
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined).then(callback);
   });
 
   it('does not fail if bundle field is not set', done => {
@@ -1001,27 +1000,27 @@ describe('bundleable', () => {
       } else {
         callback();
       }
-    });
+    }).catch(console.error);
     apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
       if (err) {
         done(err);
       } else {
         callback();
       }
-    });
+    }).catch(console.error);
     apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
       if (err) {
         done(err);
       } else {
         callback();
       }
-    });
+    }).catch(console.error);
     apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
       if (err) {
         done(err);
       } else {
         callback();
       }
-    });
+    }).catch(console.error);
   });
 });

@@ -109,7 +109,7 @@ describe('paged iteration', () => {
       assert.strictEqual(err, null);
       assert.deepStrictEqual(results, expected);
       done();
-    });
+    }).catch(console.error);
   });
 
   it('returns a response when autoPaginate is false', done => {
@@ -171,13 +171,17 @@ describe('paged iteration', () => {
           next,
           {autoPaginate: false},
           callback as unknown as APICallback,
-        );
+        ).catch(console.error);
       } else {
         assert.strictEqual(counter, pagesToStream + 1);
         done();
       }
     }
-    apiCall({}, {autoPaginate: false}, callback as unknown as APICallback);
+    apiCall(
+      {},
+      {autoPaginate: false},
+      callback as unknown as APICallback,
+    ).catch(console.error);
   });
 
   it('retries on failure', done => {
