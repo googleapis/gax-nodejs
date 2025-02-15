@@ -148,7 +148,7 @@ export class OperationsClient {
 
   /** Closes this operations client. */
   close() {
-    this.operationsStub.then(stub => stub.close());
+    this.operationsStub.then(stub => stub.close()).catch(console.error);
   }
 
   /**

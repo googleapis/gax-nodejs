@@ -713,7 +713,7 @@ dvorak
       const clientMock = new GrpcClient();
       assert.rejects(
         clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
-        /configured universe domain/
+        /configured universe domain/,
       );
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });

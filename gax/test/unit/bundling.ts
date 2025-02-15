@@ -869,27 +869,25 @@ describe('bundleable', () => {
     descriptor,
   };
 
-  it('bundles requests', done => {
+  it('bundles requests', async () => {
     const spy = sinon.spy(func);
     const callback = sinon.spy(obj => {
       assert(Array.isArray(obj));
       assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
       if (callback.callCount === 2) {
         assert.strictEqual(spy.callCount, 1);
-        done();
       }
     });
     const apiCall = createApiCall(spy, settings);
-    apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
       if (err) {
-        done(err);
+         return err;
       } else {
         callback([obj]);
       }
     });
-    apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
       .then(callback)
-      .catch(done);
   });
 
   it('does not fail if bundle field is not set', done => {

@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {randomUUID} from 'crypto';
+const randomUUID = async () =>
+  globalThis.crypto?.randomUUID() || (await import('crypto')).randomUUID();
 
 function words(str: string, normalize = false) {
   if (normalize) {

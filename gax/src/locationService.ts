@@ -361,7 +361,7 @@ export class LocationsClient {
       routingHeader.fromParams({
         name: request.name || '',
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.getLocation(request, options, callback);
   }
 
@@ -456,7 +456,7 @@ export class LocationsClient {
       routingHeader.fromParams({
         name: request.name || '',
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.listLocations(request, options, callback);
   }
 
@@ -504,7 +504,7 @@ export class LocationsClient {
       });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.descriptors.page.listLocations.asyncIterate(
       this.innerApiCalls['listLocations'] as GaxCall,
       request as unknown as RequestType,
@@ -519,7 +519,7 @@ export class LocationsClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    this.initialize();
+    this.initialize().catch(console.error);
     if (!this._terminated) {
       return this.locationsStub!.then(stub => {
         this._terminated = true;

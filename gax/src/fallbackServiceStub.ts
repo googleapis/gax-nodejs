@@ -17,7 +17,10 @@
 /* global window */
 /* global AbortController */
 
-import type {Response as NodeFetchResponse, RequestInit} from 'node-fetch' with {'resolution-mode': 'import'};
+import type {
+  Response as NodeFetchResponse,
+  RequestInit,
+} from 'node-fetch' with {'resolution-mode': 'import'};
 import {AbortController as NodeAbortController} from 'abort-controller';
 import type nodeFetch from 'node-fetch' with {'resolution-mode': 'import'};
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
@@ -158,10 +161,7 @@ export function generateServiceStub(
               ...authHeader,
               ...headers,
             },
-            body: fetchParameters.body as
-              | string
-              | Buffer
-              | undefined,
+            body: fetchParameters.body as string | Buffer | undefined,
             method: fetchParameters.method,
             signal: cancelSignal,
           };

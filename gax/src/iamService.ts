@@ -255,7 +255,7 @@ export class IamClient {
       routingHeader.fromParams({
         resource: request.resource,
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
 
@@ -314,7 +314,7 @@ export class IamClient {
       routingHeader.fromParams({
         resource: request.resource,
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   testIamPermissions(
@@ -372,7 +372,7 @@ export class IamClient {
       routingHeader.fromParams({
         resource: request.resource,
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
 
@@ -382,7 +382,7 @@ export class IamClient {
    * The client will no longer be usable and all future behavior is undefined.
    */
   close(): Promise<void> {
-    this.initialize();
+    this.initialize().catch(console.error);
     if (!this._terminated) {
       return this.iamPolicyStub!.then(stub => {
         this._terminated = true;
