@@ -108,7 +108,7 @@ describe('paged iteration', () => {
     await apiCall({}, undefined, (err, results) => {
       assert.strictEqual(err, null);
       assert.deepStrictEqual(results, expected);
-    })
+    });
   });
 
   it('returns a response when autoPaginate is false', done => {
@@ -169,7 +169,7 @@ describe('paged iteration', () => {
           next,
           {autoPaginate: false},
           callback as unknown as APICallback,
-        )
+        );
       } else {
         assert.strictEqual(counter, pagesToStream + 1);
       }
@@ -197,12 +197,11 @@ describe('paged iteration', () => {
       }
     }
     const apiCall = util.createApiCall(failingFunc, createOptions);
-    await apiCall({}, undefined)
-      .then(resources => {
-        assert(Array.isArray(resources));
-        // @ts-ignore response type
-        assert.strictEqual(resources[0].length, pageSize * pagesToStream);
-      })
+    await apiCall({}, undefined).then(resources => {
+      assert(Array.isArray(resources));
+      // @ts-ignore response type
+      assert.strictEqual(resources[0].length, pageSize * pagesToStream);
+    });
   });
 
   it('caps the results by maxResults', () => {

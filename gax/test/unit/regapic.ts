@@ -188,12 +188,15 @@ describe('REGAPIC', () => {
     });
 
     const gaxGrpcMock = new GrpcClient();
-    gaxGrpc.createStub(echoService, stubOptions).then((echoStub: any) => {
-      const stream = echoStub.expand(requestObject) as StreamArrayParser;
-      stream.on('error', (err: Error) => {
-        assert.strictEqual((err as Error).message, 'Fetch error');
-      });
-    }).catch(console.error);
+    gaxGrpc
+      .createStub(echoService, stubOptions)
+      .then((echoStub: any) => {
+        const stream = echoStub.expand(requestObject) as StreamArrayParser;
+        stream.on('error', (err: Error) => {
+          assert.strictEqual((err as Error).message, 'Fetch error');
+        });
+      })
+      .catch(console.error);
   });
 
   describe('should support enum conversion in proto message', () => {
