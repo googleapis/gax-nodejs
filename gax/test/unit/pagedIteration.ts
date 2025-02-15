@@ -99,17 +99,16 @@ describe('paged iteration', () => {
       .catch(done);
   });
 
-  it('calls callback with an Array', done => {
+  it('calls callback with an Array', async () => {
     const apiCall = util.createApiCall(func, createOptions);
     const expected: Array<{}> = [];
     for (let i = 0; i < pageSize * pagesToStream; ++i) {
       expected.push(i);
     }
-    apiCall({}, undefined, (err, results) => {
+    await apiCall({}, undefined, (err, results) => {
       assert.strictEqual(err, null);
       assert.deepStrictEqual(results, expected);
-      done();
-    }).catch(console.error);
+    })
   });
 
   it('returns a response when autoPaginate is false', done => {
@@ -147,17 +146,16 @@ describe('paged iteration', () => {
       .catch(done);
   });
 
-  it('sets additional arguments to the callback', done => {
+  it('sets additional arguments to the callback', async () => {
     let counter = 0;
     const apiCall = util.createApiCall(func, createOptions);
-    function callback(
+    async function callback(
       err: {},
       resources: {},
       next: {},
       rawResponse: {nums: {}},
     ) {
       if (err) {
-        done(err);
         return;
       }
       counter++;
@@ -167,24 +165,23 @@ describe('paged iteration', () => {
       assert(rawResponse.hasOwnProperty('nums'));
       assert.strictEqual(rawResponse.nums, resources);
       if (next) {
-        apiCall(
+        await apiCall(
           next,
           {autoPaginate: false},
           callback as unknown as APICallback,
-        ).catch(console.error);
+        )
       } else {
         assert.strictEqual(counter, pagesToStream + 1);
-        done();
       }
     }
-    apiCall(
+    await apiCall(
       {},
       {autoPaginate: false},
       callback as unknown as APICallback,
-    ).catch(console.error);
+    );
   });
 
-  it('retries on failure', done => {
+  it('retries on failure', async () => {
     let callCount = 0;
     function failingFunc(
       request: {},
@@ -200,14 +197,12 @@ describe('paged iteration', () => {
       }
     }
     const apiCall = util.createApiCall(failingFunc, createOptions);
-    apiCall({}, undefined)
+    await apiCall({}, undefined)
       .then(resources => {
         assert(Array.isArray(resources));
         // @ts-ignore response type
         assert.strictEqual(resources[0].length, pageSize * pagesToStream);
-        done();
       })
-      .catch(done);
   });
 
   it('caps the results by maxResults', () => {

@@ -975,7 +975,7 @@ describe('bundleable', () => {
     p.cancel();
   });
 
-  it('properly processes camel case fields', done => {
+  it('properly processes camel case fields', async () => {
     const descriptor = new BundleDescriptor(
       'data',
       ['log_name'],
@@ -990,37 +990,36 @@ describe('bundleable', () => {
     const callback = sinon.spy(() => {
       if (callback.callCount === 4) {
         assert.strictEqual(spy.callCount, 2); // we expect two requests, each has two items
-        done();
       }
     });
     const apiCall = createApiCall(spy, settings);
-    apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
+    await apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
-    }).catch(console.error);
-    apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
+    });
+    await apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
-    }).catch(console.error);
-    apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
+    });
+    await apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
-    }).catch(console.error);
-    apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
+    });
+    await apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
-    }).catch(console.error);
+    });
   });
 });

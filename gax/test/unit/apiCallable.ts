@@ -420,7 +420,7 @@ describe('retryable', () => {
     settings: {timeout: 0, retry: retryOptions, apiName: 'TestApi'},
   };
 
-  it('retries the API call', done => {
+  it('retries the API call', async () => {
     let toAttempt = 3;
     let deadlineArg: string;
     function func(
@@ -438,12 +438,11 @@ describe('retryable', () => {
       callback(null, 1729);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall({}, undefined, (err, resp) => {
+    await apiCall({}, undefined, (err, resp) => {
       assert.strictEqual(resp, 1729);
       assert.strictEqual(toAttempt, 0);
       assert(deadlineArg);
-      done();
-    }).catch(console.error);
+    });
   });
 
   it('retries the API call with promise', async () => {
@@ -500,7 +499,7 @@ describe('retryable', () => {
       });
   });
 
-  it("doesn't retry if no codes", done => {
+  it("doesn't retry if no codes", async () => {
     const retryOptions = gax.createRetryOptions(
       [],
       gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7),
@@ -508,13 +507,12 @@ describe('retryable', () => {
     const settings = {settings: {timeout: 0, retry: retryOptions}};
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert.ok(err instanceof Error);
       assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
       assert.strictEqual(err!.note, undefined);
       assert.strictEqual(spy.callCount, 1);
-      done();
-    }).catch(console.error);
+    });
   });
 
   it('aborts retries', async () => {
