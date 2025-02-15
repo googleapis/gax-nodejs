@@ -18,7 +18,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import * as protos from '../../protos/operations';
-import * as assert from 'assert';
+import assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';

@@ -5,7 +5,11 @@
     "rootDir": ".",
     "outDir": "build",
     "noImplicitAny": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "module": "node16",
+    "skipLibCheck": true
   },
   "include": [
     "src/*.ts",

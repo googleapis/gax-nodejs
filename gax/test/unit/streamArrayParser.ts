@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {StreamArrayParser} from '../../src/streamArrayParser';
 import {before, describe, it} from 'mocha';
 import {pipeline} from 'stream';

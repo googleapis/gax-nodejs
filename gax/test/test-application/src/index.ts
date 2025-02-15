@@ -17,7 +17,7 @@
 'use strict';
 import {EchoClient, SequenceServiceClient, protos} from 'showcase-echo-client';
 import {ShowcaseServer} from 'showcase-server';
-import * as assert from 'assert';
+import assert from 'assert';
 import {promises as fsp} from 'fs';
 import * as path from 'path';
 import {

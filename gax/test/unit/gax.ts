@@ -22,7 +22,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {describe, it} from 'mocha';
 import * as gax from '../../src/gax';
 

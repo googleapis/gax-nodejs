@@ -16,7 +16,7 @@
 
 import * as index from '../../src/index';
 import * as fallback from '../../src/fallback';
-import * as assert from 'assert';
+import assert from 'assert';
 import {describe, it} from 'mocha';
 
 const version = require('../../../package.json').version;

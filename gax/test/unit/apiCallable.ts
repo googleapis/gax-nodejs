@@ -15,7 +15,7 @@
  */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import {afterEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';

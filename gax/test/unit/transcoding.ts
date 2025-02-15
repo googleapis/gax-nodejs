@@ -32,7 +32,7 @@ import {
   buildQueryStringComponents,
   overrideHttpRules,
 } from '../../src/transcoding';
-import * as assert from 'assert';
+import assert from 'assert';
 import * as protobuf from 'protobufjs';
 import echoProtoJson = require('../fixtures/echo.json');
 import {google} from '../../protos/http';

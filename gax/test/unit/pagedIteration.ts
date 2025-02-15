@@ -18,11 +18,11 @@
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as pumpify from 'pumpify';
 import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
-import * as streamEvents from 'stream-events';
+import streamEvents from 'stream-events';
 import {PageDescriptor} from '../../src/paginationCalls/pageDescriptor';
 import {APICallback, GaxCall, RequestType} from '../../src/apitypes';
 import {describe, it, beforeEach} from 'mocha';

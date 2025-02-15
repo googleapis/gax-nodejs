@@ -24,7 +24,7 @@ import {join} from 'path';
 import {OutgoingHttpHeaders} from 'http';
 import * as path from 'path';
 import * as protobuf from 'protobufjs';
-import * as objectHash from 'object-hash';
+import objectHash from 'object-hash';
 
 import * as gax from './gax';
 import {ClientOptions} from '@grpc/grpc-js/build/src/client';
@@ -37,7 +37,7 @@ INCLUDE_DIRS.push(googleProtoFilesDir);
 
 // COMMON_PROTO_FILES logic is here for protobufjs loads (see
 // GoogleProtoFilesRoot below)
-import * as commonProtoFiles from './protosList.json';
+import commonProtoFiles from './protosList.json';
 import {google} from '../protos/http';
 // use the correct path separator for the OS we are running on
 const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
