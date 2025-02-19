@@ -25,6 +25,7 @@ import {
   grpc,
   GoogleError,
   GoogleAuth,
+  googleAuthLibrary
   Status,
   createBackoffSettings,
   createMaxRetriesBackoffSettings,
@@ -45,30 +46,22 @@ async function testShowcase() {
     gaxServerStreamingRetries: true,
   };
 
-  const fakeGoogleAuth = {
-    getClient: async () => {
-      return {
-        getRequestHeaders: async () => {
-          return {
-            Authorization: 'Bearer zzzz',
-          };
-        },
-      };
-    },
-  } as unknown as GoogleAuth;
-
   const restClientOpts = {
     fallback: true,
     protocol: 'http',
     port: 7469,
-    auth: fakeGoogleAuth,
+    auth: new GoogleAuth({
+      authClient: new googleAuthLibrary.PassThroughClient(),
+    }),
   };
 
   const restClientOptsCompat = {
     fallback: 'rest' as const,
     protocol: 'http',
     port: 7469,
-    auth: fakeGoogleAuth,
+    auth: new GoogleAuth({
+      authClient: new googleAuthLibrary.PassThroughClient(),
+    }),
   };
 
   const grpcClient = new EchoClient(grpcClientOpts);

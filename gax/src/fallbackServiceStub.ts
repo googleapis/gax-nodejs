@@ -21,8 +21,9 @@ import nodeFetch from 'node-fetch';
 import {Response as NodeFetchResponse, RequestInit} from 'node-fetch';
 import {AbortController as NodeAbortController} from 'abort-controller';
 
+import {AuthClient, GoogleAuth} from 'google-auth-library';
+
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
-import {AuthClient} from './fallback';
 import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
@@ -35,7 +36,9 @@ interface NodeFetchType {
 // Node.js before v19 does not enable keepalive by default.
 // We'll try to enable it very carefully to make sure we don't break possible non-Node use cases.
 // TODO: remove this after Node 18 is EOL.
-// More info: https://github.com/node-fetch/node-fetch#custom-agent
+// More info:
+// - https://github.com/node-fetch/node-fetch#custom-agent
+// - https://github.com/googleapis/gax-nodejs/pull/1534
 let agentOption:
   | ((parsedUrl: {protocol: string}) => HttpAgent | HttpsAgent)
   | null = null;
@@ -76,7 +79,7 @@ export function generateServiceStub(
   protocol: string,
   servicePath: string,
   servicePort: number,
-  authClient: AuthClient,
+  auth: GoogleAuth<AuthClient> | AuthClient,
   requestEncoder: (
     rpc: protobuf.Method,
     protocol: string,
@@ -150,7 +153,7 @@ export function generateServiceStub(
       }
       const streamArrayParser = new StreamArrayParser(rpc);
 
-      authClient
+      auth
         .getRequestHeaders()
         .then(authHeader => {
           const fetchRequest: RequestInit = {
