@@ -54,7 +54,7 @@ export interface TaskCallback extends APICallback {
 export function deepCopyForResponse(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: any,
-  subresponseInfo: SubResponseInfo | null
+  subresponseInfo: SubResponseInfo | null,
 ) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let result: any;
@@ -91,7 +91,7 @@ export function deepCopyForResponse(
         // those subresponses are not shared among callbacks.
         result[key] = obj[key].slice(
           subresponseInfo.start,
-          subresponseInfo.end
+          subresponseInfo.end,
         );
       } else {
         result[key] = deepCopyForResponse(obj[key], null);
@@ -126,7 +126,7 @@ export class Task {
     apiCall: SimpleCallbackFunction,
     bundlingRequest: {},
     bundledField: string,
-    subresponseField?: string | null
+    subresponseField?: string | null,
   ) {
     this._apiCall = apiCall;
     this._request = bundlingRequest;
@@ -210,7 +210,7 @@ export class Task {
             self._data[i].callback(err, responses[i]);
           }
         }
-      }
+      },
     );
     return ids;
   }

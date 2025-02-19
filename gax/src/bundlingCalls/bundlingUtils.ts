@@ -33,7 +33,7 @@ import {RequestType} from '../apitypes';
  */
 export function computeBundleId(
   obj: RequestType,
-  discriminatorFields: string[]
+  discriminatorFields: string[],
 ) {
   const ids: unknown[] = [];
   let hasIds = false;

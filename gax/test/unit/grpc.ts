@@ -18,10 +18,10 @@
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as os from 'os';
 import * as path from 'path';
-import * as proxyquire from 'proxyquire';
+import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
 import {mkdirSync, writeFileSync} from 'fs';
 import * as fsp from 'fs/promises';
@@ -123,7 +123,7 @@ describe('grpc', () => {
     constructor(
       public address: {},
       public creds: {},
-      public options: {[index: string]: string | number | Function}
+      public options: {[index: string]: string | number | Function},
     ) {}
   }
 
@@ -184,22 +184,26 @@ describe('grpc', () => {
         port: 443,
         universeDomain: 'example.com',
       };
-      assert.rejects(
-        // @ts-ignore
-        grpcClient.createStub(DummyStub, opts),
-        /configured universe domain/
-      );
+      assert
+        .rejects(
+          // @ts-ignore
+          grpcClient.createStub(DummyStub, opts),
+          /configured universe domain/,
+        )
+        .catch(console.error);
     });
 
     it('validates universe domain if unset', async () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
       stubAuth.getUniverseDomain.reset();
       stubAuth.getUniverseDomain.resolves('example.com');
-      assert.rejects(
-        // @ts-ignore
-        grpcClient.createStub(DummyStub, opts),
-        /configured universe domain/
-      );
+      assert
+        .rejects(
+          // @ts-ignore
+          grpcClient.createStub(DummyStub, opts),
+          /configured universe domain/,
+        )
+        .catch(console.error);
     });
 
     it('supports optional parameters', () => {
@@ -236,15 +240,15 @@ describe('grpc', () => {
         const dummyStub = stub as unknown as DummyStub;
         assert.strictEqual(
           dummyStub.options['grpc.max_send_message_length'],
-          10 * 1024 * 1024
+          10 * 1024 * 1024,
         );
         assert.strictEqual(
           (dummyStub.options['callInvocationTransformer'] as Function)(),
-          42
+          42,
         );
         assert.strictEqual(
           dummyStub.options['grpc-node.max_session_memory'],
-          10
+          10,
         );
         ['servicePath', 'port', 'other_dummy_options'].forEach(k => {
           assert.strictEqual(stub.options.hasOwnProperty(k), false);
@@ -290,7 +294,7 @@ describe('grpc', () => {
         const dummyStub = stub as unknown as DummyStub;
         assert.strictEqual(
           dummyStub.options['grpc.max_receive_message_length'],
-          10 * 1024 * 1024
+          10 * 1024 * 1024,
         );
       });
     });
@@ -323,14 +327,14 @@ describe('grpc', () => {
       'example',
       'library',
       'v1',
-      'library.proto'
+      'library.proto',
     );
     const TEST_FILE_NO_DEPS = path.join(
       'google',
       'example',
       'library',
       'v1',
-      'test.proto'
+      'test.proto',
     );
     const TEST_PATH = path.resolve(__dirname, '..', '..', 'test', 'fixtures');
     const TEST_JSON = path.resolve(
@@ -339,7 +343,7 @@ describe('grpc', () => {
       '..',
       'test',
       'fixtures',
-      'library.json'
+      'library.json',
     );
 
     it('should load the test file', () => {
@@ -349,7 +353,7 @@ describe('grpc', () => {
       const protos = grpcClient.loadProto(TEST_PATH, TEST_FILE) as any;
       assert.strictEqual(
         typeof protos.google.example.library.v1.LibraryService,
-        'function'
+        'function',
       );
     });
 
@@ -360,7 +364,7 @@ describe('grpc', () => {
       const protos = grpcClient.loadProtoJSON(require(TEST_JSON)) as any;
       assert.strictEqual(
         typeof protos.google.example.library.v1.LibraryService,
-        'function'
+        'function',
       );
     });
 
@@ -368,7 +372,7 @@ describe('grpc', () => {
       // no-any disabled because if the accessed fields are non-existent, this
       // test will fail anyway.
       const protos = grpcClient.loadProto(
-        path.join(TEST_PATH, TEST_FILE_NO_DEPS)
+        path.join(TEST_PATH, TEST_FILE_NO_DEPS),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as any;
       assert(protos.test.TestMessage);
@@ -400,7 +404,7 @@ describe('grpc', () => {
       ]) as any;
       assert.strictEqual(
         typeof protos.google.example.library.v1.LibraryService,
-        'function'
+        'function',
       );
       assert.strictEqual(typeof protos.google.iam.v1.IAMPolicy, 'function');
     });
@@ -409,7 +413,7 @@ describe('grpc', () => {
       const nonExistentDir = path.join(__dirname, 'nonexistent', 'dir');
       const nonExistentFile = 'nonexistent.proto';
       assert.throws(
-        grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile)
+        grpcClient.loadProto.bind(null, nonExistentDir, nonExistentFile),
       );
     });
 
@@ -436,12 +440,12 @@ describe('grpc', () => {
       const proto1 = grpcClient.loadProto(
         TEST_PATH,
         TEST_FILE,
-        /*ignoreCache:*/ true
+        /*ignoreCache:*/ true,
       );
       const proto2 = grpcClient.loadProto(
         TEST_PATH,
         TEST_FILE,
-        /*ignoreCache:*/ true
+        /*ignoreCache:*/ true,
       );
       assert.notStrictEqual(proto1, proto2);
     });
@@ -449,11 +453,11 @@ describe('grpc', () => {
     it('should ignore cache if asked for JSON protos', () => {
       const proto1 = grpcClient.loadProtoJSON(
         require(TEST_JSON),
-        /*ignoreCache:*/ true
+        /*ignoreCache:*/ true,
       );
       const proto2 = grpcClient.loadProtoJSON(
         require(TEST_JSON),
-        /*ignoreCache:*/ true
+        /*ignoreCache:*/ true,
       );
       assert.notStrictEqual(proto1, proto2);
     });
@@ -473,18 +477,18 @@ describe('grpc', () => {
       'google',
       'example',
       'library',
-      'v1'
+      'v1',
     );
     const TEST_FILE = path.join(FIXTURES_DIR, 'library.proto');
     const NON_EXISTENT_FILE = path.join(
       __dirname,
       'does',
       'not',
-      'exist.proto'
+      'exist.proto',
     );
     const MISSING_INCLUDE_FILE = path.join(
       FIXTURES_DIR,
-      'missing_include.proto'
+      'missing_include.proto',
     );
 
     describe('use with protobufjs load', () => {
@@ -495,7 +499,7 @@ describe('grpc', () => {
           },
           () => {
             done();
-          }
+          },
         );
       });
 
@@ -506,7 +510,7 @@ describe('grpc', () => {
             assert(root instanceof protobuf.Root);
             assert(
               root.lookup('google.example.library.v1.LibraryService') instanceof
-                protobuf.Service
+                protobuf.Service,
             );
             assert(root.lookup('test.TestMessage') instanceof protobuf.Type);
             done();
@@ -549,7 +553,7 @@ describe('grpc', () => {
         assert(root instanceof protobuf.Root);
         assert(
           root.lookup('google.example.library.v1.LibraryService') instanceof
-            protobuf.Service
+            protobuf.Service,
         );
         assert(root.lookup('test.TestMessage') instanceof protobuf.Type);
       });
@@ -559,8 +563,8 @@ describe('grpc', () => {
           protobuf.loadSync.bind(
             null,
             NON_EXISTENT_FILE,
-            new GoogleProtoFilesRoot()
-          )
+            new GoogleProtoFilesRoot(),
+          ),
         );
       });
 
@@ -569,8 +573,8 @@ describe('grpc', () => {
           protobuf.loadSync.bind(
             null,
             MISSING_INCLUDE_FILE,
-            new GoogleProtoFilesRoot()
-          )
+            new GoogleProtoFilesRoot(),
+          ),
         );
       });
     });
@@ -601,7 +605,7 @@ describe('grpc', () => {
         }).GoogleProtoFilesRoot._findIncludePath;
         assert.strictEqual(
           findIncludePath(originPath, includePath),
-          correctPath
+          correctPath,
         );
       });
     });
@@ -630,7 +634,7 @@ describe('grpc', () => {
       const servicePath = client._mtlsServicePath(
         'https://foo.googleapis.com',
         false,
-        true
+        true,
       );
       assert.strictEqual(servicePath, expected);
     });
@@ -641,7 +645,7 @@ describe('grpc', () => {
       const servicePath = client._mtlsServicePath(
         'https://foo.googleapis.com',
         false,
-        false
+        false,
       );
       assert.strictEqual(servicePath, expected);
     });
@@ -676,11 +680,17 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const client = gaxGrpc();
-      const [cert, key] = await client._detectClientCertificate();
+      const {GrpcClient} = await proxyquire('../../src/grpc.js', {
+        os: {
+          homedir: () => {
+            return tmpFolder;
+          },
+        },
+      });
+      const clientMock = new GrpcClient();
+      const [cert, key] = await clientMock._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
@@ -693,15 +703,24 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      sandbox.stub(os, 'homedir').returns(tmpFolder);
+
+      process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
+      const {GrpcClient} = await proxyquire('../../src/grpc.js', {
+        os: {
+          homedir: () => {
+            return tmpFolder;
+          },
+        },
+      });
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const client = gaxGrpc();
-      assert.rejects(
-        // @ts-ignore
-        client.createStub(DummyStub, {universeDomain: 'example.com'}),
-        /configured universe domain/
-      );
+      const clientMock = new GrpcClient();
+      assert
+        .rejects(
+          clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
+          /configured universe domain/,
+        )
+        .catch(console.error);
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });
   });

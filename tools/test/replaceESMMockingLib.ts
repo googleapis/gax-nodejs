@@ -101,7 +101,7 @@ describe('replace ESM mocking lib', () => {
 
       assert.strictEqual(
         result?.code?.replace(/(\r\n|\n|\r)/gm, '').replace('  ', ''),
-        expected
+        expected,
       );
     });
 

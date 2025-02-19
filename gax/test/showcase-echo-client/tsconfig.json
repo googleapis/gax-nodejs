@@ -12,5 +12,7 @@
   "include": [
     "src/*.ts",
     "src/**/*.ts",
+    "src/**/*.json",
+    "protos/protos.json"
   ]
 }

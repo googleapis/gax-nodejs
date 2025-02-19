@@ -58,7 +58,7 @@ export class LongrunningApiCaller implements APICaller {
     apiCall: SimpleCallbackFunction,
     argument: {},
     settings: CallOptions,
-    canceller: OngoingCallPromise
+    canceller: OngoingCallPromise,
   ) {
     canceller.call((argument, callback) => {
       return this._wrapOperation(apiCall, settings, argument, callback);
@@ -69,7 +69,7 @@ export class LongrunningApiCaller implements APICaller {
     apiCall: SimpleCallbackFunction,
     settings: CallOptions,
     argument: {},
-    callback: APICallback
+    callback: APICallback,
   ) {
     let backoffSettings: BackoffSettings | undefined = settings.longrunning;
     if (!backoffSettings) {
@@ -89,11 +89,11 @@ export class LongrunningApiCaller implements APICaller {
           rawResponse as operationProtos.google.longrunning.Operation,
           longrunningDescriptor,
           backoffSettings!,
-          settings
+          settings,
         );
 
         callback(null, operation, rawResponse);
-      }
+      },
     );
   }
 

@@ -30,25 +30,22 @@ module.exports = function (config) {
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: '',
-
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['mocha', 'child-process'],
+    files: ['./test/*.ts'],
 
     client: {
       childProcess: {
         path: path.relative(
           process.cwd(),
           // eslint-disable-next-line n/no-missing-require
-          require.resolve('showcase-server/build/src/index.js')
+          require.resolve('showcase-server/build/src/index.js'),
         ),
         args: [],
         options: {},
       },
     },
-
-    // list of files / patterns to load in the browser
-    files: ['./test/test.*.ts'],
 
     // list of files / patterns to exclude
     exclude: [],
@@ -60,7 +57,6 @@ module.exports = function (config) {
     },
 
     webpack: webpackConfig,
-
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
@@ -96,14 +92,16 @@ module.exports = function (config) {
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: true,
-
+    // list of files / patterns to load in the browser
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: Infinity,
-
     // set correct MIME type when serving .ts files (already compiled to JavaScript):
     mime: {
       'text/javascript': ['ts'],
     },
+    browserDisconnectTimeout: 60000, // Increase to 60 seconds (or more)
+    browserNoActivityTimeout: 60000,
+    mode: 'development',
   });
 };

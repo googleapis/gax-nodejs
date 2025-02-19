@@ -15,7 +15,7 @@
     "url": "https://github.com/googleapis/gax-nodejs/issues"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "homepage": "https://github.com/googleapis/gax-nodejs#readme"
 }

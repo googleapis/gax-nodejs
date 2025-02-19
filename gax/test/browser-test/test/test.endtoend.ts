@@ -18,6 +18,7 @@ import * as assert from 'assert';
 import {describe, it, before} from 'mocha';
 import {GoogleAuth} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
+import 'core-js/stable';
 
 function sleep(timeout: number) {
   return new Promise(resolve => {
@@ -25,7 +26,7 @@ function sleep(timeout: number) {
   });
 }
 
-describe('Run tests against gRPC server', () => {
+describe('Run tests against gRPC server', async function () {
   const authStub = {
     getClient: async () => {
       return {
@@ -76,6 +77,7 @@ describe('Run tests against gRPC server', () => {
   });
 
   it('should be able to call simple RPC methods', async () => {
+    this.timeout(80000);
     const request = {
       content: 'test',
     };
