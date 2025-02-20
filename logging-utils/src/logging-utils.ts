@@ -485,7 +485,7 @@ let cachedBackend: DebugLogBackend | null | undefined = undefined;
  *
  * @param backend Results from one of the get*Backend() functions.
  */
-export function setBackend(backend: DebugLogBackend | null) {
+export function setBackend(backend: DebugLogBackend | null | undefined) {
   cachedBackend = backend;
   loggerCache.clear();
 }
@@ -504,10 +504,14 @@ export function log(
   namespace: string,
   parent?: AdhocDebugLogFunction
 ): AdhocDebugLogFunction {
-  // If the enable flag isn't set, do nothing.
-  const enablesFlag = process.env[env.nodeEnables];
-  if (!enablesFlag) {
-    return placeholder;
+  // If the enable environment variable isn't set, do nothing. The user
+  // can still choose to set a backend of their choice using the manual
+  // `setBackend()`.
+  if (!cachedBackend) {
+    const enablesFlag = process.env[env.nodeEnables];
+    if (!enablesFlag) {
+      return placeholder;
+    }
   }
 
   // This might happen mostly if the typings are dropped in a user's code,
