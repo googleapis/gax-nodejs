@@ -137,11 +137,19 @@ export class AdhocDebugLogger extends EventEmitter {
   invoke(fields: LogFields, ...args: unknown[]): void {
     // Push out any upstream logger first.
     if (this.upstream) {
-      this.upstream(fields, ...args);
+      try {
+        this.upstream(fields, ...args);
+      } catch (e) {
+        // Swallow exceptions to avoid interfering with other logging.
+      }
     }
 
     // Emit sink events.
-    this.emit('log', fields, args);
+    try {
+      this.emit('log', fields, args);
+    } catch (e) {
+      // Swallow exceptions to avoid interfering with other logging.
+    }
   }
 
   invokeSeverity(severity: LogSeverity, ...args: unknown[]): void {
