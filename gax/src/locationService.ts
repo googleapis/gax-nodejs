@@ -18,7 +18,7 @@ import {warn} from './warnings';
 import type {GrpcClient} from './grpc';
 import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
-import type {GoogleAuth} from 'google-auth-library';
+import type {AuthClient, GoogleAuth} from 'google-auth-library';
 import * as routingHeader from './routingHeader';
 import * as protos from '../protos/locations';
 import type {
@@ -49,7 +49,7 @@ export class LocationsClient {
   private _providedCustomServicePath: boolean;
   private _protos: {};
   private _defaults: {[method: string]: gax.CallSettings};
-  auth: GoogleAuth;
+  auth: GoogleAuth<AuthClient>;
   descriptors: Descriptors = {
     page: {},
     stream: {},

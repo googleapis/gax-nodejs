@@ -24,27 +24,16 @@ import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
-import {GoogleError} from '../../src';
+import {GoogleAuth, GoogleError} from '../../src';
+import {PassThroughClient} from 'google-auth-library';
 import proxyquire from 'proxyquire';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
 
-const authClient = {
-  universeDomain: 'googleapis.com',
-  async getRequestHeaders() {
-    return {Authorization: 'Bearer SOME_TOKEN'};
-  },
-};
-
-const authStub = {
-  async getClient() {
-    return authClient;
-  },
-};
-
+const authClient = new PassThroughClient();
 const opts = {
-  auth: authStub,
+  auth: new GoogleAuth({authClient}),
 };
 
 describe('loadProto', () => {
@@ -420,7 +409,7 @@ describe('grpc-fallback', () => {
       },
     };
     const opts = {
-      auth: authStub,
+      auth: new GoogleAuth({authClient: new PassThroughClient()}),
       fallback: 'rest',
     };
 
@@ -458,7 +447,7 @@ describe('grpc-fallback', () => {
 
   it('should be able to cancel an API call using AbortController', async () => {
     const opts = {
-      auth: authStub,
+      auth: new GoogleAuth({authClient}),
       fallback: 'rest',
     };
 
