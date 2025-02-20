@@ -14,6 +14,7 @@
 
 import {describe, it} from 'mocha';
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 
 import * as al from '../src/logging-utils';
 
@@ -46,12 +47,8 @@ describe('adhoc-logging', () => {
   describe('Disabled', () => {
     const system = 'disabled';
 
-    beforeEach(() => {
-      al.setBackend(sink);
-      sink.reset();
-    });
-
     it('obeys a lack of global enable', () => {
+      al.setBackend(undefined);
       delete process.env[al.env.nodeEnables];
       const logger = al.log(system);
       logger({}, 'foo');
@@ -59,6 +56,9 @@ describe('adhoc-logging', () => {
     });
 
     it('obeys "all" as an alias for "*"', () => {
+      al.setBackend(sink);
+      sink.reset();
+
       process.env[al.env.nodeEnables] = 'all';
       const logger = al.log(system);
       logger({}, 'foo');
@@ -67,6 +67,30 @@ describe('adhoc-logging', () => {
           namespace: system,
           fields: {},
           args: ['foo'],
+        },
+      ]);
+    });
+  });
+
+  describe('Manually enabled', () => {
+    let logger: al.AdhocDebugLogFunction;
+    const system = 'basic';
+
+    beforeEach(() => {
+      al.setBackend(sink);
+      sink.reset();
+
+      delete process.env[al.env.nodeEnables];
+      logger = al.log(system);
+    });
+
+    it('logs in spite of no environment variable', () => {
+      logger({}, 'test log', 5, {other: 'foo'});
+      assert.deepStrictEqual(sink.logs, [
+        {
+          namespace: system,
+          fields: {},
+          args: ['test log', 5, {other: 'foo'}],
         },
       ]);
     });
@@ -188,6 +212,22 @@ describe('adhoc-logging', () => {
       process.env[al.env.nodeEnables] = system;
 
       logger = al.log(system);
+    });
+
+    it('logs to console.log by default', () => {
+      al.setBackend(al.getStructuredBackend());
+      logger = al.log(system);
+      const sandbox = sinon.createSandbox();
+      let called = false;
+      sandbox.stub(console, 'log').callsFake((message, ...params) => {
+        assert.strictEqual(message, '%s');
+        assert.deepStrictEqual(params, [
+          '{"severity":"INFO","message":"test info"}',
+        ]);
+        called = true;
+      });
+      logger.info('test info');
+      assert.strictEqual(called, true);
     });
 
     it('logs with severity', () => {

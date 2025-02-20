@@ -415,11 +415,11 @@ class StructuredBackend extends DebugLogBackendBase {
 
   constructor(upstream?: DebugLogBackend) {
     super();
-    this.upstream = (upstream as DebugLogBackendBase) ?? new NodeBackend();
+    this.upstream = (upstream as DebugLogBackendBase) ?? undefined;
   }
 
   makeLogger(namespace: string): AdhocDebugLogCallable {
-    const debugLogger = this.upstream.makeLogger(namespace);
+    const debugLogger = this.upstream?.makeLogger(namespace);
     return (fields: LogFields, ...args: unknown[]) => {
       const severity = fields.severity ?? LogSeverity.INFO;
       const json = Object.assign(
@@ -429,14 +429,18 @@ class StructuredBackend extends DebugLogBackendBase {
         },
         fields
       );
-      const jsonString = JSON.stringify(json);
 
-      debugLogger(fields, jsonString);
+      const jsonString = JSON.stringify(json);
+      if (debugLogger) {
+        debugLogger(fields, jsonString);
+      } else {
+        console.log('%s', jsonString);
+      }
     };
   }
 
   setFilters(): void {
-    this.upstream.setFilters();
+    this.upstream?.setFilters();
   }
 }
 
@@ -485,7 +489,7 @@ let cachedBackend: DebugLogBackend | null | undefined = undefined;
  *
  * @param backend Results from one of the get*Backend() functions.
  */
-export function setBackend(backend: DebugLogBackend | null) {
+export function setBackend(backend: DebugLogBackend | null | undefined) {
   cachedBackend = backend;
   loggerCache.clear();
 }
@@ -504,10 +508,14 @@ export function log(
   namespace: string,
   parent?: AdhocDebugLogFunction
 ): AdhocDebugLogFunction {
-  // If the enable flag isn't set, do nothing.
-  const enablesFlag = process.env[env.nodeEnables];
-  if (!enablesFlag) {
-    return placeholder;
+  // If the enable environment variable isn't set, do nothing. The user
+  // can still choose to set a backend of their choice using the manual
+  // `setBackend()`.
+  if (!cachedBackend) {
+    const enablesFlag = process.env[env.nodeEnables];
+    if (!enablesFlag) {
+      return placeholder;
+    }
   }
 
   // This might happen mostly if the typings are dropped in a user's code,
