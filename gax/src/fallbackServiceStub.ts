@@ -65,7 +65,7 @@ export interface FallbackServiceStub {
     request: {},
     options?: {},
     metadata?: {},
-    callback?: (err?: Error, response?: {} | undefined) => void
+    callback?: (err?: Error, response?: {} | undefined) => void,
   ) => StreamArrayParser | {cancel: () => void};
 }
 
@@ -91,15 +91,15 @@ export function generateServiceStub(
     servicePort: number,
     request: {},
     numericEnums: boolean,
-    minifyJson: boolean
+    minifyJson: boolean,
   ) => FetchParameters,
   responseDecoder: (
     rpc: protobuf.Method,
     ok: boolean,
-    response: Buffer | ArrayBuffer
+    response: Buffer | ArrayBuffer,
   ) => {},
   numericEnums: boolean,
-  minifyJson: boolean
+  minifyJson: boolean,
 ) {
   const fetch = hasWindowFetch()
     ? window.fetch
@@ -116,7 +116,7 @@ export function generateServiceStub(
       request: {},
       options?: {[name: string]: string},
       _metadata?: {} | Function,
-      callback?: Function
+      callback?: Function,
     ) => {
       options ??= {};
 
@@ -132,7 +132,7 @@ export function generateServiceStub(
           servicePort,
           request,
           numericEnums,
-          minifyJson
+          minifyJson,
         );
       } catch (err) {
         // we could not encode parameters; pass error to the callback
@@ -196,7 +196,7 @@ export function generateServiceStub(
                   }
                   streamArrayParser.emit('error', err);
                 }
-              }
+              },
             );
             return;
           } else {

@@ -130,7 +130,7 @@ describe('createStub', () => {
     assert
       .rejects(
         gaxGrpc.createStub(echoService, opts),
-        /configured universe domain/
+        /configured universe domain/,
       )
       .catch(console.error);
   });
@@ -140,7 +140,7 @@ describe('createStub', () => {
     assert
       .rejects(
         gaxGrpc.createStub(echoService, stubOptions),
-        /configured universe domain/
+        /configured universe domain/,
       )
       .catch(console.error);
     // reset to default value
@@ -263,7 +263,7 @@ describe('grpc-fallback', () => {
       'google.showcase.v1beta1.Echo',
       gapicConfig,
       {},
-      {}
+      {},
     );
     const metadataBuilder = settings.echo.otherArgs.metadataBuilder;
     const headers = metadataBuilder();
@@ -293,7 +293,7 @@ describe('grpc-fallback', () => {
           assert.strictEqual(err, null);
           assert.strictEqual(
             requestObject.content,
-            (result as {content: string}).content
+            (result as {content: string}).content,
           );
         });
       });
@@ -353,7 +353,7 @@ describe('grpc-fallback', () => {
         assert.strictEqual(err.code, expectedError.code);
         assert.strictEqual(
           JSON.stringify(err.statusDetails),
-          JSON.stringify(expectedError.details)
+          JSON.stringify(expectedError.details),
         );
       });
     });
@@ -431,7 +431,7 @@ describe('grpc-fallback', () => {
         assert(err instanceof GoogleError);
         assert.strictEqual(
           JSON.stringify(err.statusDetails?.length),
-          JSON.stringify(serverError['error']['details'].length)
+          JSON.stringify(serverError['error']['details'].length),
         );
         assert.strictEqual(err.code, 7);
         assert.strictEqual(err.message, serverError['error']['message']);
@@ -439,7 +439,7 @@ describe('grpc-fallback', () => {
         assert.strictEqual(err.domain, errorInfo.domain);
         assert.strictEqual(
           JSON.stringify(err.errorInfoMetadata),
-          JSON.stringify(errorInfo.metadata)
+          JSON.stringify(errorInfo.metadata),
         );
       });
     });

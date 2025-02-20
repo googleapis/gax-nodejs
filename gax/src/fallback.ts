@@ -124,7 +124,7 @@ export class GrpcClient {
        * A string is accepted for compatibility, all non-empty string values enable the HTTP REST fallback.
        */
       fallback?: boolean | string;
-    } = {}
+    } = {},
   ) {
     if (options.auth) {
       this.auth = options.auth;
@@ -192,7 +192,7 @@ export class GrpcClient {
     serviceName: string,
     clientConfig: gax.ClientConfig,
     configOverrides: gax.ClientConfig,
-    headers: OutgoingHttpHeaders
+    headers: OutgoingHttpHeaders,
   ) {
     function buildMetadata(abTests: {}, moreHeaders: OutgoingHttpHeaders) {
       const metadata: OutgoingHttpHeaders = {};
@@ -216,7 +216,7 @@ export class GrpcClient {
         )[0]
       ) {
         clientVersions.push(
-          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
+          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' '),
         );
       }
       clientVersions.push(`grpc-web/${version}`);
@@ -240,7 +240,7 @@ export class GrpcClient {
                 ).push(...value);
               } else {
                 throw new Error(
-                  `Can not add value ${value} to the call metadata.`
+                  `Can not add value ${value} to the call metadata.`,
                 );
               }
             }
@@ -256,7 +256,7 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       Status,
-      {metadataBuilder: buildMetadata}
+      {metadataBuilder: buildMetadata},
     );
   }
 
@@ -276,7 +276,7 @@ export class GrpcClient {
     opts: ClientStubOptions,
     // For consistency with createStub in grpc.ts, customServicePath is defined:
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    customServicePath?: boolean
+    customServicePath?: boolean,
   ) {
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
@@ -296,7 +296,7 @@ export class GrpcClient {
       if (universeFromAuth && opts.universeDomain !== universeFromAuth) {
         throw new Error(
           `The configured universe domain (${opts.universeDomain}) does not match the universe domain found in the credentials (${universeFromAuth}). ` +
-            "If you haven't configured the universe domain explicitly, googleapis.com is the default."
+            "If you haven't configured the universe domain explicitly, googleapis.com is the default.",
         );
       }
     }
@@ -315,7 +315,7 @@ export class GrpcClient {
     }
     if (!servicePath) {
       throw new Error(
-        `Cannot determine service API path for service ${service.name}.`
+        `Cannot determine service API path for service ${service.name}.`,
       );
     }
 
@@ -342,7 +342,7 @@ export class GrpcClient {
       encoder,
       decoder,
       this.numericEnums,
-      this.minifyJson
+      this.minifyJson,
     );
 
     return serviceStub;
@@ -407,7 +407,7 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _fallback?: boolean | string // unused; for compatibility only
+  _fallback?: boolean | string, // unused; for compatibility only
 ): GaxCall {
   if (
     descriptor &&
@@ -416,7 +416,7 @@ export function createApiCall(
   ) {
     return () => {
       throw new Error(
-        'The REST transport currently does not support client-streaming or bidi-stream calls.'
+        'The REST transport currently does not support client-streaming or bidi-stream calls.',
       );
     };
   }
@@ -424,7 +424,7 @@ export function createApiCall(
     // TODO: with `fetch` this is available in the browser...
     return () => {
       throw new Error(
-        'Server streaming over the REST transport is only supported in Node.js.'
+        'Server streaming over the REST transport is only supported in Node.js.',
       );
     };
   }
