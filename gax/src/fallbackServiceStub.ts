@@ -17,18 +17,22 @@
 /* global window */
 /* global AbortController */
 
-import nodeFetch from 'node-fetch';
-import {Response as NodeFetchResponse, RequestInit} from 'node-fetch';
+import type {
+  Response as NodeFetchResponse,
+  RequestInit,
+} from 'node-fetch' with {'resolution-mode': 'import'};
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {AuthClient, GoogleAuth} from 'google-auth-library';
 
+import type nodeFetch from 'node-fetch' with {'resolution-mode': 'import'};
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
 import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
-
+const fetchNode = (...args: Parameters<typeof nodeFetch>) =>
+  import('node-fetch').then(({default: fetch}) => fetch(...args));
 interface NodeFetchType {
   (url: RequestInfo, init?: RequestInit): Promise<Response>;
 }
@@ -99,7 +103,7 @@ export function generateServiceStub(
 ) {
   const fetch = hasWindowFetch()
     ? window.fetch
-    : (nodeFetch as unknown as NodeFetchType);
+    : (fetchNode as unknown as NodeFetchType);
 
   const serviceStub: FallbackServiceStub = {
     // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
@@ -161,11 +165,7 @@ export function generateServiceStub(
               ...authHeader,
               ...headers,
             },
-            body: fetchParameters.body as
-              | string
-              | Buffer
-              | Uint8Array
-              | undefined,
+            body: fetchParameters.body as string | Buffer | undefined,
             method: fetchParameters.method,
             signal: cancelSignal,
           };

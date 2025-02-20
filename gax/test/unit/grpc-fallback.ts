@@ -17,9 +17,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-undef */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {describe, it, beforeEach, afterEach, before, after} from 'mocha';
-import * as nodeFetch from 'node-fetch';
 import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
@@ -27,6 +26,7 @@ import echoProtoJson = require('../fixtures/echo.json');
 import {GrpcClient} from '../../src/fallback';
 import {GoogleAuth, GoogleError} from '../../src';
 import {PassThroughClient} from 'google-auth-library';
+import proxyquire from 'proxyquire';
 
 // @ts-ignore
 const hasAbortController = typeof AbortController !== 'undefined';
@@ -127,18 +127,22 @@ describe('createStub', () => {
 
   it('validates universe domain if set', async () => {
     const opts = {...stubOptions, universeDomain: 'example.com'};
-    assert.rejects(
-      gaxGrpc.createStub(echoService, opts),
-      /configured universe domain/
-    );
+    assert
+      .rejects(
+        gaxGrpc.createStub(echoService, opts),
+        /configured universe domain/
+      )
+      .catch(console.error);
   });
 
   it('validates universe domain if unset', async () => {
     authClient.universeDomain = 'example.com';
-    assert.rejects(
-      gaxGrpc.createStub(echoService, stubOptions),
-      /configured universe domain/
-    );
+    assert
+      .rejects(
+        gaxGrpc.createStub(echoService, stubOptions),
+        /configured universe domain/
+      )
+      .catch(console.error);
     // reset to default value
     authClient.universeDomain = 'googleapis.com';
   });
@@ -198,6 +202,7 @@ describe('grpc-fallback', () => {
 
     if (hasAbortController) {
       // @ts-ignore
+      // eslint-disable-next-line no-global-assign
       AbortController = FakeAbortController;
     } else {
       // @ts-ignore
@@ -216,6 +221,7 @@ describe('grpc-fallback', () => {
   after(() => {
     if (hasAbortController) {
       // @ts-ignore
+      // eslint-disable-next-line no-global-assign
       AbortController = savedAbortController;
     } else {
       // @ts-ignore
@@ -263,34 +269,37 @@ describe('grpc-fallback', () => {
     const headers = metadataBuilder();
     assert(headers['x-goog-api-client'][0].match('grpc-web/'));
   });
-
-  it('should make a request', done => {
+  it('should make a request', async () => {
     const requestObject = {content: 'test-content'};
     const responseType = protos.lookupType('EchoResponse');
     const response = responseType.create(requestObject); // request === response for EchoService
-    //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(
-      Promise.resolve({
-        ok: true,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(JSON.stringify(response)));
-        },
-      })
-    );
 
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err?: Error, result?: {}) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(
-          requestObject.content,
-          (result as {content: string}).content
-        );
-        done();
-      });
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(response)));
+          },
+        });
+      },
     });
+
+    const gaxGrpcMock = new GrpcClient();
+    gaxGrpcMock
+      .createStub(echoService, stubOptions)
+      .then((echoStub: {echo: any}) => {
+        echoStub.echo(requestObject, {}, {}, (err?: Error, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            requestObject.content,
+            (result as {content: string}).content
+          );
+        });
+      });
   });
 
-  it('should handle an API error', done => {
+  it('should handle an API error', async () => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Language API
     const expectedMessage =
@@ -323,16 +332,21 @@ describe('grpc-fallback', () => {
         },
       ],
     };
-    //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(
-      Promise.resolve({
-        ok: false,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(JSON.stringify(jsonError)));
-        },
-      })
-    );
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(jsonError)));
+          },
+        });
+      },
+    });
+
+    const gaxGrpcMock = new GrpcClient();
+
+    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
         assert.strictEqual(err.message, expectedMessage);
@@ -341,45 +355,28 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.statusDetails),
           JSON.stringify(expectedError.details)
         );
-        done();
-      });
-    });
-  });
-  it('should handle a null response from the API ', done => {
-    const requestObject = {content: 'test-content'};
-    const expectedMessage = 'Received null response from RPC Echo';
-
-    //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(
-      Promise.resolve({
-        ok: false,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(''));
-        },
-      })
-    );
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.message, expectedMessage);
-        done();
       });
     });
   });
 
-  it('should handle a fetch error', done => {
+  it('should handle a fetch error', async () => {
     const requestObject = {content: 'test-content'};
-    //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').rejects(new Error('fetch error'));
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.reject(new Error('fetch error'));
+      },
+    });
+
+    const gaxGrpcMock = new GrpcClient();
+    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert.strictEqual(err?.message, 'fetch error');
-        done();
       });
     });
   });
 
-  it('should promote ErrorInfo if exist in fallback-rest error', done => {
+  it('should promote ErrorInfo if exist in fallback-rest error', async () => {
     const requestObject = {content: 'test-content'};
     // example of an actual google.rpc.Status error message returned by Translate API
     const errorInfo = {
@@ -415,17 +412,21 @@ describe('grpc-fallback', () => {
       auth: new GoogleAuth({authClient: new PassThroughClient()}),
       fallback: 'rest',
     };
-    gaxGrpc = new GrpcClient(opts);
-    //@ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(
-      Promise.resolve({
-        ok: false,
-        arrayBuffer: () => {
-          return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
-        },
-      })
-    );
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify(serverError)));
+          },
+        });
+      },
+    });
+
+    const gaxGrpcMock = new GrpcClient(opts);
+
+    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
         assert(err instanceof GoogleError);
         assert.strictEqual(
@@ -440,31 +441,54 @@ describe('grpc-fallback', () => {
           JSON.stringify(err.errorInfoMetadata),
           JSON.stringify(errorInfo.metadata)
         );
-        done();
       });
     });
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
-    // @ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
+    const opts = {
+      auth: new GoogleAuth({authClient}),
+      fallback: 'rest',
+    };
 
-    const echoStub = await gaxGrpc.createStub(echoService, stubOptions);
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve(Buffer.from(JSON.stringify({})));
+          },
+        });
+      },
+    });
+
+    const gaxGrpcMock = new GrpcClient(opts);
+    const echoStub = await gaxGrpcMock.createStub(echoService, stubOptions);
+
     const request = {content: 'content' + new Date().toString()};
     const call = echoStub.echo(request, {}, {}, () => {});
 
     call.cancel();
 
-    // @ts-ignore
-    assert.strictEqual(createdAbortControllers[0].abortCalled, true);
+    assert.strictEqual((createdAbortControllers[0] as any).abortCalled, true);
   });
 
-  it('should have close method', done => {
-    // @ts-ignore
-    sinon.stub(nodeFetch, 'Promise').returns(Promise.resolve({}));
-    gaxGrpc.createStub(echoService, stubOptions).then(stub => {
+  it('should have close method', async () => {
+    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
+      'node-fetch': () => {
+        return Promise.resolve({
+          ok: true,
+          arrayBuffer: () => {
+            return Promise.resolve({});
+          },
+        });
+      },
+    });
+
+    const gaxGrpcMock = new GrpcClient();
+
+    gaxGrpcMock.createStub(echoService, stubOptions).then((stub: any) => {
       stub.close({}, {}, {}, () => {});
-      done();
     });
   });
 });

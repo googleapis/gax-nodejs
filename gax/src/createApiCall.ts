@@ -58,7 +58,7 @@ export function createApiCall(
   settings: CallSettings,
   descriptor?: Descriptor,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _fallback?: boolean | 'proto' | 'rest' // unused here, used in fallback.ts implementation
+  _fallback?: boolean | 'proto' | 'rest', // unused here, used in fallback.ts implementation
 ): GaxCall {
   // we want to be able to accept both promise resolving to a function and a
   // function. Currently client librares are only calling this method with a
@@ -70,7 +70,7 @@ export function createApiCall(
   return (
     request: RequestType,
     callOptions?: CallOptions,
-    callback?: APICallback
+    callback?: APICallback,
   ) => {
     let currentApiCaller = apiCaller;
 
@@ -81,7 +81,7 @@ export function createApiCall(
       // If Gax streaming retries are enabled, check settings passed at call time and convert parameters if needed
       const convertedRetryOptions = convertRetryOptions(
         callOptions,
-        gaxStreamingRetries
+        gaxStreamingRetries,
       );
       thisSettings = settings.merge(convertedRetryOptions);
     } else {
@@ -109,7 +109,7 @@ export function createApiCall(
           if (retry.retryCodes.length > 0 && retry.shouldRetryFn) {
             warn(
               'either_retrycodes_or_shouldretryfn',
-              'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.'
+              'Only one of retryCodes or shouldRetryFn may be defined. Ignoring retryCodes.',
             );
             retry.retryCodes = [];
           }
@@ -119,19 +119,19 @@ export function createApiCall(
             retry.getResumptionRequestFn
           ) {
             throw new Error(
-              'getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.'
+              'getResumptionRequestFn can only be used when gaxStreamingRetries is set to true.',
             );
           }
         }
         if (!streaming && retry) {
           if (retry.shouldRetryFn) {
             throw new Error(
-              'Using a function to determine retry eligibility is only supported with server streaming calls'
+              'Using a function to determine retry eligibility is only supported with server streaming calls',
             );
           }
           if (retry.getResumptionRequestFn) {
             throw new Error(
-              'Resumption strategy can only be used with server streaming retries'
+              'Resumption strategy can only be used with server streaming retries',
             );
           }
           if (retry.retryCodes && retry.retryCodes.length > 0) {
@@ -141,14 +141,14 @@ export function createApiCall(
               func,
               thisSettings.retry!,
               thisSettings.otherArgs as GRPCCallOtherArgs,
-              thisSettings.apiName
+              thisSettings.apiName,
             );
           }
         }
         return addTimeoutArg(
           func,
           thisSettings.timeout,
-          thisSettings.otherArgs as GRPCCallOtherArgs
+          thisSettings.otherArgs as GRPCCallOtherArgs,
         );
       })
       .then((apiCall: SimpleCallbackFunction) => {

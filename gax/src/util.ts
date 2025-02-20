@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {v4 as uuidv4} from 'uuid';
+const randomUUID = () =>
+  globalThis.crypto?.randomUUID() || require('crypto').randomUUID();
 
 function words(str: string, normalize = false) {
   if (normalize) {
@@ -88,7 +89,7 @@ export function toCamelCase(str: string) {
         return '_' + w;
       }
       return capitalize(w);
-    })
+    }),
   );
   return result.join('');
 }
@@ -110,5 +111,5 @@ export function toLowerCamelCase(str: string) {
  * in lower case).
  */
 export function makeUUID() {
-  return uuidv4();
+  return randomUUID();
 }

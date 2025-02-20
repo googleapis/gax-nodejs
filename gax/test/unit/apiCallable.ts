@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import {afterEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
@@ -34,51 +34,49 @@ describe('createApiCall', () => {
   afterEach(() => {
     sinon.restore();
   });
-  it('calls api call', done => {
+  it('calls api call', async () => {
     let deadlineArg: {};
     function func(
       argument: {},
       metadata: {},
       options: {deadline: string},
-      callback: Function
+      callback: Function,
     ) {
       deadlineArg = options.deadline;
       callback(null, argument);
     }
     const apiCall = createApiCall(func);
-    apiCall(42, undefined, (err, resp) => {
+    await apiCall(42, undefined, (err, resp) => {
       assert.strictEqual(resp, 42);
       assert.ok(deadlineArg);
-      done();
     });
   });
 
-  it('is customized by call options', done => {
+  it('is customized by call options', async () => {
     function func(
       argument: {},
       metadata: {},
       options: {deadline: {getTime: Function}},
-      callback: Function
+      callback: Function,
     ) {
       callback(null, options.deadline.getTime());
     }
     const apiCall = createApiCall(func, {settings: {timeout: 100}});
-    apiCall({}, {timeout: 200}, (err, resp) => {
+    await apiCall({}, {timeout: 200}, (err, resp) => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
       assert((resp as unknown as number)! > originalDeadline);
       assert((resp as unknown as number)! <= expectedDeadline);
-      done();
     });
   });
 
-  it('chooses the proper timeout', done => {
+  it('chooses the proper timeout', async () => {
     function func(
       argument: {},
       metadata: {},
       options: {deadline: {getTime: Function}},
-      callback: Function
+      callback: Function,
     ) {
       callback(null, options.deadline.getTime());
     }
@@ -91,28 +89,27 @@ describe('createApiCall', () => {
         timeout: 30000,
         retry: gax.createRetryOptions(
           [],
-          gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000)
+          gax.createBackoffSettings(100, 1.2, 1000, 2000, 1.5, 30000, 45000),
         ),
       },
     });
 
     const start = new Date().getTime();
-    apiCall({}, undefined, (err, resp) => {
+    await apiCall({}, undefined, (err, resp) => {
       // The verifying value is slightly bigger than the expected number
       // 2000 / 30000, because sometimes runtime can consume some time before
       // the call starts.
       assert(Number(resp) - start > 2100);
       assert(Number(resp) - start <= 30100);
-      done();
     });
   });
 
-  it('default to `timeout` for idempotent API calls', done => {
+  it('default to `timeout` for idempotent API calls', async () => {
     function func(
       argument: {},
       metadata: {},
       options: {deadline: {getTime: Function}},
-      callback: Function
+      callback: Function,
     ) {
       callback(null, options.deadline.getTime());
     }
@@ -131,31 +128,25 @@ describe('createApiCall', () => {
     });
 
     const start = new Date().getTime();
-    apiCall({}, undefined, (err, resp) => {
+    await apiCall({}, undefined, (err, resp) => {
       // The verifying value is slightly bigger than the expected number
       // 2000 / 30000, because sometimes runtime can consume some time before
       // the call starts.
       assert(Number(resp) - start > 2100);
       assert(Number(resp) - start <= 30100);
-      done();
     });
   });
-  it('override just custom retry.retryCodes with retry codes', done => {
+  it('override just custom retry.retryCodes with retry codes', () => {
     const initialRetryCodes = [1];
     const overrideRetryCodes = [1, 2, 3];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
-      try {
-        assert.strictEqual(retry.retryCodes, overrideRetryCodes);
-        return func;
-      } catch (err) {
-        done(err);
-      }
+      assert.strictEqual(retry.retryCodes, overrideRetryCodes);
       return func;
     });
 
     function func() {
-      done();
+      return;
     }
     const apiCall = createApiCall(func, {
       settings: {
@@ -176,8 +167,8 @@ describe('createApiCall', () => {
         retry: {
           retryCodes: overrideRetryCodes,
         },
-      }
-    );
+      },
+    ).catch(console.error);
   });
   it('errors when you override custom retry.shouldRetryFn with a function on a non streaming call', async () => {
     function neverRetry() {
@@ -209,18 +200,18 @@ describe('createApiCall', () => {
           retry: {
             shouldRetryFn: overrideRetryCodes,
           },
-        }
+        },
       );
     } catch (err) {
       assert(err instanceof Error);
       assert.strictEqual(
         err.message,
-        'Using a function to determine retry eligibility is only supported with server streaming calls'
+        'Using a function to determine retry eligibility is only supported with server streaming calls',
       );
     }
   });
 
-  it('override just custom retry.backoffSettings', done => {
+  it('override just custom retry.backoffSettings', () => {
     const initialBackoffSettings = gax.createDefaultBackoffSettings();
     const overriBackoffSettings = gax.createBackoffSettings(
       100,
@@ -229,7 +220,7 @@ describe('createApiCall', () => {
       null,
       1.5,
       3000,
-      4500
+      4500,
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
@@ -238,7 +229,7 @@ describe('createApiCall', () => {
     });
 
     function func() {
-      done();
+      return;
     }
 
     const apiCall = createApiCall(func, {
@@ -253,8 +244,8 @@ describe('createApiCall', () => {
         retry: {
           backoffSettings: overriBackoffSettings,
         },
-      }
-    );
+      },
+    ).catch(console.error);
   });
 
   it('errors when a resumption strategy is passed for a non streaming call', async () => {
@@ -266,7 +257,7 @@ describe('createApiCall', () => {
       null,
       1.5,
       3000,
-      4500
+      4500,
     );
     // "resumption" strategy is to just return the original request
     const getResumptionRequestFn = (originalRequest: RequestType) => {
@@ -274,7 +265,7 @@ describe('createApiCall', () => {
     };
 
     function func() {
-      Promise.resolve();
+      Promise.resolve().catch(console.error);
     }
     const apiCall = createApiCall(func, {
       settings: {
@@ -282,7 +273,7 @@ describe('createApiCall', () => {
           [1],
           initialBackoffSettings,
           undefined,
-          getResumptionRequestFn
+          getResumptionRequestFn,
         ),
       },
     });
@@ -294,13 +285,13 @@ describe('createApiCall', () => {
           retry: {
             backoffSettings: overriBackoffSettings,
           },
-        }
+        },
       );
     } catch (err) {
       assert(err instanceof Error);
       assert.strictEqual(
         err.message,
-        'Resumption strategy can only be used with server streaming retries'
+        'Resumption strategy can only be used with server streaming retries',
       );
     }
   });
@@ -313,7 +304,7 @@ describe('Promise', () => {
       argument: {},
       metadata: {},
       options: {deadline: string},
-      callback: Function
+      callback: Function,
     ) {
       deadlineArg = options.deadline;
       callback(null, 42);
@@ -418,7 +409,7 @@ describe('Promise', () => {
         assert.strictEqual(response, 42);
         done();
       }),
-      undefined
+      undefined,
     );
   });
 });
@@ -429,14 +420,14 @@ describe('retryable', () => {
     settings: {timeout: 0, retry: retryOptions, apiName: 'TestApi'},
   };
 
-  it('retries the API call', done => {
+  it('retries the API call', async () => {
     let toAttempt = 3;
     let deadlineArg: string;
     function func(
       argument: {},
       metadata: {},
       options: {deadline: string},
-      callback: Function
+      callback: Function,
     ) {
       deadlineArg = options.deadline;
       toAttempt--;
@@ -447,22 +438,21 @@ describe('retryable', () => {
       callback(null, 1729);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall({}, undefined, (err, resp) => {
+    await apiCall({}, undefined, (err, resp) => {
       assert.strictEqual(resp, 1729);
       assert.strictEqual(toAttempt, 0);
       assert(deadlineArg);
-      done();
     });
   });
 
-  it('retries the API call with promise', done => {
+  it('retries the API call with promise', async () => {
     let toAttempt = 3;
     let deadlineArg: string;
     function func(
       argument: {},
       metadata: {},
       options: {deadline: string},
-      callback: Function
+      callback: Function,
     ) {
       deadlineArg = options.deadline;
       toAttempt--;
@@ -473,15 +463,12 @@ describe('retryable', () => {
       callback(null, 1729);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall({}, undefined)
-      .then(resp => {
-        assert.ok(Array.isArray(resp));
-        assert.strictEqual(resp[0], 1729);
-        assert.strictEqual(toAttempt, 0);
-        assert.ok(deadlineArg);
-        done();
-      })
-      .catch(done);
+    await apiCall({}, undefined).then(resp => {
+      assert.ok(Array.isArray(resp));
+      assert.strictEqual(resp[0], 1729);
+      assert.strictEqual(toAttempt, 0);
+      assert.ok(deadlineArg);
+    });
   });
 
   it('cancels in the middle of retries', done => {
@@ -512,29 +499,27 @@ describe('retryable', () => {
       });
   });
 
-  it("doesn't retry if no codes", done => {
+  it("doesn't retry if no codes", async () => {
     const retryOptions = gax.createRetryOptions(
       [],
-      gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7)
+      gax.createBackoffSettings(1, 2, 3, 4, 5, 6, 7),
     );
     const settings = {settings: {timeout: 0, retry: retryOptions}};
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert.ok(err instanceof Error);
       assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
       assert.strictEqual(err!.note, undefined);
       assert.strictEqual(spy.callCount, 1);
-      done();
     });
   });
 
-  it('aborts retries', done => {
+  it('aborts retries', async () => {
     const apiCall = createApiCall(fail, settings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert(err instanceof GoogleError);
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-      done();
     });
   });
 
@@ -548,10 +533,10 @@ describe('retryable', () => {
       assert(err!.note);
       assert.strictEqual(spy.callCount, toAttempt);
       done();
-    });
+    }).catch(console.error);
   });
 
-  it('errors on maxRetries and surfaces original error', done => {
+  it('errors on maxRetries and surfaces original error', async () => {
     const toAttempt = 5;
     const backoff = gax.createMaxRetriesBackoffSettings(
       0,
@@ -560,7 +545,7 @@ describe('retryable', () => {
       0,
       0,
       0,
-      toAttempt
+      toAttempt,
     );
     const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
 
@@ -569,35 +554,33 @@ describe('retryable', () => {
     };
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert.ok(err instanceof GoogleError);
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
       assert.strictEqual(spy.callCount, toAttempt);
       assert.match(
         err.message,
-        /Exceeded maximum number of retries retrying error Error before any response was received/
+        /Exceeded maximum number of retries retrying error Error before any response was received/,
       );
-      done();
     });
   });
 
-  it('retry fails for exceeding total timeout, surfacing original error', done => {
+  it('retry fails for exceeding total timeout, surfacing original error', async () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert.ok(err instanceof GoogleError);
       assert.match(
         err.message,
-        /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error {2}before any response was received/
+        /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error {2}before any response was received/,
       );
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-      done();
     });
   });
 
   // maxRetries is unsupported, and intended for internal use only or
   // use with retry-request backwards compatibility
-  it('errors when totalTimeoutMillis and maxRetries set', done => {
+  it('errors when totalTimeoutMillis and maxRetries set', async () => {
     const maxRetries = 5;
     const backoff = gax.createMaxRetriesBackoffSettings(
       0,
@@ -606,7 +589,7 @@ describe('retryable', () => {
       0,
       0,
       0,
-      maxRetries
+      maxRetries,
     );
     const maxRetriesRetryOptions = utils.createRetryOptions(backoff);
     maxRetriesRetryOptions.backoffSettings.totalTimeoutMillis = 100;
@@ -615,15 +598,14 @@ describe('retryable', () => {
     };
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert(err instanceof GoogleError);
       assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
       assert.strictEqual(spy.callCount, 0);
-      done();
     });
   });
 
-  it('aborts on unexpected exception', done => {
+  it('aborts on unexpected exception', async () => {
     function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       const error = new GoogleError();
       error.code = FAKE_STATUS_CODE_2;
@@ -631,24 +613,22 @@ describe('retryable', () => {
     }
     const spy = sinon.spy(func);
     const apiCall = createApiCall(spy, settings);
-    apiCall({}, undefined, err => {
+    await apiCall({}, undefined, err => {
       assert(err instanceof Error);
       assert.strictEqual(err!.code, FAKE_STATUS_CODE_2);
       assert(err!.note);
       assert.strictEqual(spy.callCount, 1);
-      done();
     });
   });
 
-  it('does not retry even when no responses', done => {
+  it('does not retry even when no responses', async () => {
     function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, null);
     }
     const apiCall = createApiCall(func, settings);
-    apiCall({}, undefined, (err, resp) => {
+    await apiCall({}, undefined, (err, resp) => {
       assert.strictEqual(err, null);
       assert.strictEqual(resp, null);
-      done();
     });
   });
 
@@ -668,7 +648,7 @@ describe('retryable', () => {
       assert(err!.note);
       const now = new Date();
       assert(
-        now.getTime() - startTime.getTime() >= backoff.totalTimeoutMillis!
+        now.getTime() - startTime.getTime() >= backoff.totalTimeoutMillis!,
       );
       const callsLowerBound =
         backoff.totalTimeoutMillis! /
@@ -678,7 +658,7 @@ describe('retryable', () => {
       assert(spy.callCount > callsLowerBound);
       assert(spy.callCount < callsUpperBound);
       done();
-    });
+    }).catch(console.error);
   });
 
   it.skip('reports A/B testing', () => {
@@ -706,7 +686,7 @@ describe('retryable', () => {
           0,
           0,
           0,
-          5
+          5,
         );
         mockBuilder.withExactArgs({retry: '1'});
         return apiCall({}, {retry: utils.createRetryOptions(backoff)});
@@ -725,7 +705,7 @@ describe('retryable', () => {
       });
   });
 
-  it('forwards metadata to builder', done => {
+  it('forwards metadata to builder', async () => {
     function func(argument: {}, metadata: {}, options: {}, callback: Function) {
       callback(null, {});
     }
@@ -744,10 +724,9 @@ describe('retryable', () => {
       h1: 'val1',
       h2: 'val2',
     };
-    apiCall({}, {otherArgs: {headers}}).then(() => {
+    await apiCall({}, {otherArgs: {headers}}).then(() => {
       assert.strictEqual(gotHeaders.h1, 'val1');
       assert.strictEqual(gotHeaders.h2, 'val2');
-      done();
     });
   });
 });

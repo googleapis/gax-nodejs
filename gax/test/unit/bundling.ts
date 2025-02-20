@@ -17,7 +17,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-prototype-builtins */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 import {describe, it, beforeEach} from 'mocha';
@@ -107,7 +107,7 @@ describe('computeBundleId', () => {
       it(t.message, () => {
         assert.strictEqual(
           computeBundleId(t.object as unknown as RequestType, t.fields),
-          t.want
+          t.want,
         );
       });
     });
@@ -215,7 +215,7 @@ describe('Task', () => {
     task: any,
     elements: string[] | number[],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    callback?: any
+    callback?: any,
   ) {
     if (!callback) {
       callback = () => {};
@@ -256,7 +256,7 @@ describe('Task', () => {
           assert.strictEqual(
             task.getElementCount(),
             baseCount! + t.want,
-            t.message
+            t.message,
           );
         });
       });
@@ -271,7 +271,7 @@ describe('Task', () => {
           extendElements(task, t.data);
           assert.strictEqual(
             task.getRequestByteSize(),
-            baseSize! + t.want * sizePerData
+            baseSize! + t.want * sizePerData,
           );
         });
       });
@@ -511,7 +511,7 @@ describe('Executor', () => {
       'field1',
       ['field2'],
       'field1',
-      byteLength
+      byteLength,
     );
     return new BundleExecutor(options, descriptor);
   }
@@ -636,9 +636,9 @@ describe('Executor', () => {
               assert.deepStrictEqual(resp.field1, [3, 4]);
               assert.strictEqual(spyApi.callCount, 1);
               done();
-            }
+            },
           );
-        }
+        },
       );
       assert.strictEqual(spyApi.callCount, 0);
       canceller.cancel();
@@ -750,7 +750,7 @@ describe('Executor', () => {
         assert(err instanceof GoogleError);
         assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
         done();
-      }
+      },
     );
   });
 
@@ -787,7 +787,7 @@ describe('Executor', () => {
         assert(err instanceof GoogleError);
         assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
         done();
-      }
+      },
     );
   });
 
@@ -862,34 +862,31 @@ describe('bundleable', () => {
     'field1',
     ['field2'],
     'field1',
-    byteLength
+    byteLength,
   );
   const settings = {
     settings: {bundleOptions},
     descriptor,
   };
 
-  it('bundles requests', done => {
+  it('bundles requests', async () => {
     const spy = sinon.spy(func);
     const callback = sinon.spy(obj => {
       assert(Array.isArray(obj));
       assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
       if (callback.callCount === 2) {
         assert.strictEqual(spy.callCount, 1);
-        done();
       }
     });
     const apiCall = createApiCall(spy, settings);
-    apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback([obj]);
       }
     });
-    apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-      .then(callback)
-      .catch(done);
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined).then(callback);
   });
 
   it('does not fail if bundle field is not set', done => {
@@ -978,12 +975,12 @@ describe('bundleable', () => {
     p.cancel();
   });
 
-  it('properly processes camel case fields', done => {
+  it('properly processes camel case fields', async () => {
     const descriptor = new BundleDescriptor(
       'data',
       ['log_name'],
       'data',
-      byteLength
+      byteLength,
     );
     const settings = {
       settings: {bundleOptions},
@@ -993,34 +990,33 @@ describe('bundleable', () => {
     const callback = sinon.spy(() => {
       if (callback.callCount === 4) {
         assert.strictEqual(spy.callCount, 2); // we expect two requests, each has two items
-        done();
       }
     });
     const apiCall = createApiCall(spy, settings);
-    apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
+    await apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
     });
-    apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
+    await apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
     });
-    apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
+    await apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
     });
-    apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
+    await apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }

@@ -22,7 +22,7 @@
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {describe, it} from 'mocha';
 import * as gax from '../../src/gax';
 
@@ -76,7 +76,7 @@ function expectRetryOptions(obj: gax.RetryOptions) {
   assert.ok(obj instanceof Object);
   ['retryCodes', 'backoffSettings'].forEach(k =>
     // eslint-disable-next-line no-prototype-builtins
-    assert.ok(obj.hasOwnProperty(k))
+    assert.ok(obj.hasOwnProperty(k)),
   );
   assert.ok(Array.isArray(obj.retryCodes));
   expectBackoffSettings(obj.backoffSettings);
@@ -106,7 +106,7 @@ describe('gax construct settings', () => {
       A_CONFIG,
       {},
       RETRY_DICT,
-      otherArgs
+      otherArgs,
     );
     let settings = defaults.bundlingMethod;
     assert.strictEqual(settings.timeout, 40000);
@@ -137,7 +137,7 @@ describe('gax construct settings', () => {
       SERVICE_NAME,
       A_CONFIG,
       overrides,
-      RETRY_DICT
+      RETRY_DICT,
     );
     let settings = defaults.bundlingMethod;
     assert.strictEqual(settings.timeout, 40000);
@@ -179,7 +179,7 @@ describe('gax construct settings', () => {
       SERVICE_NAME,
       A_CONFIG,
       overrides,
-      RETRY_DICT
+      RETRY_DICT,
     );
 
     let settings = defaults.bundlingMethod;

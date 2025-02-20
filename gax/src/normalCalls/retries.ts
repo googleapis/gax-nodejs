@@ -46,7 +46,7 @@ export function retryable(
   func: GRPCCall,
   retry: RetryOptions,
   otherArgs: GRPCCallOtherArgs,
-  apiName?: string
+  apiName?: string,
 ): SimpleCallbackFunction {
   const delayMult = retry.backoffSettings.retryDelayMultiplier;
   const maxDelay = retry.backoffSettings.maxRetryDelayMillis;
@@ -86,7 +86,7 @@ export function retryable(
             retry.backoffSettings.totalTimeoutMillis
           } milliseconds ${
             err ? `retrying error ${err} ` : ''
-          } before any response was received.`
+          } before any response was received.`,
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -97,7 +97,7 @@ export function retryable(
         const error = new GoogleError(
           'Exceeded maximum number of retries ' +
             (err ? `retrying error ${err} ` : '') +
-            'before any response was received'
+            'before any response was received',
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -149,7 +149,7 @@ export function retryable(
     if (maxRetries && deadline!) {
       const error = new GoogleError(
         'Cannot set both totalTimeoutMillis and maxRetries ' +
-          'in backoffSettings.'
+          'in backoffSettings.',
       );
       error.code = Status.INVALID_ARGUMENT;
       callback(error);
