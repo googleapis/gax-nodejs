@@ -421,7 +421,7 @@ export function createApiCall(
     };
   }
   if (descriptor && 'streaming' in descriptor && !isNodeJS()) {
-    // TODO: with `fetch` this is available in the browser...
+    // TODO: with `fetch` this functionality is available in the browser...
     return () => {
       throw new Error(
         'Server streaming over the REST transport is only supported in Node.js.',

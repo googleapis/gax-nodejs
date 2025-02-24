@@ -17,7 +17,7 @@
 import * as grpcProtoLoader from '@grpc/proto-loader';
 import {execFile} from 'child_process';
 import * as fs from 'fs';
-import {AuthClient, GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+import {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 import * as grpc from '@grpc/grpc-js';
 import * as os from 'os';
 import {join} from 'path';
@@ -44,8 +44,8 @@ const COMMON_PROTO_FILES: string[] = commonProtoFiles.map(file =>
   file.replace(/[/\\]/g, path.sep),
 );
 
-export interface GrpcClientOptions extends GoogleAuthOptions<AuthClient> {
-  auth?: GoogleAuth<AuthClient>;
+export interface GrpcClientOptions extends GoogleAuthOptions {
+  auth?: GoogleAuth;
   grpc?: GrpcModule;
   minifyJson?: boolean;
   protoJson?: protobuf.Root;
@@ -114,7 +114,7 @@ export class ClientStub extends grpc.Client {
 }
 
 export class GrpcClient {
-  auth: GoogleAuth<AuthClient>;
+  auth: GoogleAuth;
   grpc: GrpcModule;
   grpcVersion: string;
   fallback: boolean | 'rest' | 'proto';

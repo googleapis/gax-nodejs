@@ -83,7 +83,7 @@ export function generateServiceStub(
   protocol: string,
   servicePath: string,
   servicePort: number,
-  auth: GoogleAuth<AuthClient> | AuthClient,
+  auth: GoogleAuth | AuthClient,
   requestEncoder: (
     rpc: protobuf.Method,
     protocol: string,
