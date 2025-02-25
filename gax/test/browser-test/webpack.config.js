@@ -31,6 +31,9 @@ module.exports = {
       https: require.resolve('https-browserify'),
       querystring: require.resolve('querystring-es3'),
       url: require.resolve('url/'),
+      worker_threads: 'empty',
+      crypto: require.resolve('crypto'),
+      'process/browser': 'empty',
     },
   },
   plugins: [
@@ -39,6 +42,9 @@ module.exports = {
     }),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer'],
+    }),
+    new webpack.ProvidePlugin({
+      'node:buffer': ['buffer', 'Buffer'],
     }),
   ],
   module: {
