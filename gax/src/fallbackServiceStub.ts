@@ -23,7 +23,7 @@ import type {
 } from 'node-fetch' with {'resolution-mode': 'import'};
 import {AbortController as NodeAbortController} from 'abort-controller';
 
-import {AuthClient, GoogleAuth} from 'google-auth-library';
+import {AuthClient, GoogleAuth, gaxios} from 'google-auth-library';
 
 import type nodeFetch from 'node-fetch' with {'resolution-mode': 'import'};
 import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
@@ -161,10 +161,7 @@ export function generateServiceStub(
         .getRequestHeaders()
         .then(authHeader => {
           const fetchRequest: RequestInit = {
-            headers: {
-              ...authHeader,
-              ...headers,
-            },
+            headers: gaxios.Gaxios.mergeHeaders(authHeader, headers) as {},
             body: fetchParameters.body as string | Buffer | undefined,
             method: fetchParameters.method,
             signal: cancelSignal,
