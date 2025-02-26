@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import execa from 'execa';
+const {spawn} = require('child_process');
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
@@ -43,16 +43,16 @@ const toolsTarball = path.join(gaxDir, toolsBasename);
 
 async function latestRelease(
   cwd: string,
-  inMonorepo: boolean,
+  inMonorepo: boolean
 ): Promise<string> {
   // tags in the monorepo follow the format <libraryname>-major.minor.patch e.g. batch-0.0.1
   // or the format <libraryname>-vmajor.minor.patch e.g. batch-v0.0.1
   // tags in individual repos follow the format vmajor.minor.patch e.g. v0.0.1
   const {stdout} = inMonorepo
-    ? await execa('git', ['tag', '--list', `${cwd}-*`], {
+    ? await spawn('git', ['tag', '--list', `${cwd}-*`], {
         cwd: monoRepoDirectory,
       })
-    : await execa('git', ['tag', '--list'], {cwd});
+    : await spawn('git', ['tag', '--list'], {cwd});
   // regex escape characters in template literal need to be escaped twice
   const filterPattern = inMonorepo
     ? new RegExp(`^${cwd}-v{0,1}(\\d+)\\.(\\d)+\\.(\\d+)$`)
@@ -84,12 +84,12 @@ async function latestRelease(
 function monoRepoPackageSubdirectory(packageName: string): string {
   return `${monoRepoDirectory}/packages/google-cloud-${packageName.replace(
     '-',
-    '',
+    ''
   )}`;
 }
 async function preparePackage(
   packageName: string,
-  inMonorepo: boolean,
+  inMonorepo: boolean
 ): Promise<void> {
   // clone googleapis/google-cloud node if monorepo, googleapis/nodejs-<package> if not
   const repoUrl = inMonorepo
@@ -98,10 +98,10 @@ async function preparePackage(
   // only clone a repo if we haven't done so already
   if (!clonedRepos.includes(repoUrl)) {
     try {
-      await execa(
+      await spawn(
         'git',
         ['clone', repoUrl, inMonorepo ? monoRepoDirectory : packageName],
-        {stdio: 'inherit'},
+        {stdio: 'inherit'}
       );
       clonedRepos.push(repoUrl);
     } catch (error: unknown) {
@@ -110,7 +110,7 @@ async function preparePackage(
   }
 
   const tag = await latestRelease(packageName, inMonorepo);
-  await execa('git', ['checkout', tag], {
+  await spawn('git', ['checkout', tag], {
     cwd: inMonorepo ? monoRepoDirectory : packageName,
     stdio: 'inherit',
   });
@@ -118,14 +118,14 @@ async function preparePackage(
   const packagePath = monoRepoPackageSubdirectory(packageName); // used if in monoRepo
   const packageJson = path.join(
     inMonorepo ? packagePath : packageName,
-    'package.json',
+    'package.json'
   );
   const packageJsonStr = (await readFile(packageJson)).toString();
   const packageJsonObj = JSON.parse(packageJsonStr);
   packageJsonObj['dependencies']['google-gax'] = `file:${gaxTarball}`;
   packageJsonObj['devDependencies']['gapic-tools'] = `file:${toolsTarball}`;
   await writeFile(packageJson, JSON.stringify(packageJsonObj, null, '  '));
-  await execa('npm', ['install'], {
+  await spawn('npm', ['install'], {
     cwd: inMonorepo ? packagePath : packageName,
     stdio: 'inherit',
   });
@@ -140,10 +140,10 @@ enum TestResult {
 async function runScript(
   packageName: string,
   inMonorepo: boolean,
-  script: string,
+  script: string
 ): Promise<TestResult> {
   try {
-    await execa('npm', ['run', script], {
+    await spawn('npm', ['run', script], {
       cwd: inMonorepo ? monoRepoPackageSubdirectory(packageName) : packageName,
       stdio: 'inherit',
     });
@@ -168,22 +168,22 @@ async function runSystemTest(
 describe('Run system tests for some libraries', () => {
   before(async () => {
     console.log('Packing google-gax...');
-    await execa('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
+    await spawn('npm', ['pack'], {cwd: gaxDir, stdio: 'inherit'});
     if (!fs.existsSync(gaxTarball)) {
       throw new Error(`npm pack tarball ${gaxTarball} does not exist`);
     }
     console.log('Packing gapic-tools...');
-    await execa('npm', ['install'], {
+    await spawn('npm', ['install'], {
       cwd: path.join(gaxDir, '..', 'tools'),
       stdio: 'inherit',
     });
-    await execa('npm', ['pack'], {
+    await spawn('npm', ['pack'], {
       cwd: path.join(gaxDir, '..', 'tools'),
       stdio: 'inherit',
     });
     await fs.promises.rename(
       path.join(gaxDir, '..', 'tools', toolsBasename),
-      toolsTarball,
+      toolsTarball
     );
     if (!fs.existsSync(toolsTarball)) {
       throw new Error(`npm pack tarball ${toolsTarball} does not exist`);
