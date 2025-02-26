@@ -102,7 +102,7 @@ describe('PathTemplate', () => {
       const want = {$0: 'hello%2F%2Bworld'};
       assert.deepStrictEqual(
         template.match('buckets/hello%2F%2Bworld/objects'),
-        want
+        want,
       );
     });
 
@@ -111,7 +111,7 @@ describe('PathTemplate', () => {
       const want = {$0: 'foo', $1: 'bar/baz'};
       assert.deepStrictEqual(
         template.match('buckets/foo/objects/bar/baz'),
-        want
+        want,
       );
     });
 
@@ -123,7 +123,7 @@ describe('PathTemplate', () => {
 
     it('should match template with non-slash resource patterns', () => {
       const template = new PathTemplate(
-        'user/{user_id}/blurbs/legacy/{blurb_a}-{blurb_b}~{legacy_user}'
+        'user/{user_id}/blurbs/legacy/{blurb_a}-{blurb_b}~{legacy_user}',
       );
       const want = {
         user_id: 'foo',
@@ -133,13 +133,13 @@ describe('PathTemplate', () => {
       };
       assert.deepStrictEqual(
         template.match('user/foo/blurbs/legacy/bara-barb~user'),
-        want
+        want,
       );
     });
 
     it('should not match template with malformed non-slash resource patterns', () => {
       const template = new PathTemplate(
-        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}'
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}',
       );
       assert.throws(() => {
         template.match('user/foo/blurbs/legacy/bar~user2');
@@ -161,7 +161,7 @@ describe('PathTemplate', () => {
     });
     it('should render atomic resource', () => {
       const template = new PathTemplate(
-        'projects/{project}/metricDescriptors/{metric_descriptor=**}'
+        'projects/{project}/metricDescriptors/{metric_descriptor=**}',
       );
       const params = {
         project: 'project-name',
@@ -203,7 +203,7 @@ describe('PathTemplate', () => {
 
     it('should accept both strings and numbers as values', () => {
       const template = new PathTemplate(
-        'projects/{project}/sessions/{session}'
+        'projects/{project}/sessions/{session}',
       );
       const params = {
         project: 'testProject',
@@ -215,7 +215,7 @@ describe('PathTemplate', () => {
 
     it('should render non-slash resource', () => {
       const template = new PathTemplate(
-        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}/project/{project}'
+        'user/{user_id}/blurbs/legacy/{blurb_id}.{legacy_user}/project/{project}',
       );
       const params = {
         user_id: 'foo',

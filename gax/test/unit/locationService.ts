@@ -27,7 +27,7 @@ function generateSampleMessage<T extends object>(instance: T) {
     instance.constructor as typeof protobuf.Message
   ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject
+    filledObject,
   ) as T;
 }
 
@@ -39,7 +39,7 @@ function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
 
 function stubSimpleCallWithCallback<ResponseType>(
   response?: ResponseType,
-  error?: Error
+  error?: Error,
 ) {
   return error
     ? sinon.stub().callsArgWith(2, error)
@@ -48,7 +48,7 @@ function stubSimpleCallWithCallback<ResponseType>(
 
 function stubAsyncIterationCall<ResponseType>(
   responses?: ResponseType[],
-  error?: Error
+  error?: Error,
 ) {
   let counter = 0;
   const asyncIterable = {
@@ -79,7 +79,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.GetLocationRequest()
+        new protos.google.cloud.location.GetLocationRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -91,7 +91,7 @@ describe('LocationsClient', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.cloud.location.Location()
+        new protos.google.cloud.location.Location(),
       );
       client.innerApiCalls.getLocation = stubSimpleCall(expectedResponse);
       const response = await client.getLocation(request, expectedOptions);
@@ -99,7 +99,7 @@ describe('LocationsClient', () => {
       assert(
         (client.innerApiCalls.getLocation as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
+          .calledWith(request, expectedOptions, undefined),
       );
     });
 
@@ -111,7 +111,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.GetLocationRequest()
+        new protos.google.cloud.location.GetLocationRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -123,7 +123,7 @@ describe('LocationsClient', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.cloud.location.Location()
+        new protos.google.cloud.location.Location(),
       );
       client.innerApiCalls.getLocation =
         stubSimpleCallWithCallback(expectedResponse);
@@ -133,14 +133,14 @@ describe('LocationsClient', () => {
             request,
             (
               err?: Error | null,
-              result?: protos.google.cloud.location.ILocation | null
+              result?: protos.google.cloud.location.ILocation | null,
             ) => {
               if (err) {
                 reject(err);
               } else {
                 resolve(result);
               }
-            }
+            },
           )
           .catch(console.error);
       });
@@ -149,7 +149,7 @@ describe('LocationsClient', () => {
       assert(
         (client.innerApiCalls.getLocation as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
+          .calledWith(request, expectedOptions /*, callback defined above */),
       );
     });
 
@@ -160,7 +160,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.GetLocationRequest()
+        new protos.google.cloud.location.GetLocationRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -174,16 +174,16 @@ describe('LocationsClient', () => {
       const expectedError = new Error('expected');
       client.innerApiCalls.getLocation = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.getLocation(request, expectedOptions),
-        expectedError
+        expectedError,
       );
       assert(
         (client.innerApiCalls.getLocation as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
+          .calledWith(request, expectedOptions, undefined),
       );
     });
   });
@@ -197,7 +197,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.ListLocationsRequest()
+        new protos.google.cloud.location.ListLocationsRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -219,7 +219,7 @@ describe('LocationsClient', () => {
       assert(
         (client.innerApiCalls.listLocations as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
+          .calledWith(request, expectedOptions, undefined),
       );
     });
 
@@ -231,7 +231,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.ListLocationsRequest()
+        new protos.google.cloud.location.ListLocationsRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -254,14 +254,14 @@ describe('LocationsClient', () => {
           request,
           (
             err?: Error | null,
-            result?: protos.google.cloud.location.ILocation[] | null
+            result?: protos.google.cloud.location.ILocation[] | null,
           ) => {
             if (err) {
               reject(err);
             } else {
               resolve(result);
             }
-          }
+          },
         );
       });
       const response = await promise;
@@ -269,7 +269,7 @@ describe('LocationsClient', () => {
       assert(
         (client.innerApiCalls.listLocations as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions /*, callback defined above */)
+          .calledWith(request, expectedOptions /*, callback defined above */),
       );
     });
 
@@ -281,7 +281,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.ListLocationsRequest()
+        new protos.google.cloud.location.ListLocationsRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -295,16 +295,16 @@ describe('LocationsClient', () => {
       const expectedError = new Error('expected');
       client.innerApiCalls.listLocations = stubSimpleCall(
         undefined,
-        expectedError
+        expectedError,
       );
       await assert.rejects(
         client.listLocations(request, expectedOptions),
-        expectedError
+        expectedError,
       );
       assert(
         (client.innerApiCalls.listLocations as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined)
+          .calledWith(request, expectedOptions, undefined),
       );
     });
 
@@ -316,7 +316,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.ListLocationsRequest()
+        new protos.google.cloud.location.ListLocationsRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -337,13 +337,13 @@ describe('LocationsClient', () => {
         (
           client.descriptors.page.listLocations.asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert.strictEqual(
         (
           client.descriptors.page.listLocations.asyncIterate as SinonStub
         ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+        expectedHeaderRequestParams,
       );
     });
 
@@ -355,7 +355,7 @@ describe('LocationsClient', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.cloud.location.ListLocationsRequest()
+        new protos.google.cloud.location.ListLocationsRequest(),
       );
       request.name = '';
       const expectedHeaderRequestParams = 'name=';
@@ -373,13 +373,13 @@ describe('LocationsClient', () => {
         (
           client.descriptors.page.listLocations.asyncIterate as SinonStub
         ).getCall(0).args[1],
-        request
+        request,
       );
       assert.strictEqual(
         (
           client.descriptors.page.listLocations.asyncIterate as SinonStub
         ).getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-        expectedHeaderRequestParams
+        expectedHeaderRequestParams,
       );
     });
   });

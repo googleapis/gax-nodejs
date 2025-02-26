@@ -38,7 +38,7 @@ export class NormalApiCaller implements APICaller {
     apiCall: SimpleCallbackFunction,
     argument: {},
     settings: {},
-    canceller: OngoingCallPromise
+    canceller: OngoingCallPromise,
   ): void {
     canceller.call(apiCall, argument);
   }

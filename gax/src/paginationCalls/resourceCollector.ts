@@ -45,7 +45,7 @@ export class ResourceCollector {
   private callback(
     err: Error | null,
     resources: Array<{}>,
-    nextPageRequest: NextPageRequestType
+    nextPageRequest: NextPageRequestType,
   ) {
     if (err) {
       // Something went wrong with this request - failing everything

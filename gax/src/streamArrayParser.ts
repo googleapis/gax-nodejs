@@ -75,9 +75,9 @@ export class StreamArrayParser extends Transform {
           'error',
           new Error(
             `Internal Error: API service stream data must start with a '[' and close with the corresponding ']', but it start with ${String.fromCharCode(
-              chunk[0]
-            )}`
-          )
+              chunk[0],
+            )}`,
+          ),
         );
       }
       curIndex++;

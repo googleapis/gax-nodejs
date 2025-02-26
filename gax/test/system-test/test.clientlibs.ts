@@ -43,7 +43,7 @@ const toolsTarball = path.join(gaxDir, toolsBasename);
 
 async function latestRelease(
   cwd: string,
-  inMonorepo: boolean
+  inMonorepo: boolean,
 ): Promise<string> {
   // tags in the monorepo follow the format <libraryname>-major.minor.patch e.g. batch-0.0.1
   // or the format <libraryname>-vmajor.minor.patch e.g. batch-v0.0.1
@@ -84,12 +84,12 @@ async function latestRelease(
 function monoRepoPackageSubdirectory(packageName: string): string {
   return `${monoRepoDirectory}/packages/google-cloud-${packageName.replace(
     '-',
-    ''
+    '',
   )}`;
 }
 async function preparePackage(
   packageName: string,
-  inMonorepo: boolean
+  inMonorepo: boolean,
 ): Promise<void> {
   // clone googleapis/google-cloud node if monorepo, googleapis/nodejs-<package> if not
   const repoUrl = inMonorepo
@@ -101,7 +101,7 @@ async function preparePackage(
       await spawn(
         'git',
         ['clone', repoUrl, inMonorepo ? monoRepoDirectory : packageName],
-        {stdio: 'inherit'}
+        {stdio: 'inherit'},
       );
       clonedRepos.push(repoUrl);
     } catch (error: unknown) {
@@ -118,7 +118,7 @@ async function preparePackage(
   const packagePath = monoRepoPackageSubdirectory(packageName); // used if in monoRepo
   const packageJson = path.join(
     inMonorepo ? packagePath : packageName,
-    'package.json'
+    'package.json',
   );
   const packageJsonStr = (await readFile(packageJson)).toString();
   const packageJsonObj = JSON.parse(packageJsonStr);
@@ -140,7 +140,7 @@ enum TestResult {
 async function runScript(
   packageName: string,
   inMonorepo: boolean,
-  script: string
+  script: string,
 ): Promise<TestResult> {
   try {
     await spawn('npm', ['run', script], {
@@ -160,7 +160,7 @@ async function runScript(
 
 async function runSystemTest(
   packageName: string,
-  inMonorepo: boolean
+  inMonorepo: boolean,
 ): Promise<TestResult> {
   return await runScript(packageName, inMonorepo, 'system-test');
 }
@@ -183,7 +183,7 @@ describe('Run system tests for some libraries', () => {
     });
     await fs.promises.rename(
       path.join(gaxDir, '..', 'tools', toolsBasename),
-      toolsTarball
+      toolsTarball,
     );
     if (!fs.existsSync(toolsTarball)) {
       throw new Error(`npm pack tarball ${toolsTarball} does not exist`);

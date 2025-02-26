@@ -80,7 +80,7 @@ describe('REGAPIC', () => {
       '..',
       'test',
       'fixtures',
-      'library.json'
+      'library.json',
     );
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     libProtos = gaxGrpc.loadProtoJSON(require(TEST_JSON));
@@ -113,7 +113,7 @@ describe('REGAPIC', () => {
           assert.strictEqual(err, null);
           assert.strictEqual(
             requestObject.content,
-            (result as {content: string}).content
+            (result as {content: string}).content,
           );
         });
       });
@@ -145,7 +145,7 @@ describe('REGAPIC', () => {
         requestObject,
         {},
         {},
-        () => {}
+        () => {},
       ) as StreamArrayParser;
       const results: {}[] = [];
       stream.on('data', (data: {}) => {
@@ -215,7 +215,7 @@ describe('REGAPIC', () => {
             ok: true,
             arrayBuffer: () => {
               return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject))
+                Buffer.from(JSON.stringify(responseObject)),
               );
             },
           });
@@ -233,11 +233,11 @@ describe('REGAPIC', () => {
             assert.strictEqual(err, null);
             assert.strictEqual(
               'shelf-name',
-              (result as {name: {}; theme: {}; type: {}}).name
+              (result as {name: {}; theme: {}; type: {}}).name,
             );
             assert.strictEqual(
               'TYPEONE',
-              (result as {name: {}; theme: {}; type: {}}).type
+              (result as {name: {}; theme: {}; type: {}}).type,
             );
           });
         });
@@ -325,7 +325,7 @@ describe('REGAPIC', () => {
             ok: true,
             arrayBuffer: () => {
               return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject))
+                Buffer.from(JSON.stringify(responseObject)),
               );
             },
           });
@@ -344,16 +344,16 @@ describe('REGAPIC', () => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+              '$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
             assert.strictEqual(
               'shelf-name',
-              (result as {name: {}; theme: {}; type: {}}).name
+              (result as {name: {}; theme: {}; type: {}}).name,
             );
             assert.strictEqual(
               100,
-              (result as {name: {}; theme: {}; type: {}}).type
+              (result as {name: {}; theme: {}; type: {}}).type,
             );
           });
         });
@@ -390,7 +390,7 @@ describe('REGAPIC', () => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+              '$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
           });
@@ -431,7 +431,7 @@ describe('REGAPIC', () => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int'
+              'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
           });
@@ -469,7 +469,7 @@ describe('REGAPIC', () => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int'
+              '$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
           });
@@ -494,7 +494,7 @@ describe('REGAPIC', () => {
             ok: true,
             arrayBuffer: () => {
               return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject))
+                Buffer.from(JSON.stringify(responseObject)),
               );
             },
           });
@@ -517,7 +517,7 @@ describe('REGAPIC', () => {
                   read: false;
                   bookId: {};
                 }
-              ).name
+              ).name,
             );
             assert.strictEqual(
               '9007199254740992',
@@ -529,7 +529,7 @@ describe('REGAPIC', () => {
                   read: false;
                   bookId: {};
                 }
-              ).bookId
+              ).bookId,
             );
           });
         });
@@ -551,7 +551,7 @@ describe('REGAPIC', () => {
             ok: true,
             arrayBuffer: () => {
               return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject))
+                Buffer.from(JSON.stringify(responseObject)),
               );
             },
           });
@@ -574,7 +574,7 @@ describe('REGAPIC', () => {
                   read: false;
                   bookId: {};
                 }
-              ).name
+              ).name,
             );
             assert.strictEqual(
               '42',
@@ -586,7 +586,7 @@ describe('REGAPIC', () => {
                   read: false;
                   bookId: {};
                 }
-              ).bookId
+              ).bookId,
             );
           });
         });
@@ -610,7 +610,7 @@ describe('REGAPIC', () => {
             ok: true,
             arrayBuffer: () => {
               return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject))
+                Buffer.from(JSON.stringify(responseObject)),
               );
             },
           });
@@ -633,7 +633,7 @@ describe('REGAPIC', () => {
                   read: false;
                   bookId: {};
                 }
-              ).name
+              ).name,
             );
             assert.strictEqual(
               bookId.toString(),
@@ -645,7 +645,7 @@ describe('REGAPIC', () => {
                   read: false;
                   bookId: {};
                 }
-              ).bookId
+              ).bookId,
             );
           });
         });

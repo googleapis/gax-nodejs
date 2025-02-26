@@ -100,7 +100,7 @@ export class LocationsClient {
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    opts: ClientOptions
+    opts: ClientOptions,
   ) {
     // Ensure that options include all the required fields.
     this.gaxGrpc = gaxGrpc;
@@ -158,7 +158,7 @@ export class LocationsClient {
       listLocations: new PageDescriptor(
         'pageToken',
         'nextPageToken',
-        'locations'
+        'locations',
       ),
     };
 
@@ -167,7 +167,7 @@ export class LocationsClient {
       'google.cloud.location.Locations',
       gapicConfig as gax.ClientConfig,
       opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -201,12 +201,12 @@ export class LocationsClient {
     this.locationsStub = this.gaxGrpc.createStub(
       this._opts.fallback
         ? (this._protos as protobuf.Root).lookupService(
-            'google.cloud.location.Locations'
+            'google.cloud.location.Locations',
           )
         : // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.cloud.location.Locations,
       this._opts,
-      this._providedCustomServicePath
+      this._providedCustomServicePath,
     ) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
@@ -224,14 +224,14 @@ export class LocationsClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
 
       const descriptor = this.descriptors.page[methodName] || undefined;
       const apiCall = createApiCall(
         callPromise,
         this._defaults[methodName],
-        descriptor
+        descriptor,
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -281,7 +281,7 @@ export class LocationsClient {
   getProjectId(): Promise<string>;
   getProjectId(callback: Callback<string, undefined, undefined>): void;
   getProjectId(
-    callback?: Callback<string, undefined, undefined>
+    callback?: Callback<string, undefined, undefined>,
   ): Promise<string> | void {
     if (callback) {
       this.auth.getProjectId(callback);
@@ -295,7 +295,7 @@ export class LocationsClient {
   // -------------------
   getLocation(
     request?: protos.google.cloud.location.IGetLocationRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): Promise<protos.google.cloud.location.ILocation>;
   getLocation(
     request: protos.google.cloud.location.IGetLocationRequest,
@@ -304,7 +304,7 @@ export class LocationsClient {
       protos.google.cloud.location.ILocation,
       protos.google.cloud.location.IGetLocationRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getLocation(
     request: protos.google.cloud.location.IGetLocationRequest,
@@ -312,7 +312,7 @@ export class LocationsClient {
       protos.google.cloud.location.ILocation,
       protos.google.cloud.location.IGetLocationRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   /**
    * Gets information about a location.
@@ -344,7 +344,7 @@ export class LocationsClient {
       protos.google.cloud.location.ILocation,
       protos.google.cloud.location.IGetLocationRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<protos.google.cloud.location.ILocation> {
     request = request || {};
     let options: gax.CallOptions;
@@ -367,7 +367,7 @@ export class LocationsClient {
 
   listLocations(
     request?: protos.google.cloud.location.IListLocationsRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): Promise<
     [
       protos.google.cloud.location.ILocation[],
@@ -382,7 +382,7 @@ export class LocationsClient {
       protos.google.cloud.location.IListLocationsRequest,
       protos.google.cloud.location.IListLocationsResponse | null | undefined,
       protos.google.cloud.location.ILocation
-    >
+    >,
   ): void;
   listLocations(
     request: protos.google.cloud.location.IListLocationsRequest,
@@ -390,7 +390,7 @@ export class LocationsClient {
       protos.google.cloud.location.IListLocationsRequest,
       protos.google.cloud.location.IListLocationsResponse | null | undefined,
       protos.google.cloud.location.ILocation
-    >
+    >,
   ): void;
   /**
    * Lists information about the supported locations for this service.
@@ -433,7 +433,7 @@ export class LocationsClient {
       protos.google.cloud.location.IListLocationsRequest,
       protos.google.cloud.location.IListLocationsResponse | null | undefined,
       protos.google.cloud.location.ILocation
-    >
+    >,
   ): Promise<
     [
       protos.google.cloud.location.ILocation[],
@@ -492,7 +492,7 @@ export class LocationsClient {
    */
   listLocationsAsync(
     request: protos.google.cloud.location.IListLocationsRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): AsyncIterable<protos.google.cloud.location.ILocation> {
     request = request || {};
     options = options || {};
@@ -508,7 +508,7 @@ export class LocationsClient {
     return this.descriptors.page.listLocations.asyncIterate(
       this.innerApiCalls['listLocations'] as GaxCall,
       request as unknown as RequestType,
-      callSettings
+      callSettings,
     ) as AsyncIterable<protos.google.cloud.location.ILocation>;
   }
 
@@ -545,11 +545,11 @@ export interface LocationsClient {
       protos.google.cloud.location.ILocation,
       protos.google.cloud.location.IGetLocationRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<protos.google.cloud.location.ILocation>;
 
   listLocationsAsync(
     request: protos.google.cloud.location.IListLocationsRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): AsyncIterable<protos.google.cloud.location.ILocation>;
 }

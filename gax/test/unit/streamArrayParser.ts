@@ -102,7 +102,7 @@ describe('Parse REST stream array', () => {
       },
     ];
     const inStream = createRandomChunkReadableStream(
-      JSON.stringify(expectedResults)
+      JSON.stringify(expectedResults),
     );
     inStream.on('data', d => {
       assert.notEqual(d, undefined);
@@ -125,7 +125,7 @@ describe('Parse REST stream array', () => {
         const expect = toProtobufJSON(User, expectedResults[key]);
         assert.strictEqual(
           JSON.stringify(results[key]),
-          JSON.stringify(expect)
+          JSON.stringify(expect),
         );
       }
       done();
@@ -143,7 +143,7 @@ describe('Parse REST stream array', () => {
       },
     ];
     const inStream = createRandomChunkReadableStream(
-      JSON.stringify(expectedResults)
+      JSON.stringify(expectedResults),
     );
     const streamArrayParser = new StreamArrayParser(streamMethod);
     pipeline(inStream, streamArrayParser, err => {
@@ -165,7 +165,7 @@ describe('Parse REST stream array', () => {
   it("should listen on error if input stream is not start '['", done => {
     const expectedResults = {};
     const inStream = createRandomChunkReadableStream(
-      JSON.stringify(expectedResults)
+      JSON.stringify(expectedResults),
     );
     const streamArrayParser = new StreamArrayParser(streamMethod);
     pipeline(inStream, streamArrayParser, err => {
