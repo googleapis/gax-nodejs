@@ -49,7 +49,7 @@ export class PageDescriptor implements Descriptor {
   constructor(
     requestPageTokenField: string,
     responsePageTokenField: string,
-    resourceField: string,
+    resourceField: string
   ) {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
@@ -62,13 +62,13 @@ export class PageDescriptor implements Descriptor {
   createStream(
     apiCall: GaxCall,
     request: {},
-    options: CallSettings,
+    options: CallSettings
   ): Transform {
     if (options?.autoPaginate) {
       warn(
         'autoPaginate true',
         'Autopaginate will always be set to false in stream paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
-        'AutopaginateTrueWarning',
+        'AutopaginateTrueWarning'
       );
     }
     const stream = new PassThrough({objectMode: true});
@@ -80,7 +80,7 @@ export class PageDescriptor implements Descriptor {
       err: Error | null,
       resources: Array<ResponseType>,
       next: NextPageRequestType,
-      apiResp: RawResponseType,
+      apiResp: RawResponseType
     ) {
       if (err) {
         stream.emit('error', err);
@@ -143,13 +143,13 @@ export class PageDescriptor implements Descriptor {
   asyncIterate(
     apiCall: GaxCall,
     request: RequestType,
-    options?: CallSettings,
+    options?: CallSettings
   ): AsyncIterable<{} | undefined> {
     if (options?.autoPaginate) {
       warn(
         'autoPaginate true',
         'Autopaginate will always be set to false in Async paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
-        'AutopaginateTrueWarning',
+        'AutopaginateTrueWarning'
       );
     }
     options = Object.assign({}, options, {autoPaginate: false});
@@ -160,7 +160,7 @@ export class PageDescriptor implements Descriptor {
   createIterator(
     apiCall: GaxCall,
     request: RequestType,
-    options: CallSettings,
+    options: CallSettings
   ): AsyncIterable<{} | undefined> {
     const asyncIterable = {
       [Symbol.asyncIterator]() {
@@ -179,7 +179,7 @@ export class PageDescriptor implements Descriptor {
               let result: {} | [ResponseType] | null;
               [result, nextPageRequest] = (await apiCall(
                 nextPageRequest!,
-                options,
+                options
               )) as ResultTuple;
               // For pagination response with protobuf map type, use tuple as representation.
               if (result && !Array.isArray(result)) {

@@ -34,7 +34,7 @@ describe('gRPC-google error decoding', () => {
     __dirname,
     '..',
     'fixtures',
-    'multipleErrors.json',
+    'multipleErrors.json'
   );
   const protos_path = path.resolve(
     __dirname,
@@ -42,7 +42,7 @@ describe('gRPC-google error decoding', () => {
     '..',
     'protos',
     'google',
-    'rpc',
+    'rpc'
   );
   const root = protobuf.loadSync([
     path.join(protos_path, 'error_details.proto'),
@@ -72,17 +72,17 @@ describe('gRPC-google error decoding', () => {
     const Status = root.lookupType('google.rpc.Status');
     const statusBuffer = Status.encode(status).finish() as Buffer;
     const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails(
-      new Array(statusBuffer),
+      new Array(statusBuffer)
     );
     assert.strictEqual(
       JSON.stringify(expectedErrorArr),
-      JSON.stringify(gRPCStatusDetailsObj.details),
+      JSON.stringify(gRPCStatusDetailsObj.details)
     );
     assert.deepStrictEqual(
       JSON.stringify(gRPCStatusDetailsObj.errorInfo),
       JSON.stringify(
-        objs.find(item => item.type === 'google.rpc.ErrorInfo')?.value,
-      ),
+        objs.find(item => item.type === 'google.rpc.ErrorInfo')?.value
+      )
     );
   });
 
@@ -96,7 +96,7 @@ describe('gRPC-google error decoding', () => {
     // nested error messages have different types so we can't use deepStrictEqual here
     assert.strictEqual(
       JSON.stringify(gRPCStatusDetailsObj.details),
-      JSON.stringify([]),
+      JSON.stringify([])
     );
     assert.strictEqual(gRPCStatusDetailsObj.errorInfo, undefined);
   });
@@ -112,7 +112,7 @@ describe('gRPC-google error decoding', () => {
 
     assert.strictEqual(
       JSON.stringify(decodedError),
-      '{"code":3,"message":"test","statusDetails":[]}',
+      '{"code":3,"message":"test","statusDetails":[]}'
     );
   });
 
@@ -129,7 +129,7 @@ describe('gRPC-google error decoding', () => {
 
     assert.strictEqual(
       JSON.stringify(gRPCStatusDetailsObj.details),
-      JSON.stringify([]),
+      JSON.stringify([])
     );
   });
 
@@ -146,7 +146,7 @@ describe('gRPC-google error decoding', () => {
         0,
         err
           .toString()
-          .indexOf('Error: Unknown type encoded in google.protobuf.any:'),
+          .indexOf('Error: Unknown type encoded in google.protobuf.any:')
       );
     }
   });
@@ -197,7 +197,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
       {
         code: 7,
         metadata: metadata,
-      },
+      }
     );
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
@@ -205,7 +205,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
     assert.strictEqual(
       JSON.stringify(decodedError.errorInfoMetadata),
-      JSON.stringify(errorInfoObj.metadata),
+      JSON.stringify(errorInfoObj.metadata)
     );
   });
 
@@ -233,19 +233,19 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
       {
         code: 7,
         metadata: metadata,
-      },
+      }
     );
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
     assert.strictEqual(
       JSON.stringify(decodedError.statusDetails),
-      JSON.stringify([errorInfoObj]),
+      JSON.stringify([errorInfoObj])
     );
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
     assert.strictEqual(
       JSON.stringify(decodedError.errorInfoMetadata),
-      JSON.stringify(errorInfoObj.metadata),
+      JSON.stringify(errorInfoObj.metadata)
     );
   });
 
@@ -257,7 +257,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
       {
         code: 7,
         metadata: metadata,
-      },
+      }
     );
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
@@ -269,7 +269,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
       new GoogleError('mock error without metadata'),
       {
         code: 7,
-      },
+      }
     );
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
@@ -319,7 +319,7 @@ describe('map http status code to gRPC status code', () => {
       },
     };
     const errorAlreadyExists = GoogleError.parseHttpError(
-      errorJsonAlreadyExistss,
+      errorJsonAlreadyExistss
     );
     assert.deepStrictEqual(errorAborted.code, Status.ABORTED);
     assert.deepStrictEqual(errorAlreadyExists.code, Status.ALREADY_EXISTS);
@@ -359,14 +359,14 @@ describe('http error decoding', () => {
     assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
     assert.deepStrictEqual(
       error.statusDetails?.length,
-      json['error']['details'].length,
+      json['error']['details'].length
     );
     assert.deepStrictEqual(error.message, json['error']['message']);
     assert.deepStrictEqual(error.reason, errorInfo.reason);
     assert.deepStrictEqual(error.domain, errorInfo.domain);
     assert.deepStrictEqual(
       JSON.stringify(error.errorInfoMetadata),
-      JSON.stringify(errorInfo.metadata),
+      JSON.stringify(errorInfo.metadata)
     );
   });
 
@@ -375,14 +375,14 @@ describe('http error decoding', () => {
     assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
     assert.deepStrictEqual(
       error.statusDetails?.length,
-      json['error']['details'].length,
+      json['error']['details'].length
     );
     assert.deepStrictEqual(error.message, json['error']['message']);
     assert.deepStrictEqual(error.reason, errorInfo.reason);
     assert.deepStrictEqual(error.domain, errorInfo.domain);
     assert.deepStrictEqual(
       JSON.stringify(error.errorInfoMetadata),
-      JSON.stringify(errorInfo.metadata),
+      JSON.stringify(errorInfo.metadata)
     );
   });
 });

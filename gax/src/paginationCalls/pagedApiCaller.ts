@@ -59,7 +59,7 @@ export class PagedApiCaller implements APICaller {
    */
   private generateParseResponseCallback(
     request: NextPageRequestType,
-    callback: APICallback,
+    callback: APICallback
   ): APICallback {
     const resourceFieldName = this.pageDescriptor.resourceField;
     const responsePageTokenFieldName =
@@ -72,13 +72,13 @@ export class PagedApiCaller implements APICaller {
       }
       if (!request) {
         callback(
-          new GoogleError('Undefined request in pagination method callback.'),
+          new GoogleError('Undefined request in pagination method callback.')
         );
         return;
       }
       if (!response) {
         callback(
-          new GoogleError('Undefined response in pagination method callback.'),
+          new GoogleError('Undefined response in pagination method callback.')
         );
         return;
       }
@@ -109,7 +109,7 @@ export class PagedApiCaller implements APICaller {
         argument,
         metadata,
         options,
-        self.generateParseResponseCallback(argument, callback),
+        self.generateParseResponseCallback(argument, callback)
       );
     };
   }
@@ -144,7 +144,7 @@ export class PagedApiCaller implements APICaller {
     apiCall: SimpleCallbackFunction,
     request: RequestType,
     settings: CallOptions,
-    ongoingCall: OngoingCall,
+    ongoingCall: OngoingCall
   ) {
     request = Object.assign({}, request);
 
@@ -157,7 +157,7 @@ export class PagedApiCaller implements APICaller {
       warn(
         'autoPaginate true',
         'Providing a pageSize without setting autoPaginate to false will still return all results. See https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure manual paging',
-        'AutopaginateTrueWarning',
+        'AutopaginateTrueWarning'
       );
     }
 
@@ -166,7 +166,7 @@ export class PagedApiCaller implements APICaller {
     const resourceCollector = new ResourceCollector(apiCall, maxResults);
     resourceCollector.processAllPages(request).then(
       resources => ongoingCall.callback(null, resources),
-      err => ongoingCall.callback(err),
+      err => ongoingCall.callback(err)
     );
   }
 

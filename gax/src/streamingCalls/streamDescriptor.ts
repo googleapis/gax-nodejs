@@ -31,7 +31,7 @@ export class StreamDescriptor implements Descriptor {
   constructor(
     streamType: StreamType,
     rest?: boolean,
-    gaxStreamingRetries?: boolean,
+    gaxStreamingRetries?: boolean
   ) {
     this.type = streamType;
     this.streaming = true;

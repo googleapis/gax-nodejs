@@ -107,7 +107,7 @@ describe('computeBundleId', () => {
       it(t.message, () => {
         assert.strictEqual(
           computeBundleId(t.object as unknown as RequestType, t.fields),
-          t.want,
+          t.want
         );
       });
     });
@@ -215,7 +215,7 @@ describe('Task', () => {
     task: any,
     elements: string[] | number[],
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    callback?: any,
+    callback?: any
   ) {
     if (!callback) {
       callback = () => {};
@@ -256,7 +256,7 @@ describe('Task', () => {
           assert.strictEqual(
             task.getElementCount(),
             baseCount! + t.want,
-            t.message,
+            t.message
           );
         });
       });
@@ -271,7 +271,7 @@ describe('Task', () => {
           extendElements(task, t.data);
           assert.strictEqual(
             task.getRequestByteSize(),
-            baseSize! + t.want * sizePerData,
+            baseSize! + t.want * sizePerData
           );
         });
       });
@@ -511,7 +511,7 @@ describe('Executor', () => {
       'field1',
       ['field2'],
       'field1',
-      byteLength,
+      byteLength
     );
     return new BundleExecutor(options, descriptor);
   }
@@ -636,9 +636,9 @@ describe('Executor', () => {
               assert.deepStrictEqual(resp.field1, [3, 4]);
               assert.strictEqual(spyApi.callCount, 1);
               done();
-            },
+            }
           );
-        },
+        }
       );
       assert.strictEqual(spyApi.callCount, 0);
       canceller.cancel();
@@ -750,7 +750,7 @@ describe('Executor', () => {
         assert(err instanceof GoogleError);
         assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
         done();
-      },
+      }
     );
   });
 
@@ -787,7 +787,7 @@ describe('Executor', () => {
         assert(err instanceof GoogleError);
         assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
         done();
-      },
+      }
     );
   });
 
@@ -862,7 +862,7 @@ describe('bundleable', () => {
     'field1',
     ['field2'],
     'field1',
-    byteLength,
+    byteLength
   );
   const settings = {
     settings: {bundleOptions},
@@ -980,7 +980,7 @@ describe('bundleable', () => {
       'data',
       ['log_name'],
       'data',
-      byteLength,
+      byteLength
     );
     const settings = {
       settings: {bundleOptions},

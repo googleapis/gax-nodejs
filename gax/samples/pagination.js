@@ -54,14 +54,14 @@ async function main() {
   const pageDescriptor = new gax.PageDescriptor(
     /* requestPageTokenField: */ 'pageToken',
     /* responsePageTokenField: */ 'nextPageToken',
-    /* resourceField: */ 'animals',
+    /* resourceField: */ 'animals'
   );
 
   // Create API call:
   const wrappedFunction = gax.createApiCall(
     /* func: */ doStuff,
     /* settings: */ settings,
-    /* descriptor: */ pageDescriptor,
+    /* descriptor: */ pageDescriptor
   );
 
   // Call it!

@@ -29,7 +29,7 @@ export function encodeRequest(
   servicePort: number,
   request: {},
   numericEnums: boolean,
-  minifyJson: boolean,
+  minifyJson: boolean
 ): FetchParameters {
   const headers: {[key: string]: string} = {
     'Content-Type': 'application/json',
@@ -51,7 +51,7 @@ export function encodeRequest(
     throw new Error(
       `Cannot build HTTP request for ${JSON.stringify(json)}, method: ${
         rpc.name
-      }`,
+      }`
     );
   }
 
@@ -75,7 +75,7 @@ export function encodeRequest(
   const body = JSON.stringify(transcoded.data);
   const url = `${protocol}://${servicePath}:${servicePort}/${transcoded.url.replace(
     /^\//,
-    '',
+    ''
   )}?${transcoded.queryString}`;
 
   return {
@@ -89,7 +89,7 @@ export function encodeRequest(
 export function decodeResponse(
   rpc: protobuf.Method,
   ok: boolean,
-  response: Buffer | ArrayBuffer,
+  response: Buffer | ArrayBuffer
 ): {} {
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   const decodedString = new TextDecoder().decode(response);
@@ -104,7 +104,7 @@ export function decodeResponse(
   const message = serializer.fromProto3JSON(rpc.resolvedResponseType!, json);
   if (!message) {
     throw new Error(
-      `Received null or malformed response from JSON serializer from RPC ${rpc.name}`,
+      `Received null or malformed response from JSON serializer from RPC ${rpc.name}`
     );
   }
   return rpc.resolvedResponseType!.toObject(message, defaultToObjectOptions);

@@ -86,7 +86,7 @@ export class RetryOptions {
     retryCodes: number[],
     backoffSettings: BackoffSettings,
     shouldRetryFn?: (error: GoogleError) => boolean,
-    getResumptionRequestFn?: (request: RequestType) => RequestType,
+    getResumptionRequestFn?: (request: RequestType) => RequestType
   ) {
     this.retryCodes = retryCodes;
     this.backoffSettings = backoffSettings;
@@ -324,7 +324,7 @@ export class CallSettings {
  */
 export function convertRetryOptions(
   options?: CallOptions,
-  gaxStreamingRetries?: boolean,
+  gaxStreamingRetries?: boolean
 ): CallOptions | undefined {
   // options will be undefined if no CallOptions object is passed at call time
   if (!options) {
@@ -343,21 +343,21 @@ export function convertRetryOptions(
       warn(
         'retry_request_options',
         'objectMode override is not supported. It is set to true internally by default in gax.',
-        'UnsupportedParameterWarning',
+        'UnsupportedParameterWarning'
       );
     }
     if (options.retryRequestOptions.noResponseRetries !== undefined) {
       warn(
         'retry_request_options',
         'noResponseRetries override is not supported. Please specify retry codes or a function to determine retry eligibility.',
-        'UnsupportedParameterWarning',
+        'UnsupportedParameterWarning'
       );
     }
     if (options.retryRequestOptions.currentRetryAttempt !== undefined) {
       warn(
         'retry_request_options',
         'currentRetryAttempt override is not supported. Retry attempts are tracked internally.',
-        'UnsupportedParameterWarning',
+        'UnsupportedParameterWarning'
       );
     }
 
@@ -392,7 +392,7 @@ export function convertRetryOptions(
         warn(
           'retry_request_options_no_max_retries_timeout',
           'Neither maxRetries nor totalTimeout were passed. Defaulting to totalTimeout of 30000ms.',
-          'MissingParameterWarning',
+          'MissingParameterWarning'
         );
       }
     }
@@ -408,14 +408,14 @@ export function convertRetryOptions(
     const convertedRetryOptions = createRetryOptions(
       retryCodes,
       backoffSettings,
-      shouldRetryFn,
+      shouldRetryFn
     );
     options.retry = convertedRetryOptions;
     delete options.retryRequestOptions; // completely remove them to avoid any further confusion
     warn(
       'retry_request_options',
       'retryRequestOptions will be deprecated in a future release. Please use retryOptions to pass retry options at call time',
-      'DeprecationWarning',
+      'DeprecationWarning'
     );
   }
   return options;
@@ -436,7 +436,7 @@ export function createRetryOptions(
   retryCodes: number[],
   backoffSettings: BackoffSettings,
   shouldRetryFn?: (error: GoogleError) => boolean,
-  getResumptionRequestFn?: (request: RequestType) => RequestType,
+  getResumptionRequestFn?: (request: RequestType) => RequestType
 ): RetryOptions {
   return {
     retryCodes,
@@ -478,7 +478,7 @@ export function createBackoffSettings(
   initialRpcTimeoutMillis: number | null,
   rpcTimeoutMultiplier: number | null,
   maxRpcTimeoutMillis: number | null,
-  totalTimeoutMillis: number | null,
+  totalTimeoutMillis: number | null
 ): BackoffSettings {
   return {
     initialRetryDelayMillis,
@@ -527,7 +527,7 @@ export function createMaxRetriesBackoffSettings(
   initialRpcTimeoutMillis: number,
   rpcTimeoutMultiplier: number,
   maxRpcTimeoutMillis: number,
-  maxRetries: number,
+  maxRetries: number
 ): BackoffSettings {
   return {
     initialRetryDelayMillis,
@@ -607,7 +607,7 @@ function constructRetry(
   methodConfig: MethodConfig | null,
   retryCodes: {[index: string]: string[]} | undefined,
   retryParams: {[index: string]: {}} | undefined,
-  retryNames: {[index: string]: {}},
+  retryNames: {[index: string]: {}}
 ): RetryOptions | null | undefined {
   if (!methodConfig) {
     return null;
@@ -633,7 +633,7 @@ function constructRetry(
       params.initial_rpc_timeout_millis,
       params.rpc_timeout_multiplier,
       params.max_rpc_timeout_millis,
-      params.total_timeout_millis,
+      params.total_timeout_millis
     );
   }
   return createRetryOptions(codes!, backoffSettings!);
@@ -654,7 +654,7 @@ function constructRetry(
  */
 function mergeRetryOptions(
   retry: RetryOptions,
-  overrides: Partial<RetryOptions>,
+  overrides: Partial<RetryOptions>
 ): RetryOptions | null {
   if (!overrides) {
     return null;
@@ -686,7 +686,7 @@ function mergeRetryOptions(
     retryCodes!,
     backoffSettings!,
     shouldRetryFn!,
-    getResumptionRequestFn!,
+    getResumptionRequestFn!
   );
 }
 
@@ -790,7 +790,7 @@ export function constructSettings(
   clientConfig: ClientConfig,
   configOverrides: ClientConfig,
   retryNames: {},
-  otherArgs?: {},
+  otherArgs?: {}
 ) {
   otherArgs = otherArgs || {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -818,7 +818,7 @@ export function constructSettings(
       methodConfig,
       serviceConfig.retry_codes,
       serviceConfig.retry_params,
-      retryNames,
+      retryNames
     );
     let bundlingConfig = methodConfig!.bundling;
     let timeout = methodConfig!.timeout_millis;
@@ -838,8 +838,8 @@ export function constructSettings(
           overridingMethod,
           overrides.retry_codes,
           overrides.retry_params,
-          retryNames,
-        )!,
+          retryNames
+        )!
       );
     }
     const apiName = serviceName;
@@ -865,7 +865,7 @@ export function createByteLengthFunction(message: typeof Message) {
       const stringified = JSON.stringify(obj);
       warn(
         'error_encoding_protobufjs_object',
-        `Cannot encode protobuf.js object: ${stringified}: ${err}`,
+        `Cannot encode protobuf.js object: ${stringified}: ${err}`
       );
       // We failed to encode the object properly, let's just return an upper boundary of its length.
       // It's only needed for calculating the size of the batch, so it's safe if it's bigger than needed.

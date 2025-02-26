@@ -50,7 +50,7 @@ export type ParsedOptionsType = Array<
 export function getField(
   request: JSONObject,
   field: string,
-  allowObjects = false, // in most cases, we need leaf fields
+  allowObjects = false // in most cases, we need leaf fields
 ): JSONValue | undefined {
   const parts = field.split('.');
   let value: JSONValue = request;
@@ -74,7 +74,7 @@ export function getField(
 export function deepCopyWithoutMatchedFields(
   request: JSONObject,
   fieldsToSkip: Set<string>,
-  fullNamePrefix = '',
+  fullNamePrefix = ''
 ): JSONObject {
   if (typeof request !== 'object' || request === null) {
     return request;
@@ -89,13 +89,13 @@ export function deepCopyWithoutMatchedFields(
     if (Array.isArray(copy[key])) {
       // a field of an array cannot be addressed as "request.field", so we omit the skipping logic for array descendants
       copy[key] = (copy[key] as JSONObject[]).map(value =>
-        deepCopyWithoutMatchedFields(value, new Set()),
+        deepCopyWithoutMatchedFields(value, new Set())
       );
     } else if (typeof copy[key] === 'object' && copy[key] !== null) {
       copy[key] = deepCopyWithoutMatchedFields(
         copy[key] as JSONObject,
         fieldsToSkip,
-        nextFullNamePrefix,
+        nextFullNamePrefix
       );
     }
   }
@@ -120,7 +120,7 @@ export function deleteField(request: JSONObject, field: string): void {
 
 export function buildQueryStringComponents(
   request: JSONObject,
-  prefix = '',
+  prefix = ''
 ): string[] {
   const resultList = [];
   for (const key in request) {
@@ -128,19 +128,19 @@ export function buildQueryStringComponents(
       for (const value of request[key] as JSONObject[]) {
         resultList.push(
           `${prefix}${encodeWithoutSlashes(key)}=${encodeWithoutSlashes(
-            value.toString(),
-          )}`,
+            value.toString()
+          )}`
         );
       }
     } else if (typeof request[key] === 'object' && request[key] !== null) {
       resultList.push(
-        ...buildQueryStringComponents(request[key] as JSONObject, `${key}.`),
+        ...buildQueryStringComponents(request[key] as JSONObject, `${key}.`)
       );
     } else {
       resultList.push(
         `${prefix}${encodeWithoutSlashes(key)}=${encodeWithoutSlashes(
-          request[key] === null ? 'null' : request[key]!.toString(),
-        )}`,
+          request[key] === null ? 'null' : request[key]!.toString()
+        )}`
       );
     }
   }
@@ -167,7 +167,7 @@ function escapeRegExp(str: string) {
 
 export function applyPattern(
   pattern: string,
-  fieldValue: string,
+  fieldValue: string
 ): string | undefined {
   if (!pattern || pattern === '*') {
     return encodeWithSlashes(fieldValue);
@@ -183,7 +183,7 @@ export function applyPattern(
       escapeRegExp(pattern)
         .replace(/\\\*\\\*/g, '(.+)')
         .replace(/\\\*/g, '([^/]+)') +
-      '$',
+      '$'
   );
 
   if (!fieldValue.match(regex)) {
@@ -205,7 +205,7 @@ interface MatchResult {
 
 export function match(
   request: JSONObject,
-  pattern: string,
+  pattern: string
 ): MatchResult | undefined {
   let url = pattern;
   const matchedFields = [];
@@ -223,7 +223,7 @@ export function match(
     }
     const appliedPattern = applyPattern(
       pattern,
-      fieldValue === null ? 'null' : fieldValue!.toString(),
+      fieldValue === null ? 'null' : fieldValue!.toString()
     );
     if (appliedPattern === undefined) {
       return undefined;
@@ -268,7 +268,7 @@ export function isProto3OptionalField(field: Field) {
 
 export function transcode(
   request: JSONObject,
-  parsedOptions: ParsedOptionsType,
+  parsedOptions: ParsedOptionsType
 ): TranscodedRequest | undefined {
   const httpRules = [];
   for (const option of parsedOptions) {
@@ -313,7 +313,7 @@ export function transcode(
         data = getField(
           queryStringObject,
           fieldToCamelCase(httpRule.body),
-          /*allowObjects:*/ true,
+          /*allowObjects:*/ true
         );
         deleteField(queryStringObject, fieldToCamelCase(httpRule.body));
       } else {
@@ -337,7 +337,7 @@ export function transcode(
 // Override the protobuf json's the http rules.
 export function overrideHttpRules(
   httpRules: Array<google.api.IHttpRule>,
-  protoJson: protobuf.Root,
+  protoJson: protobuf.Root
 ) {
   for (const rule of httpRules) {
     if (!rule.selector) {

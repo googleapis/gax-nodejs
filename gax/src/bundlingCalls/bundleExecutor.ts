@@ -86,7 +86,7 @@ export class BundleExecutor {
    */
   constructor(
     bundleOptions: BundleOptions,
-    bundleDescriptor: BundleDescriptor,
+    bundleDescriptor: BundleDescriptor
   ) {
     this._options = bundleOptions;
     this._descriptor = bundleDescriptor;
@@ -107,11 +107,11 @@ export class BundleExecutor {
   schedule(
     apiCall: SimpleCallbackFunction,
     request: {[index: string]: Array<{}> | string},
-    callback?: TaskCallback,
+    callback?: TaskCallback
   ) {
     const bundleId = computeBundleId(
       request,
-      this._descriptor.requestDiscriminatorFields,
+      this._descriptor.requestDiscriminatorFields
     );
     callback = (callback || noop) as TaskCallback;
     if (bundleId === undefined) {
@@ -119,7 +119,7 @@ export class BundleExecutor {
         'bundling_schedule_bundleid_undefined',
         'The request does not have enough information for request bundling. ' +
           `Invoking immediately. Request: ${JSON.stringify(request)} ` +
-          `discriminator fields: ${this._descriptor.requestDiscriminatorFields}`,
+          `discriminator fields: ${this._descriptor.requestDiscriminatorFields}`
       );
       return apiCall(request, callback);
     }
@@ -127,7 +127,7 @@ export class BundleExecutor {
       warn(
         'bundling_no_bundled_field',
         `Request does not contain field ${this._descriptor.bundledField} that must present for bundling. ` +
-          `Invoking immediately. Request: ${JSON.stringify(request)}`,
+          `Invoking immediately. Request: ${JSON.stringify(request)}`
       );
       return apiCall(request, callback);
     }
@@ -137,7 +137,7 @@ export class BundleExecutor {
         apiCall,
         request,
         this._descriptor.bundledField,
-        this._descriptor.subresponseField,
+        this._descriptor.subresponseField
       );
     }
     let task = this._tasks[bundleId];
@@ -194,7 +194,7 @@ export class BundleExecutor {
         apiCall,
         request,
         this._descriptor.bundledField,
-        this._descriptor.subresponseField,
+        this._descriptor.subresponseField
       );
       task = this._tasks[bundleId];
     }

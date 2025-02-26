@@ -48,7 +48,7 @@ describe('warnings', () => {
     assert(
       stub.calledWith('messageD-1', {
         type: 'WarningType1',
-      }),
+      })
     );
     stub.restore();
     done();

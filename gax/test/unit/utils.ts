@@ -28,7 +28,7 @@ export function fail(
   argument: {},
   metadata: {},
   options: Options,
-  callback: Function,
+  callback: Function
 ) {
   const error = new GoogleError();
   error.code = FAKE_STATUS_CODE_1;
@@ -76,7 +76,7 @@ export function createApiCall(func: Function, opts?: Options) {
       };
     }),
     settings,
-    descriptor,
+    descriptor
   ) as GaxCallPromise;
 }
 
@@ -87,7 +87,7 @@ export function createRetryOptions(
   initialRpcTimeoutMillis?: number,
   rpcTimeoutMultiplier?: number,
   maxRpcTimeoutMillis?: number,
-  totalTimeoutMillis?: number,
+  totalTimeoutMillis?: number
 ) {
   const backoff =
     typeof backoffSettingsOrInitialRetryDelayMillis === 'number'
@@ -98,7 +98,7 @@ export function createRetryOptions(
           initialRpcTimeoutMillis!,
           rpcTimeoutMultiplier!,
           maxRpcTimeoutMillis!,
-          totalTimeoutMillis!,
+          totalTimeoutMillis!
         )
       : backoffSettingsOrInitialRetryDelayMillis;
   return gax.createRetryOptions([FAKE_STATUS_CODE_1], backoff);
@@ -108,7 +108,7 @@ export function toProtobufJSON(protobufType: protobuf.Type, json: {}) {
   const message = serializer.fromProto3JSON(protobufType, json);
   if (!message) {
     throw new Error(
-      `Internal Error: fail to convert JSON to protobuf specific JSON, protobuf type: ${protobufType}`,
+      `Internal Error: fail to convert JSON to protobuf specific JSON, protobuf type: ${protobufType}`
     );
   }
   return protobufType.toObject(message, defaultToObjectOptions);

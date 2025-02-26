@@ -60,7 +60,7 @@ export interface Callback<
     err: Error | null | undefined,
     value?: ResponseObject | null,
     nextRequest?: NextRequestObject,
-    rawResponse?: RawResponseObject,
+    rawResponse?: RawResponseObject
   ): void;
 }
 
@@ -80,7 +80,7 @@ export interface PaginationCallback<
     err: Error | null,
     values?: ResponseType[],
     nextPageRequest?: RequestObject,
-    rawResponse?: ResponseObject,
+    rawResponse?: ResponseObject
   ): void;
 }
 

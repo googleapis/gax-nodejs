@@ -30,7 +30,7 @@ function generateSampleMessage<T extends object>(instance: T) {
     instance.constructor as typeof protobuf.Message
   ).toObject(instance as protobuf.Message<T>, {defaults: true});
   return (instance.constructor as typeof protobuf.Message).fromObject(
-    filledObject,
+    filledObject
   ) as T;
 }
 
@@ -42,7 +42,7 @@ function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
 
 function stubSimpleCallWithCallback<ResponseType>(
   response?: ResponseType,
-  error?: Error,
+  error?: Error
 ) {
   return error
     ? sinon.stub().callsArgWith(2, error)
@@ -59,7 +59,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest(),
+        new protos.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -71,7 +71,7 @@ describe('IAM service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy(),
+        new protos.google.iam.v1.Policy()
       );
       client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
       const response = await client.getIamPolicy(request, expectedOptions);
@@ -79,7 +79,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.getIamPolicy as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined),
+          .calledWith(request, expectedOptions, undefined)
       );
     });
     it('invokes getIamPolicy without error using callback', async () => {
@@ -90,7 +90,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest(),
+        new protos.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -102,7 +102,7 @@ describe('IAM service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy(),
+        new protos.google.iam.v1.Policy()
       );
       client.innerApiCalls.getIamPolicy =
         stubSimpleCallWithCallback(expectedResponse);
@@ -113,14 +113,14 @@ describe('IAM service', () => {
             expectedOptions,
             (
               err?: Error | null,
-              result?: protos.google.iam.v1.Policy | null,
+              result?: protos.google.iam.v1.Policy | null
             ) => {
               if (err) {
                 reject(err);
               } else {
                 resolve(result);
               }
-            },
+            }
           )
           .catch(console.error);
       });
@@ -129,7 +129,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.getIamPolicy as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions /* callback function above */),
+          .calledWith(request, expectedOptions /* callback function above */)
       );
     });
     it('invokes getIamPolicy with error', async () => {
@@ -140,7 +140,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.GetIamPolicyRequest(),
+        new protos.google.iam.v1.GetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -154,7 +154,7 @@ describe('IAM service', () => {
       const expectedError = new Error('expected');
       client.innerApiCalls.getIamPolicy = stubSimpleCall(
         undefined,
-        expectedError,
+        expectedError
       );
       await assert.rejects(async () => {
         await client.getIamPolicy(request, expectedOptions);
@@ -162,7 +162,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.getIamPolicy as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined),
+          .calledWith(request, expectedOptions, undefined)
       );
     });
   });
@@ -175,7 +175,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest(),
+        new protos.google.iam.v1.SetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -187,7 +187,7 @@ describe('IAM service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy(),
+        new protos.google.iam.v1.Policy()
       );
       client.innerApiCalls.setIamPolicy = stubSimpleCall(expectedResponse);
       const response = await client.setIamPolicy(request, expectedOptions);
@@ -195,7 +195,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.setIamPolicy as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined),
+          .calledWith(request, expectedOptions, undefined)
       );
     });
     it('invokes setIamPolicy without error using callback', async () => {
@@ -206,7 +206,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest(),
+        new protos.google.iam.v1.SetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -218,7 +218,7 @@ describe('IAM service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.Policy(),
+        new protos.google.iam.v1.Policy()
       );
       client.innerApiCalls.setIamPolicy =
         stubSimpleCallWithCallback(expectedResponse);
@@ -229,14 +229,14 @@ describe('IAM service', () => {
             expectedOptions,
             (
               err?: Error | null,
-              result?: protos.google.iam.v1.Policy | null,
+              result?: protos.google.iam.v1.Policy | null
             ) => {
               if (err) {
                 reject(err);
               } else {
                 resolve(result);
               }
-            },
+            }
           )
           .catch(console.error);
       });
@@ -245,7 +245,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.setIamPolicy as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions /* callback function above */),
+          .calledWith(request, expectedOptions /* callback function above */)
       );
     });
     it('invokes setIamPolicy with error', async () => {
@@ -256,7 +256,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.SetIamPolicyRequest(),
+        new protos.google.iam.v1.SetIamPolicyRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -270,7 +270,7 @@ describe('IAM service', () => {
       const expectedError = new Error('expected');
       client.innerApiCalls.setIamPolicy = stubSimpleCall(
         undefined,
-        expectedError,
+        expectedError
       );
       await assert.rejects(async () => {
         await client.setIamPolicy(request, expectedOptions);
@@ -278,7 +278,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.setIamPolicy as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined),
+          .calledWith(request, expectedOptions, undefined)
       );
     });
   });
@@ -291,7 +291,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest(),
+        new protos.google.iam.v1.TestIamPermissionsRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -303,19 +303,19 @@ describe('IAM service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsResponse(),
+        new protos.google.iam.v1.TestIamPermissionsResponse()
       );
       client.innerApiCalls.testIamPermissions =
         stubSimpleCall(expectedResponse);
       const response = await client.testIamPermissions(
         request,
-        expectedOptions,
+        expectedOptions
       );
       assert.deepStrictEqual(response, [expectedResponse]);
       assert(
         (client.innerApiCalls.testIamPermissions as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined),
+          .calledWith(request, expectedOptions, undefined)
       );
     });
     it('invokes testIamPermissions without error using callback', async () => {
@@ -326,7 +326,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest(),
+        new protos.google.iam.v1.TestIamPermissionsRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -338,7 +338,7 @@ describe('IAM service', () => {
         },
       };
       const expectedResponse = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsResponse(),
+        new protos.google.iam.v1.TestIamPermissionsResponse()
       );
       client.innerApiCalls.testIamPermissions =
         stubSimpleCallWithCallback(expectedResponse);
@@ -349,14 +349,14 @@ describe('IAM service', () => {
             expectedOptions,
             (
               err?: Error | null,
-              result?: protos.google.iam.v1.TestIamPermissionsResponse | null,
+              result?: protos.google.iam.v1.TestIamPermissionsResponse | null
             ) => {
               if (err) {
                 reject(err);
               } else {
                 resolve(result);
               }
-            },
+            }
           )
           .catch(console.error);
       });
@@ -365,7 +365,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.testIamPermissions as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions /* callback function above */),
+          .calledWith(request, expectedOptions /* callback function above */)
       );
     });
     it('invokes testIamPermissions with error', async () => {
@@ -376,7 +376,7 @@ describe('IAM service', () => {
       });
       client.initialize().catch(console.error);
       const request = generateSampleMessage(
-        new protos.google.iam.v1.TestIamPermissionsRequest(),
+        new protos.google.iam.v1.TestIamPermissionsRequest()
       );
       request.resource = '';
       const expectedHeaderRequestParams = 'resource=';
@@ -390,7 +390,7 @@ describe('IAM service', () => {
       const expectedError = new Error('expected');
       client.innerApiCalls.testIamPermissions = stubSimpleCall(
         undefined,
-        expectedError,
+        expectedError
       );
       await assert.rejects(async () => {
         await client.testIamPermissions(request, expectedOptions);
@@ -398,7 +398,7 @@ describe('IAM service', () => {
       assert(
         (client.innerApiCalls.testIamPermissions as SinonStub)
           .getCall(0)
-          .calledWith(request, expectedOptions, undefined),
+          .calledWith(request, expectedOptions, undefined)
       );
     });
   });

@@ -85,7 +85,7 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/project/supportedLanguages',
         queryString: '',
         data: '',
-      },
+      }
     );
 
     assert.deepStrictEqual(
@@ -95,46 +95,46 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/projects/project/supportedLanguages',
         queryString: 'field=value',
         data: '',
-      },
+      }
     );
 
     assert.deepStrictEqual(
       transcode(
         {parent: 'projects/project', field: 'value', a: 42},
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'get',
         url: '/v3/projects/project/supportedLanguages',
         queryString: 'field=value&a=42',
         data: '',
-      },
+      }
     );
 
     assert.deepStrictEqual(
       transcode(
         {parent: 'post1/project', field: 'value', a: 42},
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
         url: '/v3/post1/project/supportedLanguages',
         queryString: '',
         data: {field: 'value', a: 42},
-      },
+      }
     );
 
     assert.deepStrictEqual(
       transcode(
         {parent: 'post2/project', field: 'value', a: 42},
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
         url: '/v3/post2/project/supportedLanguages',
         queryString: 'a=42',
         data: 'value',
-      },
+      }
     );
 
     assert.deepStrictEqual(
@@ -144,7 +144,7 @@ describe('gRPC to HTTP transcoding', () => {
         url: '/v3/get/project/value/supportedLanguages',
         queryString: 'a=42',
         data: '',
-      },
+      }
     );
 
     // Checking camel-snake-case conversions
@@ -155,14 +155,14 @@ describe('gRPC to HTTP transcoding', () => {
           snakeCaseBody: {snakeCaseField: 42},
           fieldName: 'value',
         },
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
         url: '/v3/a/first',
         queryString: 'fieldName=value',
         data: {snakeCaseField: 42},
-      },
+      }
     );
 
     assert.deepStrictEqual(
@@ -172,19 +172,19 @@ describe('gRPC to HTTP transcoding', () => {
           snakeCaseBody: {snakeCaseField: 42},
           fieldName: 'value',
         },
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
         url: '/v3/b/second',
         queryString: '',
         data: {snakeCaseBody: {snakeCaseField: 42}, fieldName: 'value'},
-      },
+      }
     );
 
     assert.strictEqual(
       transcode({unknownField: 'project'}, parsedOptions),
-      undefined,
+      undefined
     );
   });
 
@@ -217,7 +217,7 @@ describe('gRPC to HTTP transcoding', () => {
           parent: 'post1/project',
           IPProtocol: 'tcp',
         },
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
@@ -226,7 +226,7 @@ describe('gRPC to HTTP transcoding', () => {
         data: {
           IPProtocol: 'tcp',
         },
-      },
+      }
     );
     assert.deepStrictEqual(
       transcode(
@@ -235,14 +235,14 @@ describe('gRPC to HTTP transcoding', () => {
           IPProtocol: 'tcp',
           field: 'value',
         },
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
         queryString: 'IPProtocol=tcp',
         url: '/v3/post2/project/supportedLanguages',
         data: 'value',
-      },
+      }
     );
     assert.deepStrictEqual(
       transcode(
@@ -250,7 +250,7 @@ describe('gRPC to HTTP transcoding', () => {
           parent: 'post1/project',
           iPProtocol: 'tcp',
         },
-        parsedOptions,
+        parsedOptions
       ),
       {
         httpMethod: 'post',
@@ -259,7 +259,7 @@ describe('gRPC to HTTP transcoding', () => {
         data: {
           iPProtocol: 'tcp',
         },
-      },
+      }
     );
   });
 
@@ -290,38 +290,38 @@ describe('gRPC to HTTP transcoding', () => {
   it('getField', () => {
     assert.strictEqual(
       getField({field: 'stringValue'}, 'field'),
-      'stringValue',
+      'stringValue'
     );
     assert.strictEqual(
       getField({field: 'stringValue'}, 'nosuchfield'),
-      undefined,
+      undefined
     );
     assert.strictEqual(
       getField({field: 'stringValue'}, 'field.subfield'),
-      undefined,
+      undefined
     );
     assert.strictEqual(
       getField({field: {subfield: 'stringValue'}}, 'field.subfield'),
-      'stringValue',
+      'stringValue'
     );
     assert.deepStrictEqual(
       getField({field: {subfield: [1, 2, 3]}}, 'field.subfield'),
-      [1, 2, 3],
+      [1, 2, 3]
     );
     assert.strictEqual(
       getField({field: {subfield: 'stringValue'}}, 'field'),
-      undefined,
+      undefined
     );
     assert.strictEqual(
       getField({field: {subfield: 'stringValue'}}, 'field.nosuchfield'),
-      undefined,
+      undefined
     );
     assert.strictEqual(
       getField(
         {field: {subfield: {subsubfield: 'stringValue'}}},
-        'field.subfield.subsubfield',
+        'field.subfield.subsubfield'
       ),
-      'stringValue',
+      'stringValue'
     );
   });
 
@@ -364,9 +364,9 @@ describe('gRPC to HTTP transcoding', () => {
     assert.strictEqual(encodeWithSlashes('тест'), '%D1%82%D0%B5%D1%81%D1%82');
     assert.strictEqual(
       encodeWithSlashes(
-        '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/ ',
+        '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/ '
       ),
-      '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%2F%20',
+      '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ%2F%20'
     );
   });
 
@@ -374,13 +374,13 @@ describe('gRPC to HTTP transcoding', () => {
     assert.strictEqual(encodeWithoutSlashes('abcd'), 'abcd');
     assert.strictEqual(
       encodeWithoutSlashes('тест'),
-      '%D1%82%D0%B5%D1%81%D1%82',
+      '%D1%82%D0%B5%D1%81%D1%82'
     );
     assert.strictEqual(
       encodeWithoutSlashes(
-        '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/ ',
+        '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/ '
       ),
-      '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/%20',
+      '_.~0-9abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ/%20'
     );
   });
 
@@ -390,24 +390,24 @@ describe('gRPC to HTTP transcoding', () => {
     assert.strictEqual(applyPattern('fail', 'test'), undefined);
     assert.strictEqual(
       applyPattern('projects/*', 'projects/test'),
-      'projects/test',
+      'projects/test'
     );
     assert.strictEqual(
       applyPattern('projects/*/locations/*', 'projects/test'),
-      undefined,
+      undefined
     );
     assert.strictEqual(applyPattern('locations/*', 'projects/test'), undefined);
     assert.strictEqual(
       applyPattern('projects/*/locations/*', 'projects/test/locations/us'),
-      'projects/test/locations/us',
+      'projects/test/locations/us'
     );
     assert.strictEqual(
       applyPattern('projects/*/locations/*', 'projects/test/locations/us/q/z'),
-      undefined,
+      undefined
     );
     assert.strictEqual(
       applyPattern('projects/*/locations/**', 'projects/test/locations/us/q/z'),
-      'projects/test/locations/us/q/z',
+      'projects/test/locations/us/q/z'
     );
   });
 
@@ -416,7 +416,7 @@ describe('gRPC to HTTP transcoding', () => {
     assert.deepStrictEqual(flattenObject({field: 'value'}), {field: 'value'});
     assert.deepStrictEqual(
       flattenObject({field: 'value', nested: {subfield: 'subvalue'}}),
-      {field: 'value', 'nested.subfield': 'subvalue'},
+      {field: 'value', 'nested.subfield': 'subvalue'}
     );
   });
 
@@ -424,46 +424,46 @@ describe('gRPC to HTTP transcoding', () => {
     assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value'},
-        '/v3/{parent=projects/*}/supportedLanguages',
+        '/v3/{parent=projects/*}/supportedLanguages'
       ),
       {
         matchedFields: ['parent'],
         url: '/v3/projects/te%20st/supportedLanguages',
-      },
+      }
     );
     assert.deepStrictEqual(
       match(
         {parent: 'projects/te st/locations/location', test: 'value'},
-        '/v3/{parent=projects/*}/supportedLanguages',
+        '/v3/{parent=projects/*}/supportedLanguages'
       ),
-      undefined,
+      undefined
     );
     assert.deepStrictEqual(
       match(
         {parent: 'projects/te st/locations/location', test: 'value'},
-        '/v3/{parent=projects/*/locations/*}/supportedLanguages',
+        '/v3/{parent=projects/*/locations/*}/supportedLanguages'
       ),
       {
         matchedFields: ['parent'],
         url: '/v3/projects/te%20st/locations/location/supportedLanguages',
-      },
+      }
     );
     assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value'},
-        '/v3/{parent=projects/*}/{field=*}/supportedLanguages',
+        '/v3/{parent=projects/*}/{field=*}/supportedLanguages'
       ),
-      undefined,
+      undefined
     );
     assert.deepStrictEqual(
       match(
         {parent: 'projects/te st', test: 'value', field: 42},
-        '/v3/{parent=projects/*}/{field=*}/supportedLanguages',
+        '/v3/{parent=projects/*}/{field=*}/supportedLanguages'
       ),
       {
         matchedFields: ['field', 'parent'],
         url: '/v3/projects/te%20st/42/supportedLanguages',
-      },
+      }
     );
     assert.deepStrictEqual(
       match(
@@ -473,23 +473,23 @@ describe('gRPC to HTTP transcoding', () => {
           field: 'fields/field42',
           path: 'a/b,c/d',
         },
-        '/v3/{parent=projects/*}/{field=fields/*}/{path=**}/supportedLanguages',
+        '/v3/{parent=projects/*}/{field=fields/*}/{path=**}/supportedLanguages'
       ),
       {
         matchedFields: ['path', 'field', 'parent'],
         url: '/v3/projects/te%20st/fields/field42/a/b%2Cc/d/supportedLanguages',
-      },
+      }
     );
     assert.deepStrictEqual(
       match({}, '/v3/{field.subfield}/supportedLanguages'),
-      undefined,
+      undefined
     );
     assert.deepStrictEqual(
       match({field: {subfield: 42}}, '/v3/{field.subfield}/supportedLanguages'),
       {
         matchedFields: ['field.subfield'],
         url: '/v3/42/supportedLanguages',
-      },
+      }
     );
   });
 
@@ -503,7 +503,7 @@ describe('gRPC to HTTP transcoding', () => {
     };
     const copy = deepCopyWithoutMatchedFields(
       request as RequestType,
-      new Set(),
+      new Set()
     );
     assert.deepStrictEqual(copy, request);
     request.field.subfield = 43;
@@ -532,7 +532,7 @@ describe('gRPC to HTTP transcoding', () => {
     };
     const copy = deepCopyWithoutMatchedFields(
       request as RequestType,
-      new Set(['field.subfield']),
+      new Set(['field.subfield'])
     );
     assert.deepStrictEqual(copy, expected);
   });
@@ -543,7 +543,7 @@ describe('gRPC to HTTP transcoding', () => {
     ]);
     assert.deepStrictEqual(
       buildQueryStringComponents({field: 'value', a: 42}),
-      ['field=value', 'a=42'],
+      ['field=value', 'a=42']
     );
     assert.deepStrictEqual(
       buildQueryStringComponents({
@@ -558,7 +558,7 @@ describe('gRPC to HTTP transcoding', () => {
         'repeated=z%20z%20z',
         'obj.subfield=string',
         'obj.y=z',
-      ],
+      ]
     );
   });
 });
@@ -615,7 +615,7 @@ describe('override the HTTP rules in protoJson', () => {
         assert.deepStrictEqual(httpOptions.get, rule.get);
         assert.deepStrictEqual(
           httpOptions.additional_bindings,
-          rule.additional_bindings,
+          rule.additional_bindings
         );
       }
     }
@@ -645,7 +645,7 @@ describe('override the HTTP rules in protoJson', () => {
     };
     assert(originAdditionalBindings());
     const expectedAditionalBindings = originAdditionalBindings()!.concat(
-      httpRules[0].additional_bindings,
+      httpRules[0].additional_bindings
     );
     overrideHttpRules(httpRules, root);
     for (const rule of httpRules) {
@@ -660,7 +660,7 @@ describe('override the HTTP rules in protoJson', () => {
         assert.deepStrictEqual(httpOptions.get, rule.get);
         assert.deepStrictEqual(
           httpOptions.additional_bindings,
-          expectedAditionalBindings,
+          expectedAditionalBindings
         );
       }
     }

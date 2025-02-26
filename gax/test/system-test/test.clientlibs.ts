@@ -160,7 +160,7 @@ async function runScript(
 
 async function runSystemTest(
   packageName: string,
-  inMonorepo: boolean,
+  inMonorepo: boolean
 ): Promise<TestResult> {
   return await runScript(packageName, inMonorepo, 'system-test');
 }

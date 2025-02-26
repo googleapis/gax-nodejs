@@ -37,7 +37,7 @@ describe('util.ts', () => {
     assert.strictEqual(camelToSnakeCase('a.1B'), 'a.1_b');
     assert.strictEqual(
       camelToSnakeCase('somethingABCDEValue`'),
-      'something_a_b_c_d_e_value',
+      'something_a_b_c_d_e_value'
     );
   });
 
@@ -53,7 +53,7 @@ describe('util.ts', () => {
     assert.strictEqual(snakeToCamelCase('a.1_b'), 'a.1B');
     assert.strictEqual(
       snakeToCamelCase('something_abcde_value'),
-      'somethingAbcdeValue',
+      'somethingAbcdeValue'
     );
   });
 
@@ -69,15 +69,15 @@ describe('util.ts', () => {
     assert.strictEqual(toLowerCamelCase('a.1_b'), 'a.1B');
     assert.strictEqual(
       toLowerCamelCase('something_abcde_value'),
-      'somethingAbcdeValue',
+      'somethingAbcdeValue'
     );
     assert.strictEqual(
       toLowerCamelCase('PascalCaseString'),
-      'pascalCaseString',
+      'pascalCaseString'
     );
     assert.strictEqual(
       toLowerCamelCase('PascalCASEString'),
-      'pascalCaseString',
+      'pascalCaseString'
     );
   });
 

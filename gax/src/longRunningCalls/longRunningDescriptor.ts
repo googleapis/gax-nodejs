@@ -37,7 +37,7 @@ export class LongRunningDescriptor implements Descriptor {
   constructor(
     operationsClient: OperationsClient,
     responseDecoder: AnyDecoder,
-    metadataDecoder: AnyDecoder,
+    metadataDecoder: AnyDecoder
   ) {
     this.operationsClient = operationsClient;
     this.responseDecoder = responseDecoder;

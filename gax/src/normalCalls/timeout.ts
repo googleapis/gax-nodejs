@@ -40,7 +40,7 @@ export function addTimeoutArg(
   func: GRPCCall,
   timeout: number,
   otherArgs: GRPCCallOtherArgs,
-  abTests?: {},
+  abTests?: {}
 ): SimpleCallbackFunction {
   // TODO: this assumes the other arguments consist of metadata and options,
   // which is specific to gRPC calls. Remove the hidden dependency on gRPC.

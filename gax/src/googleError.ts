@@ -38,7 +38,7 @@ export class GoogleError extends Error {
       if (err.metadata && err.metadata.get('grpc-status-details-bin')) {
         const statusDetailsObj: GRPCStatusDetailsObject =
           decoder.decodeGRPCStatusDetails(
-            err.metadata.get('grpc-status-details-bin') as [],
+            err.metadata.get('grpc-status-details-bin') as []
           );
         if (
           statusDetailsObj &&
@@ -88,7 +88,7 @@ export class GoogleError extends Error {
     const proto3Error = decoder.decodeHTTPError(json['error']);
     const error = Object.assign(
       new GoogleError(json['error']['message']),
-      proto3Error,
+      proto3Error
     );
     // Get gRPC Status Code
     if (
@@ -182,7 +182,7 @@ export class GoogleErrorDecoder {
     const match = anyValue.type_url.match(/^type.googleapis.com\/(.*)/);
     if (!match) {
       throw new Error(
-        `Unknown type encoded in google.protobuf.any: ${anyValue.type_url}`,
+        `Unknown type encoded in google.protobuf.any: ${anyValue.type_url}`
       );
     }
     const typeName = match[1];
@@ -239,14 +239,14 @@ export class GoogleErrorDecoder {
 
   // Decodes gRPC metadata error details which is an instance of google.rpc.Status.
   decodeGRPCStatusDetails(
-    bufferArr: Buffer[] | ArrayBuffer[],
+    bufferArr: Buffer[] | ArrayBuffer[]
   ): GRPCStatusDetailsObject {
     const details: protobuf.Message<{}>[] = [];
     let errorInfo;
     bufferArr.forEach(buffer => {
       const uint8array = new Uint8Array(buffer);
       const rpcStatus = this.statusType.decode(
-        uint8array,
+        uint8array
       ) as unknown as RpcStatus;
       for (const detail of rpcStatus.details) {
         try {
@@ -272,7 +272,7 @@ export class GoogleErrorDecoder {
     const errorMessage = serializer.fromProto3JSON(this.statusType, json);
     if (!errorMessage) {
       throw new Error(
-        `Received error message ${json}, but failed to serialize as proto3 message`,
+        `Received error message ${json}, but failed to serialize as proto3 message`
       );
     }
     return this.statusType.toObject(errorMessage, defaultToObjectOptions);
@@ -280,7 +280,7 @@ export class GoogleErrorDecoder {
 
   // Decodes http error details which is an instance of Array<google.protobuf.Any>.
   decodeHttpStatusDetails(
-    rawDetails: Array<ProtobufAny>,
+    rawDetails: Array<ProtobufAny>
   ): GRPCStatusDetailsObject {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const details: protobuf.Message<{}>[] = [];
