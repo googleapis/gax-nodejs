@@ -17,7 +17,7 @@
     "start": "node build/src/index.js"
   },
   "dependencies": {
-    "download": "^8.0.0",
+    "download": "^8.0.0"
   },
   "devDependencies": {
     "@types/download": "^8.0.1",
