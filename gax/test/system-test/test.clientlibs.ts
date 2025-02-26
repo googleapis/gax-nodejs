@@ -59,7 +59,7 @@ async function latestRelease(
     : new RegExp('^v(\\d+)\\.(\\d+)\\.(\\d+)$');
   const tags = stdout
     .split('\n')
-    .filter(str => str.match(filterPattern))
+    .filter((str: string) => str.match(filterPattern))
     .sort((tag1: string, tag2: string): number => {
       const match1 = tag1.match(filterPattern);
       const match2 = tag2.match(filterPattern);
