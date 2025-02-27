@@ -60,10 +60,10 @@ export async function main(directory?: string) {
 function usage() {
   console.log(`Usage: node ${process.argv[1]} [directory]`);
   console.log(
-    'Minifies all JSON files in-place in the given directory (non-recursively).'
+    'Minifies all JSON files in-place in the given directory (non-recursively).',
   );
   console.log(
-    'If no directory is given, minifies JSON files in ./build/protos.'
+    'If no directory is given, minifies JSON files in ./build/protos.',
   );
 }
 
@@ -76,5 +76,6 @@ if (require.main === module) {
     process.exit(1);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   main(process.argv[2]);
 }

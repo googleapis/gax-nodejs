@@ -21,23 +21,16 @@ import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
 import {protobuf, GoogleAuth, fallback} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
+import 'core-js/stable';
 
 import echoProtoJson = require('showcase-echo-client/build/protos/protos.json');
+import {PassThroughClient} from 'google-auth-library';
 
-const authStub = {
-  getClient: async () => {
-    return {
-      getRequestHeaders: async () => {
-        return {
-          Authorization: 'Bearer zzzz',
-        };
-      },
-    };
-  },
-};
+const authClient = new PassThroughClient();
+const auth = new GoogleAuth({authClient});
 
 const opts = {
-  auth: authStub as unknown as GoogleAuth,
+  auth,
 };
 
 describe('loadProto', () => {
@@ -127,20 +120,10 @@ describe('grpc-fallback', () => {
   // eslint-disable-next-line no-undef
   const savedAbortController = window.AbortController;
 
-  const authStub = {
-    getClient: async () => {
-      return {
-        getRequestHeaders: async () => {
-          return {
-            Authorization: 'Bearer zzzz',
-          };
-        },
-      };
-    },
-  };
-
+  const authClient = new PassThroughClient();
+  const auth = new GoogleAuth({authClient});
   const opts = {
-    auth: authStub as unknown as GoogleAuth,
+    auth,
     protocol: 'http',
     port: 1337,
   };
@@ -197,7 +180,7 @@ describe('grpc-fallback', () => {
       ok: true,
       arrayBuffer: () => {
         return Promise.resolve(
-          new TextEncoder().encode(JSON.stringify(response))
+          new TextEncoder().encode(JSON.stringify(response)),
         );
       },
     });
@@ -237,12 +220,12 @@ describe('grpc-fallback', () => {
     // eslint-disable-next-line no-undef
     window.fetch = (url, options) => {
       // @ts-ignore
-      assert.strictEqual(options.headers['x-test-header'], 'value');
+      assert.strictEqual(options.headers.get('x-test-header'), 'value');
       return Promise.resolve({
         ok: true,
         arrayBuffer: () => {
           return Promise.resolve(
-            new TextEncoder().encode(JSON.stringify(response))
+            new TextEncoder().encode(JSON.stringify(response)),
           );
         },
       });
@@ -264,7 +247,7 @@ describe('grpc-fallback', () => {
       ok: false,
       arrayBuffer: () => {
         return Promise.resolve(
-          new TextEncoder().encode(JSON.stringify(expectedError))
+          new TextEncoder().encode(JSON.stringify(expectedError)),
         );
       },
     });

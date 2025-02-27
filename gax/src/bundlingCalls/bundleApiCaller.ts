@@ -49,7 +49,7 @@ export class BundleApiCaller implements APICaller {
     apiCall: SimpleCallbackFunction,
     argument: {},
     settings: CallSettings,
-    status: OngoingCallPromise
+    status: OngoingCallPromise,
   ) {
     if (!settings.isBundling) {
       throw new GoogleError('Bundling enabled with no isBundling!');

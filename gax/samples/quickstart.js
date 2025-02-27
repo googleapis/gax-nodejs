@@ -45,7 +45,7 @@ async function main() {
   const settings = new gax.CallSettings();
   settings.retry = gax.createRetryOptions(
     /* retryCodes: */ [42],
-    /* backoffSettings: */ gax.createDefaultBackoffSettings()
+    /* backoffSettings: */ gax.createDefaultBackoffSettings(),
   );
 
   // and use createApiCall to get a promisifed function that handles retries!

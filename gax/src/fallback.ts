@@ -15,20 +15,12 @@
  */
 
 import {OutgoingHttpHeaders} from 'http';
-import * as objectHash from 'object-hash';
+import objectHash from 'object-hash';
 import * as protobuf from 'protobufjs';
 import * as gax from './gax';
 import * as routingHeader from './routingHeader';
 import {Status} from './status';
-import {
-  GoogleAuth,
-  OAuth2Client,
-  Compute,
-  JWT,
-  UserRefreshClient,
-  GoogleAuthOptions,
-  BaseExternalAccountClient,
-} from 'google-auth-library';
+import {GoogleAuth, AuthClient} from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
 import type {GrpcClientOptions, ClientStubOptions} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
@@ -85,21 +77,23 @@ export interface ServiceMethods {
   [name: string]: protobuf.Method;
 }
 
-export type AuthClient =
-  | OAuth2Client
-  | Compute
-  | JWT
-  | UserRefreshClient
-  | BaseExternalAccountClient;
+/**
+ * @deprecated use `GoogleAuth` here instead
+ */
+type deprecatedAuthClientAlias = AuthClient;
 
 export class GrpcClient {
-  auth?: OAuth2Client | GoogleAuth;
+  auth?: GoogleAuth<AuthClient> | deprecatedAuthClientAlias;
+  /**
+   * @deprecated use {@link GrpcClient.auth} instead
+   */
   authClient?: AuthClient;
   fallback: boolean;
   grpcVersion: string;
   private static protoCache = new Map<string, protobuf.Root>();
   httpRules?: Array<google.api.IHttpRule>;
   numericEnums: boolean;
+  minifyJson: boolean;
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -113,37 +107,41 @@ export class GrpcClient {
    * gRPC-fallback version of GrpcClient
    * Implements GrpcClient API for a browser using grpc-fallback protocol (sends serialized protobuf to HTTP/1 $rpc endpoint).
    *
-   * @param {Object=} options.auth - An instance of OAuth2Client to use in browser, or an instance of GoogleAuth from google-auth-library
-   *  to use in Node.js. Required for browser, optional for Node.js.
-   * @constructor
+   * @param options {@link GrpcClientOptions}
    */
-
   constructor(
-    options: (GrpcClientOptions | {auth: OAuth2Client}) & {
+    options: (
+      | GrpcClientOptions
+      | {
+          /**
+           * @deprecated - use `authClient` for `AuthClient`s instead
+           */
+          auth: AuthClient;
+        }
+    ) & {
       /**
        * Fallback mode to use instead of gRPC.
        * A string is accepted for compatibility, all non-empty string values enable the HTTP REST fallback.
        */
       fallback?: boolean | string;
-    } = {}
+    } = {},
   ) {
-    if (!isNodeJS()) {
-      if (!options.auth) {
-        throw new Error(
-          JSON.stringify(options) +
-            'You need to pass auth instance to use gRPC-fallback client in browser or other non-Node.js environments. Use OAuth2Client from google-auth-library.'
-        );
-      }
-      this.auth = options.auth as OAuth2Client;
+    if (options.auth) {
+      this.auth = options.auth;
+    } else if ('authClient' in options) {
+      this.auth = options.authClient;
     } else {
-      this.auth =
-        (options.auth as GoogleAuth) ||
-        new GoogleAuth(options as GoogleAuthOptions);
+      this.auth = new GoogleAuth({
+        authClient: options.auth,
+        ...options,
+      });
     }
+
     this.fallback = options.fallback ? true : false;
     this.grpcVersion = require('../../package.json').version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
     this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
+    this.minifyJson = (options as GrpcClientOptions).minifyJson ?? false;
   }
 
   /**
@@ -194,7 +192,7 @@ export class GrpcClient {
     serviceName: string,
     clientConfig: gax.ClientConfig,
     configOverrides: gax.ClientConfig,
-    headers: OutgoingHttpHeaders
+    headers: OutgoingHttpHeaders,
   ) {
     function buildMetadata(abTests: {}, moreHeaders: OutgoingHttpHeaders) {
       const metadata: OutgoingHttpHeaders = {};
@@ -218,7 +216,7 @@ export class GrpcClient {
         )[0]
       ) {
         clientVersions.push(
-          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' ')
+          ...(metadata[CLIENT_VERSION_HEADER] as string[])[0].split(' '),
         );
       }
       clientVersions.push(`grpc-web/${version}`);
@@ -242,7 +240,7 @@ export class GrpcClient {
                 ).push(...value);
               } else {
                 throw new Error(
-                  `Can not add value ${value} to the call metadata.`
+                  `Can not add value ${value} to the call metadata.`,
                 );
               }
             }
@@ -258,13 +256,13 @@ export class GrpcClient {
       clientConfig,
       configOverrides,
       Status,
-      {metadataBuilder: buildMetadata}
+      {metadataBuilder: buildMetadata},
     );
   }
 
   /**
    * gRPC-fallback version of createStub
-   * Creates a gRPC-fallback stub with authentication headers built from supplied OAuth2Client instance
+   * Creates a gRPC-fallback stub with authentication headers built from supplied `AuthClient` instance
    *
    * @param {function} CreateStub - The constructor function of the stub.
    * @param {Object} service - A protobufjs Service object (as returned by lookupService)
@@ -278,11 +276,11 @@ export class GrpcClient {
     opts: ClientStubOptions,
     // For consistency with createStub in grpc.ts, customServicePath is defined:
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    customServicePath?: boolean
+    customServicePath?: boolean,
   ) {
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
-        this.authClient = (await this.auth.getClient()) as AuthClient;
+        this.authClient = await this.auth.getClient();
       } else if (this.auth && 'getRequestHeaders' in this.auth) {
         this.authClient = this.auth;
       }
@@ -298,7 +296,7 @@ export class GrpcClient {
       if (universeFromAuth && opts.universeDomain !== universeFromAuth) {
         throw new Error(
           `The configured universe domain (${opts.universeDomain}) does not match the universe domain found in the credentials (${universeFromAuth}). ` +
-            "If you haven't configured the universe domain explicitly, googleapis.com is the default."
+            "If you haven't configured the universe domain explicitly, googleapis.com is the default.",
         );
       }
     }
@@ -317,7 +315,7 @@ export class GrpcClient {
     }
     if (!servicePath) {
       throw new Error(
-        `Cannot determine service API path for service ${service.name}.`
+        `Cannot determine service API path for service ${service.name}.`,
       );
     }
 
@@ -340,10 +338,11 @@ export class GrpcClient {
       protocol,
       servicePath,
       servicePort,
-      this.authClient,
+      this.auth || this.authClient,
       encoder,
       decoder,
-      this.numericEnums
+      this.numericEnums,
+      this.minifyJson,
     );
 
     return serviceStub;
@@ -408,7 +407,7 @@ export function createApiCall(
   settings: gax.CallSettings,
   descriptor?: Descriptor,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _fallback?: boolean | string // unused; for compatibility only
+  _fallback?: boolean | string, // unused; for compatibility only
 ): GaxCall {
   if (
     descriptor &&
@@ -417,14 +416,15 @@ export function createApiCall(
   ) {
     return () => {
       throw new Error(
-        'The REST transport currently does not support client-streaming or bidi-stream calls.'
+        'The REST transport currently does not support client-streaming or bidi-stream calls.',
       );
     };
   }
   if (descriptor && 'streaming' in descriptor && !isNodeJS()) {
+    // TODO: with `fetch` this functionality is available in the browser...
     return () => {
       throw new Error(
-        'Server streaming over the REST transport is only supported in Node.js.'
+        'Server streaming over the REST transport is only supported in Node.js.',
       );
     };
   }
