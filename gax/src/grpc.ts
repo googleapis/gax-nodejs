@@ -210,7 +210,17 @@ export class GrpcClient {
     const client = await this.auth.getClient();
     const credentials = grpc.credentials.combineChannelCredentials(
       sslCreds,
-      grpc.credentials.createFromGoogleCredential(client),
+      grpc.credentials.createFromGoogleCredential({
+        // the `grpc` package does not support the `Headers` object yet
+        getRequestHeaders: async (url?: string | URL) => {
+          const headers = await client.getRequestHeaders(url);
+          const genericHeadersObject: Record<string, string> = {};
+
+          headers.forEach((value, key) => (genericHeadersObject[key] = value));
+
+          return genericHeadersObject;
+        },
+      }),
     );
     return credentials;
   }

@@ -23,6 +23,8 @@ import * as operationsClient from './operationsClient';
 import * as routingHeader from './routingHeader';
 
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
+export * as googleAuthLibrary from 'google-auth-library';
+
 export {grpc};
 export {CancellablePromise, OngoingCall} from './call';
 export {createApiCall} from './createApiCall';
