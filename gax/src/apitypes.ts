@@ -59,7 +59,7 @@ export type APICallback = (
   err: GoogleError | null,
   response?: ResponseType,
   next?: NextPageRequestType,
-  rawResponse?: RawResponseType
+  rawResponse?: RawResponseType,
 ) => void;
 
 // The following five types mimic various gRPC calls (regular UnaryCall and
@@ -68,21 +68,21 @@ export type UnaryCall = (
   argument: {},
   metadata: {},
   options: {},
-  callback: APICallback
+  callback: APICallback,
 ) => GRPCCallResult;
 export type ServerStreamingCall = (
   argument: {},
   metadata: {},
-  options: {}
+  options: {},
 ) => Duplex & GRPCCallResult;
 export type ClientStreamingCall = (
   metadata: {},
   options: {},
-  callback?: APICallback
+  callback?: APICallback,
 ) => Duplex & GRPCCallResult;
 export type BiDiStreamingCall = (
   metadata: {},
-  options: {}
+  options: {},
 ) => Duplex & GRPCCallResult;
 export type GRPCCall =
   | UnaryCall
@@ -98,21 +98,21 @@ export interface GaxCallPromise {
   (
     argument: {},
     callOptions?: CallOptions,
-    callback?: APICallback
+    callback?: APICallback,
   ): CancellablePromise<ResultTuple>;
 }
 export interface GaxCallStream {
   (
     argument: {},
     callOptions?: CallOptions,
-    callback?: APICallback
+    callback?: APICallback,
   ): CancellableStream;
 }
 export interface GaxCall {
   (
     argument: {},
     callOptions?: CallOptions,
-    callback?: APICallback
+    callback?: APICallback,
   ): GaxCallResult;
 }
 export interface GRPCCallOtherArgs {

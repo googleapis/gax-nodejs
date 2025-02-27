@@ -28,12 +28,12 @@ module.exports = {
       '../../package.json': path.resolve(__dirname, 'package.json'),
       '../../protos/operations.json': path.resolve(
         __dirname,
-        'protos/operations.json'
+        'protos/operations.json',
       ),
       '../../protos/status.json': path.resolve(__dirname, 'protos/status.json'),
       '../../protos/iam_service.json': path.resolve(
         __dirname,
-        'protos/iam_service.json'
+        'protos/iam_service.json',
       ),
     },
   },

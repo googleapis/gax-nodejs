@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
 
@@ -48,7 +48,7 @@ describe('warnings', () => {
     assert(
       stub.calledWith('messageD-1', {
         type: 'WarningType1',
-      })
+      }),
     );
     stub.restore();
     done();

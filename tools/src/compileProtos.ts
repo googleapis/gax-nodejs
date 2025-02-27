@@ -28,7 +28,7 @@ export const gaxProtos = path.join(
   require.resolve('google-gax'),
   '..',
   '..',
-  'protos'
+  'protos',
 );
 const readdir = util.promisify(fs.readdir);
 const readFile = util.promisify(fs.readFile);
@@ -95,7 +95,7 @@ function getAllEnums(dts: string): Set<string> {
   let currentEnum = undefined;
   for (const line of lines) {
     const match = line.match(
-      /^\s*(?:export )?(namespace|class|interface|enum) (\w+) .*{/
+      /^\s*(?:export )?(namespace|class|interface|enum) (\w+) .*{/,
     );
     if (match) {
       const [, keyword, id] = match;
@@ -144,11 +144,12 @@ function updateDtsTypes(dts: string, enums: Set<string>): string {
       // enum: E => E|keyof typeof E  to allow all string values
       replaced = replaced.replace(
         typeName,
-        `${typeName}|keyof typeof ${typeName}`
+        `${typeName}|keyof typeof ${typeName}`,
       );
     } else if (typeName === 'Uint8Array') {
-      // bytes: Uint8Array => Uint8Array|string to allow base64-encoded strings
-      replaced = replaced.replace(typeName, `${typeName}|string`);
+      // bytes: Uint8Array => Uint8Array|Buffer|string to allow base64-encoded strings
+      // and byte field can also come as a Buffer when pbjs uses $util.newBuffer.
+      replaced = replaced.replace(typeName, `${typeName}|Buffer|string`);
     } else if (typeName === 'Long') {
       // Longs can be passed as strings :(
       // number|Long => number|Long|string
@@ -169,14 +170,14 @@ function fixJsFile(js: string): string {
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
     'import * as $protobuf from "protobufjs/minimal"',
-    'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"'
+    'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"',
   );
 
   // 1. fix protobufjs require: we don't want the libraries to
   // depend on protobufjs, so we re-export it from google-gax
   js = js.replace(
     'require("protobufjs/minimal")',
-    'require("google-gax/build/src/protobuf").protobufMinimal'
+    'require("google-gax/build/src/protobuf").protobufMinimal',
   );
 
   // 2. add Apache license to the generated .js file
@@ -191,7 +192,7 @@ function fixDtsFile(dts: string): string {
   // 1. fix for pbts output to make sure we import Long properly
   dts = dts.replace(
     'import * as Long from "long";',
-    'import Long = require("long");'
+    'import Long = require("long");',
   );
   if (!dts.match(/import Long = require/)) {
     dts = 'import Long = require("long");\n' + dts;
@@ -201,7 +202,7 @@ function fixDtsFile(dts: string): string {
   // depend on protobufjs, so we re-export it from google-gax
   dts = dts.replace(
     'import * as $protobuf from "protobufjs"',
-    'import type {protobuf as $protobuf} from "google-gax"'
+    'import type {protobuf as $protobuf} from "google-gax"',
   );
 
   // 3. add Apache license to the generated .d.ts file
@@ -222,7 +223,7 @@ function fixDtsFile(dts: string): string {
  */
 async function buildListOfProtos(
   protoJsonFiles: string[],
-  esm?: boolean
+  esm?: boolean,
 ): Promise<string[]> {
   const result: string[] = [];
   for (const file of protoJsonFiles) {
@@ -232,7 +233,7 @@ async function buildListOfProtos(
       // If we're in ESM, we're going to be in a directory level below normal
       esm
         ? path.join(directory, '..', normalizePath(filePath))
-        : path.join(directory, normalizePath(filePath))
+        : path.join(directory, normalizePath(filePath)),
     );
     result.push(...list);
   }
@@ -258,7 +259,7 @@ interface CompileProtosOptions {
 async function compileProtos(
   rootName: string,
   protos: string[],
-  options: CompileProtosOptions
+  options: CompileProtosOptions,
 ): Promise<void> {
   const extraArgs = [];
   if (options.keepCase) {
@@ -438,16 +439,16 @@ export async function main(parameters: string[]): Promise<void> {
  */
 function usage() {
   console.log(
-    `Usage: node ${process.argv[1]} [--skip-json] [--esm] directory ...`
+    `Usage: node ${process.argv[1]} [--skip-json] [--esm] directory ...`,
   );
   console.log(
-    `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`
+    `Finds all files matching ${PROTO_LIST_REGEX} in the given directories.`,
   );
   console.log(
-    'Each of those files should contain a JSON array of proto files used by the'
+    'Each of those files should contain a JSON array of proto files used by the',
   );
   console.log(
-    'client library. Those proto files will be compiled to JSON using pbjs tool'
+    'client library. Those proto files will be compiled to JSON using pbjs tool',
   );
   console.log('from protobufjs.');
 }
@@ -459,5 +460,6 @@ if (require.main === module) {
     process.exit(1);
   }
   // argv[0] is node.js binary, argv[1] is script path
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   main(process.argv.slice(2));
 }
