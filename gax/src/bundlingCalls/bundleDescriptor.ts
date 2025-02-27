@@ -62,7 +62,7 @@ export class BundleDescriptor implements Descriptor {
     bundledField: string,
     requestDiscriminatorFields: string[],
     subresponseField: string | null,
-    byteLengthFunction: Function
+    byteLengthFunction: Function,
   ) {
     if (!byteLengthFunction && typeof subresponseField === 'function') {
       byteLengthFunction = subresponseField;
@@ -80,7 +80,7 @@ export class BundleDescriptor implements Descriptor {
       return new NormalApiCaller();
     }
     return new BundleApiCaller(
-      new BundleExecutor(settings.bundleOptions!, this)
+      new BundleExecutor(settings.bundleOptions!, this),
     );
   }
 }

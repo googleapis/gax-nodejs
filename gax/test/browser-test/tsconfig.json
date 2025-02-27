@@ -4,10 +4,11 @@
     "rootDir": ".",
     "outDir": "build",
     "resolveJsonModule": true,
-    "lib": ["ES2018", "DOM"]
+    "lib": ["DOM"]
   },
   "include": [
     "src/**/*.ts",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "src/**/*.json",
   ]
 }

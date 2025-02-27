@@ -20,7 +20,7 @@ import * as gax from './gax';
 import type {GrpcClient, ClientStubOptions} from './grpc';
 import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
-import {GoogleAuth, OAuth2Client} from 'google-auth-library';
+import {GoogleAuth, AuthClient} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as routingHeader from './routingHeader';
 import * as gapicConfig from './iam_policy_service_client_config.json';
@@ -40,7 +40,7 @@ export class IamClient {
   private _defaults: {[method: string]: gax.CallSettings};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _protos: any;
-  auth?: GoogleAuth | OAuth2Client;
+  auth?: GoogleAuth | AuthClient;
   descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}};
   innerApiCalls: {[name: string]: Function} = {};
   iamPolicyStub?: Promise<{[name: string]: Function}>;
@@ -49,7 +49,7 @@ export class IamClient {
   constructor(
     gaxGrpc: GrpcClient | FallbackGrpcClient,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    options: ClientOptions
+    options: ClientOptions,
   ) {
     this.gaxGrpc = gaxGrpc;
     // Ensure that options include the service address and port.
@@ -61,7 +61,7 @@ export class IamClient {
         apiEndpoint: options.apiEndpoint,
         fallback: options.fallback,
       },
-      options
+      options,
     ) as ClientOptions & ClientStubOptions;
     version = opts.fallback ? fallback.version : version;
     opts.scopes = (this.constructor as typeof IamClient).scopes;
@@ -90,7 +90,7 @@ export class IamClient {
       'google.iam.v1.IAMPolicy',
       gapicConfig as gax.ClientConfig,
       opts!.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
+      {'x-goog-api-client': clientHeader.join(' ')},
     );
     this.innerApiCalls = {};
   }
@@ -117,7 +117,7 @@ export class IamClient {
       this._opts.fallback
         ? this._protos.lookupService('google.iam.v1.IAMPolicy')
         : this._protos.google.iam.v1.IAMPolicy,
-      this._opts
+      this._opts,
     ) as Promise<{[method: string]: Function}>;
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -139,12 +139,12 @@ export class IamClient {
           },
         (err: Error | null | undefined) => () => {
           throw err;
-        }
+        },
       );
       this.innerApiCalls[methodName] = createApiCall(
         innerCallPromise,
         this._defaults[methodName],
-        this.descriptors.page[methodName]
+        this.descriptors.page[methodName],
       );
     }
     return this.iamPolicyStub;
@@ -202,7 +202,7 @@ export class IamClient {
 
   getIamPolicy(
     request: protos.google.iam.v1.GetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): Promise<[protos.google.iam.v1.Policy]>;
   getIamPolicy(
     request: protos.google.iam.v1.GetIamPolicyRequest,
@@ -211,7 +211,7 @@ export class IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getIamPolicy(
     request: protos.google.iam.v1.GetIamPolicyRequest,
@@ -219,7 +219,7 @@ export class IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   getIamPolicy(
     request: protos.google.iam.v1.GetIamPolicyRequest,
@@ -234,7 +234,7 @@ export class IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.iam.v1.Policy]> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
@@ -255,13 +255,13 @@ export class IamClient {
       routingHeader.fromParams({
         resource: request.resource,
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
 
   setIamPolicy(
     request: protos.google.iam.v1.SetIamPolicyRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): Promise<[protos.google.iam.v1.Policy]>;
   setIamPolicy(
     request: protos.google.iam.v1.SetIamPolicyRequest,
@@ -270,7 +270,7 @@ export class IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   setIamPolicy(
     request: protos.google.iam.v1.SetIamPolicyRequest,
@@ -278,7 +278,7 @@ export class IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   setIamPolicy(
     request: protos.google.iam.v1.SetIamPolicyRequest,
@@ -293,7 +293,7 @@ export class IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.iam.v1.Policy]> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
@@ -314,12 +314,12 @@ export class IamClient {
       routingHeader.fromParams({
         resource: request.resource,
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest,
-    options?: gax.CallOptions
+    options?: gax.CallOptions,
   ): Promise<[protos.google.iam.v1.TestIamPermissionsResponse]>;
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest,
@@ -327,7 +327,7 @@ export class IamClient {
       protos.google.iam.v1.TestIamPermissionsResponse,
       protos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest,
@@ -336,7 +336,7 @@ export class IamClient {
       protos.google.iam.v1.TestIamPermissionsResponse,
       protos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): void;
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest,
@@ -351,7 +351,7 @@ export class IamClient {
       protos.google.iam.v1.TestIamPermissionsResponse,
       protos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.iam.v1.TestIamPermissionsResponse]> {
     let options: gax.CallOptions;
     if (optionsOrCallback instanceof Function && callback === undefined) {
@@ -372,7 +372,7 @@ export class IamClient {
       routingHeader.fromParams({
         resource: request.resource,
       });
-    this.initialize();
+    this.initialize().catch(console.error);
     return this.innerApiCalls.testIamPermissions(request, options, callback);
   }
 
@@ -382,7 +382,7 @@ export class IamClient {
    * The client will no longer be usable and all future behavior is undefined.
    */
   close(): Promise<void> {
-    this.initialize();
+    this.initialize().catch(console.error);
     if (!this._terminated) {
       return this.iamPolicyStub!.then(stub => {
         this._terminated = true;
@@ -407,7 +407,7 @@ export interface IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.iam.v1.Policy]>;
   setIamPolicy(request: protos.google.iam.v1.SetIamPolicyRequest): void;
   setIamPolicy(
@@ -423,10 +423,10 @@ export interface IamClient {
       protos.google.iam.v1.Policy,
       protos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.iam.v1.Policy]>;
   testIamPermissions(
-    request: protos.google.iam.v1.TestIamPermissionsRequest
+    request: protos.google.iam.v1.TestIamPermissionsRequest,
   ): void;
   testIamPermissions(
     request: protos.google.iam.v1.TestIamPermissionsRequest,
@@ -441,6 +441,6 @@ export interface IamClient {
       protos.google.iam.v1.TestIamPermissionsResponse,
       protos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
-    >
+    >,
   ): Promise<[protos.google.iam.v1.TestIamPermissionsResponse]>;
 }

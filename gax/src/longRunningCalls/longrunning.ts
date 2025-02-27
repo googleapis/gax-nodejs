@@ -37,7 +37,7 @@ export interface GetOperationCallback {
     err?: Error | null,
     result?: {},
     metadata?: {},
-    rawResponse?: LROOperation
+    rawResponse?: LROOperation,
   ): void;
 }
 
@@ -75,7 +75,7 @@ export class Operation extends EventEmitter {
     grpcOp: LROOperation,
     longrunningDescriptor: LongRunningDescriptor,
     backoffSettings: BackoffSettings,
-    callOptions?: CallOptions
+    callOptions?: CallOptions,
   ) {
     super();
     this.completeListeners = 0;
@@ -186,7 +186,7 @@ export class Operation extends EventEmitter {
     request.name = this.latestResponse.name;
     this.currentCallPromise_ = operationsClient.getOperationInternal(
       request,
-      this._callOptions!
+      this._callOptions!,
     );
 
     const noCallbackPromise = this.currentCallPromise_.then(
@@ -201,7 +201,7 @@ export class Operation extends EventEmitter {
           return;
         }
         return Promise.reject(err);
-      }
+      },
     );
 
     if (!callback) {
@@ -292,7 +292,7 @@ export class Operation extends EventEmitter {
 
       if (now.getTime() >= deadline) {
         const error = new GoogleError(
-          'Total timeout exceeded before any response was received'
+          'Total timeout exceeded before any response was received',
         );
         error.code = Status.DEADLINE_EXCEEDED;
         setImmediate(emit, 'error', error);
@@ -312,7 +312,7 @@ export class Operation extends EventEmitter {
               (rawResponse &&
                 !arrayEquals(
                   rawResponse.metadata.value!,
-                  previousMetadataBytes
+                  previousMetadataBytes,
                 )))
           ) {
             setImmediate(emit, 'progress', metadata, rawResponse);
@@ -353,7 +353,7 @@ export class Operation extends EventEmitter {
         'complete',
         (result, metadata, rawResponse) => {
           resolve([result, metadata, rawResponse]);
-        }
+        },
       );
     });
   }
@@ -376,7 +376,7 @@ export function operation(
   op: LROOperation,
   longrunningDescriptor: LongRunningDescriptor,
   backoffSettings: BackoffSettings,
-  callOptions?: CallOptions
+  callOptions?: CallOptions,
 ) {
   return new Operation(op, longrunningDescriptor, backoffSettings, callOptions);
 }

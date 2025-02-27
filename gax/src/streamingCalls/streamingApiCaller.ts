@@ -48,7 +48,7 @@ export class StreamingApiCaller implements APICaller {
       this.descriptor.type,
       callback,
       this.descriptor.rest,
-      this.descriptor.gaxStreamingRetries
+      this.descriptor.gaxStreamingRetries,
     );
   }
 
@@ -63,7 +63,7 @@ export class StreamingApiCaller implements APICaller {
           argument: {},
           metadata: {},
           options: {},
-          callback?: APICallback
+          callback?: APICallback,
         ) => {
           return (func as ClientStreamingCall)(metadata, options, callback);
         };
@@ -74,7 +74,7 @@ export class StreamingApiCaller implements APICaller {
       default:
         warn(
           'streaming_wrap_unknown_stream_type',
-          `Unknown stream type: ${this.descriptor.type}`
+          `Unknown stream type: ${this.descriptor.type}`,
         );
     }
     return func;
@@ -84,13 +84,13 @@ export class StreamingApiCaller implements APICaller {
     apiCall: SimpleCallbackFunction,
     argument: {},
     settings: CallSettings,
-    stream: StreamProxy
+    stream: StreamProxy,
   ) {
     stream.setStream(
       apiCall,
       argument,
       settings.retryRequestOptions,
-      settings.retry!
+      settings.retry!,
     );
   }
 

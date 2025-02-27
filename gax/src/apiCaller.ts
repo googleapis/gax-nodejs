@@ -39,20 +39,20 @@ export interface APICaller {
     apiCall: SimpleCallbackFunction,
     argument: {},
     settings: {},
-    canceller: OngoingCallPromise | OngoingCall | StreamProxy
+    canceller: OngoingCallPromise | OngoingCall | StreamProxy,
   ): void;
   fail(
     canceller: OngoingCallPromise | OngoingCall | CancellableStream,
-    err: GoogleError
+    err: GoogleError,
   ): void;
   result(
-    canceller: OngoingCallPromise | OngoingCall | CancellableStream
+    canceller: OngoingCallPromise | OngoingCall | CancellableStream,
   ): CancellablePromise<ResultTuple> | CancellableStream;
 }
 
 export function createAPICaller(
   settings: CallSettings,
-  descriptor: Descriptor | undefined
+  descriptor: Descriptor | undefined,
 ): APICaller {
   if (!descriptor) {
     return new NormalApiCaller();

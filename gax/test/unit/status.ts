@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {describe, it} from 'mocha';
 import {rpcCodeFromHttpStatusCode, Status} from '../../src/status';
 
@@ -26,40 +26,40 @@ describe('status.ts', () => {
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(307), Status.UNKNOWN);
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(400),
-      Status.INVALID_ARGUMENT
+      Status.INVALID_ARGUMENT,
     );
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(401),
-      Status.UNAUTHENTICATED
+      Status.UNAUTHENTICATED,
     );
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(403),
-      Status.PERMISSION_DENIED
+      Status.PERMISSION_DENIED,
     );
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(404), Status.NOT_FOUND);
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(409), Status.ABORTED);
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(416), Status.OUT_OF_RANGE);
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(429),
-      Status.RESOURCE_EXHAUSTED
+      Status.RESOURCE_EXHAUSTED,
     );
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(499), Status.CANCELLED);
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(451),
-      Status.FAILED_PRECONDITION
+      Status.FAILED_PRECONDITION,
     );
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(411),
-      Status.FAILED_PRECONDITION
+      Status.FAILED_PRECONDITION,
     );
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(501),
-      Status.UNIMPLEMENTED
+      Status.UNIMPLEMENTED,
     );
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(503), Status.UNAVAILABLE);
     assert.deepStrictEqual(
       rpcCodeFromHttpStatusCode(504),
-      Status.DEADLINE_EXCEEDED
+      Status.DEADLINE_EXCEEDED,
     );
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(505), Status.INTERNAL);
     assert.deepStrictEqual(rpcCodeFromHttpStatusCode(510), Status.INTERNAL);

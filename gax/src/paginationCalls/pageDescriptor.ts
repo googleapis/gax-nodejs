@@ -28,6 +28,7 @@ import {
 import {Descriptor} from '../descriptor';
 import {CallSettings} from '../gax';
 import {NormalApiCaller} from '../normalCalls/normalApiCaller';
+import {warn} from '.././warnings';
 
 import {PagedApiCaller} from './pagedApiCaller';
 
@@ -48,7 +49,7 @@ export class PageDescriptor implements Descriptor {
   constructor(
     requestPageTokenField: string,
     responsePageTokenField: string,
-    resourceField: string
+    resourceField: string,
   ) {
     this.requestPageTokenField = requestPageTokenField;
     this.responsePageTokenField = responsePageTokenField;
@@ -61,8 +62,15 @@ export class PageDescriptor implements Descriptor {
   createStream(
     apiCall: GaxCall,
     request: {},
-    options: CallSettings
+    options: CallSettings,
   ): Transform {
+    if (options?.autoPaginate) {
+      warn(
+        'autoPaginate true',
+        'Autopaginate will always be set to false in stream paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
+        'AutopaginateTrueWarning',
+      );
+    }
     const stream = new PassThrough({objectMode: true});
     options = Object.assign({}, options, {autoPaginate: false});
     const maxResults = 'maxResults' in options ? options.maxResults : -1;
@@ -72,7 +80,7 @@ export class PageDescriptor implements Descriptor {
       err: Error | null,
       resources: Array<ResponseType>,
       next: NextPageRequestType,
-      apiResp: RawResponseType
+      apiResp: RawResponseType,
     ) {
       if (err) {
         stream.emit('error', err);
@@ -120,10 +128,10 @@ export class PageDescriptor implements Descriptor {
         setImmediate(apiCall, next, options, callback as APICallback);
       }
     }
-    stream.on('resume', () => {
+    stream.on('resume', async () => {
       if (!started) {
         started = true;
-        apiCall(request, options, callback as unknown as APICallback);
+        await apiCall(request, options, callback as unknown as APICallback);
       }
     });
     return stream;
@@ -135,8 +143,15 @@ export class PageDescriptor implements Descriptor {
   asyncIterate(
     apiCall: GaxCall,
     request: RequestType,
-    options?: CallSettings
+    options?: CallSettings,
   ): AsyncIterable<{} | undefined> {
+    if (options?.autoPaginate) {
+      warn(
+        'autoPaginate true',
+        'Autopaginate will always be set to false in Async paging methods. See more info at https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#auto-pagination for more information on how to configure paging calls',
+        'AutopaginateTrueWarning',
+      );
+    }
     options = Object.assign({}, options, {autoPaginate: false});
     const iterable = this.createIterator(apiCall, request, options);
     return iterable;
@@ -145,7 +160,7 @@ export class PageDescriptor implements Descriptor {
   createIterator(
     apiCall: GaxCall,
     request: RequestType,
-    options: CallSettings
+    options: CallSettings,
   ): AsyncIterable<{} | undefined> {
     const asyncIterable = {
       [Symbol.asyncIterator]() {
@@ -164,7 +179,7 @@ export class PageDescriptor implements Descriptor {
               let result: {} | [ResponseType] | null;
               [result, nextPageRequest] = (await apiCall(
                 nextPageRequest!,
-                options
+                options,
               )) as ResultTuple;
               // For pagination response with protobuf map type, use tuple as representation.
               if (result && !Array.isArray(result)) {

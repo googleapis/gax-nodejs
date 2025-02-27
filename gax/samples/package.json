@@ -3,7 +3,7 @@
   "license": "Apache-2.0",
   "author": "Google LLC",
   "engines": {
-    "node": ">=10"
+    "node": ">=18"
   },
   "repository": "googleapis/gax-nodejs",
   "private": true,
@@ -14,7 +14,7 @@
     "*.js"
   ],
   "dependencies": {
-    "google-gax": "^4.4.1"
+    "google-gax": "^4.6.0"
   },
   "devDependencies": {
     "c8": "^9.0.0",

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {fromParams} from '../../src/routingHeader';
 import {describe, it} from 'mocha';
 
@@ -28,7 +28,7 @@ describe('fromParams', () => {
     const routingHeader = fromParams({screaming: '😱', cyrillic: 'тест'});
     assert.strictEqual(
       routingHeader,
-      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82'
+      'screaming=%F0%9F%98%B1&cyrillic=%D1%82%D0%B5%D1%81%D1%82',
     );
   });
 });

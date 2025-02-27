@@ -16,7 +16,7 @@
 
 /* eslint-disable no-prototype-builtins */
 
-import * as assert from 'assert';
+import assert from 'assert';
 import {status} from '@grpc/grpc-js';
 import * as sinon from 'sinon';
 import {describe, it} from 'mocha';
@@ -85,7 +85,7 @@ function createApiCall(func: Function, client?: OperationsClient) {
   const descriptor = new LongrunningDescriptor(
     client!,
     mockDecoder as unknown as AnyDecoder,
-    mockDecoder as unknown as AnyDecoder
+    mockDecoder as unknown as AnyDecoder,
   );
   return utils.createApiCall(func, {descriptor}) as GaxCallPromise;
 }
@@ -140,7 +140,7 @@ describe('longrunning', () => {
         argument: {},
         metadata: {},
         options: {},
-        callback: Function
+        callback: Function,
       ) => {
         callback(null, PENDING_OP);
       };
@@ -157,19 +157,19 @@ describe('longrunning', () => {
           assert(operation.hasOwnProperty('backoffSettings'));
           assert.strictEqual(
             operation.backoffSettings.initialRetryDelayMillis,
-            defaultInitialRetryDelayMillis
+            defaultInitialRetryDelayMillis,
           );
           assert.strictEqual(
             operation.backoffSettings.retryDelayMultiplier,
-            defaultRetryDelayMultiplier
+            defaultRetryDelayMultiplier,
           );
           assert.strictEqual(
             operation.backoffSettings.maxRetryDelayMillis,
-            defaultMaxRetryDelayMillis
+            defaultMaxRetryDelayMillis,
           );
           assert.strictEqual(
             operation.backoffSettings.totalTimeoutMillis,
-            defaultTotalTimeoutMillis
+            defaultTotalTimeoutMillis,
           );
           assert(operation.hasOwnProperty('longrunningDescriptor'));
           assert.strictEqual(operation.name, OPERATION_NAME);
@@ -190,7 +190,7 @@ describe('longrunning', () => {
       const desc = new LongrunningDescriptor(
         client as OperationsClient,
         mockDecoder as unknown as AnyDecoder,
-        mockDecoder as unknown as AnyDecoder
+        mockDecoder as unknown as AnyDecoder,
       );
       const initialRetryDelayMillis = 1;
       const retryDelayMultiplier = 2;
@@ -204,30 +204,30 @@ describe('longrunning', () => {
         unusedRpcValue,
         unusedRpcValue,
         unusedRpcValue,
-        totalTimeoutMillis
+        totalTimeoutMillis,
       );
       const operation = longrunning.operation(
         SUCCESSFUL_OP as {} as operationProtos.google.longrunning.Operation,
         desc,
-        backoff
+        backoff,
       );
       assert(operation instanceof Object);
       assert(operation.hasOwnProperty('backoffSettings'));
       assert.strictEqual(
         operation.backoffSettings.initialRetryDelayMillis,
-        initialRetryDelayMillis
+        initialRetryDelayMillis,
       );
       assert.strictEqual(
         operation.backoffSettings.retryDelayMultiplier,
-        retryDelayMultiplier
+        retryDelayMultiplier,
       );
       assert.strictEqual(
         operation.backoffSettings.maxRetryDelayMillis,
-        maxRetryDelayMillis
+        maxRetryDelayMillis,
       );
       assert.strictEqual(
         operation.backoffSettings.totalTimeoutMillis,
-        totalTimeoutMillis
+        totalTimeoutMillis,
       );
       assert(operation.hasOwnProperty('longrunningDescriptor'));
       assert.strictEqual(operation.name, OPERATION_NAME);
@@ -247,7 +247,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, SUCCESSFUL_OP);
         };
@@ -275,7 +275,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -305,7 +305,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -325,7 +325,7 @@ describe('longrunning', () => {
                 assert.strictEqual(client.getOperation.callCount, 1);
                 done();
               }),
-              undefined
+              undefined,
             );
           })
           .catch(error => {
@@ -338,7 +338,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -370,7 +370,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, ERROR_OP);
         };
@@ -397,7 +397,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -428,7 +428,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, SUCCESSFUL_OP);
         };
@@ -449,7 +449,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -481,7 +481,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -509,7 +509,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -522,11 +522,14 @@ describe('longrunning', () => {
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
             const p = operation.promise();
-            operation.cancel().then(() => {
-              assert.strictEqual(client.cancelOperation.called, true);
-              assert.strictEqual(client.cancelGetOperationSpy.called, true);
-              done();
-            });
+            operation
+              .cancel()
+              .then(() => {
+                assert.strictEqual(client.cancelOperation.called, true);
+                assert.strictEqual(client.cancelGetOperationSpy.called, true);
+                done();
+              })
+              .catch(console.error);
             return p;
           })
           .then(() => {
@@ -544,7 +547,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -577,7 +580,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -610,7 +613,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -646,7 +649,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -699,7 +702,7 @@ describe('longrunning', () => {
           argument: {},
           metadata: {},
           options: {},
-          callback: Function
+          callback: Function,
         ) => {
           callback(null, PENDING_OP);
         };
@@ -713,7 +716,7 @@ describe('longrunning', () => {
           {},
           {
             longrunning: gax.createBackoffSettings(1, 1, 1, 0, 0, 0, 1),
-          }
+          },
         )
           .then(responses => {
             const operation = responses[0] as longrunning.Operation;
@@ -725,7 +728,7 @@ describe('longrunning', () => {
               assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
               assert.strictEqual(
                 err!.message,
-                'Total timeout exceeded before ' + 'any response was received'
+                'Total timeout exceeded before ' + 'any response was received',
               );
               done();
             });

@@ -32,7 +32,7 @@ async function main(directory: string) {
 
   fs.writeFileSync(
     outputFile,
-    JSON.stringify(commonProtoFiles, null, 2) + '\n'
+    JSON.stringify(commonProtoFiles, null, 2) + '\n',
   );
 }
 /**
@@ -46,5 +46,6 @@ if (require.main === module) {
   if (process.argv.length < 3 || process.argv[2] === '--help') {
     usage();
   }
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
   main(process.argv[2]);
 }

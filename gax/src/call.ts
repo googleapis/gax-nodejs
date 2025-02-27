@@ -84,11 +84,11 @@ export class OngoingCall {
         err: GoogleError | null,
         response?: ResponseType,
         next?: NextPageRequestType,
-        rawResponse?: RawResponseType
+        rawResponse?: RawResponseType,
       ) => {
         this.completed = true;
         setImmediate(this.callback!, err, response, next, rawResponse);
-      }
+      },
     );
     if (canceller instanceof Promise) {
       canceller.catch(err => {
@@ -113,14 +113,14 @@ export class OngoingCallPromise extends OngoingCall {
    */
   constructor() {
     let resolveCallback: (
-      result: [ResponseType, NextPageRequestType, RawResponseType]
+      result: [ResponseType, NextPageRequestType, RawResponseType],
     ) => void;
     let rejectCallback: (err: Error) => void;
     const callback: APICallback = (
       err: GoogleError | null,
       response?: ResponseType,
       next?: NextPageRequestType,
-      rawResponse?: RawResponseType
+      rawResponse?: RawResponseType,
     ) => {
       if (err) {
         // If gRPC metadata exist, parsed google.rpc.status details.
