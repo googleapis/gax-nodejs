@@ -18,7 +18,30 @@
 const webpack = require('webpack');
 module.exports = {
   entry: './build/src/index.js',
+  externals: {
+    crypto: '{}',
+    'node:buffer': '{}',
+    'node:fs': '{}',
+    'node:http': '{}',
+    'node:https': '{}',
+    'node:net': '{}',
+    'node:path': '{}',
+    'node:process': '{}',
+    'node:stream': '{}',
+    'node:stream/web': '{}',
+    'node:url': '{}',
+    'node:util': '{}',
+    'node:zlib': '{}',
+    worker_threads: '{}',
+    fs: '{}',
+    child_process: '{}',
+    tls: '{}',
+    net: '{}',
+  },
   resolve: {
+    alias: {
+      process: 'process/browser',
+    },
     extensions: ['.ts', '.js', '.json'],
     fallback: {
       fs: 'empty',
@@ -31,9 +54,9 @@ module.exports = {
       https: require.resolve('https-browserify'),
       querystring: require.resolve('querystring-es3'),
       url: require.resolve('url/'),
-      worker_threads: 'empty',
       crypto: require.resolve('crypto'),
-      'process/browser': 'empty',
+      os: require.resolve('os-browserify/browser'),
+      path: require.resolve('path-browserify'),
     },
   },
   plugins: [
@@ -44,7 +67,7 @@ module.exports = {
       Buffer: ['buffer', 'Buffer'],
     }),
     new webpack.ProvidePlugin({
-      'node:buffer': ['buffer', 'Buffer'],
+      'node-fetch': ['fetch'],
     }),
   ],
   module: {
@@ -59,7 +82,7 @@ module.exports = {
         use: 'null-loader',
       },
       {
-        test: /node_modules[\\/]google-auth-library/,
+        test: /node_modules[\\/]gcp-metadata/,
         use: 'null-loader',
       },
       {
@@ -69,6 +92,12 @@ module.exports = {
       {
         test: /build[\\/]src[\\/]grpc\.js$/,
         use: 'null-loader',
+      },
+      {
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
       },
     ],
   },
