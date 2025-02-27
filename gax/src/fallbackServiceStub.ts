@@ -72,7 +72,7 @@ export interface FallbackServiceStub {
 export type FetchParametersMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface FetchParameters {
-  headers: {[key: string]: string};
+  headers: {[key: string]: string} | Headers;
   body: Buffer | Uint8Array | string;
   method: FetchParametersMethod;
   url: string;
@@ -151,9 +151,9 @@ export function generateServiceStub(
       const cancelSignal = cancelController.signal as AbortSignal;
       let cancelRequested = false;
       const url = fetchParameters.url;
-      const headers = fetchParameters.headers;
+      const headers = new Headers(fetchParameters.headers);
       for (const key of Object.keys(options)) {
-        headers[key] = options[key][0];
+        headers.set(key, options[key][0]);
       }
       const streamArrayParser = new StreamArrayParser(rpc);
 
