@@ -34,6 +34,7 @@ import {
   GrpcClientOptions,
   GrpcModule,
 } from '../../src/grpc';
+import {PassThroughClient} from 'google-auth-library';
 
 function gaxGrpc(options?: GrpcClientOptions) {
   return new GrpcClient(options);
@@ -140,7 +141,11 @@ describe('grpc', () => {
     };
 
     beforeEach(() => {
-      const dummyAuth = {authData: 'dummyAuth'};
+      const dummyAuth = new PassThroughClient();
+      dummyAuth.getRequestHeaders = async () => {
+        return new Headers(dummyChannelCreds);
+      };
+
       const dummySslCreds = {sslCreds: 'dummySslCreds'};
       const dummyGrpcAuth = {grpcAuth: 'dummyGrpcAuth'};
       stubAuth.getClient.reset();
@@ -151,9 +156,7 @@ describe('grpc', () => {
       stubAuth.getClient.resolves(dummyAuth);
       stubAuth.getUniverseDomain.resolves('googleapis.com');
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
-      stubGrpc.credentials.createFromGoogleCredential
-        .withArgs(dummyAuth)
-        .returns(dummyGrpcAuth);
+      stubGrpc.credentials.createFromGoogleCredential.returns(dummyGrpcAuth);
       stubGrpc.credentials.combineChannelCredentials
         .withArgs(dummySslCreds, dummyGrpcAuth)
         .returns(dummyChannelCreds);

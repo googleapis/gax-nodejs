@@ -20,7 +20,7 @@ import * as gax from './gax';
 import type {GrpcClient, ClientStubOptions} from './grpc';
 import type {GrpcClient as FallbackGrpcClient} from './fallback';
 import {createApiCall} from './createApiCall';
-import {GoogleAuth, OAuth2Client} from 'google-auth-library';
+import {GoogleAuth, AuthClient} from 'google-auth-library';
 import {ProjectIdCallback} from 'google-auth-library/build/src/auth/googleauth';
 import * as routingHeader from './routingHeader';
 import * as gapicConfig from './iam_policy_service_client_config.json';
@@ -40,7 +40,7 @@ export class IamClient {
   private _defaults: {[method: string]: gax.CallSettings};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _protos: any;
-  auth?: GoogleAuth | OAuth2Client;
+  auth?: GoogleAuth | AuthClient;
   descriptors: Descriptors = {page: {}, stream: {}, longrunning: {}};
   innerApiCalls: {[name: string]: Function} = {};
   iamPolicyStub?: Promise<{[name: string]: Function}>;
