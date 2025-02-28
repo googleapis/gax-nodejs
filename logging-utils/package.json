@@ -15,7 +15,7 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "precompile": "gts clean",
-    "samples-test": "cd samples/ && npm link ../ && npm install && npm test && cd ../",
+    "samples-test": "cd samples/ && npm install && npm link ../ && npm test && cd ../",
     "system-test": "echo no system tests 🙀"
   },
   "author": "Google API Authors",
