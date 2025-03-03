@@ -8,8 +8,7 @@
     "pretest": "npm run compile",
     "compile": "tsc -p .",
     "typeless": "npx typeless-sample-bot --outputpath javascript --targets typescript --recursive",
-    "posttypeless": "npx eslint --fix javascript",
-    "preinstall": "npm link ../"
+    "posttypeless": "npx eslint --fix javascript"
   },
   "files": [
     "javascript/*.js",
@@ -27,7 +26,7 @@
     "node": ">=14"
   },
   "dependencies": {
-    "google-logging-utils": "^1.0.1"
+    "google-logging-utils": "1.0.1"
   },
   "devDependencies": {
     "@google-cloud/typeless-sample-bot": "^2.1.0",
