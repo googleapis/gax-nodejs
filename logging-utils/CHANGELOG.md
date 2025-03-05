@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/googleapis/gax-nodejs/compare/google-logging-utils-v1.0.1...google-logging-utils-v1.1.0) (2025-03-05)
+
+
+### Features
+
+* allow users to turn on logging without the environment variable ([#1704](https://github.com/googleapis/gax-nodejs/issues/1704)) ([5ef89de](https://github.com/googleapis/gax-nodejs/commit/5ef89de55db98618cd6945f45287de96f34950e6))
+
 ## [1.0.1](https://github.com/googleapis/gax-nodejs/compare/google-logging-utils-v1.0.0...google-logging-utils-v1.0.1) (2024-12-20)
 
 
