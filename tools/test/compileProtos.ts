@@ -160,7 +160,7 @@ describe('compileProtos tool', () => {
       js
         .toString()
         .includes(
-          'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf.js"',
+          'import {protobufMinimal  as $protobuf} from "google-gax/build/src/protobuf"',
         ),
     );
     assert(!js.toString().includes('require("protobufjs/minimal")'));
