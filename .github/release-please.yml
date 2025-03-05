@@ -1,2 +1,3 @@
 handleGHRelease: true
 manifest: true
+separate-pull-requests: true
