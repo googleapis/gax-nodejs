@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.0](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.6...gapic-tools-v1.0.0) (2025-03-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* migrate gax to Node 18 ([#1699](https://github.com/googleapis/gax-nodejs/issues/1699))
+
+### Bug Fixes
+
+* bytes field should be typed as a Buffer ([#1652](https://github.com/googleapis/gax-nodejs/issues/1652)) ([a81663f](https://github.com/googleapis/gax-nodejs/commit/a81663fcdf69a42ee6335c78355b9c8cb11d6064))
+* protobuf export path in compileProtos ([#1708](https://github.com/googleapis/gax-nodejs/issues/1708)) ([113ca18](https://github.com/googleapis/gax-nodejs/commit/113ca18d98f7915c5af05a893d0314744e3d15e1))
+
+
+### Miscellaneous Chores
+
+* migrate gax to Node 18 ([#1699](https://github.com/googleapis/gax-nodejs/issues/1699)) ([fc3eeaa](https://github.com/googleapis/gax-nodejs/commit/fc3eeaa574e171c445e0768b06df4ed087bf1f67))
+
 ## [0.4.6](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.5...gapic-tools-v0.4.6) (2024-08-28)
 
 
