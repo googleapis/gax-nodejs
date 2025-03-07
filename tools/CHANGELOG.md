@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v1.0.0...gapic-tools-v1.0.1) (2025-03-07)
+
+
+### Bug Fixes
+
+* update gax dependency in gapic tools ([c025b13](https://github.com/googleapis/gax-nodejs/commit/c025b13db0109f123ac705e419831d96b42514f1))
+
 ## [1.0.0](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v0.4.6...gapic-tools-v1.0.0) (2025-03-05)
 
 
