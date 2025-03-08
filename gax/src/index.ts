@@ -25,6 +25,8 @@ import * as routingHeader from './routingHeader';
 export {GoogleAuth, GoogleAuthOptions} from 'google-auth-library';
 export * as googleAuthLibrary from 'google-auth-library';
 
+export * as loggingUtils from 'google-logging-utils';
+
 export {grpc};
 export {CancellablePromise, OngoingCall} from './call';
 export {createApiCall} from './createApiCall';
