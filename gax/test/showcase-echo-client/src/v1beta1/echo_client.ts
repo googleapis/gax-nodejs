@@ -1,4 +1,4 @@
-// Copyright 2023 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,23 +18,11 @@
 
 /* global window */
 import * as gax from 'google-gax';
-import type {
-  Callback,
-  CallOptions,
-  Descriptors,
-  ClientOptions,
-  GrpcClientOptions,
-  LROperation,
-  PaginationCallback,
-  GaxCall,
-  IamClient,
-  IamProtos,
-  LocationsClient,
-  LocationProtos,
-} from 'google-gax';
+import type {Callback, CallOptions, Descriptors, ClientOptions, GrpcClientOptions, LROperation, PaginationCallback, GaxCall, IamClient, IamProtos, LocationsClient, LocationProtos} from 'google-gax';
 import {Transform, PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+import {loggingUtils as logging} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
@@ -65,6 +53,8 @@ export class EchoClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
+  private _log = logging.log('showcase');
+
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -102,7 +92,7 @@ export class EchoClient {
    *     Developer's Console, e.g. 'grape-spaceship-123'. We will also check
    *     the environment variable GCLOUD_PROJECT for your project ID. If your
    *     app is running in an environment which supports
-   *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
+   *     {@link https://cloud.google.com/docs/authentication/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
@@ -119,41 +109,20 @@ export class EchoClient {
    *     const client = new EchoClient({fallback: true}, gax);
    *     ```
    */
-  constructor(
-    opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
-  ) {
+  constructor(opts?: ClientOptions, gaxInstance?: typeof gax | typeof gax.fallback) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof EchoClient;
-    if (
-      opts?.universe_domain &&
-      opts?.universeDomain &&
-      opts?.universe_domain !== opts?.universeDomain
-    ) {
-      throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
-      );
+    if (opts?.universe_domain && opts?.universeDomain && opts?.universe_domain !== opts?.universeDomain) {
+      throw new Error('Please set either universe_domain or universeDomain, but not both.');
     }
-    const universeDomainEnvVar =
-      typeof process === 'object' && typeof process.env === 'object'
-        ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
-        : undefined;
-    this._universeDomain =
-      opts?.universeDomain ??
-      opts?.universe_domain ??
-      universeDomainEnvVar ??
-      'googleapis.com';
+    const universeDomainEnvVar = (typeof process === 'object' && typeof process.env === 'object') ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] : undefined;
+    this._universeDomain = opts?.universeDomain ?? opts?.universe_domain ?? universeDomainEnvVar ?? 'googleapis.com';
     this._servicePath = 'localhost';
-    const servicePath =
-      opts?.servicePath || opts?.apiEndpoint || this._servicePath;
-    this._providedCustomServicePath = !!(
-      opts?.servicePath || opts?.apiEndpoint
-    );
+    const servicePath = opts?.servicePath || opts?.apiEndpoint || this._servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
-    const fallback =
-      opts?.fallback ??
-      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
+    const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
@@ -176,7 +145,7 @@ export class EchoClient {
     this._opts = opts;
 
     // Save the auth object to the client, for use by other methods.
-    this.auth = this._gaxGrpc.auth as gax.GoogleAuth;
+    this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
 
     // Set useJWTAccessWithScope on the auth object.
     this.auth.useJWTAccessWithScope = true;
@@ -189,14 +158,18 @@ export class EchoClient {
       this.auth.defaultScopes = staticMembers.scopes;
     }
     this.iamClient = new this._gaxModule.IamClient(this._gaxGrpc, opts);
-
+  
     this.locationsClient = new this._gaxModule.LocationsClient(
       this._gaxGrpc,
       opts
     );
+  
 
     // Determine the client header string.
-    const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
+    const clientHeader = [
+      `gax/${this._gaxModule.version}`,
+      `gapic/${version}`,
+    ];
     if (typeof process === 'object' && 'versions' in process) {
       clientHeader.push(`gl-node/${process.versions.node}`);
     } else {
@@ -235,30 +208,16 @@ export class EchoClient {
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
     this.descriptors.page = {
-      pagedExpand: new this._gaxModule.PageDescriptor(
-        'pageToken',
-        'nextPageToken',
-        'responses'
-      ),
+      pagedExpand:
+          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'responses')
     };
 
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this.descriptors.stream = {
-      expand: new this._gaxModule.StreamDescriptor(
-        this._gaxModule.StreamType.SERVER_STREAMING,
-        !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
-      ),
-      collect: new this._gaxModule.StreamDescriptor(
-        this._gaxModule.StreamType.CLIENT_STREAMING,
-        !!opts.fallback
-      ),
-      chat: new this._gaxModule.StreamDescriptor(
-        this._gaxModule.StreamType.BIDI_STREAMING,
-        !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
-      ),
+      expand: new this._gaxModule.StreamDescriptor(this._gaxModule.StreamType.SERVER_STREAMING, !!opts.fallback, !!opts.gaxServerStreamingRetries),
+    collect: new this._gaxModule.StreamDescriptor(this._gaxModule.StreamType.CLIENT_STREAMING, !!opts.fallback),
+      chat: new this._gaxModule.StreamDescriptor(this._gaxModule.StreamType.BIDI_STREAMING, !!opts.fallback, !!opts.gaxServerStreamingRetries)
     };
 
     const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
@@ -267,100 +226,32 @@ export class EchoClient {
     // rather than holding a request open.
     const lroOptions: GrpcClientOptions = {
       auth: this.auth,
-      grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined,
+      grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined
     };
     if (opts.fallback) {
       lroOptions.protoJson = protoFilesRoot;
-      lroOptions.httpRules = [
-        {
-          selector: 'google.cloud.location.Locations.ListLocations',
-          get: '/v1beta1/{name=projects/*}/locations',
-        },
-        {
-          selector: 'google.cloud.location.Locations.GetLocation',
-          get: '/v1beta1/{name=projects/*/locations/*}',
-        },
-        {
-          selector: 'google.iam.v1.IAMPolicy.SetIamPolicy',
-          post: '/v1beta1/{resource=users/*}:setIamPolicy',
-          body: '*',
-          additional_bindings: [
-            {post: '/v1beta1/{resource=rooms/*}:setIamPolicy', body: '*'},
-            {
-              post: '/v1beta1/{resource=rooms/*/blurbs/*}:setIamPolicy',
-              body: '*',
-            },
-            {post: '/v1beta1/{resource=sequences/*}:setIamPolicy', body: '*'},
-          ],
-        },
-        {
-          selector: 'google.iam.v1.IAMPolicy.GetIamPolicy',
-          get: '/v1beta1/{resource=users/*}:getIamPolicy',
-          additional_bindings: [
-            {get: '/v1beta1/{resource=rooms/*}:getIamPolicy'},
-            {get: '/v1beta1/{resource=rooms/*/blurbs/*}:getIamPolicy'},
-            {get: '/v1beta1/{resource=sequences/*}:getIamPolicy'},
-          ],
-        },
-        {
-          selector: 'google.iam.v1.IAMPolicy.TestIamPermissions',
-          post: '/v1beta1/{resource=users/*}:testIamPermissions',
-          body: '*',
-          additional_bindings: [
-            {post: '/v1beta1/{resource=rooms/*}:testIamPermissions', body: '*'},
-            {
-              post: '/v1beta1/{resource=rooms/*/blurbs/*}:testIamPermissions',
-              body: '*',
-            },
-            {
-              post: '/v1beta1/{resource=sequences/*}:testIamPermissions',
-              body: '*',
-            },
-          ],
-        },
-        {
-          selector: 'google.longrunning.Operations.ListOperations',
-          get: '/v1beta1/operations',
-        },
-        {
-          selector: 'google.longrunning.Operations.GetOperation',
-          get: '/v1beta1/{name=operations/**}',
-        },
-        {
-          selector: 'google.longrunning.Operations.DeleteOperation',
-          delete: '/v1beta1/{name=operations/**}',
-        },
-        {
-          selector: 'google.longrunning.Operations.CancelOperation',
-          post: '/v1beta1/{name=operations/**}:cancel',
-        },
-      ];
+      lroOptions.httpRules = [{selector: 'google.cloud.location.Locations.ListLocations',get: '/v1beta1/{name=projects/*}/locations',},{selector: 'google.cloud.location.Locations.GetLocation',get: '/v1beta1/{name=projects/*/locations/*}',},{selector: 'google.iam.v1.IAMPolicy.SetIamPolicy',post: '/v1beta1/{resource=users/*}:setIamPolicy',body: '*',additional_bindings: [{post: '/v1beta1/{resource=rooms/*}:setIamPolicy',body: '*',},{post: '/v1beta1/{resource=rooms/*/blurbs/*}:setIamPolicy',body: '*',},{post: '/v1beta1/{resource=sequences/*}:setIamPolicy',body: '*',}],
+      },{selector: 'google.iam.v1.IAMPolicy.GetIamPolicy',get: '/v1beta1/{resource=users/*}:getIamPolicy',additional_bindings: [{get: '/v1beta1/{resource=rooms/*}:getIamPolicy',},{get: '/v1beta1/{resource=rooms/*/blurbs/*}:getIamPolicy',},{get: '/v1beta1/{resource=sequences/*}:getIamPolicy',}],
+      },{selector: 'google.iam.v1.IAMPolicy.TestIamPermissions',post: '/v1beta1/{resource=users/*}:testIamPermissions',body: '*',additional_bindings: [{post: '/v1beta1/{resource=rooms/*}:testIamPermissions',body: '*',},{post: '/v1beta1/{resource=rooms/*/blurbs/*}:testIamPermissions',body: '*',},{post: '/v1beta1/{resource=sequences/*}:testIamPermissions',body: '*',}],
+      },{selector: 'google.longrunning.Operations.ListOperations',get: '/v1beta1/operations',},{selector: 'google.longrunning.Operations.GetOperation',get: '/v1beta1/{name=operations/**}',},{selector: 'google.longrunning.Operations.DeleteOperation',delete: '/v1beta1/{name=operations/**}',},{selector: 'google.longrunning.Operations.CancelOperation',post: '/v1beta1/{name=operations/**}:cancel',}];
     }
-    this.operationsClient = this._gaxModule
-      .lro(lroOptions)
-      .operationsClient(opts);
+    this.operationsClient = this._gaxModule.lro(lroOptions).operationsClient(opts);
     const waitResponse = protoFilesRoot.lookup(
-      '.google.showcase.v1beta1.WaitResponse'
-    ) as gax.protobuf.Type;
+      '.google.showcase.v1beta1.WaitResponse') as gax.protobuf.Type;
     const waitMetadata = protoFilesRoot.lookup(
-      '.google.showcase.v1beta1.WaitMetadata'
-    ) as gax.protobuf.Type;
+      '.google.showcase.v1beta1.WaitMetadata') as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
       wait: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         waitResponse.decode.bind(waitResponse),
-        waitMetadata.decode.bind(waitMetadata)
-      ),
+        waitMetadata.decode.bind(waitMetadata))
     };
 
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-      'google.showcase.v1beta1.Echo',
-      gapicConfig as gax.ClientConfig,
-      opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
-    );
+        'google.showcase.v1beta1.Echo', gapicConfig as gax.ClientConfig,
+        opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
 
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
@@ -391,55 +282,35 @@ export class EchoClient {
     // Put together the "service stub" for
     // google.showcase.v1beta1.Echo.
     this.echoStub = this._gaxGrpc.createStub(
-      this._opts.fallback
-        ? (this._protos as protobuf.Root).lookupService(
-            'google.showcase.v1beta1.Echo'
-          )
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this._opts.fallback ?
+          (this._protos as protobuf.Root).lookupService('google.showcase.v1beta1.Echo') :
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.showcase.v1beta1.Echo,
-      this._opts,
-      this._providedCustomServicePath
-    ) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const echoStubMethods = [
-      'echo',
-      'echoErrorDetails',
-      'expand',
-      'collect',
-      'chat',
-      'pagedExpand',
-      'pagedExpandLegacy',
-      'wait',
-      'block',
-    ];
+    const echoStubMethods =
+        ['echo', 'echoErrorDetails', 'expand', 'collect', 'chat', 'pagedExpand', 'pagedExpandLegacy', 'wait', 'block'];
     for (const methodName of echoStubMethods) {
       const callPromise = this.echoStub.then(
-        stub =>
-          (...args: Array<{}>) => {
-            if (this._terminated) {
-              if (methodName in this.descriptors.stream) {
-                const stream = new PassThrough();
-                setImmediate(() => {
-                  stream.emit(
-                    'error',
-                    new this._gaxModule.GoogleError(
-                      'The client has already been closed.'
-                    )
-                  );
-                });
-                return stream;
-              }
-              return Promise.reject('The client has already been closed.');
+        stub => (...args: Array<{}>) => {
+          if (this._terminated) {
+            if (methodName in this.descriptors.stream) {
+              const stream = new PassThrough({objectMode: true});
+              setImmediate(() => {
+                stream.emit('error', new this._gaxModule.GoogleError('The client has already been closed.'));
+              });
+              return stream;
             }
-            const func = stub[methodName];
-            return func.apply(stub, args);
-          },
-        (err: Error | null | undefined) => () => {
+            return Promise.reject('The client has already been closed.');
+          }
+          const func = stub[methodName];
+          return func.apply(stub, args);
+        },
+        (err: Error|null|undefined) => () => {
           throw err;
-        }
-      );
+        });
 
       const descriptor =
         this.descriptors.page[methodName] ||
@@ -465,14 +336,8 @@ export class EchoClient {
    * @returns {string} The DNS address for this service.
    */
   static get servicePath() {
-    if (
-      typeof process === 'object' &&
-      typeof process.emitWarning === 'function'
-    ) {
-      process.emitWarning(
-        'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
-      );
+    if (typeof process === 'object' && typeof process.emitWarning === 'function') {
+      process.emitWarning('Static servicePath is deprecated, please use the instance method instead.', 'DeprecationWarning');
     }
     return 'localhost';
   }
@@ -483,14 +348,8 @@ export class EchoClient {
    * @returns {string} The DNS address for this service.
    */
   static get apiEndpoint() {
-    if (
-      typeof process === 'object' &&
-      typeof process.emitWarning === 'function'
-    ) {
-      process.emitWarning(
-        'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
-      );
+    if (typeof process === 'object' && typeof process.emitWarning === 'function') {
+      process.emitWarning('Static apiEndpoint is deprecated, please use the instance method instead.', 'DeprecationWarning');
     }
     return 'localhost';
   }
@@ -530,9 +389,8 @@ export class EchoClient {
    * Return the project ID used by this class.
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
-  getProjectId(
-    callback?: Callback<string, undefined, undefined>
-  ): Promise<string> | void {
+  getProjectId(callback?: Callback<string, undefined, undefined>):
+      Promise<string>|void {
     if (callback) {
       this.auth.getProjectId(callback);
       return;
@@ -543,169 +401,141 @@ export class EchoClient {
   // -------------------
   // -- Service calls --
   // -------------------
-  /**
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.content
-   *   The content to be echoed by the server.
-   * @param {google.rpc.Status} request.error
-   *   The error to be thrown by the server.
-   * @param {google.showcase.v1beta1.Severity} request.severity
-   *   The severity to be echoed by the server.
-   * @param {string} request.header
-   *   Optional. This field can be set to test the routing annotation on the Echo method.
-   * @param {string} request.otherHeader
-   *   Optional. This field can be set to test the routing annotation on the Echo method.
-   * @param {string} request.requestId
-   *   To facilitate testing of https://google.aip.dev/client-libraries/4235
-   * @param {string} request.otherRequestId
-   *   To facilitate testing of https://google.aip.dev/client-libraries/4235
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.echo.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Echo_async
-   */
+/**
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.content
+ *   The content to be echoed by the server.
+ * @param {google.rpc.Status} request.error
+ *   The error to be thrown by the server.
+ * @param {google.showcase.v1beta1.Severity} request.severity
+ *   The severity to be echoed by the server.
+ * @param {string} request.header
+ *   Optional. This field can be set to test the routing annotation on the Echo method.
+ * @param {string} request.otherHeader
+ *   Optional. This field can be set to test the routing annotation on the Echo method.
+ * @param {string} request.requestId
+ *   Based on go/client-populate-request-id-design; subject to change
+ * @param {boolean} request.generateErrorDetails
+ *   If `error` is set, then this flag causes the Showcase server to append
+ *   multiple fake error details in the error response. This is useful for
+ *   testing client behavior on error responses.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.echo.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Echo_async
+ */
   echo(
-    request?: protos.google.showcase.v1beta1.IEchoRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IEchoRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|undefined, {}|undefined
+      ]>;
   echo(
-    request: protos.google.showcase.v1beta1.IEchoRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  echo(
-    request: protos.google.showcase.v1beta1.IEchoRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  echo(
-    request?: protos.google.showcase.v1beta1.IEchoRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IEchoRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.IEchoResponse,
-          protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
-    request = request || {};
+          protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+          {}|null|undefined>): void;
+  echo(
+      request: protos.google.showcase.v1beta1.IEchoRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.IEchoResponse,
+          protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+          {}|null|undefined>): void;
+  echo(
+      request?: protos.google.showcase.v1beta1.IEchoRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.IEchoResponse,
+          protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.IEchoResponse,
+          protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};   
     if (!request.requestId) {
       request.requestId = gax.makeUUID();
-    }
-    if (!request.otherRequestId) {
-      request.otherRequestId = gax.makeUUID();
     }
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    const routingParameter = {};
+    let routingParameter = {};
     {
       const fieldValue = request.header;
       if (fieldValue !== undefined && fieldValue !== null) {
         const match = fieldValue.toString().match(RegExp('(?<header>.*)'));
         if (match) {
           const parameterValue = match.groups?.['header'] ?? fieldValue;
-          Object.assign(routingParameter, {header: parameterValue});
+          Object.assign(routingParameter, { header: parameterValue });
         }
       }
     }
     {
       const fieldValue = request.header;
       if (fieldValue !== undefined && fieldValue !== null) {
-        const match = fieldValue
-          .toString()
-          .match(RegExp('(?<routing_id>(?:.*)?)'));
+        const match = fieldValue.toString().match(RegExp('(?<routing_id>(?:.*)?)'));
         if (match) {
           const parameterValue = match.groups?.['routing_id'] ?? fieldValue;
-          Object.assign(routingParameter, {routing_id: parameterValue});
+          Object.assign(routingParameter, { routing_id: parameterValue });
         }
       }
     }
     {
       const fieldValue = request.header;
       if (fieldValue !== undefined && fieldValue !== null) {
-        const match = fieldValue
-          .toString()
-          .match(RegExp('(?<table_name>regions/[^/]+/zones/[^/]+(?:/.*)?)'));
+        const match = fieldValue.toString().match(RegExp('(?<table_name>regions/[^/]+/zones/[^/]+(?:/.*)?)'));
         if (match) {
           const parameterValue = match.groups?.['table_name'] ?? fieldValue;
-          Object.assign(routingParameter, {table_name: parameterValue});
+          Object.assign(routingParameter, { table_name: parameterValue });
         }
       }
     }
     {
       const fieldValue = request.header;
       if (fieldValue !== undefined && fieldValue !== null) {
-        const match = fieldValue
-          .toString()
-          .match(RegExp('(?<super_id>projects/[^/]+)(?:/.*)?'));
+        const match = fieldValue.toString().match(RegExp('(?<super_id>projects/[^/]+)(?:/.*)?'));
         if (match) {
           const parameterValue = match.groups?.['super_id'] ?? fieldValue;
-          Object.assign(routingParameter, {super_id: parameterValue});
+          Object.assign(routingParameter, { super_id: parameterValue });
         }
       }
     }
     {
       const fieldValue = request.header;
       if (fieldValue !== undefined && fieldValue !== null) {
-        const match = fieldValue
-          .toString()
-          .match(
-            RegExp('(?<table_name>projects/[^/]+/instances/[^/]+(?:/.*)?)')
-          );
+        const match = fieldValue.toString().match(RegExp('(?<table_name>projects/[^/]+/instances/[^/]+(?:/.*)?)'));
         if (match) {
           const parameterValue = match.groups?.['table_name'] ?? fieldValue;
-          Object.assign(routingParameter, {table_name: parameterValue});
+          Object.assign(routingParameter, { table_name: parameterValue });
         }
       }
     }
     {
       const fieldValue = request.header;
       if (fieldValue !== undefined && fieldValue !== null) {
-        const match = fieldValue
-          .toString()
-          .match(
-            RegExp('projects/[^/]+/(?<instance_id>instances/[^/]+)(?:/.*)?')
-          );
+        const match = fieldValue.toString().match(RegExp('projects/[^/]+/(?<instance_id>instances/[^/]+)(?:/.*)?'));
         if (match) {
           const parameterValue = match.groups?.['instance_id'] ?? fieldValue;
-          Object.assign(routingParameter, {instance_id: parameterValue});
+          Object.assign(routingParameter, { instance_id: parameterValue });
         }
       }
     }
@@ -715,662 +545,655 @@ export class EchoClient {
         const match = fieldValue.toString().match(RegExp('(?<baz>(?:.*)?)'));
         if (match) {
           const parameterValue = match.groups?.['baz'] ?? fieldValue;
-          Object.assign(routingParameter, {baz: parameterValue});
+          Object.assign(routingParameter, { baz: parameterValue });
         }
       }
     }
     {
       const fieldValue = request.otherHeader;
       if (fieldValue !== undefined && fieldValue !== null) {
-        const match = fieldValue
-          .toString()
-          .match(RegExp('(?<qux>projects/[^/]+)(?:/.*)?'));
+        const match = fieldValue.toString().match(RegExp('(?<qux>projects/[^/]+)(?:/.*)?'));
         if (match) {
           const parameterValue = match.groups?.['qux'] ?? fieldValue;
-          Object.assign(routingParameter, {qux: parameterValue});
+          Object.assign(routingParameter, { qux: parameterValue });
         }
       }
     }
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams(routingParameter);
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams(
+      routingParameter
+    );
     this.initialize();
-    return this.innerApiCalls.echo(request, options, callback);
+    this._log.info('echo request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('echo response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.echo(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('echo response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * This method returns error details in a repeated "google.protobuf.Any"
-   * field. This method showcases handling errors thus encoded, particularly
-   * over REST transport. Note that GAPICs only allow the type
-   * "google.protobuf.Any" for field paths ending in "error.details", and, at
-   * run-time, the actual types for these fields must be one of the types in
-   * google/rpc/error_details.proto.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.singleDetailText
-   *   Content to return in a singular `*.error.details` field of type
-   *   `google.protobuf.Any`
-   * @param {string[]} request.multiDetailText
-   *   Content to return in a repeated `*.error.details` field of type
-   *   `google.protobuf.Any`
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.EchoErrorDetailsResponse|EchoErrorDetailsResponse}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.echo_error_details.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_EchoErrorDetails_async
-   */
+/**
+ * This method returns error details in a repeated "google.protobuf.Any"
+ * field. This method showcases handling errors thus encoded, particularly
+ * over REST transport. Note that GAPICs only allow the type
+ * "google.protobuf.Any" for field paths ending in "error.details", and, at
+ * run-time, the actual types for these fields must be one of the types in
+ * google/rpc/error_details.proto.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.singleDetailText
+ *   Content to return in a singular `*.error.details` field of type
+ *   `google.protobuf.Any`
+ * @param {string[]} request.multiDetailText
+ *   Content to return in a repeated `*.error.details` field of type
+ *   `google.protobuf.Any`
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.EchoErrorDetailsResponse|EchoErrorDetailsResponse}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.echo_error_details.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_EchoErrorDetails_async
+ */
   echoErrorDetails(
-    request?: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
-      protos.google.showcase.v1beta1.IEchoErrorDetailsRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+        protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|undefined, {}|undefined
+      ]>;
   echoErrorDetails(
-    request: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
-      | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  echoErrorDetails(
-    request: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
-      | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  echoErrorDetails(
-    request?: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
-          | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
-      | protos.google.showcase.v1beta1.IEchoErrorDetailsRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
-      protos.google.showcase.v1beta1.IEchoErrorDetailsRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|null|undefined,
+          {}|null|undefined>): void;
+  echoErrorDetails(
+      request: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+          protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|null|undefined,
+          {}|null|undefined>): void;
+  echoErrorDetails(
+      request?: protos.google.showcase.v1beta1.IEchoErrorDetailsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+          protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+          protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+        protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.echoErrorDetails(request, options, callback);
+    this._log.info('echoErrorDetails request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+        protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('echoErrorDetails response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.echoErrorDetails(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.IEchoErrorDetailsResponse,
+        protos.google.showcase.v1beta1.IEchoErrorDetailsRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('echoErrorDetails response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * This is similar to the PagedExpand except that it uses
-   * max_results instead of page_size, as some legacy APIs still
-   * do. New APIs should NOT use this pattern.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.content
-   *   The string to expand.
-   * @param {number} request.maxResults
-   *   The number of words to returned in each page.
-   *   (-- aip.dev/not-precedent: This is a legacy, non-standard pattern that
-   *       violates aip.dev/158. Ordinarily, this should be page_size. --)
-   * @param {string} request.pageToken
-   *   The position of the page to be returned.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.PagedExpandResponse|PagedExpandResponse}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.paged_expand_legacy.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_PagedExpandLegacy_async
-   */
+/**
+ * This is similar to the PagedExpand except that it uses
+ * max_results instead of page_size, as some legacy APIs still
+ * do. New APIs should NOT use this pattern.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.content
+ *   The string to expand.
+ * @param {number} request.maxResults
+ *   The number of words to returned in each page.
+ *   (-- aip.dev/not-precedent: This is a legacy, non-standard pattern that
+ *       violates aip.dev/158. Ordinarily, this should be page_size. --)
+ * @param {string} request.pageToken
+ *   The position of the page to be returned.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.PagedExpandResponse|PagedExpandResponse}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.paged_expand_legacy.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_PagedExpandLegacy_async
+ */
   pagedExpandLegacy(
-    request?: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-      protos.google.showcase.v1beta1.IPagedExpandLegacyRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IPagedExpandResponse,
+        protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|undefined, {}|undefined
+      ]>;
   pagedExpandLegacy(
-    request: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-      | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  pagedExpandLegacy(
-    request: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-      | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  pagedExpandLegacy(
-    request?: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.IPagedExpandResponse,
-          | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-      | protos.google.showcase.v1beta1.IPagedExpandLegacyRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-      protos.google.showcase.v1beta1.IPagedExpandLegacyRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|null|undefined,
+          {}|null|undefined>): void;
+  pagedExpandLegacy(
+      request: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.IPagedExpandResponse,
+          protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|null|undefined,
+          {}|null|undefined>): void;
+  pagedExpandLegacy(
+      request?: protos.google.showcase.v1beta1.IPagedExpandLegacyRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.IPagedExpandResponse,
+          protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.IPagedExpandResponse,
+          protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.IPagedExpandResponse,
+        protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.pagedExpandLegacy(request, options, callback);
+    this._log.info('pagedExpandLegacy request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.IPagedExpandResponse,
+        protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('pagedExpandLegacy response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.pagedExpandLegacy(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.IPagedExpandResponse,
+        protos.google.showcase.v1beta1.IPagedExpandLegacyRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('pagedExpandLegacy response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * This method will block (wait) for the requested amount of time
-   * and then return the response or error.
-   * This method showcases how a client handles delays or retries.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {google.protobuf.Duration} request.responseDelay
-   *   The amount of time to block before returning a response.
-   * @param {google.rpc.Status} request.error
-   *   The error that will be returned by the server. If this code is specified
-   *   to be the OK rpc code, an empty response will be returned.
-   * @param {google.showcase.v1beta1.BlockResponse} request.success
-   *   The response to be returned that will signify successful method call.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.BlockResponse|BlockResponse}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.block.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Block_async
-   */
+/**
+ * This method will block (wait) for the requested amount of time
+ * and then return the response or error.
+ * This method showcases how a client handles delays or retries.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {google.protobuf.Duration} request.responseDelay
+ *   The amount of time to block before returning a response.
+ * @param {google.rpc.Status} request.error
+ *   The error that will be returned by the server. If this code is specified
+ *   to be the OK rpc code, an empty response will be returned.
+ * @param {google.showcase.v1beta1.BlockResponse} request.success
+ *   The response to be returned that will signify successful method call.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.BlockResponse|BlockResponse}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.block.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Block_async
+ */
   block(
-    request?: protos.google.showcase.v1beta1.IBlockRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IBlockResponse,
-      protos.google.showcase.v1beta1.IBlockRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IBlockRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IBlockResponse,
+        protos.google.showcase.v1beta1.IBlockRequest|undefined, {}|undefined
+      ]>;
   block(
-    request: protos.google.showcase.v1beta1.IBlockRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IBlockResponse,
-      protos.google.showcase.v1beta1.IBlockRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  block(
-    request: protos.google.showcase.v1beta1.IBlockRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IBlockResponse,
-      protos.google.showcase.v1beta1.IBlockRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  block(
-    request?: protos.google.showcase.v1beta1.IBlockRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IBlockRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.IBlockResponse,
-          protos.google.showcase.v1beta1.IBlockRequest | null | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IBlockResponse,
-      protos.google.showcase.v1beta1.IBlockRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IBlockResponse,
-      protos.google.showcase.v1beta1.IBlockRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IBlockRequest|null|undefined,
+          {}|null|undefined>): void;
+  block(
+      request: protos.google.showcase.v1beta1.IBlockRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.IBlockResponse,
+          protos.google.showcase.v1beta1.IBlockRequest|null|undefined,
+          {}|null|undefined>): void;
+  block(
+      request?: protos.google.showcase.v1beta1.IBlockRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.IBlockResponse,
+          protos.google.showcase.v1beta1.IBlockRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.IBlockResponse,
+          protos.google.showcase.v1beta1.IBlockRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.IBlockResponse,
+        protos.google.showcase.v1beta1.IBlockRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.block(request, options, callback);
+    this._log.info('block request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.IBlockResponse,
+        protos.google.showcase.v1beta1.IBlockRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('block response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.block(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.IBlockResponse,
+        protos.google.showcase.v1beta1.IBlockRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('block response %j', response);
+        return [response, options, rawResponse];
+      });
   }
 
-  /**
-   * This method splits the given content into words and will pass each word back
-   * through the stream. This method showcases server-side streaming RPCs.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.content
-   *   The content that will be split into words and returned on the stream.
-   * @param {google.rpc.Status} request.error
-   *   The error that is thrown after all words are sent on the stream.
-   * @param {google.protobuf.Duration} request.streamWaitTime
-   *  The wait time between each server streaming messages
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream}
-   *   An object stream which emits {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.expand.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Expand_async
-   */
+/**
+ * This method splits the given content into words and will pass each word back
+ * through the stream. This method showcases server-side streaming RPCs.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.content
+ *   The content that will be split into words and returned on the stream.
+ * @param {google.rpc.Status} request.error
+ *   The error that is thrown after all words are sent on the stream.
+ * @param {google.protobuf.Duration} request.streamWaitTime
+ *  The wait time between each server streaming messages
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which emits {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.expand.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Expand_async
+ */
   expand(
-    request?: protos.google.showcase.v1beta1.IExpandRequest,
-    options?: CallOptions
-  ): gax.CancellableStream {
+      request?: protos.google.showcase.v1beta1.IExpandRequest,
+      options?: CallOptions):
+    gax.CancellableStream{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
+    this._log.info('expand stream %j', options);
     return this.innerApiCalls.expand(request, options);
   }
 
-  /**
-   * This method will collect the words given to it. When the stream is closed
-   * by the client, this method will return the a concatenation of the strings
-   * passed to it. This method showcases client-side streaming RPCs.
-   *
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream} - A writable stream which accepts objects representing
-   * {@link protos.google.showcase.v1beta1.EchoRequest|EchoRequest}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#client-streaming | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.collect.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Collect_async
-   */
+/**
+ * This method will collect the words given to it. When the stream is closed
+ * by the client, this method will return the a concatenation of the strings
+ * passed to it. This method showcases client-side streaming RPCs.
+ *
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream} - A writable stream which accepts objects representing
+ * {@link protos.google.showcase.v1beta1.EchoRequest|EchoRequest}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#client-streaming | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.collect.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Collect_async
+ */
   collect(
-    options?: CallOptions,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): gax.CancellableStream;
+      options?: CallOptions,
+      callback?: Callback<
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+        {}|null|undefined>):
+    gax.CancellableStream;
   collect(
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): gax.CancellableStream;
+      callback?: Callback<
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+        {}|null|undefined>):
+    gax.CancellableStream;
   collect(
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
-          protos.google.showcase.v1beta1.IEchoResponse,
-          protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IEchoResponse,
-      protos.google.showcase.v1beta1.IEchoRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): gax.CancellableStream {
+      optionsOrCallback?: CallOptions|Callback<
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+        {}|null|undefined>,
+      callback?: Callback<
+        protos.google.showcase.v1beta1.IEchoResponse,
+        protos.google.showcase.v1beta1.IEchoRequest|null|undefined,
+        {}|null|undefined>):
+    gax.CancellableStream {
     if (optionsOrCallback instanceof Function && callback === undefined) {
-      callback = optionsOrCallback;
-      optionsOrCallback = {};
+        callback = optionsOrCallback;
+        optionsOrCallback = {};
     }
     const options = optionsOrCallback as CallOptions;
     this.initialize();
+    this._log.info('collect stream %j', options);
     return this.innerApiCalls.collect(null, options, callback);
   }
 
-  /**
-   * This method, upon receiving a request on the stream, will pass the same
-   * content back on the stream. This method showcases bidirectional
-   * streaming RPCs.
-   *
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream}
-   *   An object stream which is both readable and writable. It accepts objects
-   *   representing {@link protos.google.showcase.v1beta1.EchoRequest|EchoRequest} for write() method, and
-   *   will emit objects representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event asynchronously.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.chat.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Chat_async
-   */
-  chat(options?: CallOptions): gax.CancellableStream {
+/**
+ * This method, upon receiving a request on the stream, will pass the same
+ * content back on the stream. This method showcases bidirectional
+ * streaming RPCs.
+ *
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which is both readable and writable. It accepts objects
+ *   representing {@link protos.google.showcase.v1beta1.EchoRequest|EchoRequest} for write() method, and
+ *   will emit objects representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event asynchronously.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.chat.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Chat_async
+ */
+  chat(
+      options?: CallOptions):
+    gax.CancellableStream {
     this.initialize();
+    this._log.info('chat stream %j', options);
     return this.innerApiCalls.chat(null, options);
   }
 
-  /**
-   * This method will wait for the requested amount of time and then return.
-   * This method showcases how a client handles a request timeout.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {google.protobuf.Timestamp} request.endTime
-   *   The time that this operation will complete.
-   * @param {google.protobuf.Duration} request.ttl
-   *   The duration of this operation.
-   * @param {google.rpc.Status} request.error
-   *   The error that will be returned by the server. If this code is specified
-   *   to be the OK rpc code, an empty response will be returned.
-   * @param {google.showcase.v1beta1.WaitResponse} request.success
-   *   The response to be returned on operation completion.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing
-   *   a long running operation. Its `promise()` method returns a promise
-   *   you can `await` for.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.wait.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Wait_async
-   */
+/**
+ * This method will wait for the requested amount of time and then return.
+ * This method showcases how a client handles a request timeout.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {google.protobuf.Timestamp} request.endTime
+ *   The time that this operation will complete.
+ * @param {google.protobuf.Duration} request.ttl
+ *   The duration of this operation.
+ * @param {google.rpc.Status} request.error
+ *   The error that will be returned by the server. If this code is specified
+ *   to be the OK rpc code, an empty response will be returned.
+ * @param {google.showcase.v1beta1.WaitResponse} request.success
+ *   The response to be returned on operation completion.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.wait.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Wait_async
+ */
   wait(
-    request?: protos.google.showcase.v1beta1.IWaitRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      LROperation<
-        protos.google.showcase.v1beta1.IWaitResponse,
-        protos.google.showcase.v1beta1.IWaitMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IWaitRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
   wait(
-    request: protos.google.showcase.v1beta1.IWaitRequest,
-    options: CallOptions,
-    callback: Callback<
-      LROperation<
-        protos.google.showcase.v1beta1.IWaitResponse,
-        protos.google.showcase.v1beta1.IWaitMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
+      request: protos.google.showcase.v1beta1.IWaitRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
   wait(
-    request: protos.google.showcase.v1beta1.IWaitRequest,
-    callback: Callback<
-      LROperation<
-        protos.google.showcase.v1beta1.IWaitResponse,
-        protos.google.showcase.v1beta1.IWaitMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
+      request: protos.google.showcase.v1beta1.IWaitRequest,
+      callback: Callback<
+          LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
   wait(
-    request?: protos.google.showcase.v1beta1.IWaitRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
-          LROperation<
-            protos.google.showcase.v1beta1.IWaitResponse,
-            protos.google.showcase.v1beta1.IWaitMetadata
-          >,
-          protos.google.longrunning.IOperation | null | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      LROperation<
-        protos.google.showcase.v1beta1.IWaitResponse,
-        protos.google.showcase.v1beta1.IWaitMetadata
-      >,
-      protos.google.longrunning.IOperation | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      LROperation<
-        protos.google.showcase.v1beta1.IWaitResponse,
-        protos.google.showcase.v1beta1.IWaitMetadata
-      >,
-      protos.google.longrunning.IOperation | undefined,
-      {} | undefined,
-    ]
-  > | void {
+      request?: protos.google.showcase.v1beta1.IWaitRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.wait(request, options, callback);
+    const wrappedCallback: Callback<
+          LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>|undefined = callback
+      ? (error, response, rawResponse, _) => {
+          this._log.info('wait response %j', rawResponse);
+          callback!(error, response, rawResponse, _); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('wait request %j', request);
+    return this.innerApiCalls.wait(request, options, wrappedCallback)
+    ?.then(([response, rawResponse, _]: [
+      LROperation<protos.google.showcase.v1beta1.IWaitResponse, protos.google.showcase.v1beta1.IWaitMetadata>,
+      protos.google.longrunning.IOperation|undefined, {}|undefined
+    ]) => {
+      this._log.info('wait response %j', rawResponse);
+      return [response, rawResponse, _];
+    });
   }
-  /**
-   * Check the status of the long running operation returned by `wait()`.
-   * @param {String} name
-   *   The operation name that will be passed.
-   * @returns {Promise} - The promise which resolves to an object.
-   *   The decoded operation object has result and metadata field to get information from.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.wait.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_Wait_async
-   */
-  async checkWaitProgress(
-    name: string
-  ): Promise<
-    LROperation<
-      protos.google.showcase.v1beta1.WaitResponse,
-      protos.google.showcase.v1beta1.WaitMetadata
-    >
-  > {
-    const request =
-      new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest(
-        {name}
-      );
+/**
+ * Check the status of the long running operation returned by `wait()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.wait.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_Wait_async
+ */
+  async checkWaitProgress(name: string): Promise<LROperation<protos.google.showcase.v1beta1.WaitResponse, protos.google.showcase.v1beta1.WaitMetadata>>{
+    this._log.info('wait long-running');
+    const request = new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest({name});
     const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new this._gaxModule.Operation(
-      operation,
-      this.descriptors.longrunning.wait,
-      this._gaxModule.createDefaultBackoffSettings()
-    );
-    return decodeOperation as LROperation<
-      protos.google.showcase.v1beta1.WaitResponse,
-      protos.google.showcase.v1beta1.WaitMetadata
-    >;
+    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.wait, this._gaxModule.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.google.showcase.v1beta1.WaitResponse, protos.google.showcase.v1beta1.WaitMetadata>;
   }
-  /**
-   * This is similar to the Expand method but instead of returning a stream of
-   * expanded words, this method returns a paged list of expanded words.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.content
-   *   The string to expand.
-   * @param {number} request.pageSize
-   *   The number of words to returned in each page.
-   * @param {string} request.pageToken
-   *   The position of the page to be returned.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is Array of {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed and will merge results from all the pages into this array.
-   *   Note that it can affect your quota.
-   *   We recommend using `pagedExpandAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
-   *   for more details and examples.
-   */
+ /**
+ * This is similar to the Expand method but instead of returning a stream of
+ * expanded words, this method returns a paged list of expanded words.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.content
+ *   The string to expand.
+ * @param {number} request.pageSize
+ *   The number of words to returned in each page.
+ * @param {string} request.pageToken
+ *   The position of the page to be returned.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is Array of {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed and will merge results from all the pages into this array.
+ *   Note that it can affect your quota.
+ *   We recommend using `pagedExpandAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ */
   pagedExpand(
-    request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IEchoResponse[],
-      protos.google.showcase.v1beta1.IPagedExpandRequest | null,
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IEchoResponse[],
+        protos.google.showcase.v1beta1.IPagedExpandRequest|null,
+        protos.google.showcase.v1beta1.IPagedExpandResponse
+      ]>;
   pagedExpand(
-    request: protos.google.showcase.v1beta1.IPagedExpandRequest,
-    options: CallOptions,
-    callback: PaginationCallback<
-      protos.google.showcase.v1beta1.IPagedExpandRequest,
-      protos.google.showcase.v1beta1.IPagedExpandResponse | null | undefined,
-      protos.google.showcase.v1beta1.IEchoResponse
-    >
-  ): void;
-  pagedExpand(
-    request: protos.google.showcase.v1beta1.IPagedExpandRequest,
-    callback: PaginationCallback<
-      protos.google.showcase.v1beta1.IPagedExpandRequest,
-      protos.google.showcase.v1beta1.IPagedExpandResponse | null | undefined,
-      protos.google.showcase.v1beta1.IEchoResponse
-    >
-  ): void;
-  pagedExpand(
-    request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | PaginationCallback<
+      request: protos.google.showcase.v1beta1.IPagedExpandRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
           protos.google.showcase.v1beta1.IPagedExpandRequest,
-          | protos.google.showcase.v1beta1.IPagedExpandResponse
-          | null
-          | undefined,
-          protos.google.showcase.v1beta1.IEchoResponse
-        >,
-    callback?: PaginationCallback<
-      protos.google.showcase.v1beta1.IPagedExpandRequest,
-      protos.google.showcase.v1beta1.IPagedExpandResponse | null | undefined,
-      protos.google.showcase.v1beta1.IEchoResponse
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IEchoResponse[],
-      protos.google.showcase.v1beta1.IPagedExpandRequest | null,
-      protos.google.showcase.v1beta1.IPagedExpandResponse,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IPagedExpandResponse|null|undefined,
+          protos.google.showcase.v1beta1.IEchoResponse>): void;
+  pagedExpand(
+      request: protos.google.showcase.v1beta1.IPagedExpandRequest,
+      callback: PaginationCallback<
+          protos.google.showcase.v1beta1.IPagedExpandRequest,
+          protos.google.showcase.v1beta1.IPagedExpandResponse|null|undefined,
+          protos.google.showcase.v1beta1.IEchoResponse>): void;
+  pagedExpand(
+      request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
+      optionsOrCallback?: CallOptions|PaginationCallback<
+          protos.google.showcase.v1beta1.IPagedExpandRequest,
+          protos.google.showcase.v1beta1.IPagedExpandResponse|null|undefined,
+          protos.google.showcase.v1beta1.IEchoResponse>,
+      callback?: PaginationCallback<
+          protos.google.showcase.v1beta1.IPagedExpandRequest,
+          protos.google.showcase.v1beta1.IPagedExpandResponse|null|undefined,
+          protos.google.showcase.v1beta1.IEchoResponse>):
+      Promise<[
+        protos.google.showcase.v1beta1.IEchoResponse[],
+        protos.google.showcase.v1beta1.IPagedExpandRequest|null,
+        protos.google.showcase.v1beta1.IPagedExpandResponse
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.pagedExpand(request, options, callback);
+    const wrappedCallback: PaginationCallback<
+      protos.google.showcase.v1beta1.IPagedExpandRequest,
+      protos.google.showcase.v1beta1.IPagedExpandResponse|null|undefined,
+      protos.google.showcase.v1beta1.IEchoResponse>|undefined = callback
+      ? (error, values, nextPageRequest, rawResponse) => {
+          this._log.info('pagedExpand values %j', values);
+          callback!(error, values, nextPageRequest, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    this._log.info('pagedExpand request %j', request);
+    return this.innerApiCalls
+      .pagedExpand(request, options, wrappedCallback)
+      ?.then(([response, input, output]: [
+        protos.google.showcase.v1beta1.IEchoResponse[],
+        protos.google.showcase.v1beta1.IPagedExpandRequest|null,
+        protos.google.showcase.v1beta1.IPagedExpandResponse
+      ]) => {
+        this._log.info('pagedExpand values %j', response);
+        return [response, input, output];
+      });
   }
 
-  /**
-   * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.content
-   *   The string to expand.
-   * @param {number} request.pageSize
-   *   The number of words to returned in each page.
-   * @param {string} request.pageToken
-   *   The position of the page to be returned.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream}
-   *   An object stream which emits an object representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event.
-   *   The client library will perform auto-pagination by default: it will call the API as many
-   *   times as needed. Note that it can affect your quota.
-   *   We recommend using `pagedExpandAsync()`
-   *   method described below for async iteration which you can stop as needed.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
-   *   for more details and examples.
-   */
+/**
+ * Equivalent to `pagedExpand`, but returns a NodeJS Stream object.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.content
+ *   The string to expand.
+ * @param {number} request.pageSize
+ *   The number of words to returned in each page.
+ * @param {string} request.pageToken
+ *   The position of the page to be returned.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which emits an object representing {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse} on 'data' event.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed. Note that it can affect your quota.
+ *   We recommend using `pagedExpandAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ */
   pagedExpandStream(
-    request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
-    options?: CallOptions
-  ): Transform {
+      request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
+      options?: CallOptions):
+    Transform{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1378,6 +1201,7 @@ export class EchoClient {
     const defaultCallSettings = this._defaults['pagedExpand'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
+    this._log.info('pagedExpand stream %j', request);
     return this.descriptors.page.pagedExpand.createStream(
       this.innerApiCalls.pagedExpand as GaxCall,
       request,
@@ -1385,34 +1209,34 @@ export class EchoClient {
     );
   }
 
-  /**
-   * Equivalent to `pagedExpand`, but returns an iterable object.
-   *
-   * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.content
-   *   The string to expand.
-   * @param {number} request.pageSize
-   *   The number of words to returned in each page.
-   * @param {string} request.pageToken
-   *   The position of the page to be returned.
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Object}
-   *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
-   *   When you iterate the returned iterable, each element will be an object representing
-   *   {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}. The API will be called under the hood as needed, once per the page,
-   *   so you can stop the iteration when you don't need more results.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/echo.paged_expand.js</caption>
-   * region_tag:localhost_v1beta1_generated_Echo_PagedExpand_async
-   */
+/**
+ * Equivalent to `pagedExpand`, but returns an iterable object.
+ *
+ * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.content
+ *   The string to expand.
+ * @param {number} request.pageSize
+ *   The number of words to returned in each page.
+ * @param {string} request.pageToken
+ *   The position of the page to be returned.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Object}
+ *   An iterable Object that allows {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols | async iteration }.
+ *   When you iterate the returned iterable, each element will be an object representing
+ *   {@link protos.google.showcase.v1beta1.EchoResponse|EchoResponse}. The API will be called under the hood as needed, once per the page,
+ *   so you can stop the iteration when you don't need more results.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/echo.paged_expand.js</caption>
+ * region_tag:localhost_v1beta1_generated_Echo_PagedExpand_async
+ */
   pagedExpandAsync(
-    request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
-    options?: CallOptions
-  ): AsyncIterable<protos.google.showcase.v1beta1.IEchoResponse> {
+      request?: protos.google.showcase.v1beta1.IPagedExpandRequest,
+      options?: CallOptions):
+    AsyncIterable<protos.google.showcase.v1beta1.IEchoResponse>{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
@@ -1420,37 +1244,38 @@ export class EchoClient {
     const defaultCallSettings = this._defaults['pagedExpand'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
+    this._log.info('pagedExpand iterate %j', request);
     return this.descriptors.page.pagedExpand.asyncIterate(
       this.innerApiCalls['pagedExpand'] as GaxCall,
       request as {},
       callSettings
     ) as AsyncIterable<protos.google.showcase.v1beta1.IEchoResponse>;
   }
-  /**
-   * Gets the access control policy for a resource. Returns an empty policy
-   * if the resource exists and does not have a policy set.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {Object} [request.options]
-   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
-   *   `GetIamPolicy`. This field is only used by Cloud IAM.
-   *
-   *   This object should have the same structure as {@link google.iam.v1.GetPolicyOptions | GetPolicyOptions}.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing {@link google.iam.v1.Policy | Policy}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   */
+/**
+ * Gets the access control policy for a resource. Returns an empty policy
+ * if the resource exists and does not have a policy set.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {Object} [request.options]
+ *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+ *   `GetIamPolicy`. This field is only used by Cloud IAM.
+ *
+ *   This object should have the same structure as {@link google.iam.v1.GetPolicyOptions | GetPolicyOptions}.
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing {@link google.iam.v1.Policy | Policy}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ */
   getIamPolicy(
     request: IamProtos.google.iam.v1.GetIamPolicyRequest,
     options?:
@@ -1465,39 +1290,39 @@ export class EchoClient {
       IamProtos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<[IamProtos.google.iam.v1.Policy]> {
+  ):Promise<[IamProtos.google.iam.v1.Policy]> {
     return this.iamClient.getIamPolicy(request, options, callback);
   }
 
-  /**
-   * Returns permissions that a caller has on the specified resource. If the
-   * resource does not exist, this will return an empty set of
-   * permissions, not a NOT_FOUND error.
-   *
-   * Note: This operation is designed to be used for building
-   * permission-aware UIs and command-line tools, not for authorization
-   * checking. This operation may "fail open" without warning.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy detail is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
-   *   The set of permissions to check for the `resource`. Permissions with
-   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   */
+/**
+ * Returns permissions that a caller has on the specified resource. If the
+ * resource does not exist, this will return an empty set of
+ * permissions, not a NOT_FOUND error.
+ *
+ * Note: This operation is designed to be used for building
+ * permission-aware UIs and command-line tools, not for authorization
+ * checking. This operation may "fail open" without warning.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy detail is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {string[]} request.permissions
+ *   The set of permissions to check for the `resource`. Permissions with
+ *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+ *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ */
   setIamPolicy(
     request: IamProtos.google.iam.v1.SetIamPolicyRequest,
     options?:
@@ -1512,40 +1337,40 @@ export class EchoClient {
       IamProtos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<[IamProtos.google.iam.v1.Policy]> {
+  ):Promise<[IamProtos.google.iam.v1.Policy]> {
     return this.iamClient.setIamPolicy(request, options, callback);
   }
 
-  /**
-   * Returns permissions that a caller has on the specified resource. If the
-   * resource does not exist, this will return an empty set of
-   * permissions, not a NOT_FOUND error.
-   *
-   * Note: This operation is designed to be used for building
-   * permission-aware UIs and command-line tools, not for authorization
-   * checking. This operation may "fail open" without warning.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy detail is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
-   *   The set of permissions to check for the `resource`. Permissions with
-   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   */
+/**
+ * Returns permissions that a caller has on the specified resource. If the
+ * resource does not exist, this will return an empty set of
+ * permissions, not a NOT_FOUND error.
+ *
+ * Note: This operation is designed to be used for building
+ * permission-aware UIs and command-line tools, not for authorization
+ * checking. This operation may "fail open" without warning.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy detail is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {string[]} request.permissions
+ *   The set of permissions to check for the `resource`. Permissions with
+ *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+ *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ *
+ */
   testIamPermissions(
     request: IamProtos.google.iam.v1.TestIamPermissionsRequest,
     options?:
@@ -1560,11 +1385,11 @@ export class EchoClient {
       IamProtos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<[IamProtos.google.iam.v1.TestIamPermissionsResponse]> {
+  ):Promise<[IamProtos.google.iam.v1.TestIamPermissionsResponse]> {
     return this.iamClient.testIamPermissions(request, options, callback);
   }
 
-  /**
+/**
    * Gets information about a location.
    *
    * @param {Object} request
@@ -1604,7 +1429,7 @@ export class EchoClient {
     return this.locationsClient.getLocation(request, options, callback);
   }
 
-  /**
+/**
    * Lists information about the supported locations for this service. Returns an iterable object.
    *
    * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
@@ -1642,7 +1467,7 @@ export class EchoClient {
     return this.locationsClient.listLocationsAsync(request, options);
   }
 
-  /**
+/**
    * Gets the latest state of a long-running operation.  Clients can use this
    * method to poll the operation result at intervals as recommended by the API
    * service.
@@ -1674,7 +1499,7 @@ export class EchoClient {
    */
   getOperation(
     request: protos.google.longrunning.GetOperationRequest,
-    options?:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.longrunning.Operation,
@@ -1687,6 +1512,20 @@ export class EchoClient {
       {} | null | undefined
     >
   ): Promise<[protos.google.longrunning.Operation]> {
+     let options: gax.CallOptions;
+     if (typeof optionsOrCallback === 'function' && callback === undefined) {
+       callback = optionsOrCallback;
+       options = {};
+     } else {
+       options = optionsOrCallback as gax.CallOptions;
+     }
+     options = options || {};
+     options.otherArgs = options.otherArgs || {};
+     options.otherArgs.headers = options.otherArgs.headers || {};
+     options.otherArgs.headers['x-goog-request-params'] =
+       this._gaxModule.routingHeader.fromParams({
+         name: request.name ?? '',
+       });
     return this.operationsClient.getOperation(request, options, callback);
   }
   /**
@@ -1722,7 +1561,14 @@ export class EchoClient {
   listOperationsAsync(
     request: protos.google.longrunning.ListOperationsRequest,
     options?: gax.CallOptions
-  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
+     options = options || {};
+     options.otherArgs = options.otherArgs || {};
+     options.otherArgs.headers = options.otherArgs.headers || {};
+     options.otherArgs.headers['x-goog-request-params'] =
+       this._gaxModule.routingHeader.fromParams({
+         name: request.name ?? '',
+       });
     return this.operationsClient.listOperationsAsync(request, options);
   }
   /**
@@ -1756,13 +1602,13 @@ export class EchoClient {
    * await client.cancelOperation({name: ''});
    * ```
    */
-  cancelOperation(
+   cancelOperation(
     request: protos.google.longrunning.CancelOperationRequest,
-    options?:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
-          protos.google.protobuf.Empty,
           protos.google.longrunning.CancelOperationRequest,
+          protos.google.protobuf.Empty,
           {} | undefined | null
         >,
     callback?: Callback<
@@ -1771,6 +1617,20 @@ export class EchoClient {
       {} | undefined | null
     >
   ): Promise<protos.google.protobuf.Empty> {
+     let options: gax.CallOptions;
+     if (typeof optionsOrCallback === 'function' && callback === undefined) {
+       callback = optionsOrCallback;
+       options = {};
+     } else {
+       options = optionsOrCallback as gax.CallOptions;
+     }
+     options = options || {};
+     options.otherArgs = options.otherArgs || {};
+     options.otherArgs.headers = options.otherArgs.headers || {};
+     options.otherArgs.headers['x-goog-request-params'] =
+       this._gaxModule.routingHeader.fromParams({
+         name: request.name ?? '',
+       });
     return this.operationsClient.cancelOperation(request, options, callback);
   }
 
@@ -1801,7 +1661,7 @@ export class EchoClient {
    */
   deleteOperation(
     request: protos.google.longrunning.DeleteOperationRequest,
-    options?:
+    optionsOrCallback?:
       | gax.CallOptions
       | Callback<
           protos.google.protobuf.Empty,
@@ -1814,6 +1674,20 @@ export class EchoClient {
       {} | null | undefined
     >
   ): Promise<protos.google.protobuf.Empty> {
+     let options: gax.CallOptions;
+     if (typeof optionsOrCallback === 'function' && callback === undefined) {
+       callback = optionsOrCallback;
+       options = {};
+     } else {
+       options = optionsOrCallback as gax.CallOptions;
+     }
+     options = options || {};
+     options.otherArgs = options.otherArgs || {};
+     options.otherArgs.headers = options.otherArgs.headers || {};
+     options.otherArgs.headers['x-goog-request-params'] =
+       this._gaxModule.routingHeader.fromParams({
+         name: request.name ?? '',
+       });
     return this.operationsClient.deleteOperation(request, options, callback);
   }
 
@@ -1827,7 +1701,7 @@ export class EchoClient {
    * @param {string} sequence
    * @returns {string} Resource name string.
    */
-  sequencePath(sequence: string) {
+  sequencePath(sequence:string) {
     return this.pathTemplates.sequencePathTemplate.render({
       sequence: sequence,
     });
@@ -1850,7 +1724,7 @@ export class EchoClient {
    * @param {string} sequence
    * @returns {string} Resource name string.
    */
-  sequenceReportPath(sequence: string) {
+  sequenceReportPath(sequence:string) {
     return this.pathTemplates.sequenceReportPathTemplate.render({
       sequence: sequence,
     });
@@ -1864,9 +1738,7 @@ export class EchoClient {
    * @returns {string} A string representing the sequence.
    */
   matchSequenceFromSequenceReportName(sequenceReportName: string) {
-    return this.pathTemplates.sequenceReportPathTemplate.match(
-      sequenceReportName
-    ).sequence;
+    return this.pathTemplates.sequenceReportPathTemplate.match(sequenceReportName).sequence;
   }
 
   /**
@@ -1875,7 +1747,7 @@ export class EchoClient {
    * @param {string} streaming_sequence
    * @returns {string} Resource name string.
    */
-  streamingSequencePath(streamingSequence: string) {
+  streamingSequencePath(streamingSequence:string) {
     return this.pathTemplates.streamingSequencePathTemplate.render({
       streaming_sequence: streamingSequence,
     });
@@ -1888,12 +1760,8 @@ export class EchoClient {
    *   A fully-qualified path representing StreamingSequence resource.
    * @returns {string} A string representing the streaming_sequence.
    */
-  matchStreamingSequenceFromStreamingSequenceName(
-    streamingSequenceName: string
-  ) {
-    return this.pathTemplates.streamingSequencePathTemplate.match(
-      streamingSequenceName
-    ).streaming_sequence;
+  matchStreamingSequenceFromStreamingSequenceName(streamingSequenceName: string) {
+    return this.pathTemplates.streamingSequencePathTemplate.match(streamingSequenceName).streaming_sequence;
   }
 
   /**
@@ -1902,7 +1770,7 @@ export class EchoClient {
    * @param {string} streaming_sequence
    * @returns {string} Resource name string.
    */
-  streamingSequenceReportPath(streamingSequence: string) {
+  streamingSequenceReportPath(streamingSequence:string) {
     return this.pathTemplates.streamingSequenceReportPathTemplate.render({
       streaming_sequence: streamingSequence,
     });
@@ -1915,12 +1783,8 @@ export class EchoClient {
    *   A fully-qualified path representing StreamingSequenceReport resource.
    * @returns {string} A string representing the streaming_sequence.
    */
-  matchStreamingSequenceFromStreamingSequenceReportName(
-    streamingSequenceReportName: string
-  ) {
-    return this.pathTemplates.streamingSequenceReportPathTemplate.match(
-      streamingSequenceReportName
-    ).streaming_sequence;
+  matchStreamingSequenceFromStreamingSequenceReportName(streamingSequenceReportName: string) {
+    return this.pathTemplates.streamingSequenceReportPathTemplate.match(streamingSequenceReportName).streaming_sequence;
   }
 
   /**
@@ -1932,6 +1796,7 @@ export class EchoClient {
   close(): Promise<void> {
     if (this.echoStub && !this._terminated) {
       return this.echoStub.then(stub => {
+        this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
         this.iamClient.close();

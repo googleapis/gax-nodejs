@@ -43,8 +43,6 @@ service Echo {
   // This service is meant to only run locally on the port 7469 (keypad digits
   // for "show").
   option (google.api.default_host) = "localhost:7469";
-  // See https://github.com/aip-dev/google.aip.dev/pull/1331
-  option (google.api.api_version) = "v1_20240408";
 
   // This method simply echoes the request. This method showcases unary RPCs.
   rpc Echo(EchoRequest) returns (EchoResponse) {
@@ -213,15 +211,15 @@ message EchoRequest {
   // Optional. This field can be set to test the routing annotation on the Echo method.
   string other_header = 5;
 
-  // To facilitate testing of https://google.aip.dev/client-libraries/4235
+  // Based on go/client-populate-request-id-design; subject to change
   string request_id = 7 [
     (google.api.field_info).format = UUID4
   ];
 
-  // To facilitate testing of https://google.aip.dev/client-libraries/4235
-  optional string other_request_id = 8 [
-    (google.api.field_info).format = UUID4
-  ];
+  // If `error` is set, then this flag causes the Showcase server to append
+  // multiple fake error details in the error response. This is useful for
+  // testing client behavior on error responses.
+  bool generate_error_details = 8;
 }
 
 // The response message for the Echo methods.
@@ -234,9 +232,6 @@ message EchoResponse {
 
   // The request ID specified or autopopulated in the request.
   string request_id = 3;
-
-  // The other request ID specified or autopopulated in the request.
-  string other_request_id = 4;
 }
 
 // The request message used for the EchoErrorDetails method.
