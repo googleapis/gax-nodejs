@@ -433,7 +433,7 @@ export class OperationsClient {
   listOperationsAsync(
     request: protos.google.longrunning.ListOperationsRequest,
     options?: gax.CallOptions,
-  ): AsyncIterable<protos.google.longrunning.ListOperationsResponse> {
+  ): AsyncIterable<protos.google.longrunning.IOperation> {
     request = request || {};
     options = options || {};
     const callSettings = new gax.CallSettings(options);
@@ -441,7 +441,7 @@ export class OperationsClient {
       this.innerApiCalls.listOperations as GaxCall,
       request as unknown as RequestType,
       callSettings,
-    ) as AsyncIterable<protos.google.longrunning.ListOperationsResponse>;
+    ) as AsyncIterable<protos.google.longrunning.IOperation>;
   }
 
   /**
