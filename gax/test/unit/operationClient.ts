@@ -554,8 +554,7 @@ describe('operation client', () => {
       );
       const iterable = client.listOperationsAsync(request);
       await assert.rejects(async () => {
-        const responses: protos.google.longrunning.IOperation[] =
-          [];
+        const responses: protos.google.longrunning.IOperation[] = [];
         for await (const resource of iterable) {
           responses.push(resource!);
         }
