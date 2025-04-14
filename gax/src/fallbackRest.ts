@@ -83,6 +83,7 @@ export function decodeResponse(
   ok: boolean,
   response: Buffer | ArrayBuffer
 ): {} {
+  console.log("response in decode", response)
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   const decodedString = new TextDecoder().decode(response);
   if (!decodedString) {
@@ -99,5 +100,6 @@ export function decodeResponse(
       `Received null or malformed response from JSON serializer from RPC ${rpc.name}`
     );
   }
+  console.log("defaultToObjectOptions", defaultToObjectOptions)
   return rpc.resolvedResponseType!.toObject(message, defaultToObjectOptions);
 }

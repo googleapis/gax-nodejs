@@ -68,7 +68,8 @@ export function generateServiceStub(
     ok: boolean,
     response: Buffer | ArrayBuffer
   ) => {},
-  numericEnums: boolean
+  numericEnums: boolean,
+  allowEmptyDeleteFallbackResponse: boolean
 ) {
   const fetch = hasWindowFetch()
     ? window.fetch
@@ -87,6 +88,7 @@ export function generateServiceStub(
       _metadata?: {} | Function,
       callback?: Function
     ) => {
+      console.log('options in fallbackServiceStub', options)
       options ??= {};
 
       // We cannot use async-await in this function because we need to return the canceller object as soon as possible.
@@ -150,6 +152,7 @@ export function generateServiceStub(
           return fetch(url, fetchRequest);
         })
         .then((response: Response | NodeFetchResponse) => {
+          console.log('response', response)
           if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,
@@ -160,6 +163,7 @@ export function generateServiceStub(
                   (!cancelRequested ||
                     (err instanceof Error && err.name !== 'AbortError'))
                 ) {
+                  console.log("hitting an error 164", err)
                   if (callback) {
                     callback(err);
                   }
@@ -169,15 +173,20 @@ export function generateServiceStub(
             );
             return;
           } else {
+            console.log('before return promise all', response, response.ok)
             return Promise.all([
               Promise.resolve(response.ok),
               response.arrayBuffer(),
             ])
               .then(([ok, buffer]: [boolean, Buffer | ArrayBuffer]) => {
+                console.log('beofre responseDecoder')
                 const response = responseDecoder(rpc, ok, buffer);
+                console.log('response 182', response)
                 callback!(null, response);
               })
+              //@ts-ignore - TODO fix
               .catch((err: Error) => {
+                console.log('in catch 187')
                 if (!cancelRequested || err.name !== 'AbortError') {
                   if (rpc.responseStream) {
                     if (callback) {
@@ -185,8 +194,16 @@ export function generateServiceStub(
                     }
                     streamArrayParser.emit('error', err);
                   } else if (callback) {
+                    // TODO - can possibly itnercept error here
+                    if(allowEmptyDeleteFallbackResponse){
+                      callback(null, {}) // TODO format properly
+                    }
                     callback(err);
                   } else {
+                    if(allowEmptyDeleteFallbackResponse){
+                      return({}) // TODO format properly
+                    }
+                    console.log('throwing err', err)
                     throw err;
                   }
                 }
@@ -194,6 +211,7 @@ export function generateServiceStub(
           }
         })
         .catch((err: unknown) => {
+          console.log('error caught 200', err)
           if (rpc.responseStream) {
             if (callback) {
               callback(err);
@@ -202,6 +220,7 @@ export function generateServiceStub(
           } else if (callback) {
             callback(err);
           } else {
+            console.log('throwing error 208', err)
             throw err;
           }
         });
@@ -209,6 +228,7 @@ export function generateServiceStub(
       if (rpc.responseStream) {
         return streamArrayParser;
       }
+      console.log('before return 219')
       return {
         cancel: () => {
           cancelRequested = true;
@@ -217,6 +237,6 @@ export function generateServiceStub(
       };
     };
   }
-
+  console.log('before return serviceStub')
   return serviceStub;
 }

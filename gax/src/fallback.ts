@@ -100,6 +100,8 @@ export class GrpcClient {
   private static protoCache = new Map<string, protobuf.Root>();
   httpRules?: Array<google.api.IHttpRule>;
   numericEnums: boolean;
+  allowEmptyDeleteFallbackResponse: boolean;
+
 
   /**
    * In rare cases users might need to deallocate all memory consumed by loaded protos.
@@ -140,10 +142,13 @@ export class GrpcClient {
         (options.auth as GoogleAuth) ||
         new GoogleAuth(options as GoogleAuthOptions);
     }
+    console.log("options in grpc client construc", options)
     this.fallback = options.fallback ? true : false;
     this.grpcVersion = require('../../package.json').version;
     this.httpRules = (options as GrpcClientOptions).httpRules;
     this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
+    this.allowEmptyDeleteFallbackResponse = (options as ClientStubOptions).allowEmptyDeleteFallbackResponse ?? false;
+
   }
 
   /**
@@ -280,6 +285,7 @@ export class GrpcClient {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     customServicePath?: boolean
   ) {
+    console.log('opts in createStub', opts)
     if (!this.authClient) {
       if (this.auth && 'getClient' in this.auth) {
         this.authClient = (await this.auth.getClient()) as AuthClient;
@@ -343,7 +349,9 @@ export class GrpcClient {
       this.authClient,
       encoder,
       decoder,
-      this.numericEnums
+      this.numericEnums, 
+      this.allowEmptyDeleteFallbackResponse
+
     );
 
     return serviceStub;
@@ -410,6 +418,7 @@ export function createApiCall(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _fallback?: boolean | string // unused; for compatibility only
 ): GaxCall {
+  console.log('settings', settings)
   if (
     descriptor &&
     'streaming' in descriptor &&

@@ -298,6 +298,7 @@ export class CallSettings {
       retryRequestOptions = options.retryRequestOptions;
     }
 
+    console.log("call settings merge", otherArgs)
     return new CallSettings({
       timeout,
       retry,

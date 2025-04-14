@@ -106,6 +106,7 @@ export interface ClientStubOptions {
   cert?: string;
   key?: string;
   universeDomain?: string;
+  allowEmptyDeleteFallbackResponse?: boolean;
 }
 
 export class ClientStub extends grpc.Client {
@@ -413,6 +414,9 @@ export class GrpcClient {
     const serviceAddress = servicePath + ':' + opts.port;
     if (!options.universeDomain) {
       options.universeDomain = 'googleapis.com';
+    }
+    if(!options.allowEmptyDeleteFallbackResponse){
+      options.allowEmptyDeleteFallbackResponse = false;
     }
     if (options.universeDomain) {
       const universeFromAuth = await this.auth.getUniverseDomain();

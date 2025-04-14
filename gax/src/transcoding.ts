@@ -272,6 +272,7 @@ export function transcode(
 ): TranscodedRequest | undefined {
   const httpRules = [];
   for (const option of parsedOptions) {
+    console.log('parsed option', option)
     if (!(httpOptionName in option)) {
       continue;
     }
