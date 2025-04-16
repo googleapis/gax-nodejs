@@ -1,6 +1,6 @@
 {
   "name": "google-logging-utils",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "A debug logger package for other Google libraries",
   "main": "build/src/index.js",
   "files": [
@@ -15,7 +15,7 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "precompile": "gts clean",
-    "samples-test": "cd samples/ && npm install && npm link ../ && npm test && cd ../",
+    "samples-test": "cd samples/ && npm link ../ && npm install && npm test && cd ../",
     "system-test": "echo no system tests 🙀"
   },
   "author": "Google API Authors",

@@ -522,7 +522,7 @@ describe('operation client', () => {
       ];
       client.descriptor.listOperations.asyncIterate =
         stubAsyncIterationCall(expectedResponse);
-      const responses: protos.google.longrunning.ListOperationsResponse[] = [];
+      const responses: protos.google.longrunning.IOperation[] = [];
       const iterable = client.listOperationsAsync(request);
       for await (const resource of iterable) {
         responses.push(resource!);
@@ -554,8 +554,7 @@ describe('operation client', () => {
       );
       const iterable = client.listOperationsAsync(request);
       await assert.rejects(async () => {
-        const responses: protos.google.longrunning.ListOperationsResponse[] =
-          [];
+        const responses: protos.google.longrunning.IOperation[] = [];
         for await (const resource of iterable) {
           responses.push(resource!);
         }

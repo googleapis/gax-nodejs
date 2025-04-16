@@ -49,6 +49,7 @@ export class Colours {
    */
   static isEnabled(stream: tty.WriteStream): boolean {
     return (
+      stream && // May happen in browsers.
       stream.isTTY &&
       (typeof stream.getColorDepth === 'function'
         ? stream.getColorDepth() > 2
@@ -57,7 +58,7 @@ export class Colours {
   }
 
   static refresh(): void {
-    Colours.enabled = Colours.isEnabled(process.stderr);
+    Colours.enabled = Colours.isEnabled(process?.stderr);
     if (!this.enabled) {
       Colours.reset = '';
       Colours.bright = '';

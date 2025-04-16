@@ -1,4 +1,4 @@
-// Copyright 2024 Google LLC
+// Copyright 2025 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,19 +18,11 @@
 
 /* global window */
 import type * as gax from 'google-gax';
-import type {
-  Callback,
-  CallOptions,
-  Descriptors,
-  ClientOptions,
-  IamClient,
-  IamProtos,
-  LocationsClient,
-  LocationProtos,
-} from 'google-gax';
+import type {Callback, CallOptions, Descriptors, ClientOptions, IamClient, IamProtos, LocationsClient, LocationProtos} from 'google-gax';
 import {PassThrough} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
+import {loggingUtils as logging} from 'google-gax';
 
 /**
  * Client JSON configuration object, loaded from
@@ -54,6 +46,8 @@ export class SequenceServiceClient {
   private _defaults: {[method: string]: gax.CallSettings};
   private _universeDomain: string;
   private _servicePath: string;
+  private _log = logging.log('showcase');
+
   auth: gax.GoogleAuth;
   descriptors: Descriptors = {
     page: {},
@@ -90,7 +84,7 @@ export class SequenceServiceClient {
    *     Developer's Console, e.g. 'grape-spaceship-123'. We will also check
    *     the environment variable GCLOUD_PROJECT for your project ID. If your
    *     app is running in an environment which supports
-   *     {@link https://developers.google.com/identity/protocols/application-default-credentials Application Default Credentials},
+   *     {@link https://cloud.google.com/docs/authentication/application-default-credentials Application Default Credentials},
    *     your project ID will be detected automatically.
    * @param {string} [options.apiEndpoint] - The domain name of the
    *     API remote host.
@@ -107,41 +101,20 @@ export class SequenceServiceClient {
    *     const client = new SequenceServiceClient({fallback: true}, gax);
    *     ```
    */
-  constructor(
-    opts?: ClientOptions,
-    gaxInstance?: typeof gax | typeof gax.fallback
-  ) {
+  constructor(opts?: ClientOptions, gaxInstance?: typeof gax | typeof gax.fallback) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof SequenceServiceClient;
-    if (
-      opts?.universe_domain &&
-      opts?.universeDomain &&
-      opts?.universe_domain !== opts?.universeDomain
-    ) {
-      throw new Error(
-        'Please set either universe_domain or universeDomain, but not both.'
-      );
+    if (opts?.universe_domain && opts?.universeDomain && opts?.universe_domain !== opts?.universeDomain) {
+      throw new Error('Please set either universe_domain or universeDomain, but not both.');
     }
-    const universeDomainEnvVar =
-      typeof process === 'object' && typeof process.env === 'object'
-        ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN']
-        : undefined;
-    this._universeDomain =
-      opts?.universeDomain ??
-      opts?.universe_domain ??
-      universeDomainEnvVar ??
-      'googleapis.com';
+    const universeDomainEnvVar = (typeof process === 'object' && typeof process.env === 'object') ? process.env['GOOGLE_CLOUD_UNIVERSE_DOMAIN'] : undefined;
+    this._universeDomain = opts?.universeDomain ?? opts?.universe_domain ?? universeDomainEnvVar ?? 'googleapis.com';
     this._servicePath = 'localhost';
-    const servicePath =
-      opts?.servicePath || opts?.apiEndpoint || this._servicePath;
-    this._providedCustomServicePath = !!(
-      opts?.servicePath || opts?.apiEndpoint
-    );
+    const servicePath = opts?.servicePath || opts?.apiEndpoint || this._servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
-    const fallback =
-      opts?.fallback ??
-      (typeof window !== 'undefined' && typeof window?.fetch === 'function');
+    const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
     opts = Object.assign({servicePath, port, clientConfig, fallback}, opts);
 
     // If scopes are unset in options and we're connecting to a non-default endpoint, set scopes just in case.
@@ -164,7 +137,7 @@ export class SequenceServiceClient {
     this._opts = opts;
 
     // Save the auth object to the client, for use by other methods.
-    this.auth = this._gaxGrpc.auth as gax.GoogleAuth;
+    this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
 
     // Set useJWTAccessWithScope on the auth object.
     this.auth.useJWTAccessWithScope = true;
@@ -177,14 +150,18 @@ export class SequenceServiceClient {
       this.auth.defaultScopes = staticMembers.scopes;
     }
     this.iamClient = new this._gaxModule.IamClient(this._gaxGrpc, opts);
-
+  
     this.locationsClient = new this._gaxModule.LocationsClient(
       this._gaxGrpc,
       opts
     );
+  
 
     // Determine the client header string.
-    const clientHeader = [`gax/${this._gaxModule.version}`, `gapic/${version}`];
+    const clientHeader = [
+      `gax/${this._gaxModule.version}`,
+      `gapic/${version}`,
+    ];
     if (typeof process === 'object' && 'versions' in process) {
       clientHeader.push(`gl-node/${process.versions.node}`);
     } else {
@@ -222,20 +199,13 @@ export class SequenceServiceClient {
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this.descriptors.stream = {
-      attemptStreamingSequence: new this._gaxModule.StreamDescriptor(
-        this._gaxModule.StreamType.SERVER_STREAMING,
-        !!opts.fallback,
-        !!opts.gaxServerStreamingRetries
-      ),
+      attemptStreamingSequence: new this._gaxModule.StreamDescriptor(this._gaxModule.StreamType.SERVER_STREAMING, !!opts.fallback, !!opts.gaxServerStreamingRetries)
     };
 
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-      'google.showcase.v1beta1.SequenceService',
-      gapicConfig as gax.ClientConfig,
-      opts.clientConfig || {},
-      {'x-goog-api-client': clientHeader.join(' ')}
-    );
+        'google.showcase.v1beta1.SequenceService', gapicConfig as gax.ClientConfig,
+        opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
 
     // Set up a dictionary of "inner API calls"; the core implementation
     // of calling the API is handled in `google-gax`, with this code
@@ -266,54 +236,39 @@ export class SequenceServiceClient {
     // Put together the "service stub" for
     // google.showcase.v1beta1.SequenceService.
     this.sequenceServiceStub = this._gaxGrpc.createStub(
-      this._opts.fallback
-        ? (this._protos as protobuf.Root).lookupService(
-            'google.showcase.v1beta1.SequenceService'
-          )
-        : // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this._opts.fallback ?
+          (this._protos as protobuf.Root).lookupService('google.showcase.v1beta1.SequenceService') :
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).google.showcase.v1beta1.SequenceService,
-      this._opts,
-      this._providedCustomServicePath
-    ) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const sequenceServiceStubMethods = [
-      'createSequence',
-      'createStreamingSequence',
-      'getSequenceReport',
-      'getStreamingSequenceReport',
-      'attemptSequence',
-      'attemptStreamingSequence',
-    ];
+    const sequenceServiceStubMethods =
+        ['createSequence', 'createStreamingSequence', 'getSequenceReport', 'getStreamingSequenceReport', 'attemptSequence', 'attemptStreamingSequence'];
     for (const methodName of sequenceServiceStubMethods) {
       const callPromise = this.sequenceServiceStub.then(
-        stub =>
-          (...args: Array<{}>) => {
-            if (this._terminated) {
-              if (methodName in this.descriptors.stream) {
-                const stream = new PassThrough();
-                setImmediate(() => {
-                  stream.emit(
-                    'error',
-                    new this._gaxModule.GoogleError(
-                      'The client has already been closed.'
-                    )
-                  );
-                });
-                return stream;
-              }
-              return Promise.reject('The client has already been closed.');
+        stub => (...args: Array<{}>) => {
+          if (this._terminated) {
+            if (methodName in this.descriptors.stream) {
+              const stream = new PassThrough({objectMode: true});
+              setImmediate(() => {
+                stream.emit('error', new this._gaxModule.GoogleError('The client has already been closed.'));
+              });
+              return stream;
             }
-            const func = stub[methodName];
-            return func.apply(stub, args);
-          },
-        (err: Error | null | undefined) => () => {
+            return Promise.reject('The client has already been closed.');
+          }
+          const func = stub[methodName];
+          return func.apply(stub, args);
+        },
+        (err: Error|null|undefined) => () => {
           throw err;
-        }
-      );
+        });
 
-      const descriptor = this.descriptors.stream[methodName] || undefined;
+      const descriptor =
+        this.descriptors.stream[methodName] ||
+        undefined;
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
         this._defaults[methodName],
@@ -333,14 +288,8 @@ export class SequenceServiceClient {
    * @returns {string} The DNS address for this service.
    */
   static get servicePath() {
-    if (
-      typeof process === 'object' &&
-      typeof process.emitWarning === 'function'
-    ) {
-      process.emitWarning(
-        'Static servicePath is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
-      );
+    if (typeof process === 'object' && typeof process.emitWarning === 'function') {
+      process.emitWarning('Static servicePath is deprecated, please use the instance method instead.', 'DeprecationWarning');
     }
     return 'localhost';
   }
@@ -351,14 +300,8 @@ export class SequenceServiceClient {
    * @returns {string} The DNS address for this service.
    */
   static get apiEndpoint() {
-    if (
-      typeof process === 'object' &&
-      typeof process.emitWarning === 'function'
-    ) {
-      process.emitWarning(
-        'Static apiEndpoint is deprecated, please use the instance method instead.',
-        'DeprecationWarning'
-      );
+    if (typeof process === 'object' && typeof process.emitWarning === 'function') {
+      process.emitWarning('Static apiEndpoint is deprecated, please use the instance method instead.', 'DeprecationWarning');
     }
     return 'localhost';
   }
@@ -398,9 +341,8 @@ export class SequenceServiceClient {
    * Return the project ID used by this class.
    * @returns {Promise} A promise that resolves to string containing the project ID.
    */
-  getProjectId(
-    callback?: Callback<string, undefined, undefined>
-  ): Promise<string> | void {
+  getProjectId(callback?: Callback<string, undefined, undefined>):
+      Promise<string>|void {
     if (callback) {
       this.auth.getProjectId(callback);
       return;
@@ -411,512 +353,494 @@ export class SequenceServiceClient {
   // -------------------
   // -- Service calls --
   // -------------------
-  /**
-   * Creates a sequence.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {google.showcase.v1beta1.Sequence} request.sequence
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.Sequence|Sequence}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/sequence_service.create_sequence.js</caption>
-   * region_tag:localhost_v1beta1_generated_SequenceService_CreateSequence_async
-   */
+/**
+ * Creates a sequence.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {google.showcase.v1beta1.Sequence} request.sequence
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.Sequence|Sequence}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/sequence_service.create_sequence.js</caption>
+ * region_tag:localhost_v1beta1_generated_SequenceService_CreateSequence_async
+ */
   createSequence(
-    request?: protos.google.showcase.v1beta1.ICreateSequenceRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.ISequence,
-      protos.google.showcase.v1beta1.ICreateSequenceRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.ICreateSequenceRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.ISequence,
+        protos.google.showcase.v1beta1.ICreateSequenceRequest|undefined, {}|undefined
+      ]>;
   createSequence(
-    request: protos.google.showcase.v1beta1.ICreateSequenceRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.ISequence,
-      protos.google.showcase.v1beta1.ICreateSequenceRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createSequence(
-    request: protos.google.showcase.v1beta1.ICreateSequenceRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.ISequence,
-      protos.google.showcase.v1beta1.ICreateSequenceRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createSequence(
-    request?: protos.google.showcase.v1beta1.ICreateSequenceRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.ICreateSequenceRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.ISequence,
-          | protos.google.showcase.v1beta1.ICreateSequenceRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.ISequence,
-      protos.google.showcase.v1beta1.ICreateSequenceRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.ISequence,
-      protos.google.showcase.v1beta1.ICreateSequenceRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.ICreateSequenceRequest|null|undefined,
+          {}|null|undefined>): void;
+  createSequence(
+      request: protos.google.showcase.v1beta1.ICreateSequenceRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.ISequence,
+          protos.google.showcase.v1beta1.ICreateSequenceRequest|null|undefined,
+          {}|null|undefined>): void;
+  createSequence(
+      request?: protos.google.showcase.v1beta1.ICreateSequenceRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.ISequence,
+          protos.google.showcase.v1beta1.ICreateSequenceRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.ISequence,
+          protos.google.showcase.v1beta1.ICreateSequenceRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.ISequence,
+        protos.google.showcase.v1beta1.ICreateSequenceRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.createSequence(request, options, callback);
+    this._log.info('createSequence request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.ISequence,
+        protos.google.showcase.v1beta1.ICreateSequenceRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('createSequence response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.createSequence(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.ISequence,
+        protos.google.showcase.v1beta1.ICreateSequenceRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('createSequence response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * Creates a sequence.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {google.showcase.v1beta1.StreamingSequence} request.streamingSequence
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.StreamingSequence|StreamingSequence}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/sequence_service.create_streaming_sequence.js</caption>
-   * region_tag:localhost_v1beta1_generated_SequenceService_CreateStreamingSequence_async
-   */
+/**
+ * Creates a sequence.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {google.showcase.v1beta1.StreamingSequence} request.streamingSequence
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.StreamingSequence|StreamingSequence}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/sequence_service.create_streaming_sequence.js</caption>
+ * region_tag:localhost_v1beta1_generated_SequenceService_CreateStreamingSequence_async
+ */
   createStreamingSequence(
-    request?: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IStreamingSequence,
-      (
-        | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
-        | undefined
-      ),
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IStreamingSequence,
+        protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|undefined, {}|undefined
+      ]>;
   createStreamingSequence(
-    request: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IStreamingSequence,
-      | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createStreamingSequence(
-    request: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IStreamingSequence,
-      | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  createStreamingSequence(
-    request?: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.IStreamingSequence,
-          | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IStreamingSequence,
-      | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IStreamingSequence,
-      (
-        | protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest
-        | undefined
-      ),
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|null|undefined,
+          {}|null|undefined>): void;
+  createStreamingSequence(
+      request: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.IStreamingSequence,
+          protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|null|undefined,
+          {}|null|undefined>): void;
+  createStreamingSequence(
+      request?: protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.IStreamingSequence,
+          protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.IStreamingSequence,
+          protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.IStreamingSequence,
+        protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.createStreamingSequence(
-      request,
-      options,
-      callback
-    );
+    this._log.info('createStreamingSequence request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.IStreamingSequence,
+        protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('createStreamingSequence response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.createStreamingSequence(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.IStreamingSequence,
+        protos.google.showcase.v1beta1.ICreateStreamingSequenceRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('createStreamingSequence response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * Retrieves a sequence.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.SequenceReport|SequenceReport}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/sequence_service.get_sequence_report.js</caption>
-   * region_tag:localhost_v1beta1_generated_SequenceService_GetSequenceReport_async
-   */
+/**
+ * Retrieves a sequence.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.SequenceReport|SequenceReport}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/sequence_service.get_sequence_report.js</caption>
+ * region_tag:localhost_v1beta1_generated_SequenceService_GetSequenceReport_async
+ */
   getSequenceReport(
-    request?: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.ISequenceReport,
-      protos.google.showcase.v1beta1.IGetSequenceReportRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.ISequenceReport,
+        protos.google.showcase.v1beta1.IGetSequenceReportRequest|undefined, {}|undefined
+      ]>;
   getSequenceReport(
-    request: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.ISequenceReport,
-      | protos.google.showcase.v1beta1.IGetSequenceReportRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  getSequenceReport(
-    request: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.ISequenceReport,
-      | protos.google.showcase.v1beta1.IGetSequenceReportRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  getSequenceReport(
-    request?: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.ISequenceReport,
-          | protos.google.showcase.v1beta1.IGetSequenceReportRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.ISequenceReport,
-      | protos.google.showcase.v1beta1.IGetSequenceReportRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.ISequenceReport,
-      protos.google.showcase.v1beta1.IGetSequenceReportRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IGetSequenceReportRequest|null|undefined,
+          {}|null|undefined>): void;
+  getSequenceReport(
+      request: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.ISequenceReport,
+          protos.google.showcase.v1beta1.IGetSequenceReportRequest|null|undefined,
+          {}|null|undefined>): void;
+  getSequenceReport(
+      request?: protos.google.showcase.v1beta1.IGetSequenceReportRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.ISequenceReport,
+          protos.google.showcase.v1beta1.IGetSequenceReportRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.ISequenceReport,
+          protos.google.showcase.v1beta1.IGetSequenceReportRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.ISequenceReport,
+        protos.google.showcase.v1beta1.IGetSequenceReportRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        name: request.name ?? '',
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
     this.initialize();
-    return this.innerApiCalls.getSequenceReport(request, options, callback);
+    this._log.info('getSequenceReport request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.ISequenceReport,
+        protos.google.showcase.v1beta1.IGetSequenceReportRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getSequenceReport response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.getSequenceReport(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.ISequenceReport,
+        protos.google.showcase.v1beta1.IGetSequenceReportRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('getSequenceReport response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * Retrieves a sequence.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.StreamingSequenceReport|StreamingSequenceReport}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/sequence_service.get_streaming_sequence_report.js</caption>
-   * region_tag:localhost_v1beta1_generated_SequenceService_GetStreamingSequenceReport_async
-   */
+/**
+ * Retrieves a sequence.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.showcase.v1beta1.StreamingSequenceReport|StreamingSequenceReport}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/sequence_service.get_streaming_sequence_report.js</caption>
+ * region_tag:localhost_v1beta1_generated_SequenceService_GetStreamingSequenceReport_async
+ */
   getStreamingSequenceReport(
-    request?: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IStreamingSequenceReport,
-      (
-        | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
-        | undefined
-      ),
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.showcase.v1beta1.IStreamingSequenceReport,
+        protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|undefined, {}|undefined
+      ]>;
   getStreamingSequenceReport(
-    request: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IStreamingSequenceReport,
-      | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  getStreamingSequenceReport(
-    request: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
-    callback: Callback<
-      protos.google.showcase.v1beta1.IStreamingSequenceReport,
-      | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  getStreamingSequenceReport(
-    request?: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.showcase.v1beta1.IStreamingSequenceReport,
-          | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.showcase.v1beta1.IStreamingSequenceReport,
-      | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
-      | null
-      | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.showcase.v1beta1.IStreamingSequenceReport,
-      (
-        | protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest
-        | undefined
-      ),
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|null|undefined,
+          {}|null|undefined>): void;
+  getStreamingSequenceReport(
+      request: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
+      callback: Callback<
+          protos.google.showcase.v1beta1.IStreamingSequenceReport,
+          protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|null|undefined,
+          {}|null|undefined>): void;
+  getStreamingSequenceReport(
+      request?: protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.showcase.v1beta1.IStreamingSequenceReport,
+          protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.showcase.v1beta1.IStreamingSequenceReport,
+          protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.showcase.v1beta1.IStreamingSequenceReport,
+        protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        name: request.name ?? '',
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
     this.initialize();
-    return this.innerApiCalls.getStreamingSequenceReport(
-      request,
-      options,
-      callback
-    );
+    this._log.info('getStreamingSequenceReport request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.showcase.v1beta1.IStreamingSequenceReport,
+        protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('getStreamingSequenceReport response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.getStreamingSequenceReport(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.showcase.v1beta1.IStreamingSequenceReport,
+        protos.google.showcase.v1beta1.IGetStreamingSequenceReportRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('getStreamingSequenceReport response %j', response);
+        return [response, options, rawResponse];
+      });
   }
-  /**
-   * Attempts a sequence.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/sequence_service.attempt_sequence.js</caption>
-   * region_tag:localhost_v1beta1_generated_SequenceService_AttemptSequence_async
-   */
+/**
+ * Attempts a sequence.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link protos.google.protobuf.Empty|Empty}.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/sequence_service.attempt_sequence.js</caption>
+ * region_tag:localhost_v1beta1_generated_SequenceService_AttemptSequence_async
+ */
   attemptSequence(
-    request?: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
-    options?: CallOptions
-  ): Promise<
-    [
-      protos.google.protobuf.IEmpty,
-      protos.google.showcase.v1beta1.IAttemptSequenceRequest | undefined,
-      {} | undefined,
-    ]
-  >;
+      request?: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.protobuf.IEmpty,
+        protos.google.showcase.v1beta1.IAttemptSequenceRequest|undefined, {}|undefined
+      ]>;
   attemptSequence(
-    request: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
-    options: CallOptions,
-    callback: Callback<
-      protos.google.protobuf.IEmpty,
-      protos.google.showcase.v1beta1.IAttemptSequenceRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  attemptSequence(
-    request: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
-    callback: Callback<
-      protos.google.protobuf.IEmpty,
-      protos.google.showcase.v1beta1.IAttemptSequenceRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): void;
-  attemptSequence(
-    request?: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
-    optionsOrCallback?:
-      | CallOptions
-      | Callback<
+      request: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
+      options: CallOptions,
+      callback: Callback<
           protos.google.protobuf.IEmpty,
-          | protos.google.showcase.v1beta1.IAttemptSequenceRequest
-          | null
-          | undefined,
-          {} | null | undefined
-        >,
-    callback?: Callback<
-      protos.google.protobuf.IEmpty,
-      protos.google.showcase.v1beta1.IAttemptSequenceRequest | null | undefined,
-      {} | null | undefined
-    >
-  ): Promise<
-    [
-      protos.google.protobuf.IEmpty,
-      protos.google.showcase.v1beta1.IAttemptSequenceRequest | undefined,
-      {} | undefined,
-    ]
-  > | void {
+          protos.google.showcase.v1beta1.IAttemptSequenceRequest|null|undefined,
+          {}|null|undefined>): void;
+  attemptSequence(
+      request: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
+      callback: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.showcase.v1beta1.IAttemptSequenceRequest|null|undefined,
+          {}|null|undefined>): void;
+  attemptSequence(
+      request?: protos.google.showcase.v1beta1.IAttemptSequenceRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.showcase.v1beta1.IAttemptSequenceRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.google.showcase.v1beta1.IAttemptSequenceRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.google.protobuf.IEmpty,
+        protos.google.showcase.v1beta1.IAttemptSequenceRequest|undefined, {}|undefined
+      ]>|void {
     request = request || {};
     let options: CallOptions;
     if (typeof optionsOrCallback === 'function' && callback === undefined) {
       callback = optionsOrCallback;
       options = {};
-    } else {
+    }
+    else {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        name: request.name ?? '',
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
     this.initialize();
-    return this.innerApiCalls.attemptSequence(request, options, callback);
+    this._log.info('attemptSequence request %j', request);
+    const wrappedCallback: Callback<
+        protos.google.protobuf.IEmpty,
+        protos.google.showcase.v1beta1.IAttemptSequenceRequest|null|undefined,
+        {}|null|undefined>|undefined = callback
+      ? (error, response, options, rawResponse) => {
+          this._log.info('attemptSequence response %j', response);
+          callback!(error, response, options, rawResponse); // We verified callback above.
+        }
+      : undefined;
+    return this.innerApiCalls.attemptSequence(request, options, wrappedCallback)
+      ?.then(([response, options, rawResponse]: [
+        protos.google.protobuf.IEmpty,
+        protos.google.showcase.v1beta1.IAttemptSequenceRequest|undefined,
+        {}|undefined
+      ]) => {
+        this._log.info('attemptSequence response %j', response);
+        return [response, options, rawResponse];
+      });
   }
 
-  /**
-   * Attempts a streaming sequence.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.name
-   * @param {number} [request.lastFailIndex]
-   *   used to send the index of the last failed message
-   *   in the string "content" of an AttemptStreamingSequenceResponse
-   *   needed for stream resumption logic testing
-   * @param {object} [options]
-   *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
-   * @returns {Stream}
-   *   An object stream which emits {@link protos.google.showcase.v1beta1.AttemptStreamingSequenceResponse|AttemptStreamingSequenceResponse} on 'data' event.
-   *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
-   *   for more details and examples.
-   * @example <caption>include:samples/generated/v1beta1/sequence_service.attempt_streaming_sequence.js</caption>
-   * region_tag:localhost_v1beta1_generated_SequenceService_AttemptStreamingSequence_async
-   */
+/**
+ * Attempts a streaming sequence.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {number} [request.lastFailIndex]
+ *   used to send the index of the last failed message
+ *   in the string "content" of an AttemptStreamingSequenceResponse
+ *   needed for stream resumption logic testing
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which emits {@link protos.google.showcase.v1beta1.AttemptStreamingSequenceResponse|AttemptStreamingSequenceResponse} on 'data' event.
+ *   Please see the {@link https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#server-streaming | documentation }
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1beta1/sequence_service.attempt_streaming_sequence.js</caption>
+ * region_tag:localhost_v1beta1_generated_SequenceService_AttemptStreamingSequence_async
+ */
   attemptStreamingSequence(
-    request?: protos.google.showcase.v1beta1.IAttemptStreamingSequenceRequest,
-    options?: CallOptions
-  ): gax.CancellableStream {
+      request?: protos.google.showcase.v1beta1.IAttemptStreamingSequenceRequest,
+      options?: CallOptions):
+    gax.CancellableStream{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers['x-goog-request-params'] =
-      this._gaxModule.routingHeader.fromParams({
-        name: request.name ?? '',
-      });
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
     this.initialize();
+    this._log.info('attemptStreamingSequence stream %j', options);
     return this.innerApiCalls.attemptStreamingSequence(request, options);
   }
 
-  /**
-   * Gets the access control policy for a resource. Returns an empty policy
-   * if the resource exists and does not have a policy set.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {Object} [request.options]
-   *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
-   *   `GetIamPolicy`. This field is only used by Cloud IAM.
-   *
-   *   This object should have the same structure as {@link google.iam.v1.GetPolicyOptions | GetPolicyOptions}.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing {@link google.iam.v1.Policy | Policy}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   */
+/**
+ * Gets the access control policy for a resource. Returns an empty policy
+ * if the resource exists and does not have a policy set.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {Object} [request.options]
+ *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+ *   `GetIamPolicy`. This field is only used by Cloud IAM.
+ *
+ *   This object should have the same structure as {@link google.iam.v1.GetPolicyOptions | GetPolicyOptions}.
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing {@link google.iam.v1.Policy | Policy}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link google.iam.v1.Policy | Policy}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ */
   getIamPolicy(
     request: IamProtos.google.iam.v1.GetIamPolicyRequest,
     options?:
@@ -931,39 +855,39 @@ export class SequenceServiceClient {
       IamProtos.google.iam.v1.GetIamPolicyRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<[IamProtos.google.iam.v1.Policy]> {
+  ):Promise<[IamProtos.google.iam.v1.Policy]> {
     return this.iamClient.getIamPolicy(request, options, callback);
   }
 
-  /**
-   * Returns permissions that a caller has on the specified resource. If the
-   * resource does not exist, this will return an empty set of
-   * permissions, not a NOT_FOUND error.
-   *
-   * Note: This operation is designed to be used for building
-   * permission-aware UIs and command-line tools, not for authorization
-   * checking. This operation may "fail open" without warning.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy detail is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
-   *   The set of permissions to check for the `resource`. Permissions with
-   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   */
+/**
+ * Returns permissions that a caller has on the specified resource. If the
+ * resource does not exist, this will return an empty set of
+ * permissions, not a NOT_FOUND error.
+ *
+ * Note: This operation is designed to be used for building
+ * permission-aware UIs and command-line tools, not for authorization
+ * checking. This operation may "fail open" without warning.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy detail is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {string[]} request.permissions
+ *   The set of permissions to check for the `resource`. Permissions with
+ *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+ *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ */
   setIamPolicy(
     request: IamProtos.google.iam.v1.SetIamPolicyRequest,
     options?:
@@ -978,40 +902,40 @@ export class SequenceServiceClient {
       IamProtos.google.iam.v1.SetIamPolicyRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<[IamProtos.google.iam.v1.Policy]> {
+  ):Promise<[IamProtos.google.iam.v1.Policy]> {
     return this.iamClient.setIamPolicy(request, options, callback);
   }
 
-  /**
-   * Returns permissions that a caller has on the specified resource. If the
-   * resource does not exist, this will return an empty set of
-   * permissions, not a NOT_FOUND error.
-   *
-   * Note: This operation is designed to be used for building
-   * permission-aware UIs and command-line tools, not for authorization
-   * checking. This operation may "fail open" without warning.
-   *
-   * @param {Object} request
-   *   The request object that will be sent.
-   * @param {string} request.resource
-   *   REQUIRED: The resource for which the policy detail is being requested.
-   *   See the operation documentation for the appropriate value for this field.
-   * @param {string[]} request.permissions
-   *   The set of permissions to check for the `resource`. Permissions with
-   *   wildcards (such as '*' or 'storage.*') are not allowed. For more
-   *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
-   * @param {Object} [options]
-   *   Optional parameters. You can override the default settings for this call, e.g, timeout,
-   *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
-   * @param {function(?Error, ?Object)} [callback]
-   *   The function which will be called with the result of the API call.
-   *
-   *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   * @returns {Promise} - The promise which resolves to an array.
-   *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
-   *   The promise has a method named "cancel" which cancels the ongoing API call.
-   *
-   */
+/**
+ * Returns permissions that a caller has on the specified resource. If the
+ * resource does not exist, this will return an empty set of
+ * permissions, not a NOT_FOUND error.
+ *
+ * Note: This operation is designed to be used for building
+ * permission-aware UIs and command-line tools, not for authorization
+ * checking. This operation may "fail open" without warning.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy detail is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {string[]} request.permissions
+ *   The set of permissions to check for the `resource`. Permissions with
+ *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+ *   information see {@link https://cloud.google.com/iam/docs/overview#permissions | IAM Overview }.
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See {@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html | gax.CallOptions} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing {@link google.iam.v1.TestIamPermissionsResponse | TestIamPermissionsResponse}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ *
+ */
   testIamPermissions(
     request: IamProtos.google.iam.v1.TestIamPermissionsRequest,
     options?:
@@ -1026,11 +950,11 @@ export class SequenceServiceClient {
       IamProtos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
       {} | null | undefined
     >
-  ): Promise<[IamProtos.google.iam.v1.TestIamPermissionsResponse]> {
+  ):Promise<[IamProtos.google.iam.v1.TestIamPermissionsResponse]> {
     return this.iamClient.testIamPermissions(request, options, callback);
   }
 
-  /**
+/**
    * Gets information about a location.
    *
    * @param {Object} request
@@ -1070,7 +994,7 @@ export class SequenceServiceClient {
     return this.locationsClient.getLocation(request, options, callback);
   }
 
-  /**
+/**
    * Lists information about the supported locations for this service. Returns an iterable object.
    *
    * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
@@ -1118,7 +1042,7 @@ export class SequenceServiceClient {
    * @param {string} sequence
    * @returns {string} Resource name string.
    */
-  sequencePath(sequence: string) {
+  sequencePath(sequence:string) {
     return this.pathTemplates.sequencePathTemplate.render({
       sequence: sequence,
     });
@@ -1141,7 +1065,7 @@ export class SequenceServiceClient {
    * @param {string} sequence
    * @returns {string} Resource name string.
    */
-  sequenceReportPath(sequence: string) {
+  sequenceReportPath(sequence:string) {
     return this.pathTemplates.sequenceReportPathTemplate.render({
       sequence: sequence,
     });
@@ -1155,9 +1079,7 @@ export class SequenceServiceClient {
    * @returns {string} A string representing the sequence.
    */
   matchSequenceFromSequenceReportName(sequenceReportName: string) {
-    return this.pathTemplates.sequenceReportPathTemplate.match(
-      sequenceReportName
-    ).sequence;
+    return this.pathTemplates.sequenceReportPathTemplate.match(sequenceReportName).sequence;
   }
 
   /**
@@ -1166,7 +1088,7 @@ export class SequenceServiceClient {
    * @param {string} streaming_sequence
    * @returns {string} Resource name string.
    */
-  streamingSequencePath(streamingSequence: string) {
+  streamingSequencePath(streamingSequence:string) {
     return this.pathTemplates.streamingSequencePathTemplate.render({
       streaming_sequence: streamingSequence,
     });
@@ -1179,12 +1101,8 @@ export class SequenceServiceClient {
    *   A fully-qualified path representing StreamingSequence resource.
    * @returns {string} A string representing the streaming_sequence.
    */
-  matchStreamingSequenceFromStreamingSequenceName(
-    streamingSequenceName: string
-  ) {
-    return this.pathTemplates.streamingSequencePathTemplate.match(
-      streamingSequenceName
-    ).streaming_sequence;
+  matchStreamingSequenceFromStreamingSequenceName(streamingSequenceName: string) {
+    return this.pathTemplates.streamingSequencePathTemplate.match(streamingSequenceName).streaming_sequence;
   }
 
   /**
@@ -1193,7 +1111,7 @@ export class SequenceServiceClient {
    * @param {string} streaming_sequence
    * @returns {string} Resource name string.
    */
-  streamingSequenceReportPath(streamingSequence: string) {
+  streamingSequenceReportPath(streamingSequence:string) {
     return this.pathTemplates.streamingSequenceReportPathTemplate.render({
       streaming_sequence: streamingSequence,
     });
@@ -1206,12 +1124,8 @@ export class SequenceServiceClient {
    *   A fully-qualified path representing StreamingSequenceReport resource.
    * @returns {string} A string representing the streaming_sequence.
    */
-  matchStreamingSequenceFromStreamingSequenceReportName(
-    streamingSequenceReportName: string
-  ) {
-    return this.pathTemplates.streamingSequenceReportPathTemplate.match(
-      streamingSequenceReportName
-    ).streaming_sequence;
+  matchStreamingSequenceFromStreamingSequenceReportName(streamingSequenceReportName: string) {
+    return this.pathTemplates.streamingSequenceReportPathTemplate.match(streamingSequenceReportName).streaming_sequence;
   }
 
   /**
@@ -1223,6 +1137,7 @@ export class SequenceServiceClient {
   close(): Promise<void> {
     if (this.sequenceServiceStub && !this._terminated) {
       return this.sequenceServiceStub.then(stub => {
+        this._log.info('ending gRPC channel');
         this._terminated = true;
         stub.close();
         this.iamClient.close();
