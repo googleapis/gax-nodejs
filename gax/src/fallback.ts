@@ -30,7 +30,7 @@ import {
   BaseExternalAccountClient,
 } from 'google-auth-library';
 import {OperationsClientBuilder} from './operationsClient';
-import type {GrpcClientOptions, ClientStubOptions} from './grpc';
+import type {GrpcClientOptions, ClientStubOptions, ClientStub} from './grpc';
 import {GaxCall, GRPCCall} from './apitypes';
 import {Descriptor, StreamDescriptor} from './descriptor';
 import {createApiCall as _createApiCall} from './createApiCall';
@@ -44,6 +44,7 @@ import {google} from '../protos/http';
 import * as IamProtos from '../protos/iam_service';
 import * as LocationProtos from '../protos/locations';
 import * as operationsProtos from '../protos/operations';
+import { config } from 'process';
 
 export {FallbackServiceError};
 export {PathTemplate} from './pathTemplate';
@@ -148,6 +149,11 @@ export class GrpcClient {
     this.httpRules = (options as GrpcClientOptions).httpRules;
     this.numericEnums = (options as GrpcClientOptions).numericEnums ?? false;
     this.allowEmptyDeleteFallbackResponse = (options as ClientStubOptions).allowEmptyDeleteFallbackResponse ?? false;
+    // enable BQ by default
+    if((options as ClientStubOptions).servicePath === "bigquery.googleapis.com" && this.fallback){
+      this.allowEmptyDeleteFallbackResponse = true
+    }
+
 
   }
 

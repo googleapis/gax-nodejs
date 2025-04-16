@@ -42,6 +42,7 @@ export interface ClientOptions
   // No preference; exception will be thrown if both are set to different values.
   universeDomain?: string;
   universe_domain?: string;
+  // allowEmptyDeleteFallbackResponse?: boolean // allow a behavior allowed in Apiary where responses return 204
 }
 
 export interface Descriptors {

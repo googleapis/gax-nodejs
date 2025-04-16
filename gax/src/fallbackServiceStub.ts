@@ -126,7 +126,7 @@ export function generateServiceStub(
         headers[key] = options[key][0];
       }
       const streamArrayParser = new StreamArrayParser(rpc);
-
+      let response204Ok = false;
       authClient
         .getRequestHeaders()
         .then(authHeader => {
@@ -152,7 +152,10 @@ export function generateServiceStub(
           return fetch(url, fetchRequest);
         })
         .then((response: Response | NodeFetchResponse) => {
-          console.log('response', response)
+          console.log('response', response, response.status)
+          if(response.status === 204 && response.ok){
+            response204Ok = true;
+          }
           if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,
@@ -195,7 +198,7 @@ export function generateServiceStub(
                     streamArrayParser.emit('error', err);
                   } else if (callback) {
                     // TODO - can possibly itnercept error here
-                    if(allowEmptyDeleteFallbackResponse){
+                    if(allowEmptyDeleteFallbackResponse && responseOk){
                       callback(null, {}) // TODO format properly
                     }
                     callback(err);
