@@ -156,7 +156,7 @@ export function generateServiceStub(
         headers.set(key, options[key][0]);
       }
       const streamArrayParser = new StreamArrayParser(rpc);
-
+      let response204Ok = false; 
       auth
         .getRequestHeaders()
         .then(authHeader => {
@@ -178,6 +178,16 @@ export function generateServiceStub(
           return fetch(url, fetchRequest as {});
         })
         .then((response: Response | NodeFetchResponse) => {
+          // There is a legacy Apiary configuration that some services
+          // use which allows 204 empty responses on success instead of
+          // a 200 OK. This most commonly is seen in delete RPCs,
+          // but does occasionally show up in other endpoints. We 
+          // need to allow this behavior so that these clients do not throw an error 
+          // when the call actually succeeded
+          // See b/411675301 for more context
+          if(response.status === 204 && response.ok){
+            response204Ok = true; 
+          }
           if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,
@@ -205,7 +215,8 @@ export function generateServiceStub(
                 const response = responseDecoder(rpc, ok, buffer);
                 callback!(null, response);
               })
-              .catch((err: Error) => {
+              // @ts-ignore
+              .catch((err: Error) => { // TODO fix all code paths issue
                 if (!cancelRequested || err.name !== 'AbortError') {
                   if (rpc.responseStream) {
                     if (callback) {
@@ -213,8 +224,28 @@ export function generateServiceStub(
                     }
                     streamArrayParser.emit('error', err);
                   } else if (callback) {
+                    // This supports a legacy Apiary behavior that allows 
+                    // empty 204 responses. If we do not intercept this error
+                    // from decodeResponse in fallbackRest
+                    // it will cause libraries to erroneously throw an
+                    // error when the call succeeded. This error cannot be checked in
+                    // fallbackRest.ts because decodeResponse does not have the necessary
+                    // context about the response to validate the status code + ok-ness
+                    if(response204Ok){
+                      callback(null, {})
+                    }
                     callback(err);
                   } else {
+                    // This supports a legacy Apiary behavior that allows 
+                    // empty 204 responses. If we do not intercept this error
+                    // from decodeResponse in fallbackRest
+                    // it will cause libraries to erroneously throw an
+                    // error when the call succeeded. This error cannot be checked in
+                    // fallbackRest.ts because decodeResponse does not have the necessary
+                    // context about the response to validate the status code + ok-ness
+                    if(response204Ok){
+                      return {}
+                    }
                     throw err;
                   }
                 }
