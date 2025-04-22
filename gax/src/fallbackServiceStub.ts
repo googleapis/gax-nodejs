@@ -18,9 +18,11 @@ import type {Response as NodeFetchResponse} from 'node-fetch' with {'resolution-
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {AuthClient, GoogleAuth, gaxios} from 'google-auth-library';
+import * as serializer from 'proto3-json-serializer';
 
 import {hasAbortController, isNodeJS} from './featureDetection';
 import {StreamArrayParser} from './streamArrayParser';
+import {defaultToObjectOptions} from './fallback';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
@@ -197,8 +199,7 @@ export function generateServiceStub(
                 const response = responseDecoder(rpc, ok, buffer);
                 callback!(null, response);
               })
-              // @ts-ignore
-              .catch((err: Error) => { // TODO fix all code paths issue
+              .catch((err: Error) => {
                 if (!cancelRequested || err.name !== 'AbortError') {
                   if (rpc.responseStream) {
                     if (callback) {
@@ -207,30 +208,43 @@ export function generateServiceStub(
                     streamArrayParser.emit('error', err);
                   } else if (callback) {
                     // This supports a legacy Apiary behavior that allows 
-                    // empty 204 responses. If we do not intercept this error
+                    // empty 204 responses. If we do not intercept this potential error
                     // from decodeResponse in fallbackRest
                     // it will cause libraries to erroneously throw an
                     // error when the call succeeded. This error cannot be checked in
                     // fallbackRest.ts because decodeResponse does not have the necessary
                     // context about the response to validate the status code + ok-ness
-                    if(response204Ok){
-                      callback(null, {})
+                    if(!response204Ok){
+                      callback(err);
+                      return  // Explicitly return otherwise TS will ha
                     }
-                    callback(err);
+                    else{
+                      // format the empty response the same way we format non-empty responses in fallbackRest.ts
+                      const emptyMessage = serializer.fromProto3JSON(rpc.resolvedResponseType!, JSON.parse('{}'))
+                      const resp = rpc.resolvedResponseType!.toObject(emptyMessage!, defaultToObjectOptions)
+                      callback(null, resp)
+                      return // Explicitly return otherwise TS will have issues
+                    }
                   } else {
-                    // This supports a legacy Apiary behavior that allows 
-                    // empty 204 responses. If we do not intercept this error
+                    // This supports a legacy Apiary behavior that allows
+                    // empty 204 responses. If we do not intercept this potential error
                     // from decodeResponse in fallbackRest
                     // it will cause libraries to erroneously throw an
                     // error when the call succeeded. This error cannot be checked in
                     // fallbackRest.ts because decodeResponse does not have the necessary
                     // context about the response to validate the status code + ok-ness
-                    if(response204Ok){
-                      return {}
+                    if(!response204Ok){
+                      throw err
                     }
-                    throw err;
+                    // format the empty response the same way we format non-empty responses in fallbackRest.ts
+                    const emptyMessage = serializer.fromProto3JSON(rpc.resolvedResponseType!, JSON.parse('{}'))
+                    const resp = rpc.resolvedResponseType!.toObject(emptyMessage!, defaultToObjectOptions)
+                    return resp
                   }
                 }
+                // If we reach here, it's a cancelled AbortError
+                // return to make sure TS doesn't get mad
+                return;
               });
           }
         })
