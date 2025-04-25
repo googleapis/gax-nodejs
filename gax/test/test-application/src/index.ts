@@ -34,6 +34,7 @@ import {
 import {RequestType} from 'google-gax/build/src/apitypes';
 import {Duplex, PassThrough, pipeline} from 'stream';
 const pumpify = require('pumpify');
+const { captureStderr } = require('./testUtils');
 async function testShowcase() {
   const grpcClientOpts = {
     grpc,
@@ -471,49 +472,47 @@ async function testEchoErrorWithTimeout(client: SequenceServiceClient) {
 }
 
 async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
-  const backoffSettings = createBackoffSettings(
-      100,
-      1.2,
-      1000,
-      null,
-      1.5,
-      3000,
-      1,
-  );
-  const retryOptions = new RetryOptions([14, 4], backoffSettings);
+  async function riskyOperation() {
+    const backoffSettings = createBackoffSettings(
+        100,
+        1.2,
+        1000,
+        null,
+        1.5,
+        3000,
+        1,
+    );
+    const retryOptions = new RetryOptions([14, 4], backoffSettings);
 
-  const settings = {
-    retry: retryOptions,
-  };
+    const settings = {
+      retry: retryOptions,
+    };
 
-  client.initialize();
+    client.initialize();
 
-  const request = createSequenceRequestFactory(
-      [
-        Status.UNAVAILABLE, // Error code 14
-        Status.UNAVAILABLE,
-        Status.UNAVAILABLE,
-        Status.UNAVAILABLE,
-      ],
-      [0.1, 0.1, 0.1, 0.1],
-  );
+    const request = createSequenceRequestFactory(
+        [
+          Status.UNAVAILABLE, // Error code 14
+          Status.UNAVAILABLE,
+          Status.UNAVAILABLE,
+          Status.UNAVAILABLE,
+        ],
+        [0.1, 0.1, 0.1, 0.1],
+    );
 
-  const response = await client.createSequence(request);
-  const sequence = response[0];
+    const response = await client.createSequence(request);
+    const sequence = response[0];
 
-  const attemptRequest =
-      new protos.google.showcase.v1beta1.AttemptSequenceRequest();
-  attemptRequest.name = sequence.name!;
+    const attemptRequest =
+        new protos.google.showcase.v1beta1.AttemptSequenceRequest();
+    attemptRequest.name = sequence.name!;
 
-  try {
     await client.attemptSequence(attemptRequest, settings);
-    assert.fail('The call should have failed');
-  } catch (err) {
-    console.log('Stringifying response');
-    console.log(JSON.stringify(err));
-    console.log((err as Error).message);
-    assert.strictEqual((err as GoogleError).statusDetails, 'x');
   }
+  const stderrOutput = await captureStderr(() => {
+    riskyOperation();
+  });
+  assert.strictEqual(stderrOutput, 'bogus-value');
 }
 
 async function testExpand(client: EchoClient) {
