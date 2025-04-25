@@ -109,7 +109,6 @@ export function retryable(
     function repeat(err?: GoogleError) {
       if (err) {
         errorsEncountered.push(err);
-        err.errorsEncountered = errorsEncountered;
       }
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
@@ -121,7 +120,6 @@ export function retryable(
           } before any response was received.${errorDetailsSuffix(errorsEncountered)}`,
         );
         error.code = Status.DEADLINE_EXCEEDED;
-        error.errorsEncountered = errorsEncountered;
         callback(error);
         return;
       }
@@ -134,7 +132,6 @@ export function retryable(
             errorDetailsSuffix(errorsEncountered),
         );
         error.code = Status.DEADLINE_EXCEEDED;
-        error.errorsEncountered = errorsEncountered;
         callback(error);
         return;
       }
@@ -204,7 +201,6 @@ export function retryable(
             'cancelled' + errorDetailsSuffix(errorsEncountered),
           );
           error.code = Status.CANCELLED;
-          error.errorsEncountered = errorsEncountered;
           callback(error);
         }
       },

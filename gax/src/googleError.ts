@@ -29,7 +29,6 @@ export class GoogleError extends Error {
   reason?: string;
   domain?: string;
   errorInfoMetadata?: {[propName: string]: string};
-  errorsEncountered?: GoogleError[];
 
   // Parse details field in google.rpc.status wire over gRPC medatadata.
   // Promote google.rpc.ErrorInfo if exist.
