@@ -511,6 +511,7 @@ async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
   } catch (err) {
     console.log('Stringifying response');
     console.log(JSON.stringify(err));
+    console.log((err as Error).message);
     assert.strictEqual((err as GoogleError).statusDetails, 'x');
   }
 }
