@@ -509,7 +509,7 @@ async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
     await client.attemptSequence(attemptRequest, settings);
     assert.fail('The call should have failed');
   } catch (err) {
-    assert.strictEqual((err as GoogleError).details, 'x');
+    assert.strictEqual((err as GoogleError).statusDetails, 'x');
   }
 }
 
