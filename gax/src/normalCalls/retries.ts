@@ -75,10 +75,18 @@ export function retryable(
     }
     let retries = 0;
     const maxRetries = retry.backoffSettings.maxRetries!;
+    // For retries, errorsEncountered maintains a list of errors encountered so
+    // that they can be sent back to the user and the user can see ALL errors
+    // that were encountered during a series of retries.
+    const errorsEncountered: GoogleError[] = [];
     // TODO: define A/B testing values for retry behaviors.
 
     /** Repeat the API call as long as necessary. */
     function repeat(err?: GoogleError) {
+      if (err) {
+        errorsEncountered.push(err);
+        err.errorsEncountered = errorsEncountered;
+      }
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         const error = new GoogleError(
@@ -89,6 +97,7 @@ export function retryable(
           } before any response was received.`,
         );
         error.code = Status.DEADLINE_EXCEEDED;
+        error.errorsEncountered = errorsEncountered;
         callback(error);
         return;
       }
@@ -100,6 +109,7 @@ export function retryable(
             'before any response was received',
         );
         error.code = Status.DEADLINE_EXCEEDED;
+        error.errorsEncountered = errorsEncountered;
         callback(error);
         return;
       }
@@ -167,6 +177,7 @@ export function retryable(
         } else {
           const error = new GoogleError('cancelled');
           error.code = Status.CANCELLED;
+          error.errorsEncountered = errorsEncountered;
           callback(error);
         }
       },
