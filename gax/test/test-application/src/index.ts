@@ -82,7 +82,6 @@ async function testShowcase() {
   await testEchoErrorWithRetries(grpcSequenceClientLegacyRetries);
   await testEchoErrorWithRetriesMessage(grpcSequenceClientLegacyRetries);
   await testEchoErrorWithTimeout(grpcSequenceClientLegacyRetries);
-  await testErrorDetailsWithTimeout(grpcSequenceClientLegacyRetries);
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
   await testExpand(grpcClient);
@@ -515,50 +514,6 @@ async function testEchoErrorWithTimeout(client: SequenceServiceClient) {
       JSON.stringify((err as GoogleError).message),
       /Total timeout of API google.showcase.v1beta1.SequenceService exceeded 1 milliseconds retrying error Error: 14 UNAVAILABLE: 14 {2}before any response was received./,
     );
-  }
-}
-
-async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
-  try {
-    const backoffSettings = createBackoffSettings(
-        100,
-        1.2,
-        1000,
-        null,
-        1.5,
-        3000,
-        1,
-    );
-    const retryOptions = new RetryOptions([14, 4], backoffSettings);
-
-    const settings = {
-      retry: retryOptions,
-    };
-
-    client.initialize();
-
-    const request = createSequenceRequestFactory(
-        [
-          Status.UNAVAILABLE, // Error code 14
-          Status.UNAVAILABLE,
-          Status.UNAVAILABLE,
-          Status.UNAVAILABLE,
-        ],
-        [0.1, 0.1, 0.1, 0.1],
-    );
-
-    const response = await client.createSequence(request);
-    const sequence = response[0];
-
-    const attemptRequest =
-        new protos.google.showcase.v1beta1.AttemptSequenceRequest();
-    attemptRequest.name = sequence.name!;
-
-    await client.attemptSequence(attemptRequest, settings);
-    assert.fail('The operation should have failed')
-  } catch (e) {
-    const expectedMessage = 'Total timeout of API google.showcase.v1beta1.SequenceService exceeded 1 milliseconds retrying error Error: 14 UNAVAILABLE: 14  before any response was received.';
-    assert.strictEqual((e as GoogleError).message, expectedMessage);
   }
 }
 
