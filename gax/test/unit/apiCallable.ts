@@ -583,19 +583,10 @@ describe('retryable', () => {
     const apiCall = createApiCall(spy, settings);
     await apiCall({}, undefined, err => {
       assert.ok(err instanceof GoogleError);
-      console.log('Error message');
-      console.log(err.message);
-      assert.match(err.message, /Previous errors/);
-      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-    });
-  });
-
-  it('experiment: retry fails for exceeding total timeout, surfacing original error and previous errors', async () => {
-    const spy = sinon.spy(fail);
-    const apiCall = createApiCall(spy, settings);
-    await apiCall({}, undefined, err => {
-      assert.ok(err instanceof GoogleError);
-      assert.match(err.message, /Previous2 errors/);
+      assert.strictEqual(
+        err.message,
+        'Total timeout of API TestApi exceeded 100 milliseconds retrying error Error  before any response was received. : Previous errors : [{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: },{message: , code: 1, details: , note: }]',
+      );
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
     });
   });
