@@ -583,8 +583,6 @@ describe('retryable', () => {
     const apiCall = createApiCall(spy, settings);
     await apiCall({}, undefined, err => {
       assert.ok(err instanceof GoogleError);
-      console.log('Error message');
-      console.log(err.message);
       assert.match(err.message, /Previous errors/);
       assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
     });
