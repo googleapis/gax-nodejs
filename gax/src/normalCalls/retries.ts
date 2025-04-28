@@ -96,12 +96,16 @@ export function retryable(
           const statusDetailsString = err.statusDetails
             ? err.statusDetails.toString()
             : '';
-          const codeString = err.code ? err.code.toString() : '';
-          const noteString = err.note ? err.note.toString() : '';
-          return `code: ${codeString}, details: ${statusDetailsString}, note: ${noteString}`;
+          const codeString =
+            err.code && err.code.toString ? err.code.toString() : '';
+          const noteString =
+            err.note && err.note.toString ? err.note.toString() : '';
+          const messageString =
+            err.message && err.message.toString ? err.message.toString() : '';
+          return `{message: ${messageString}, code: ${codeString}, details: ${statusDetailsString}, note: ${noteString}}`;
         })
-        .join(':');
-      return ` : Previous errors : ${errorsAsString}`;
+        .join(',');
+      return ` : Previous errors : [${errorsAsString}]`;
     }
     // TODO: define A/B testing values for retry behaviors.
 
