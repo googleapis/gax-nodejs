@@ -544,14 +544,7 @@ async function testErrorDetailsWithTimeout2(client: EchoClient) {
         [0.1, 0.1, 0.1, 0.1],
     );
 
-    const response = await client.createSequence(request);
-    const sequence = response[0];
-
-    const attemptRequest =
-        new protos.google.showcase.v1beta1.AttemptSequenceRequest();
-    attemptRequest.name = sequence.name!;
-
-    await client.attemptSequence(attemptRequest, settings);
+    await client.echo(request, settings);
     assert.fail('The operation should have failed')
   } catch (e) {
     const expectedMessage = 'Total timeout of API google.showcase.v1beta1.SequenceService exceeded 1 milliseconds retrying error Error: 14 UNAVAILABLE: 14  before any response was received.';
