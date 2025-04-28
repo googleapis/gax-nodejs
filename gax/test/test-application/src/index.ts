@@ -463,6 +463,8 @@ async function testEchoErrorWithTimeout(client: SequenceServiceClient) {
   try {
     await client.attemptSequence(attemptRequest, settings);
   } catch (err) {
+    console.log('System test message');
+    console.log((err as GoogleError).message);
     assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
     assert.match(
       JSON.stringify((err as GoogleError).message),
