@@ -472,7 +472,7 @@ async function testEchoErrorWithTimeout(client: SequenceServiceClient) {
 }
 
 async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
-  async function riskyOperation() {
+  try {
     const backoffSettings = createBackoffSettings(
         100,
         1.2,
@@ -508,11 +508,10 @@ async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
     attemptRequest.name = sequence.name!;
 
     await client.attemptSequence(attemptRequest, settings);
+    assert.fail('The operation should have failed')
+  } catch (e) {
+    assert.strictEqual((e as GoogleError).message, 'bogus-value');
   }
-  const stderrOutput = await captureStderr(() => {
-    riskyOperation();
-  });
-  assert.strictEqual(stderrOutput, 'bogus-value');
 }
 
 async function testExpand(client: EchoClient) {
