@@ -510,7 +510,8 @@ async function testErrorDetailsWithTimeout(client: SequenceServiceClient) {
     await client.attemptSequence(attemptRequest, settings);
     assert.fail('The operation should have failed')
   } catch (e) {
-    assert.strictEqual((e as GoogleError).message, 'bogus-value');
+    const expectedMessage = 'Total timeout of API google.showcase.v1beta1.SequenceService exceeded 1 milliseconds retrying error Error: 14 UNAVAILABLE: 14  before any response was received.';
+    assert.strictEqual((e as GoogleError).message, expectedMessage);
   }
 }
 
