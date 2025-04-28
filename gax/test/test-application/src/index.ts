@@ -467,7 +467,8 @@ async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
     assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
     console.log('Printing the error message for echo');
     console.log((err as GoogleError).message);
-    assert.strictEqual((err as GoogleError).message, /Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any /);
+    const expectedMessage = 'Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received : Previous errors : [{message: 14 UNAVAILABLE: 14, code: 14, details: , note: },{message: 14 UNAVAILABLE: 14, code: 14, details: , note: }]'
+    assert.strictEqual((err as GoogleError).message, expectedMessage);
   }
 }
 
