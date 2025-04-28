@@ -588,6 +588,16 @@ describe('retryable', () => {
     });
   });
 
+  it('experiment: retry fails for exceeding total timeout, surfacing original error and previous errors', async () => {
+    const spy = sinon.spy(fail);
+    const apiCall = createApiCall(spy, settings);
+    await apiCall({}, undefined, err => {
+      assert.ok(err instanceof GoogleError);
+      assert.match(err.message, /Previous2 errors/);
+      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+    });
+  });
+
   // maxRetries is unsupported, and intended for internal use only or
   // use with retry-request backwards compatibility
   it('errors when totalTimeoutMillis and maxRetries set', async () => {
