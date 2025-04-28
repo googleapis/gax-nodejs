@@ -34,7 +34,6 @@ import {
 import {RequestType} from 'google-gax/build/src/apitypes';
 import {Duplex, PassThrough, pipeline} from 'stream';
 const pumpify = require('pumpify');
-const { captureStderr } = require('./testUtils');
 async function testShowcase() {
   const grpcClientOpts = {
     grpc,
