@@ -80,6 +80,7 @@ async function testShowcase() {
 
   // assuming gRPC server is started locally
   await testEchoErrorWithRetries(grpcSequenceClientLegacyRetries);
+  await testEchoErrorWithRetriesMessage(grpcSequenceClientLegacyRetries);
   await testEchoErrorWithTimeout(grpcSequenceClientLegacyRetries);
   await testEcho(grpcClient);
   await testEchoError(grpcClient);
@@ -420,6 +421,51 @@ async function testEchoErrorWithRetries(client: SequenceServiceClient) {
       JSON.stringify((err as GoogleError).message),
       /Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received/,
     );
+  }
+}
+
+async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
+  const backoffSettings = createBackoffSettings(
+      100,
+      1.2,
+      1000,
+      null,
+      1.5,
+      3000,
+      null,
+  );
+  const retryOptions = new RetryOptions([14, 4], backoffSettings);
+  backoffSettings.maxRetries = 2;
+
+  const settings = {
+    retry: retryOptions,
+  };
+
+  client.initialize();
+
+  const request = createSequenceRequestFactory(
+      [
+        Status.UNAVAILABLE, // Error code 14
+        Status.UNAVAILABLE,
+        Status.UNAVAILABLE,
+        Status.UNAVAILABLE,
+      ],
+      [0.1, 0.1, 0.1, 0.1],
+  );
+
+  const response = await client.createSequence(request);
+  const sequence = response[0];
+
+  const attemptRequest =
+      new protos.google.showcase.v1beta1.AttemptSequenceRequest();
+  attemptRequest.name = sequence.name!;
+
+  try {
+    await client.attemptSequence(attemptRequest, settings);
+  } catch (err) {
+    assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
+    const expectedMessage = 'Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received : Previous errors : [{message: 14 UNAVAILABLE: 14, code: 14, details: , note: },{message: 14 UNAVAILABLE: 14, code: 14, details: , note: }]'
+    assert.strictEqual((err as GoogleError).message, expectedMessage);
   }
 }
 
