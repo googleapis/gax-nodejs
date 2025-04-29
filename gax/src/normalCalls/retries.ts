@@ -75,10 +75,45 @@ export function retryable(
     }
     let retries = 0;
     const maxRetries = retry.backoffSettings.maxRetries!;
+    // For retries, errorsEncountered maintains a list of errors encountered so
+    // that they can be sent back to the user and the user can see ALL errors
+    // that were encountered during a series of retries.
+    const errorsEncountered: GoogleError[] = [];
+
+    // The errors that were encountered should be immediately visible to the
+    // user so we should concatenate them onto the details because details are
+    // immediately visible to the user. This method provideds a string we can
+    // concatenate onto the details.
+    function errorDetailsSuffix(errsEncountered: GoogleError[]) {
+      if (errsEncountered.length < 2) {
+        // If only one error has been encountered then this information will
+        // already be in the error message so no additional information is
+        // necessary. In this case, don't add anything to the details.
+        return '';
+      }
+      const errorsAsString = errsEncountered
+        .map(err => {
+          const statusDetailsString = err.statusDetails
+            ? err.statusDetails.toString()
+            : '';
+          const codeString =
+            err.code && err.code.toString ? err.code.toString() : '';
+          const noteString =
+            err.note && err.note.toString ? err.note.toString() : '';
+          const messageString =
+            err.message && err.message.toString ? err.message.toString() : '';
+          return `{message: ${messageString}, code: ${codeString}, details: ${statusDetailsString}, note: ${noteString}}`;
+        })
+        .join(',');
+      return ` : Previous errors : [${errorsAsString}]`;
+    }
     // TODO: define A/B testing values for retry behaviors.
 
     /** Repeat the API call as long as necessary. */
     function repeat(err?: GoogleError) {
+      if (err) {
+        errorsEncountered.push(err);
+      }
       timeoutId = null;
       if (deadline && now.getTime() >= deadline) {
         const error = new GoogleError(
@@ -86,7 +121,7 @@ export function retryable(
             retry.backoffSettings.totalTimeoutMillis
           } milliseconds ${
             err ? `retrying error ${err} ` : ''
-          } before any response was received.`,
+          } before any response was received.${errorDetailsSuffix(errorsEncountered)}`,
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -97,7 +132,8 @@ export function retryable(
         const error = new GoogleError(
           'Exceeded maximum number of retries ' +
             (err ? `retrying error ${err} ` : '') +
-            'before any response was received',
+            'before any response was received' +
+            errorDetailsSuffix(errorsEncountered),
         );
         error.code = Status.DEADLINE_EXCEEDED;
         callback(error);
@@ -165,7 +201,9 @@ export function retryable(
         if (canceller) {
           canceller.cancel();
         } else {
-          const error = new GoogleError('cancelled');
+          const error = new GoogleError(
+            'cancelled' + errorDetailsSuffix(errorsEncountered),
+          );
           error.code = Status.CANCELLED;
           callback(error);
         }
