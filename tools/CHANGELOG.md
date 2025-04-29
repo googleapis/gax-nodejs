@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v1.0.1...gapic-tools-v1.0.2) (2025-04-29)
+
+
+### Bug Fixes
+
+* **deps:** [gapic-tools] upgrade protobuf.js to its newest versions ([#1741](https://github.com/googleapis/gax-nodejs/issues/1741)) ([ba7b8d1](https://github.com/googleapis/gax-nodejs/commit/ba7b8d122fe1c8edf678f30950c7398f65c76097))
+
 ## [1.0.1](https://github.com/googleapis/gax-nodejs/compare/gapic-tools-v1.0.0...gapic-tools-v1.0.1) (2025-03-07)
 
 
