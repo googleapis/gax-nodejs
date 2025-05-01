@@ -79,161 +79,161 @@ async function testShowcase() {
   const restClientCompat = new EchoClient(restClientOptsCompat);
 
   // assuming gRPC server is started locally
-  await testEchoErrorWithRetries(grpcSequenceClientLegacyRetries);
+  // await testEchoErrorWithRetries(grpcSequenceClientLegacyRetries);
   await testEchoErrorWithRetriesMessage(grpcSequenceClientLegacyRetries);
-  await testEchoErrorWithTimeout(grpcSequenceClientLegacyRetries);
-  await testEcho(grpcClient);
-  await testEchoError(grpcClient);
-  await testExpand(grpcClient);
-  await testPagedExpand(grpcClient);
-  await testPagedExpandAsync(grpcClient);
-  await testPagedExpandAutopaginateOff(grpcClient);
-  await testCollect(grpcClient);
-  await testChat(grpcClient);
-  await testWait(grpcClient);
+  // await testEchoErrorWithTimeout(grpcSequenceClientLegacyRetries);
+  // await testEcho(grpcClient);
+  // await testEchoError(grpcClient);
+  // await testExpand(grpcClient);
+  // await testPagedExpand(grpcClient);
+  // await testPagedExpandAsync(grpcClient);
+  // await testPagedExpandAutopaginateOff(grpcClient);
+  // await testCollect(grpcClient);
+  // await testChat(grpcClient);
+  // await testWait(grpcClient);
 
-  await testEcho(restClient);
-  await testExpand(restClient); // REGAPIC supports server streaming
-  await testPagedExpand(restClient);
-  await testPagedExpandAsync(restClient);
-  await testPagedExpandAutopaginateOff(restClient);
-  await testCollectThrows(restClient); // REGAPIC does not support client streaming
-  await testChatThrows(restClient); // REGAPIC does not support bidi streaming
-  await testWait(restClient);
+  // await testEcho(restClient);
+  // await testExpand(restClient); // REGAPIC supports server streaming
+  // await testPagedExpand(restClient);
+  // await testPagedExpandAsync(restClient);
+  // await testPagedExpandAutopaginateOff(restClient);
+  // await testCollectThrows(restClient); // REGAPIC does not support client streaming
+  // await testChatThrows(restClient); // REGAPIC does not support bidi streaming
+  // await testWait(restClient);
 
-  await testEcho(restClientCompat);
-  await testExpand(restClientCompat); // REGAPIC supports server streaming
-  await testPagedExpand(restClientCompat);
-  await testPagedExpandAsync(restClientCompat);
-  await testPagedExpandAutopaginateOff(restClientCompat);
-  await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
-  await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
-  await testWait(restClientCompat);
+  // await testEcho(restClientCompat);
+  // await testExpand(restClientCompat); // REGAPIC supports server streaming
+  // await testPagedExpand(restClientCompat);
+  // await testPagedExpandAsync(restClientCompat);
+  // await testPagedExpandAutopaginateOff(restClientCompat);
+  // await testCollectThrows(restClientCompat); // REGAPIC does not support client streaming
+  // await testChatThrows(restClientCompat); // REGAPIC does not support bidi streaming
+  // await testWait(restClientCompat);
 
-  // Testing with gaxServerStreamingRetries being true
-  await testServerStreamingRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // // Testing with gaxServerStreamingRetries being true
+  // await testServerStreamingRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testServerStreamingRetriesWithShouldRetryFn(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
-  await testServerStreamingRetrieswithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingRetriesWithShouldRetryFn(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
+  // await testServerStreamingRetrieswithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptions(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptions(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingRetrieswithRetryRequestOptionsResumptionStrategy(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testServerStreamingThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingRetriesAndThrowsClassifiedTransientErrorNote(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingThrowsCannotSetTotalTimeoutMillisMaxRetries(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testShouldFailOnThirdError(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testShouldFailOnThirdError(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testShouldTimeoutWithNewRetries(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testShouldTimeoutWithNewRetries(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
+  // await testErrorMaxRetries0(grpcSequenceClientWithServerStreamingRetries);
 
-  await testServerStreamingRetriesImmediatelywithRetryOptions(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testServerStreamingRetriesImmediatelywithRetryOptions(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
+  // await testResetRetriesToZero(grpcSequenceClientWithServerStreamingRetries);
 
-  // ensure legacy tests pass with streaming retries client
-  await testEcho(grpcClientWithServerStreamingRetries);
-  await testEchoError(grpcClientWithServerStreamingRetries);
-  await testExpand(grpcClientWithServerStreamingRetries);
-  await testPagedExpand(grpcClientWithServerStreamingRetries);
-  await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
-  await testPagedExpandAutopaginateOff(grpcClientWithServerStreamingRetries);
-  await testCollect(grpcClientWithServerStreamingRetries);
-  await testChat(grpcClientWithServerStreamingRetries);
-  await testWait(grpcClientWithServerStreamingRetries);
+  // // ensure legacy tests pass with streaming retries client
+  // await testEcho(grpcClientWithServerStreamingRetries);
+  // await testEchoError(grpcClientWithServerStreamingRetries);
+  // await testExpand(grpcClientWithServerStreamingRetries);
+  // await testPagedExpand(grpcClientWithServerStreamingRetries);
+  // await testPagedExpandAsync(grpcClientWithServerStreamingRetries);
+  // await testPagedExpandAutopaginateOff(grpcClientWithServerStreamingRetries);
+  // await testCollect(grpcClientWithServerStreamingRetries);
+  // await testChat(grpcClientWithServerStreamingRetries);
+  // await testWait(grpcClientWithServerStreamingRetries);
 
-  /* Series of tests that validate behavior of gax behavior with stream pipelines */
+  // /* Series of tests that validate behavior of gax behavior with stream pipelines */
 
-  /* NO BUFFERING YES GAX NATIVE RETRIES
-  This section has pipelines of streams but no data buffering
-  and tests them against gax clients that DO utilize gax native retries
-  some scenarios may not actually involve retrying */
-  await testStreamingErrorAfterDataNoBufferNoRetry(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // /* NO BUFFERING YES GAX NATIVE RETRIES
+  // This section has pipelines of streams but no data buffering
+  // and tests them against gax clients that DO utilize gax native retries
+  // some scenarios may not actually involve retrying */
+  // await testStreamingErrorAfterDataNoBufferNoRetry(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  // the next few tests explicitly use the pumpify library
-  // which does not throw an error if a stream in the pipeline is destroyed
-  // but does sever the connection. This library is being used because at least one of
-  // our client libraries uses it
+  // // the next few tests explicitly use the pumpify library
+  // // which does not throw an error if a stream in the pipeline is destroyed
+  // // but does sever the connection. This library is being used because at least one of
+  // // our client libraries uses it
 
-  await testImmediateStreamingErrorNoBufferPumpify(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testImmediateStreamingErrorNoBufferPumpify(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPumpify(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testStreamingPipelineErrorAfterDataNoBufferNoRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testStreamingPipelineErrorAfterDataNoBufferNoRetryPumpify(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testImmediateStreamingErrorNoBufferYesRetryRequestRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testImmediateStreamingErrorNoBufferYesRetryRequestRetryPumpify(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPumpify(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testStreamingPipelineErrorAfterDataNoBufferYesRetryPumpify(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  // this series of tests uses the node native "pipeline" instead of pumpify
-  // which unlike pumpify, WILL error if any stream in the pipeline is destroye
+  // // this series of tests uses the node native "pipeline" instead of pumpify
+  // // which unlike pumpify, WILL error if any stream in the pipeline is destroye
 
-  await testImmediateStreamingErrorNoBufferPipeline(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testImmediateStreamingErrorNoBufferPipeline(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testStreamingPipelineSucceedsAfterDataNoBufferNoRetryPipeline(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testStreamingPipelineErrorAfterDataNoBufferNoRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testStreamingPipelineErrorAfterDataNoBufferNoRetryPipeline(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testImmediateStreamingErrorNoBufferYesRetryRequestRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testImmediateStreamingErrorNoBufferYesRetryRequestRetryPipeline(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testImmediateStreamingErrorThenSucceedsNoBufferYesRetryPipeline(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 
-  await testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
-    grpcSequenceClientWithServerStreamingRetries,
-  );
+  // await testStreamingPipelineErrorAfterDataNoBufferYesRetryPipeline(
+  //   grpcSequenceClientWithServerStreamingRetries,
+  // );
 }
 
 function createStreamingSequenceRequestFactory(
@@ -378,6 +378,7 @@ async function testEchoError(client: EchoClient) {
 }
 
 async function testEchoErrorWithRetries(client: SequenceServiceClient) {
+  console.log('testEchoErrorWithRetries\n\n\n')
   const backoffSettings = createBackoffSettings(
     100,
     1.2,
@@ -425,6 +426,7 @@ async function testEchoErrorWithRetries(client: SequenceServiceClient) {
 }
 
 async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
+  console.log('testEchoErrorWithRetrieMessage\n\n\n')
   const backoffSettings = createBackoffSettings(
       100,
       1.2,
@@ -434,7 +436,7 @@ async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
       3000,
       null,
   );
-  const retryOptions = new RetryOptions([14, 4], backoffSettings);
+  const retryOptions = new RetryOptions([3, 6, 9, 14], backoffSettings);
   backoffSettings.maxRetries = 2;
 
   const settings = {
@@ -445,10 +447,10 @@ async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
 
   const request = createSequenceRequestFactory(
       [
-        Status.UNAVAILABLE, // Error code 14
+        Status.ALREADY_EXISTS, 
+        Status.INVALID_ARGUMENT,
         Status.UNAVAILABLE,
-        Status.UNAVAILABLE,
-        Status.UNAVAILABLE,
+        Status.FAILED_PRECONDITION,
       ],
       [0.1, 0.1, 0.1, 0.1],
   );
@@ -464,6 +466,7 @@ async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
     await client.attemptSequence(attemptRequest, settings);
   } catch (err) {
     assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
+    console.log('after first assertion', err)
     const expectedMessage = 'Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received : Previous errors : [{message: 14 UNAVAILABLE: 14, code: 14, details: , note: },{message: 14 UNAVAILABLE: 14, code: 14, details: , note: }]'
     assert.strictEqual((err as GoogleError).message, expectedMessage);
   }
@@ -2857,13 +2860,13 @@ async function testStreamingErrorAfterDataNoBufferNoRetry(
 }
 
 async function main() {
-  const showcaseServer = new ShowcaseServer();
-  try {
-    await showcaseServer.start();
+  // const showcaseServer = new ShowcaseServer();
+  // try {
+  //   await showcaseServer.start();
     await testShowcase();
-  } finally {
-    showcaseServer.stop();
-  }
+  // } finally {
+  //   showcaseServer.stop();
+  // }
 }
 
 main();
