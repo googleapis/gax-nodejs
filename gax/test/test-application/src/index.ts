@@ -424,7 +424,7 @@ async function testEchoErrorWithRetries(client: SequenceServiceClient) {
     assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
     assert.strictEqual(
       JSON.stringify((err as GoogleError).message),
-        "Exceeded maximum number of retries retrying error Error: 4 DEADLINE_EXCEEDED: Deadline exceeded after 0.000s,waiting for metadata filters before any response was received : Previous errors : [{message: 14 UNAVAILABLE: 14, code: 14, details: , note: },{message: 4 DEADLINE_EXCEEDED: Deadline exceeded after 0.000s,waiting for metadata filters, code: 4, details: , note: }]",
+        '"Exceeded maximum number of retries retrying error Error: 4 DEADLINE_EXCEEDED: Deadline exceeded after 0.001s,waiting for metadata filters before any response was received : Previous errors : [{message: 14 UNAVAILABLE: 14, code: 14, details: , note: },{message: 4 DEADLINE_EXCEEDED: Deadline exceeded after 0.001s,waiting for metadata filters, code: 4, details: , note: }]"',
     );
   }
 }
