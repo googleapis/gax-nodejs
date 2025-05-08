@@ -144,8 +144,7 @@ export function retryable(
       let lastError = err;
       const toCall = addTimeoutArg(func, timeout!, otherArgs);
       canceller = toCall(argument, (err, response, next, rawResponse) => {
-        // Save only the error before deadline exceeded
-        if (err && err.code !== 4) {
+        if (err) {
           lastError = err;
         }
         if (!err) {
