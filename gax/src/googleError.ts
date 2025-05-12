@@ -21,6 +21,9 @@ import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
 import {JSONValue} from 'proto3-json-serializer';
 
+const protoTypePrefix = 'type.googleapis.com/';
+const numOfPartsInProtoTypeName = 2;
+
 export class GoogleError extends Error {
   code?: Status;
   note?: string;
@@ -165,6 +168,50 @@ interface ErrorInfo {
   metadata: {string: string};
 }
 
+// Interface to capture the details provided in RPC status.
+interface ErrorDetails {
+  // Details that most likely are in RPC status.
+  knownDetails: JSONValue[];
+  // Details that most likely are not in RPC status.
+  unknownDetails: JSONValue[];
+}
+
+// Get proto type name removing the prefix. For example full type name: type.googleapis.com/google.rpc.Help, the function returns google.rpc.Help.
+const getProtoTypeNameFromFullNameType = (fullTypeName: string): string => {
+  const parts = fullTypeName.split(protoTypePrefix);
+  if (parts.length !== numOfPartsInProtoTypeName) {
+    throw Error("Can't convert full type name");
+  }
+  return parts[1];
+};
+
+// Given a protobuf with rpc status protos and a json response value, generate ErrorDetails.
+// Function will traverse trough all the details of the json value and split them based on ErrorDetails.
+const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
+  const error_details: ErrorDetails = {
+    knownDetails: [],
+    unknownDetails: [],
+  };
+  if (typeof json === 'object' && json !== null && 'details' in json) {
+    const details: any = json['details'];
+    for (const detail of details) {
+      const typeName = getProtoTypeNameFromFullNameType(detail['@type']);
+      try {
+        const proto = protobuf.lookup(typeName);
+        if (proto) {
+          error_details.knownDetails.push(detail);
+        } else {
+          error_details.unknownDetails.push(detail);
+        }
+      } catch (e) {
+        // Can't find type in status.json.
+        error_details.unknownDetails.push(detail);
+      }
+    }
+  }
+  return error_details;
+};
+
 export class GoogleErrorDecoder {
   root: protobuf.Root;
   anyType: protobuf.Type;
@@ -269,6 +316,10 @@ export class GoogleErrorDecoder {
 
   // Decodes http error which is an instance of google.rpc.Status.
   decodeHTTPError(json: JSONValue) {
+    const errorDetails: ErrorDetails = getErrorDetails(this.root, json);
+    if (errorDetails.knownDetails.length && typeof json === 'object' && json !== null && 'details' in json) {
+      json.details = errorDetails.knownDetails;
+    }
     const errorMessage = serializer.fromProto3JSON(this.statusType, json);
     if (!errorMessage) {
       throw new Error(
