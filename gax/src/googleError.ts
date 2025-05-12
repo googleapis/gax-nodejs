@@ -21,8 +21,11 @@ import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
 import {JSONValue} from 'proto3-json-serializer';
 
-const protoTypePrefix = 'type.googleapis.com/';
-const numOfPartsInProtoTypeName = 2;
+const PROTO_TYPE_PREFIX = 'type.googleapis.com/';
+const RESOURCE_INFO_TYPE = 'type.googleapis.com/google.rpc.ResourceInfo';
+const DEFAULT_RESOURCE_TYPE_NAME_FOR_UNKNOWN_TYPES = 'Unknown type';
+
+const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
 
 export class GoogleError extends Error {
   code?: Status;
@@ -178,8 +181,8 @@ interface ErrorDetails {
 
 // Get proto type name removing the prefix. For example full type name: type.googleapis.com/google.rpc.Help, the function returns google.rpc.Help.
 const getProtoTypeNameFromFullNameType = (fullTypeName: string): string => {
-  const parts = fullTypeName.split(protoTypePrefix);
-  if (parts.length !== numOfPartsInProtoTypeName) {
+  const parts = fullTypeName.split(PROTO_TYPE_PREFIX);
+  if (parts.length !== NUM_OF_PARTS_IN_PROTO_TYPE_NAME) {
     throw Error("Can't convert full type name");
   }
   return parts[1];
@@ -195,8 +198,8 @@ const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
   if (typeof json === 'object' && json !== null && 'details' in json) {
     const details: any = json['details'];
     for (const detail of details) {
-      const typeName = getProtoTypeNameFromFullNameType(detail['@type']);
       try {
+        const typeName = getProtoTypeNameFromFullNameType(detail['@type']);
         const proto = protobuf.lookup(typeName);
         if (proto) {
           error_details.knownDetails.push(detail);
@@ -210,6 +213,45 @@ const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
     }
   }
   return error_details;
+};
+
+const makeResourceInfoError = (
+  resourceType: string,
+  description: string,
+): JSONValue => {
+  return {
+    '@type': RESOURCE_INFO_TYPE,
+    resourceType,
+    description,
+  };
+};
+
+// Convert unknownDetails to rpc.ResourceInfo. The JSONValue is converted to string and returned as description.
+const convertUnknownDetailsToResourceInfoError = (
+  unknownDetails: JSONValue[],
+) => {
+  const unknownDetailsAsResourceInfoError: JSONValue[] = [];
+  for (const unknownDetail of unknownDetails) {
+    try {
+      let resourceType: string = DEFAULT_RESOURCE_TYPE_NAME_FOR_UNKNOWN_TYPES;
+      if (
+        typeof unknownDetail === 'object' &&
+        unknownDetail !== null &&
+        '@type' in unknownDetail
+      ) {
+        const unknownType: any = unknownDetail['@type'];
+        resourceType = unknownType;
+      }
+      // We don't know the proto, so we convert the object to string and assign it as description.
+      const description = JSON.stringify(unknownDetail);
+      unknownDetailsAsResourceInfoError.push(
+        makeResourceInfoError(resourceType, description),
+      );
+    } catch (e) {
+      // Failed convert to string, ignore it.
+    }
+  }
+  return unknownDetailsAsResourceInfoError;
 };
 
 export class GoogleErrorDecoder {
@@ -317,8 +359,19 @@ export class GoogleErrorDecoder {
   // Decodes http error which is an instance of google.rpc.Status.
   decodeHTTPError(json: JSONValue) {
     const errorDetails: ErrorDetails = getErrorDetails(this.root, json);
-    if (errorDetails.knownDetails.length && typeof json === 'object' && json !== null && 'details' in json) {
-      json.details = errorDetails.knownDetails;
+    let details: JSONValue[] = [];
+    if (typeof json === 'object' && json !== null && 'details' in json) {
+      if (errorDetails.knownDetails.length) {
+        details = errorDetails.knownDetails;
+      }
+      if (errorDetails.unknownDetails.length) {
+        const unknowDetailsAsResourceInfo =
+          convertUnknownDetailsToResourceInfoError(errorDetails.unknownDetails);
+        details = [...details, ...unknowDetailsAsResourceInfo];
+      }
+      if (details.length) {
+        json.details = details;
+      }
     }
     const errorMessage = serializer.fromProto3JSON(this.statusType, json);
     if (!errorMessage) {
