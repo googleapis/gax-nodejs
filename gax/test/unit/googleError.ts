@@ -450,3 +450,30 @@ describe('http error decoding dont break if there is a custom detail', () => {
     );
   });
 });
+
+describe('http error decoding return resource info for unknown proto-error', () => {
+  const custom = {
+    '@type': 'type.googleapis.com/Custom',
+  };
+  const json = {
+    error: {
+      code: 403,
+      message:
+        'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+      status: 'PERMISSION_DENIED',
+      details: [custom],
+    },
+  };
+  it('should support http custom errors', () => {
+    const error = GoogleError.parseHttpError([json]);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepEqual(error.statusDetails[0], {
+      resourceType: 'type.googleapis.com/Custom',
+      description: JSON.stringify(custom),
+    });
+  });
+});
