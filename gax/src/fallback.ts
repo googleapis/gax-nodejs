@@ -373,6 +373,8 @@ export class GrpcClient {
   }
 }
 
+export const protobufFromJSON = GrpcClient.protobufFromJSON;
+
 /**
  * gRPC-fallback version of lro
  *

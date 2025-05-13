@@ -90,7 +90,7 @@ export * as protobufMinimal from 'protobufjs/minimal';
 import * as fallback from './fallback';
 export {fallback};
 
-export const protobufFromJSON = fallback.GrpcClient.protobufFromJSON;
+export const protobufFromJSON = fallback.protobufFromJSON;
 
 export {
   APICallback,
