@@ -1,3 +1,8 @@
 handleGHRelease: true
 manifest: true
 tagPullRequestNumber: true
+branches:
+  - handleGHRelease: true
+    manifest: true
+    tagPullRequestNumber: true
+    branch: 4.x
