@@ -24,6 +24,7 @@ import {JSONValue} from 'proto3-json-serializer';
 const PROTO_TYPE_PREFIX = 'type.googleapis.com/';
 const RESOURCE_INFO_TYPE = 'type.googleapis.com/google.rpc.ResourceInfo';
 const DEFAULT_RESOURCE_TYPE_NAME_FOR_UNKNOWN_TYPES = 'Unknown type';
+const ANY_PROTO_TYPE_NAME = 'google.protobuf.Any';
 
 const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
 
@@ -188,6 +189,23 @@ const getProtoTypeNameFromFullNameType = (fullTypeName: string): string => {
   return parts[1];
 };
 
+// Return true if proto is known in protobuf.
+const isDetailKnownProto = (protobuf: any, detail: any): boolean => {
+  try {
+    const typeName = getProtoTypeNameFromFullNameType(detail['@type']);
+    if (typeName === ANY_PROTO_TYPE_NAME) {
+      return isDetailKnownProto(protobuf, detail.value);
+    }
+    const proto = protobuf.lookup(typeName);
+    if (!proto) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 // Given a protobuf with rpc status protos and a json response value, generate ErrorDetails.
 // Function will traverse trough all the details of the json value and split them based on ErrorDetails.
 const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
@@ -198,16 +216,9 @@ const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
   if (typeof json === 'object' && json !== null && 'details' in json) {
     const details: any = json['details'];
     for (const detail of details) {
-      try {
-        const typeName = getProtoTypeNameFromFullNameType(detail['@type']);
-        const proto = protobuf.lookup(typeName);
-        if (proto) {
-          error_details.knownDetails.push(detail);
-        } else {
-          error_details.unknownDetails.push(detail);
-        }
-      } catch (e) {
-        // Can't find type in status.json.
+      if (isDetailKnownProto(protobuf, detail)) {
+        error_details.knownDetails.push(detail);
+      } else {
         error_details.unknownDetails.push(detail);
       }
     }

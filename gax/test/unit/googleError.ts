@@ -452,16 +452,37 @@ describe('http error decoding dont break if there is a custom detail', () => {
 });
 
 describe('http error decoding return resource info for unknown proto-error', () => {
-  const custom = {
+  const custom_error = {
     '@type': 'type.googleapis.com/Custom',
   };
+  const custom_error_with_unsupported_name = {
+    '@type': 'UnsupportedName',
+  };
+  const any_error_with_rpc_proto = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    },
+  };
+  const any_error_with_custom_error = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'UnsupportedName',
+    },
+  };
+
   const json = {
     error: {
       code: 403,
       message:
         'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
       status: 'PERMISSION_DENIED',
-      details: [custom],
+      details: [
+        custom_error,
+        custom_error_with_unsupported_name,
+        any_error_with_rpc_proto,
+        any_error_with_custom_error,
+      ],
     },
   };
   it('should support http custom errors', () => {
@@ -471,9 +492,23 @@ describe('http error decoding return resource info for unknown proto-error', () 
       error.statusDetails?.length,
       json['error']['details'].length,
     );
-    assert.deepEqual(error.statusDetails[0], {
-      resourceType: 'type.googleapis.com/Custom',
-      description: JSON.stringify(custom),
-    });
+    assert.deepEqual(error.statusDetails, [
+      {
+        type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+        value: new Uint8Array() as Buffer,
+      },
+      {
+        resourceType: 'type.googleapis.com/Custom',
+        description: JSON.stringify(custom_error),
+      },
+      {
+        resourceType: 'UnsupportedName',
+        description: JSON.stringify(custom_error_with_unsupported_name),
+      },
+      {
+        resourceType: 'type.googleapis.com/google.protobuf.Any',
+        description: JSON.stringify(any_error_with_custom_error),
+      },
+    ]);
   });
 });
