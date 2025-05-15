@@ -4,6 +4,13 @@
 
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
+## [4.6.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.6.0...google-gax-v4.6.1) (2025-05-15)
+
+
+### Bug Fixes
+
+* remove debug statements ([#1692](https://github.com/googleapis/gax-nodejs/issues/1692)) ([5fb359f](https://github.com/googleapis/gax-nodejs/commit/5fb359fba1c549cea29c9048c6172031e071e1bd))
+
 ## [4.6.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.5.0...google-gax-v4.6.0) (2024-12-19)
 
 
