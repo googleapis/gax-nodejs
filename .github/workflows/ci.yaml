@@ -1,47 +1,87 @@
-on:
+'on':
   push:
     branches:
-      - main
-  pull_request:
+      - 4.x
+  pull_request: null
 name: ci
 jobs:
   test-gax:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14, 16]
+        node:
+          - 18
+          - 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: node --version
-      # The first installation step ensures that all of our production
-      # dependencies work on the given Node.js version, this helps us find
-      # dependencies that don't match our engines field:
-      - run: cd gax; npm install --production --engine-strict --ignore-scripts --no-package-lock
-      # Clean up the production install, before installing dev/production:
+      - run: >-
+          cd gax; npm install --production --engine-strict --ignore-scripts
+          --no-package-lock
       - run: cd gax; rm -rf node_modules
       - run: cd gax; npm install
       - run: cd gax; npm test
+        env:
+          MOCHA_THROW_DEPRECATION: false
+  test-logging-utils:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 18
+          - 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --version
+      - run: >-
+          cd logging-utils; npm install --production --engine-strict
+          --ignore-scripts --no-package-lock
+      - run: cd logging-utils; rm -rf node_modules
+      - run: cd logging-utils; npm install
+      - run: cd logging-utils; npm test
+        env:
+          MOCHA_THROW_DEPRECATION: false
+  test-logging-utils-samples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+          - 18
+          - 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --version
+      - run: >-
+          cd logging-utils; npm install --production --engine-strict
+          --ignore-scripts --no-package-lock
+      - run: cd logging-utils; rm -rf node_modules
+      - run: cd logging-utils; npm install
+      - run: cd logging-utils; npm run samples-test
         env:
           MOCHA_THROW_DEPRECATION: false
   test-tools:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [14, 16]
+        node:
+          - 18
+          - 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
       - run: node --version
-      # The first installation step ensures that all of our production
-      # dependencies work on the given Node.js version, this helps us find
-      # dependencies that don't match our engines field:
       - run: cd tools; npm install --engine-strict --no-package-lock
-      # Clean up the production install, before installing dev/production:
       - run: cd tools; rm -rf node_modules
       - run: cd tools; npm install
       - run: cd tools; npm test
@@ -53,7 +93,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 18
       - run: cd gax; npm install
       - run: cd gax; npm test
         env:
@@ -64,9 +104,20 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 18
       - run: cd tools; npm install
       - run: cd tools; npm test
+        env:
+          MOCHA_THROW_DEPRECATION: false
+  windows-logging-utils:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: cd logging-utils; npm install
+      - run: cd logging-utils; npm test
         env:
           MOCHA_THROW_DEPRECATION: false
   lint-gax:
@@ -75,7 +126,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 18
       - run: cd gax; npm install
       - run: cd gax; npm run lint
   lint-tools:
@@ -84,16 +135,25 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 18
       - run: cd tools; npm install
       - run: cd tools; npm run lint
+  lint-logging-utils:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: cd logging-utils; npm install
+      - run: cd logging-utils; npm run lint
   docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 14
+          node-version: 18
       - run: cd gax; npm install
       - run: cd gax; npm run docs
       - uses: JustinBeckwith/linkinator-action@v1
