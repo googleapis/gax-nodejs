@@ -21,6 +21,13 @@ import * as serializer from 'proto3-json-serializer';
 import {defaultToObjectOptions} from './fallback';
 import {JSONValue} from 'proto3-json-serializer';
 
+const PROTO_TYPE_PREFIX = 'type.googleapis.com/';
+const RESOURCE_INFO_TYPE = 'type.googleapis.com/google.rpc.ResourceInfo';
+const DEFAULT_RESOURCE_TYPE_NAME_FOR_UNKNOWN_TYPES = 'Unknown type';
+const ANY_PROTO_TYPE_NAME = 'google.protobuf.Any';
+
+const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
+
 export class GoogleError extends Error {
   code?: Status;
   note?: string;
@@ -165,6 +172,99 @@ interface ErrorInfo {
   metadata: {string: string};
 }
 
+// Interface to capture the details provided in RPC status.
+interface ErrorDetails {
+  // Details that most likely are in RPC status.
+  knownDetails: JSONValue[];
+  // Details that most likely are not in RPC status.
+  unknownDetails: JSONValue[];
+}
+
+// Get proto type name removing the prefix. For example full type name: type.googleapis.com/google.rpc.Help, the function returns google.rpc.Help.
+const getProtoTypeNameFromFullNameType = (fullTypeName: string): string => {
+  const parts = fullTypeName.split(PROTO_TYPE_PREFIX);
+  if (parts.length !== NUM_OF_PARTS_IN_PROTO_TYPE_NAME) {
+    throw Error("Can't convert full type name");
+  }
+  return parts[1];
+};
+
+// Return true if proto is known in protobuf.
+const isDetailKnownProto = (protobuf: any, detail: any): boolean => {
+  try {
+    const typeName = getProtoTypeNameFromFullNameType(detail['@type']);
+    if (typeName === ANY_PROTO_TYPE_NAME) {
+      return isDetailKnownProto(protobuf, detail.value);
+    }
+    const proto = protobuf.lookup(typeName);
+    if (!proto) {
+      return false;
+    }
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// Given a protobuf with rpc status protos and a json response value, generate ErrorDetails.
+// Function will traverse trough all the details of the json value and split them based on ErrorDetails.
+const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
+  const error_details: ErrorDetails = {
+    knownDetails: [],
+    unknownDetails: [],
+  };
+  if (typeof json === 'object' && json !== null && 'details' in json) {
+    const details: any = json['details'];
+    for (const detail of details) {
+      if (isDetailKnownProto(protobuf, detail)) {
+        error_details.knownDetails.push(detail);
+      } else {
+        error_details.unknownDetails.push(detail);
+      }
+    }
+  }
+  return error_details;
+};
+
+const makeResourceInfoError = (
+  resourceType: string,
+  description: string,
+): JSONValue => {
+  return {
+    '@type': RESOURCE_INFO_TYPE,
+    resourceType,
+    description,
+  };
+};
+
+// Convert unknownDetails to rpc.ResourceInfo. The JSONValue is converted to string and returned as description.
+const convertUnknownDetailsToResourceInfoError = (
+  unknownDetails: JSONValue[],
+) => {
+  const unknownDetailsAsResourceInfoError: JSONValue[] = [];
+  for (const unknownDetail of unknownDetails) {
+    try {
+      let resourceType: string = DEFAULT_RESOURCE_TYPE_NAME_FOR_UNKNOWN_TYPES;
+      if (
+        typeof unknownDetail === 'object' &&
+        unknownDetail !== null &&
+        '@type' in unknownDetail
+      ) {
+        const unknownType: any = unknownDetail['@type'];
+        resourceType = unknownType;
+      }
+      // We don't know the proto, so we convert the object to string and assign it as description.
+      const description = JSON.stringify(unknownDetail);
+      unknownDetailsAsResourceInfoError.push(
+        makeResourceInfoError(resourceType, description),
+      );
+    } catch (e) {
+      // Failed convert to string, ignore it.
+    }
+  }
+  return unknownDetailsAsResourceInfoError;
+};
+
 export class GoogleErrorDecoder {
   root: protobuf.Root;
   anyType: protobuf.Type;
@@ -269,6 +369,21 @@ export class GoogleErrorDecoder {
 
   // Decodes http error which is an instance of google.rpc.Status.
   decodeHTTPError(json: JSONValue) {
+    const errorDetails: ErrorDetails = getErrorDetails(this.root, json);
+    let details: JSONValue[] = [];
+    if (typeof json === 'object' && json !== null && 'details' in json) {
+      if (errorDetails.knownDetails.length) {
+        details = errorDetails.knownDetails;
+      }
+      if (errorDetails.unknownDetails.length) {
+        const unknowDetailsAsResourceInfo =
+          convertUnknownDetailsToResourceInfoError(errorDetails.unknownDetails);
+        details = [...details, ...unknowDetailsAsResourceInfo];
+      }
+      if (details.length) {
+        json.details = details;
+      }
+    }
     const errorMessage = serializer.fromProto3JSON(this.statusType, json);
     if (!errorMessage) {
       throw new Error(
