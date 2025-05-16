@@ -86,8 +86,8 @@ describe('createStub', () => {
     assert(echoStub.pagedExpand instanceof Function);
     assert(echoStub.wait instanceof Function);
 
-    // There should be 11 methods for the echo service
-    assert.strictEqual(Object.keys(echoStub).length, 11);
+    // There should be 12 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 12);
 
     // Each of the service methods should take 4 arguments (so that it works
     // with createApiCall)
@@ -102,8 +102,8 @@ describe('createStub', () => {
     assert(echoStub.collect instanceof Function);
     assert(echoStub.chat instanceof Function);
 
-    // There should be 11 methods for the echo service
-    assert.strictEqual(Object.keys(echoStub).length, 11);
+    // There should be 12 methods for the echo service
+    assert.strictEqual(Object.keys(echoStub).length, 12);
 
     // Each of the service methods should take 4 arguments (so that it works
     // with createApiCall)
