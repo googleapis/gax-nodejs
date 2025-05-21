@@ -24,4 +24,4 @@ type SequenceServiceClient = v1beta1.SequenceServiceClient;
 export {v1beta1, EchoClient, SequenceServiceClient};
 export default {v1beta1, EchoClient, SequenceServiceClient};
 import * as protos from '../protos/protos';
-export {protos}
+export {protos};
