@@ -116,7 +116,7 @@ describe('gRPC-google error decoding', () => {
     );
   });
 
-  it('DecodeRpcStatusDetails does not fail when unknown type is encoded', () => {
+  it('DecodeRpcStatusDetails does not fail when unknown type is encoded and return it as any', () => {
     const any = {type_url: 'noMatch', value: new Uint8Array()};
     const status = {code: 3, message: 'test', details: [any]};
     const Status = root.lookupType('google.rpc.Status');
@@ -126,10 +126,13 @@ describe('gRPC-google error decoding', () => {
     const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails([
       status_buffer,
     ]);
-
+    const unknownTypeDetail = {
+      type_url: 'noMatch',
+      value: '',
+    };
     assert.strictEqual(
       JSON.stringify(gRPCStatusDetailsObj.details),
-      JSON.stringify([]),
+      JSON.stringify([unknownTypeDetail]),
     );
   });
 
@@ -209,7 +212,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     );
   });
 
-  it('metadata contains key grpc-status-details-bin with ErrorInfo and other unknow type', async () => {
+  it('metadata contains key grpc-status-details-bin with ErrorInfo and other unknown type', async () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const errorProtoJson = require('../../protos/status.json');
     const root = protobuf.Root.fromJSON(errorProtoJson);
@@ -237,9 +240,13 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     );
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
+    const unknownTypeDetail = {
+      type_url: 'unknown_type',
+      value: '',
+    };
     assert.strictEqual(
       JSON.stringify(decodedError.statusDetails),
-      JSON.stringify([errorInfoObj]),
+      JSON.stringify([errorInfoObj, unknownTypeDetail]),
     );
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
