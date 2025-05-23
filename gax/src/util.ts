@@ -139,3 +139,25 @@ export const decodeProtobufAny = (
   const type: protobuf.Type = protobuf.lookupType(typeName);
   return type.decode(anyValue.value);
 };
+
+// Given list of protos, if any of them are Any proto try to decode them with protos in given protobuf.
+export const decodeAnyProtosInArray = (
+  protoList: Array<{}>,
+  protobuf: protobuf.Type,
+): Array<{}> => {
+  const protoListDecoded: Array<{}> = [];
+  for (const proto of protoList) {
+    if (proto.constructor.name === 'Any') {
+      try {
+        // Proto is Any we try to decode with protos in protobuf.
+        const decodedAnyProto = decodeProtobufAny(proto, protobuf);
+        protoListDecoded.push(decodedAnyProto);
+      } catch (e: any) {
+        // Skip we can't process it.
+      }
+      continue;
+    }
+    protoListDecoded.push(proto);
+  }
+  return protoListDecoded;
+};

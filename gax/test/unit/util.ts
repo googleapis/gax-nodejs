@@ -23,6 +23,7 @@ import {
   makeUUID,
   getProtoNameFromFullName,
   decodeProtobufAny,
+  decodeAnyProtosInArray,
 } from '../../src/util';
 import * as protobuf from 'protobufjs';
 import protosJson from '../../protos/status.json';
@@ -153,6 +154,46 @@ describe('util.ts', () => {
     assert.throws(
       () => decodeProtobufAny(anyProto, anyProtoType),
       new Error('no such type: google.showcase.v1beta1.PoetryError'),
+    );
+  });
+
+  it('test decodeAnyProtosInArray success', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+
+    const anyProtoErrorInfo: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+
+    assert.strictEqual(
+      JSON.stringify(decodeAnyProtosInArray([anyProtoErrorInfo], anyProtoType)),
+      JSON.stringify([{reason: 'SERVICE_DISABLED'}]),
+    );
+  });
+
+  it('test decodeAnyProtosInArray success ignore any error decoding', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProtoErrorInfo: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    const wrongAnyProto: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.showcase.v1beta1.PoetryError',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+
+    assert.strictEqual(
+      JSON.stringify(
+        decodeAnyProtosInArray(
+          [anyProtoErrorInfo, wrongAnyProto],
+          anyProtoType,
+        ),
+      ),
+      JSON.stringify([{reason: 'SERVICE_DISABLED'}]),
     );
   });
 });
