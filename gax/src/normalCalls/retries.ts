@@ -111,8 +111,6 @@ export function retryable(
 
     /** Repeat the API call as long as necessary. */
     function repeat(err?: GoogleError) {
-      console.trace('repeat begin');
-      console.log(`code: ${err?.code}`)
       if (err) {
         errorsEncountered.push(err);
       }
@@ -172,12 +170,7 @@ export function retryable(
             const rpcTimeout = maxTimeout ? maxTimeout : 0;
             let newDeadline;
             newDeadline = deadline ? deadline - now.getTime() : Infinity;
-            console.log(`newDeadline: ${newDeadline}`);
             timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
-            console.log(`timeoutCal: ${timeoutCal}`);
-            console.log(`rpcTimeout: ${rpcTimeout}`);
-            console.log(`newDeadline: ${newDeadline}`);
-            console.log(`timeout: ${timeout}`);
             repeat(lastError);
           }, toSleep);
         }
