@@ -28,6 +28,7 @@ const ANY_PROTO_TYPE_NAME = 'google.protobuf.Any';
 const UNKNOWN_TYPE_ENCONDED_ERROR_PREFIX = 'Unknown type encoded in';
 const UNKNOWN_TYPE_NO_SUCH_TYPE = 'no such type';
 
+
 const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
 
 export class GoogleError extends Error {
@@ -229,6 +230,7 @@ const buildUnknownProtoAsAny = (
     value: unknownProto.value,
   });
 };
+
 
 // Given a protobuf with rpc status protos and a json response value, generate ErrorDetails.
 // Function will traverse trough all the details of the json value and split them based on ErrorDetails.
