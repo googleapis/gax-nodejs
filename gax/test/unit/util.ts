@@ -21,7 +21,14 @@ import {
   camelToSnakeCase,
   toLowerCamelCase,
   makeUUID,
+  getProtoNameFromFullName,
+  decodeProtobufAny,
+  decodeAnyProtosInArray,
 } from '../../src/util';
+import * as protobuf from 'protobufjs';
+import protosJson from '../../protos/status.json';
+
+const PROTOS = protobuf.Root.fromJSON(protosJson);
 
 describe('util.ts', () => {
   it('camelToSnakeCase', () => {
@@ -83,5 +90,110 @@ describe('util.ts', () => {
 
   it('returns UUID', () => {
     assert.match(makeUUID(), /[a-z0-9-]{36}/);
+  });
+
+  it('test getProtoNameFromFullName success', () => {
+    const fullName = 'type.googleapis.com/google.rpc.Help';
+    assert.strictEqual(getProtoNameFromFullName(fullName), 'google.rpc.Help');
+  });
+
+  it('test getProtoNameFromFullName fail due to incompatible/wrong fullName', () => {
+    const fullName = 'wrongfullname';
+    assert.throws(
+      () => getProtoNameFromFullName(fullName),
+      new Error("Can't get proto name"),
+    );
+  });
+
+  const makeErrorInfoProtoAsBuffer = (): Buffer => {
+    const errorInfo: object = {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+      reason: 'SERVICE_DISABLED',
+    };
+    const errorInfoType: protobuf.Type = PROTOS.lookupType(
+      'google.rpc.ErrorInfo',
+    );
+    return errorInfoType.encode(errorInfo).finish() as Buffer;
+  };
+
+  it('test decodeProtobufAny success', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProto: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    assert.strictEqual(
+      JSON.stringify(decodeProtobufAny(anyProto, anyProtoType)),
+      JSON.stringify({reason: 'SERVICE_DISABLED'}),
+    );
+  });
+
+  it('test decodeProtobufAny fails due to Any missing type_url', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProto: protobuf.Message<{}> = anyProtoType.create({
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    assert.throws(
+      () => decodeProtobufAny(anyProto, anyProtoType),
+      new Error('Any type_url is not set'),
+    );
+  });
+
+  it('test decodeProtobufAny fails due to proto not found', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProto: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.showcase.v1beta1.PoetryError',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    assert.throws(
+      () => decodeProtobufAny(anyProto, anyProtoType),
+      new Error('no such type: google.showcase.v1beta1.PoetryError'),
+    );
+  });
+
+  it('test decodeAnyProtosInArray success', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+
+    const anyProtoErrorInfo: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+
+    assert.strictEqual(
+      JSON.stringify(decodeAnyProtosInArray([anyProtoErrorInfo], anyProtoType)),
+      JSON.stringify([{reason: 'SERVICE_DISABLED'}]),
+    );
+  });
+
+  it('test decodeAnyProtosInArray success ignore any error decoding', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProtoErrorInfo: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    const wrongAnyProto: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.showcase.v1beta1.PoetryError',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+
+    assert.strictEqual(
+      JSON.stringify(
+        decodeAnyProtosInArray(
+          [anyProtoErrorInfo, wrongAnyProto],
+          anyProtoType,
+        ),
+      ),
+      JSON.stringify([{reason: 'SERVICE_DISABLED'}]),
+    );
   });
 });
