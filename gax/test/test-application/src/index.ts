@@ -417,8 +417,12 @@ async function testEchoErrorWithRetries(client: SequenceServiceClient) {
   try {
     await client.attemptSequence(attemptRequest, settings);
   } catch (err) {
+    assert.strictEqual(JSON.stringify((err as GoogleError).code), '4');
+    assert.match(
+      JSON.stringify((err as GoogleError).message),
+      /Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received/,
+    );
     assert.strictEqual((err as GoogleError).message, 'Exceeded maximum number of retries retrying error Error: 14 UNAVAILABLE: 14 before any response was received : Previous errors : [{message: 14 UNAVAILABLE: 14, code: 14, details: , note: },{message: 14 UNAVAILABLE: 14, code: 14, details: , note: }]');
-    assert.strictEqual((err as GoogleError).code, 4);
   }
 }
 
