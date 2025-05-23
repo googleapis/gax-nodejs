@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+const PROTO_TYPE_PREFIX = 'type.googleapis.com/';
+const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
+
 const randomUUID = () =>
   globalThis.crypto?.randomUUID() || require('crypto').randomUUID();
 
@@ -113,3 +117,12 @@ export function toLowerCamelCase(str: string) {
 export function makeUUID() {
   return randomUUID();
 }
+
+// Get proto type name removing the prefix. For example full type name: type.googleapis.com/google.rpc.Help, the function returns google.rpc.Help.
+export const getProtoNameFromFullName = (fullTypeName: string): string => {
+  const parts = fullTypeName.split(PROTO_TYPE_PREFIX);
+  if (parts.length !== NUM_OF_PARTS_IN_PROTO_TYPE_NAME) {
+    throw Error("Can't get proto name");
+  }
+  return parts[1];
+};

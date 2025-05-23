@@ -21,6 +21,7 @@ import {
   camelToSnakeCase,
   toLowerCamelCase,
   makeUUID,
+  getProtoNameFromFullName,
 } from '../../src/util';
 
 describe('util.ts', () => {
@@ -83,5 +84,18 @@ describe('util.ts', () => {
 
   it('returns UUID', () => {
     assert.match(makeUUID(), /[a-z0-9-]{36}/);
+  });
+
+  it('test getProtoNameFromFullName success', () => {
+    const fullName = 'type.googleapis.com/google.rpc.Help';
+    assert.strictEqual(getProtoNameFromFullName(fullName), 'google.rpc.Help');
+  });
+
+  it('test getProtoNameFromFullName fail due to incompatible/wrong fullName', () => {
+    const fullName = 'wrongfullname';
+    assert.throws(
+      () => getProtoNameFromFullName(fullName),
+      new Error("Can't get proto name"),
+    );
   });
 });
