@@ -168,8 +168,7 @@ export function retryable(
             const timeoutCal =
               timeout && timeoutMult ? timeout * timeoutMult : 0;
             const rpcTimeout = maxTimeout ? maxTimeout : 0;
-            let newDeadline;
-            newDeadline = deadline ? deadline - now.getTime() : Infinity;
+            const newDeadline = deadline ? deadline - now.getTime() : Infinity;
             timeout = Math.min(timeoutCal, rpcTimeout, newDeadline);
             repeat(lastError);
           }, toSleep);
