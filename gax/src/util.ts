@@ -126,3 +126,16 @@ export const getProtoNameFromFullName = (fullTypeName: string): string => {
   }
   return parts[1];
 };
+
+// Given a proto Any and a set of protos, decode using the set of protos.
+export const decodeProtobufAny = (
+  anyValue: any,
+  protobuf: protobuf.Type,
+): protobuf.Message<{}> => {
+  if (anyValue.type_url === '') {
+    throw new Error('Any type_url is not set');
+  }
+  const typeName: string = getProtoNameFromFullName(anyValue.type_url);
+  const type: protobuf.Type = protobuf.lookupType(typeName);
+  return type.decode(anyValue.value);
+};

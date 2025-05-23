@@ -22,7 +22,12 @@ import {
   toLowerCamelCase,
   makeUUID,
   getProtoNameFromFullName,
+  decodeProtobufAny,
 } from '../../src/util';
+import * as protobuf from 'protobufjs';
+import protosJson from '../../protos/status.json';
+
+const PROTOS = protobuf.Root.fromJSON(protosJson);
 
 describe('util.ts', () => {
   it('camelToSnakeCase', () => {
@@ -96,6 +101,58 @@ describe('util.ts', () => {
     assert.throws(
       () => getProtoNameFromFullName(fullName),
       new Error("Can't get proto name"),
+    );
+  });
+
+  const makeErrorInfoProtoAsBuffer = (): Buffer => {
+    const errorInfo: object = {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+      reason: 'SERVICE_DISABLED',
+    };
+    const errorInfoType: protobuf.Type = PROTOS.lookupType(
+      'google.rpc.ErrorInfo',
+    );
+    return errorInfoType.encode(errorInfo).finish() as Buffer;
+  };
+
+  it('test decodeProtobufAny success', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProto: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    assert.strictEqual(
+      JSON.stringify(decodeProtobufAny(anyProto, anyProtoType)),
+      JSON.stringify({reason: 'SERVICE_DISABLED'}),
+    );
+  });
+
+  it('test decodeProtobufAny fails due to Any missing type_url', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProto: protobuf.Message<{}> = anyProtoType.create({
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    assert.throws(
+      () => decodeProtobufAny(anyProto, anyProtoType),
+      new Error('Any type_url is not set'),
+    );
+  });
+
+  it('test decodeProtobufAny fails due to proto not found', () => {
+    const anyProtoType: protobuf.Type = PROTOS.lookupType(
+      'google.protobuf.Any',
+    );
+    const anyProto: protobuf.Message<{}> = anyProtoType.create({
+      type_url: 'type.googleapis.com/google.showcase.v1beta1.PoetryError',
+      value: makeErrorInfoProtoAsBuffer(),
+    });
+    assert.throws(
+      () => decodeProtobufAny(anyProto, anyProtoType),
+      new Error('no such type: google.showcase.v1beta1.PoetryError'),
     );
   });
 });
