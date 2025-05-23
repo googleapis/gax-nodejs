@@ -43,6 +43,8 @@ service Echo {
   // This service is meant to only run locally on the port 7469 (keypad digits
   // for "show").
   option (google.api.default_host) = "localhost:7469";
+  // See https://github.com/aip-dev/google.aip.dev/pull/1331
+  option (google.api.api_version) = "v1_20240408";
 
   // This method simply echoes the request. This method showcases unary RPCs.
   rpc Echo(EchoRequest) returns (EchoResponse) {
@@ -94,6 +96,20 @@ service Echo {
   rpc EchoErrorDetails(EchoErrorDetailsRequest) returns (EchoErrorDetailsResponse) {
     option (google.api.http) = {
       post: "/v1beta1/echo:error-details"
+      body: "*"
+    };
+  }
+
+  // This method always fails with a gRPC "Aborted" error status that contains
+  // multiple error details.  These include one instance of each of the standard
+  // ones in error_details.proto
+  // (https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto)
+  // plus a custom, Showcase-defined PoetryError. The intent of this RPC is to
+  // verify that GAPICs can process these various error details and surface them
+  // to the user in an idiomatic form.
+  rpc FailEchoWithDetails(FailEchoWithDetailsRequest) returns (FailEchoWithDetailsResponse) {
+    option (google.api.http) = {
+      post: "/v1beta1/echo:failWithDetails"
       body: "*"
     };
   }
@@ -211,15 +227,15 @@ message EchoRequest {
   // Optional. This field can be set to test the routing annotation on the Echo method.
   string other_header = 5;
 
-  // Based on go/client-populate-request-id-design; subject to change
+  // To facilitate testing of https://google.aip.dev/client-libraries/4235
   string request_id = 7 [
     (google.api.field_info).format = UUID4
   ];
 
-  // If `error` is set, then this flag causes the Showcase server to append
-  // multiple fake error details in the error response. This is useful for
-  // testing client behavior on error responses.
-  bool generate_error_details = 8;
+  // To facilitate testing of https://google.aip.dev/client-libraries/4235
+  optional string other_request_id = 8 [
+    (google.api.field_info).format = UUID4
+  ];
 }
 
 // The response message for the Echo methods.
@@ -232,6 +248,9 @@ message EchoResponse {
 
   // The request ID specified or autopopulated in the request.
   string request_id = 3;
+
+  // The other request ID specified or autopopulated in the request.
+  string other_request_id = 4;
 }
 
 // The request message used for the EchoErrorDetails method.
@@ -267,6 +286,24 @@ message ErrorWithSingleDetail {
 message ErrorWithMultipleDetails {
   repeated google.protobuf.Any details = 1;
 }
+
+// The custom error detail to be included in the error response from the
+// FailEchoWithDetails method. Client libraries should be able to
+// surface this custom error detail.
+message PoetryError {
+  string poem = 1;
+}
+
+// The request message used for the FailEchoWithDetails method.
+message FailEchoWithDetailsRequest {
+  // Optional message to echo back in the PoetryError. If empty, a value will be
+  // provided.
+  string message = 1;
+}
+
+// The response message declared (but never used) for the FailEchoWithDetails
+// method.
+message FailEchoWithDetailsResponse {}
 
 // The request message for the Expand method.
 message ExpandRequest {

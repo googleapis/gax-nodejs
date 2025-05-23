@@ -156,6 +156,16 @@ export class GrpcClient {
   }
 
   loadProtoJSON(json: protobuf.INamespace, ignoreCache = false) {
+    return GrpcClient.protobufFromJSON(json, ignoreCache);
+  }
+
+  /**
+   * Loads the protobuf root object from a JSON object created from a proto file.
+   * By default, this is cached in a global cache and the results should not be mutated.
+   * @param {Object} jsonObject - A JSON version of a protofile created usin protobuf.js
+   * @returns {Object} Root namespace of proto JSON
+   */
+  static protobufFromJSON(json: {}, ignoreCache = false) {
     const hash = objectHash(JSON.stringify(json)).toString();
     const cached = GrpcClient.protoCache.get(hash);
     if (cached && !ignoreCache) {
@@ -362,6 +372,8 @@ export class GrpcClient {
     return gax.createByteLengthFunction(message);
   }
 }
+
+export const protobufFromJSON = GrpcClient.protobufFromJSON;
 
 /**
  * gRPC-fallback version of lro
