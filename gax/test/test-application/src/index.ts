@@ -381,10 +381,10 @@ async function testEchoError(client: EchoClient) {
 async function testEchoErrorWithRetries(client: SequenceServiceClient) {
   const backoffSettings = createBackoffSettings(
     100,
-    1,
-    10000,
+    1.2,
+    1000,
     null,
-    1,
+    1.5,
     3000, // Set maxRpcTimeoutMillis high enough so that maxRetries happens before DEADLINE_EXCEEDED
     null,
   );
@@ -404,7 +404,7 @@ async function testEchoErrorWithRetries(client: SequenceServiceClient) {
       Status.UNAVAILABLE,
       Status.UNAVAILABLE,
     ],
-    [0.01, 0.01, 0.01, 0.01],
+    [0.1, 0.1, 0.1, 0.1],
   );
 
   const response = await client.createSequence(request);
@@ -425,10 +425,10 @@ async function testEchoErrorWithRetries(client: SequenceServiceClient) {
 async function testEchoDeadlineExceededErrorWithRetries(client: SequenceServiceClient) {
   const backoffSettings = createBackoffSettings(
       100,
-      1,
-      10000,
+      1.2,
+      1000,
       null,
-      1,
+      1.5,
       3000, // Set maxRpcTimeoutMillis high enough so that maxRetries happens before DEADLINE_EXCEEDED
       null,
   );
@@ -469,10 +469,10 @@ async function testEchoDeadlineExceededErrorWithRetries(client: SequenceServiceC
 async function testEchoErrorWithRetriesMessage(client: SequenceServiceClient) {
   const backoffSettings = createBackoffSettings(
       100,
-      1,
+      1.2,
       1000,
       null,
-      1,
+      1.5,
       3000, // Set maxRpcTimeoutMillis high enough so that maxRetries happens before DEADLINE_EXCEEDED
       null,
   );
