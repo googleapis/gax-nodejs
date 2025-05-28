@@ -116,7 +116,7 @@ describe('gRPC-google error decoding', () => {
     );
   });
 
-  it('DecodeRpcStatusDetails does not fail when unknown type is encoded', () => {
+  it('DecodeRpcStatusDetails does not fail when unknown type is encoded and return it as any', () => {
     const any = {type_url: 'noMatch', value: new Uint8Array()};
     const status = {code: 3, message: 'test', details: [any]};
     const Status = root.lookupType('google.rpc.Status');
@@ -126,10 +126,13 @@ describe('gRPC-google error decoding', () => {
     const gRPCStatusDetailsObj = decoder.decodeGRPCStatusDetails([
       status_buffer,
     ]);
-
+    const unknownTypeDetail = {
+      type_url: 'noMatch',
+      value: '',
+    };
     assert.strictEqual(
       JSON.stringify(gRPCStatusDetailsObj.details),
-      JSON.stringify([]),
+      JSON.stringify([unknownTypeDetail]),
     );
   });
 
@@ -209,7 +212,7 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     );
   });
 
-  it('metadata contains key grpc-status-details-bin with ErrorInfo and other unknow type', async () => {
+  it('metadata contains key grpc-status-details-bin with ErrorInfo and other unknown type', async () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const errorProtoJson = require('../../protos/status.json');
     const root = protobuf.Root.fromJSON(errorProtoJson);
@@ -237,9 +240,13 @@ describe('parse grpc status details with ErrorInfo from grpc metadata', () => {
     );
     const decodedError = GoogleError.parseGRPCStatusDetails(grpcError);
     assert(decodedError instanceof GoogleError);
+    const unknownTypeDetail = {
+      type_url: 'unknown_type',
+      value: '',
+    };
     assert.strictEqual(
       JSON.stringify(decodedError.statusDetails),
-      JSON.stringify([errorInfoObj]),
+      JSON.stringify([errorInfoObj, unknownTypeDetail]),
     );
     assert.strictEqual(decodedError.domain, errorInfoObj.domain);
     assert.strictEqual(decodedError.reason, errorInfoObj.reason);
@@ -409,6 +416,274 @@ describe('http error decoding dont break if there is a custom detail', () => {
   const custom = {
     '@type': 'type.googleapis.com/Custom',
   };
+  const json = {
+    error: {
+      code: 403,
+      message:
+        'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+      status: 'PERMISSION_DENIED',
+      details: [help, errorInfo, custom],
+    },
+  };
+  it('should promote ErrorInfo if exist in http error', () => {
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepStrictEqual(error.message, json['error']['message']);
+    assert.deepStrictEqual(error.reason, errorInfo.reason);
+    assert.deepStrictEqual(error.domain, errorInfo.domain);
+    assert.deepStrictEqual(
+      JSON.stringify(error.errorInfoMetadata),
+      JSON.stringify(errorInfo.metadata),
+    );
+  });
+
+  it('should support http error in array', () => {
+    const error = GoogleError.parseHttpError([json]);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepStrictEqual(error.message, json['error']['message']);
+    assert.deepStrictEqual(error.reason, errorInfo.reason);
+    assert.deepStrictEqual(error.domain, errorInfo.domain);
+    assert.deepStrictEqual(
+      JSON.stringify(error.errorInfoMetadata),
+      JSON.stringify(errorInfo.metadata),
+    );
+  });
+});
+
+describe('http error decoding return resource info for unknown proto-error', () => {
+  const custom_error = {
+    '@type': 'type.googleapis.com/Custom',
+  };
+  const custom_error_with_unsupported_name = {
+    '@type': 'UnsupportedName',
+  };
+  const any_error_with_rpc_proto = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    },
+  };
+  const any_error_with_custom_error = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'UnsupportedName',
+    },
+  };
+
+  const json = {
+    error: {
+      code: 403,
+      message:
+        'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+      status: 'PERMISSION_DENIED',
+      details: [
+        custom_error,
+        custom_error_with_unsupported_name,
+        any_error_with_rpc_proto,
+        any_error_with_custom_error,
+      ],
+    },
+  };
+  it('should support http custom errors', () => {
+    const error = GoogleError.parseHttpError([json]);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepEqual(error.statusDetails, [
+      {
+        type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+        value: new Uint8Array() as Buffer,
+      },
+      {
+        resourceType: 'type.googleapis.com/Custom',
+        description: JSON.stringify(custom_error),
+      },
+      {
+        resourceType: 'UnsupportedName',
+        description: JSON.stringify(custom_error_with_unsupported_name),
+      },
+      {
+        resourceType: 'type.googleapis.com/google.protobuf.Any',
+        description: JSON.stringify(any_error_with_custom_error),
+      },
+    ]);
+  });
+});
+
+describe('http error decoding dont break if there is a custom detail', () => {
+  const errorInfo = {
+    '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    reason: 'SERVICE_DISABLED',
+    domain: 'googleapis.com',
+    metadata: {
+      service: 'translate.googleapis.com',
+      consumer: 'projects/123',
+    },
+  };
+  const help = {
+    '@type': 'type.googleapis.com/google.rpc.Help',
+    links: [
+      {
+        description: 'Google developers console API activation',
+        url: 'https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361',
+      },
+    ],
+  };
+  const custom = {
+    '@type': 'type.googleapis.com/Custom',
+  };
+  const json = {
+    error: {
+      code: 403,
+      message:
+        'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+      status: 'PERMISSION_DENIED',
+      details: [help, errorInfo, custom],
+    },
+  };
+  it('should promote ErrorInfo if exist in http error', () => {
+    const error = GoogleError.parseHttpError(json);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepStrictEqual(error.message, json['error']['message']);
+    assert.deepStrictEqual(error.reason, errorInfo.reason);
+    assert.deepStrictEqual(error.domain, errorInfo.domain);
+    assert.deepStrictEqual(
+      JSON.stringify(error.errorInfoMetadata),
+      JSON.stringify(errorInfo.metadata),
+    );
+  });
+
+  it('should support http error in array', () => {
+    const error = GoogleError.parseHttpError([json]);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepStrictEqual(error.message, json['error']['message']);
+    assert.deepStrictEqual(error.reason, errorInfo.reason);
+    assert.deepStrictEqual(error.domain, errorInfo.domain);
+    assert.deepStrictEqual(
+      JSON.stringify(error.errorInfoMetadata),
+      JSON.stringify(errorInfo.metadata),
+    );
+  });
+});
+
+describe('http error decoding return resource info for unknown proto-error', () => {
+  const custom_error = {
+    '@type': 'type.googleapis.com/Custom',
+  };
+  const custom_error_with_unsupported_name = {
+    '@type': 'UnsupportedName',
+  };
+  const any_error_with_rpc_proto = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    },
+  };
+  const any_error_with_custom_error = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'UnsupportedName',
+    },
+  };
+
+  const json = {
+    error: {
+      code: 403,
+      message:
+        'Cloud Translation API has not been used in project 123 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.',
+      status: 'PERMISSION_DENIED',
+      details: [
+        custom_error,
+        custom_error_with_unsupported_name,
+        any_error_with_rpc_proto,
+        any_error_with_custom_error,
+      ],
+    },
+  };
+  it('should support http custom errors', () => {
+    const error = GoogleError.parseHttpError([json]);
+    assert.deepStrictEqual(error.code, rpcCodeFromHttpStatusCode(403));
+    assert.deepStrictEqual(
+      error.statusDetails?.length,
+      json['error']['details'].length,
+    );
+    assert.deepEqual(error.statusDetails, [
+      {
+        type_url: 'type.googleapis.com/google.rpc.ErrorInfo',
+        value: new Uint8Array() as Buffer,
+      },
+      {
+        resourceType: 'type.googleapis.com/Custom',
+        description: JSON.stringify(custom_error),
+      },
+      {
+        resourceType: 'UnsupportedName',
+        description: JSON.stringify(custom_error_with_unsupported_name),
+      },
+      {
+        resourceType: 'type.googleapis.com/google.protobuf.Any',
+        description: JSON.stringify(any_error_with_custom_error),
+      },
+    ]);
+  });
+});
+
+describe('http error decoding dont break if there is a custom detail', () => {
+  const errorInfo = {
+    '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    reason: 'SERVICE_DISABLED',
+    domain: 'googleapis.com',
+    metadata: {
+      service: 'translate.googleapis.com',
+      consumer: 'projects/123',
+    },
+  };
+  const help = {
+    '@type': 'type.googleapis.com/google.rpc.Help',
+    links: [
+      {
+        description: 'Google developers console API activation',
+        url: 'https://console.developers.google.com/apis/api/translate.googleapis.com/overview?project=455411330361',
+      },
+    ],
+  };
+  const custom = {
+    '@type': 'type.googleapis.com/Custom',
+  };
+  const custom_error_with_unsupported_name = {
+    '@type': 'UnsupportedName',
+  };
+  const any_error_with_rpc_proto = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+    },
+  };
+  const any_error_with_custom_error = {
+    '@type': 'type.googleapis.com/google.protobuf.Any',
+    value: {
+      '@type': 'UnsupportedName',
+    },
+  };
+
   const json = {
     error: {
       code: 403,

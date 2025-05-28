@@ -25,6 +25,8 @@ const PROTO_TYPE_PREFIX = 'type.googleapis.com/';
 const RESOURCE_INFO_TYPE = 'type.googleapis.com/google.rpc.ResourceInfo';
 const DEFAULT_RESOURCE_TYPE_NAME_FOR_UNKNOWN_TYPES = 'Unknown type';
 const ANY_PROTO_TYPE_NAME = 'google.protobuf.Any';
+const UNKNOWN_TYPE_ENCONDED_ERROR_PREFIX = 'Unknown type encoded in';
+const UNKNOWN_TYPE_NO_SUCH_TYPE = 'no such type';
 
 const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
 
@@ -206,6 +208,28 @@ const isDetailKnownProto = (protobuf: any, detail: any): boolean => {
   }
 };
 
+// Check if error is unknown type encoded.
+const isUnknownTypeEncodedError = (error: any): boolean => {
+  if (typeof error === 'object' && error && 'message' in error) {
+    return (
+      error.message.includes(UNKNOWN_TYPE_ENCONDED_ERROR_PREFIX) ||
+      error.message.includes(UNKNOWN_TYPE_NO_SUCH_TYPE)
+    );
+  }
+  return false;
+};
+
+// Build unknown proto as protobuf.Message<{}>.
+const buildUnknownProtoAsAny = (
+  unknownProto: ProtobufAny,
+  anyProto: any,
+): protobuf.Message<{}> => {
+  return anyProto.create({
+    type_url: unknownProto.type_url,
+    value: unknownProto.value,
+  });
+};
+
 // Given a protobuf with rpc status protos and a json response value, generate ErrorDetails.
 // Function will traverse trough all the details of the json value and split them based on ErrorDetails.
 const getErrorDetails = (protobuf: any, json: JSONValue): ErrorDetails => {
@@ -355,8 +379,15 @@ export class GoogleErrorDecoder {
           if (detail.type_url === 'type.googleapis.com/google.rpc.ErrorInfo') {
             errorInfo = decodedDetail as unknown as ErrorInfo;
           }
-        } catch (err) {
-          // cannot decode detail, likely because of the unknown type - just skip it
+        } catch (error: any) {
+          if (isUnknownTypeEncodedError(error)) {
+            const customErrorAsAny = buildUnknownProtoAsAny(
+              detail,
+              this.anyType,
+            );
+            details.push(customErrorAsAny);
+          }
+          // cannot decode detail - just skip it
         }
       }
     });
