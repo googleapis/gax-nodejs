@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import * as execa from 'execa';
 import * as download from 'download';
 import * as fs from 'fs';
 import * as fsp from 'fs/promises';
 import * as path from 'path';
 import * as util from 'util';
+import {ChildProcess} from 'node:child_process';
+
+const { spawn } = require('child_process');
 
 const mkdir = util.promisify(fs.mkdir);
 
@@ -30,7 +32,7 @@ function sleep(timeoutMs: number) {
 }
 
 export class ShowcaseServer {
-  server: execa.ExecaChildProcess | undefined;
+  server: ChildProcess | undefined;
 
   async start() {
     const testDir = path.join(process.cwd(), '.showcase-server-dir');
@@ -47,8 +49,8 @@ export class ShowcaseServer {
     console.log(`Server will be run from ${testDir}.`);
 
     await download(fallbackServerUrl, testDir);
-    await execa('tar', ['xzf', tarballFilename]);
-    const childProcess = execa(binaryName, ['run'], {
+    await spawn('tar', ['xzf', tarballFilename]);
+    const childProcess = spawn(binaryName, ['run'], {
       cwd: testDir,
       stdio: 'inherit',
     });
