@@ -113,7 +113,7 @@ export {
   PaginationResponse,
 } from './clientInterface';
 
-export {makeUUID} from './util';
+export {makeUUID, decodeAnyProtosInArray, decodeProtobufAny} from './util';
 
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
 export {warn} from './warnings';
