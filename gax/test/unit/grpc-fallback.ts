@@ -101,7 +101,6 @@ describe('createStub', () => {
     stubExtraOptions: {};
 
   beforeEach(() => {
-    // @ts-ignore incomplete options
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
@@ -184,7 +183,6 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    // @ts-ignore incomplete options
     gaxGrpc = new GrpcClient(opts);
     protos = gaxGrpc.loadProto(echoProtoJson);
     echoService = protos.lookupService('Echo');
@@ -416,7 +414,7 @@ describe('grpc-fallback', () => {
       auth: new GoogleAuth({authClient: new PassThroughClient()}),
       fallback: 'rest',
     };
-    // @ts-ignore incomplete options
+
     gaxGrpc = new GrpcClient(opts);
 
     setMockFallbackResponse(
