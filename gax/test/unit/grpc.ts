@@ -156,9 +156,7 @@ describe('grpc', () => {
       stubAuth.getClient.resolves(dummyAuth);
       stubAuth.getUniverseDomain.resolves('googleapis.com');
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
-      stubGrpc.credentials.createFromGoogleCredential
-        .withArgs(dummyAuth)
-        .returns(dummyGrpcAuth);
+      stubGrpc.credentials.createFromGoogleCredential.returns(dummyGrpcAuth);
       stubGrpc.credentials.combineChannelCredentials
         .withArgs(dummySslCreds, dummyGrpcAuth)
         .returns(dummyChannelCreds);
@@ -681,10 +679,10 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const client = gaxGrpc();
+      client.baseDirectory = tmpFolder;
       const [cert, key] = await client._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
@@ -698,14 +696,14 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-      sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
       const client = gaxGrpc();
+      client.baseDirectory = tmpFolder;
       await assert.rejects(
         // @ts-ignore
         client.createStub(DummyStub, {universeDomain: 'example.com'}),
-        /configured universe domain/,
+        /mTLS is not supported outside of googleapis.com universe domain/,
       );
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });
