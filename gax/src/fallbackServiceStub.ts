@@ -142,14 +142,13 @@ export function generateServiceStub(
       const streamArrayParser = new StreamArrayParser(rpc);
       const fetchRequest: gaxios.GaxiosOptions = {
         headers: headers,
-        body: fetchParameters.body as string | Buffer | undefined,
+        body: fetchParameters.body,
         method: fetchParameters.method,
         signal: cancelSignal,
-        responseType: 'stream', // ensure gaxios returns the data directly
+        responseType: 'stream', // ensure gaxios returns the data directly so that it handle data/streams itself
+        agent: agentOption || undefined,
       };
-      if (agentOption) {
-        fetchRequest.agent = agentOption;
-      }
+
       if (
         fetchParameters.method === 'GET' ||
         fetchParameters.method === 'DELETE'
