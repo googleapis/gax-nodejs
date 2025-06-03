@@ -28,10 +28,25 @@ function sleep(timeout: number) {
 }
 
 describe('Run tests against gRPC server', () => {
-  const authStub = new GoogleAuth({authClient: new PassThroughClient()});
+  const authStub = {
+    getRequestHeaders: async () => {
+      return new Headers({
+        Authorization: 'Bearer zzzz',
+      });
+    },
+    getClient: async () => {
+      return {
+        getRequestHeaders: async () => {
+          return new Headers({
+            Authorization: 'Bearer zzzz',
+          });
+        },
+      };
+    },
+  };
 
   const opts = {
-    auth: authStub,
+    auth: authStub as unknown as GoogleAuth,
     protocol: 'http',
     port: 7469,
   };
