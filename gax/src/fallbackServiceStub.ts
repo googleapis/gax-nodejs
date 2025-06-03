@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-/* global window */
-/* global AbortController */
-
 import type {Response as NodeFetchResponse} from 'node-fetch' with {'resolution-mode': 'import'};
 import {AbortController as NodeAbortController} from 'abort-controller';
 
