@@ -19,7 +19,6 @@ import {describe, it, before} from 'mocha';
 import {GoogleAuth} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 import 'core-js/stable';
-import {PassThroughClient} from 'google-auth-library';
 
 function sleep(timeout: number) {
   return new Promise(resolve => {
