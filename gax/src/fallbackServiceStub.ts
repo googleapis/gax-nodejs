@@ -17,25 +17,16 @@
 /* global window */
 /* global AbortController */
 
-import type {
-  Response as NodeFetchResponse,
-  RequestInit,
-} from 'node-fetch' with {'resolution-mode': 'import'};
+import type {Response as NodeFetchResponse} from 'node-fetch' with {'resolution-mode': 'import'};
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {AuthClient, GoogleAuth, gaxios} from 'google-auth-library';
 
-import type nodeFetch from 'node-fetch' with {'resolution-mode': 'import'};
-import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
+import {hasAbortController, isNodeJS} from './featureDetection';
 import {StreamArrayParser} from './streamArrayParser';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
-const fetchNode = (...args: Parameters<typeof nodeFetch>) =>
-  import('node-fetch').then(({default: fetch}) => fetch(...args));
-interface NodeFetchType {
-  (url: RequestInfo, init?: RequestInit): Promise<Response>;
-}
 
 // Node.js before v19 does not enable keepalive by default.
 // We'll try to enable it very carefully to make sure we don't break possible non-Node use cases.
@@ -101,10 +92,6 @@ export function generateServiceStub(
   numericEnums: boolean,
   minifyJson: boolean,
 ) {
-  const fetch = hasWindowFetch()
-    ? window.fetch
-    : (fetchNode as unknown as NodeFetchType);
-
   const serviceStub: FallbackServiceStub = {
     // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
     close: () => {
@@ -156,27 +143,25 @@ export function generateServiceStub(
         headers.set(key, options[key][0]);
       }
       const streamArrayParser = new StreamArrayParser(rpc);
+      const fetchRequest: gaxios.GaxiosOptions = {
+        headers: headers,
+        body: fetchParameters.body as string | Buffer | undefined,
+        method: fetchParameters.method,
+        signal: cancelSignal,
+        responseType: 'stream', // ensure gaxios returns the data directly
+      };
+      if (agentOption) {
+        fetchRequest.agent = agentOption;
+      }
+      if (
+        fetchParameters.method === 'GET' ||
+        fetchParameters.method === 'DELETE'
+      ) {
+        delete fetchRequest['body'];
+      }
 
       auth
-        .getRequestHeaders()
-        .then(authHeader => {
-          const fetchRequest: RequestInit = {
-            headers: gaxios.Gaxios.mergeHeaders(authHeader, headers) as {},
-            body: fetchParameters.body as string | Buffer | undefined,
-            method: fetchParameters.method,
-            signal: cancelSignal,
-          };
-          if (agentOption) {
-            fetchRequest.agent = agentOption;
-          }
-          if (
-            fetchParameters.method === 'GET' ||
-            fetchParameters.method === 'DELETE'
-          ) {
-            delete fetchRequest['body'];
-          }
-          return fetch(url, fetchRequest as {});
-        })
+        .fetch(url, fetchRequest)
         .then((response: Response | NodeFetchResponse) => {
           if (response.ok && rpc.responseStream) {
             pipeline(

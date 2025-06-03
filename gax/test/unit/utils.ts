@@ -20,7 +20,8 @@ import * as gax from '../../src/gax';
 import {GoogleError} from '../../src/googleError';
 import {Descriptor} from '../../src/descriptor';
 import {serializer} from '../../src';
-import {defaultToObjectOptions} from '../../src/fallback';
+import {GrpcClient, defaultToObjectOptions} from '../../src/fallback';
+import {gaxios, GoogleAuth, PassThroughClient} from 'google-auth-library';
 
 export const FAKE_STATUS_CODE_1 = (exports.FAKE_STATUS_CODE_1 = 1);
 
@@ -112,4 +113,33 @@ export function toProtobufJSON(protobufType: protobuf.Type, json: {}) {
     );
   }
   return protobufType.toObject(message, defaultToObjectOptions);
+}
+
+/**
+ * Sets a response for a Fallback request
+ *
+ * @param gaxGrpc The GRPC Client to use
+ * @param response The Response object to use
+ * @returns the auth client
+ */
+export function setMockFallbackResponse(
+  gaxGrpc: GrpcClient,
+  response: Response,
+) {
+  class MockedResponseAuthClient extends PassThroughClient {
+    async request<T>(
+      opts: gaxios.GaxiosOptions,
+    ): Promise<gaxios.GaxiosResponse<T>> {
+      return Object.assign(response, {
+        config: {
+          headers: response.headers,
+          url: new URL(opts.url || 'https://example.com'),
+        },
+        data: response.body as T,
+      });
+    }
+  }
+
+  const authClient = new MockedResponseAuthClient();
+  gaxGrpc.auth = new GoogleAuth({authClient});
 }

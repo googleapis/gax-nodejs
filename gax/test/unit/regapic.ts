@@ -25,12 +25,19 @@ import {GrpcClient} from '../../src/fallback';
 import * as transcoding from '../../src/transcoding';
 import {PassThroughClient} from 'google-auth-library';
 import {StreamArrayParser} from '../../src/streamArrayParser';
-import proxyquire from 'proxyquire';
+import {setMockFallbackResponse} from './utils';
 
-const opts = {
-  authClient: new PassThroughClient(),
-  fallback: 'rest', // enabling REGAPIC
+let authClient = new PassThroughClient();
+let opts = {
+  authClient,
 };
+
+beforeEach(() => {
+  authClient = new PassThroughClient();
+  opts = {
+    authClient,
+  };
+});
 
 describe('REGAPIC', () => {
   let gaxGrpc: GrpcClient,
@@ -75,36 +82,28 @@ describe('REGAPIC', () => {
   afterEach(() => {
     sinon.restore();
   });
-  it('should make a request', async () => {
+
+  it('should make a request', done => {
     const requestObject = {content: 'test-content'};
 
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          arrayBuffer: () => {
-            return Promise.resolve(Buffer.from(JSON.stringify(requestObject)));
-          },
-        });
-      },
-    });
+    setMockFallbackResponse(
+      gaxGrpc,
+      new Response(Buffer.from(JSON.stringify(requestObject))),
+    );
 
-    const gaxGrpcMock = new GrpcClient();
-
-    (await gaxGrpcMock)
-      .createStub(echoService, stubOptions)
-      .then((echoStub: any) => {
-        echoStub.echo(requestObject, {}, {}, (err?: {}, result?: {}) => {
-          assert.strictEqual(err, null);
-          assert.strictEqual(
-            requestObject.content,
-            (result as {content: string}).content,
-          );
-        });
+    void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: {}, result?: {}) => {
+        assert.strictEqual(err, null);
+        assert.strictEqual(
+          requestObject.content,
+          (result as {content: string}).content,
+        );
+        done();
       });
+    });
   });
 
-  it('should make a streaming request', async () => {
+  it('should make a streaming request', done => {
     const requestObject = {content: 'test content'};
     const responseObject = [{content: 'test'}, {content: 'content'}];
     const responseObjectJson = JSON.stringify(responseObject, null, '  ');
@@ -112,20 +111,13 @@ describe('REGAPIC', () => {
     responseStream.push(responseObjectJson.slice(0, 10));
     responseStream.push(responseObjectJson.slice(10));
     responseStream.push(null);
-    // incomplete types for nodeFetch, so...
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.resolve({
-          ok: true,
-          body: responseStream,
-        });
-      },
-    });
 
-    const gaxGrpcMock = new GrpcClient();
+    setMockFallbackResponse(
+      gaxGrpc,
+      new Response(responseStream as unknown as BodyInit),
+    );
 
-    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       const stream = echoStub.expand(
         requestObject,
         {},
@@ -133,199 +125,151 @@ describe('REGAPIC', () => {
         () => {},
       ) as StreamArrayParser;
       const results: {}[] = [];
-      stream.on('data', (data: {}) => {
+      stream.on('data', data => {
         results.push(data);
       });
-      stream.on('error', () => {
-        return;
-      });
+      stream.on('error', done);
       stream.on('end', () => {
         assert.deepStrictEqual(results, responseObject);
+        done();
       });
     });
   });
 
-  it('should handle fetch failure', async () => {
+  it('should handle fetch failure', done => {
     const requestObject = {content: 'test-content'};
 
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.reject(new Error('Fetch error'));
-      },
-    });
+    setMockFallbackResponse(
+      gaxGrpc,
+      new Response(JSON.stringify({error: {message: 'Fetch error'}}), {
+        status: 500,
+      }),
+    );
 
-    const gaxGrpcMock = new GrpcClient();
-
-    gaxGrpcMock.createStub(echoService, stubOptions).then((echoStub: any) => {
+    void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: {}) => {
         assert.strictEqual((err as Error).message, 'Fetch error');
+        done();
       });
     });
   });
 
-  it('should handle streaming request failure', async () => {
+  it('should handle streaming request failure', done => {
     const requestObject = {content: 'test content'};
 
-    const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-      'node-fetch': () => {
-        return Promise.reject(new Error('Fetch error'));
-      },
-    });
+    setMockFallbackResponse(
+      gaxGrpc,
+      new Response(JSON.stringify({error: {message: 'Fetch error'}}), {
+        status: 500,
+      }),
+    );
 
-    const gaxGrpcMock = new GrpcClient();
-    gaxGrpc
-      .createStub(echoService, stubOptions)
-      .then((echoStub: any) => {
-        const stream = echoStub.expand(requestObject) as StreamArrayParser;
-        stream.on('error', (err: Error) => {
-          assert.strictEqual((err as Error).message, 'Fetch error');
-        });
-      })
-      .catch(console.error);
+    void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      const stream = echoStub.expand(requestObject) as StreamArrayParser;
+      stream.on('error', err => {
+        assert.strictEqual((err as Error).message, 'Fetch error');
+        done();
+      });
+    });
   });
 
   describe('should support enum conversion in proto message', () => {
-    it('should support enum conversion in proto message response', async () => {
+    it('should support enum conversion in proto message response', done => {
       const requestObject = {name: 'shelves/shelf-name'};
       const responseObject = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 1,
       };
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject)),
-              );
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
 
-      const gaxGrpcMock = new GrpcClient();
-
-      gaxGrpcMock
-        .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
-          libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
-            assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
-            assert.strictEqual(err, null);
-            assert.strictEqual(
-              'shelf-name',
-              (result as {name: {}; theme: {}; type: {}}).name,
-            );
-            assert.strictEqual(
-              'TYPEONE',
-              (result as {name: {}; theme: {}; type: {}}).type,
-            );
-          });
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'shelf-name',
+            (result as {name: {}; theme: {}; type: {}}).name,
+          );
+          assert.strictEqual(
+            'TYPEONE',
+            (result as {name: {}; theme: {}; type: {}}).type,
+          );
+          done();
         });
+      }, /* catch: */ done);
     });
 
-    it('should support enum conversion in proto message request using symbolic name', async () => {
+    it('should support enum conversion in proto message request using symbolic name', done => {
       const shelf = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 'TYPEONE',
       };
       const requestObject = {shelf: shelf};
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(shelf))),
+      );
 
-      const gaxGrpcMock = new GrpcClient();
-
-      gaxGrpcMock
-        .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
-          libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
-            assert.strictEqual(err, null);
-          });
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
+          assert.strictEqual(err, null);
+          done();
         });
+      }, /* catch: */ done);
     });
 
-    it('should support enum conversion in proto message request using type value', async () => {
+    it('should support enum conversion in proto message request using type value', done => {
       const shelf = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 1,
       };
       const requestObject = {shelf: shelf};
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(shelf))),
+      );
 
-      const gaxGrpcMock = new GrpcClient();
-      gaxGrpcMock
-        .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
-          libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
-            assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
-            assert.strictEqual(err, null);
-          });
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
+          assert.strictEqual(spy.getCall(0).returnValue?.queryString, '');
+          assert.strictEqual(err, null);
+          done();
         });
+      }, /* catch: */ done);
     });
   });
 
   describe('should support enum conversion in proto message with numeric enums enabled', () => {
-    it('should support enum conversion in proto message response', async () => {
+    it('should support enum conversion in proto message response', done => {
       const requestObject = {name: 'shelves/shelf-name'};
       const responseObject = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 100, // unknown enum value
       };
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject)),
-              );
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
 
-      const gaxGrpcNumericEnumsMock = new GrpcClient({
-        ...opts,
-        numericEnums: true,
-      });
-
-      gaxGrpcNumericEnumsMock
+      gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
+        .then(libStub => {
           libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
@@ -340,49 +284,44 @@ describe('REGAPIC', () => {
               100,
               (result as {name: {}; theme: {}; type: {}}).type,
             );
+            done();
           });
-        });
+        }, done);
     });
 
-    it('should request numeric enums if passed as symbolic name', async () => {
+    it('should request numeric enums if passed as symbolic name', done => {
       const shelf = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 'TYPEONE',
       };
       const requestObject = {shelf: shelf};
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(shelf))),
+      );
 
-      const gaxGrpcNumericEnumsMock = new GrpcClient({
-        ...opts,
-        numericEnums: true,
-      });
-      gaxGrpcNumericEnumsMock
+      gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
+        .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
-              spy.getCall(0).returnValue?.queryString,
-              '$alt=json%3Benum-encoding=int',
+              'string',
+              typeof spy.getCall(0).returnValue?.queryString,
+            );
+            assert.match(
+              <string>spy.getCall(0).returnValue?.queryString,
+              /\$alt=json%3Benum-encoding=int(&.*)?$/,
             );
             assert.strictEqual(err, null);
+            done();
           });
-        });
+        }, /* catch: */ done);
     });
 
-    it('should preserve query string when appending numeric enums parameter', async () => {
+    it('should preserve query string when appending numeric enums parameter', done => {
       const shelf = {
         name: 'shelf-name',
         theme: 'shelf-theme',
@@ -392,78 +331,58 @@ describe('REGAPIC', () => {
         shelf: shelf,
         queryStringParameter: 'must-be-preserved',
       };
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(shelf))),
+      );
 
-      const gaxGrpcNumericEnumsMock = new GrpcClient({
-        ...opts,
-        numericEnums: true,
-      });
-      gaxGrpcNumericEnumsMock
+      gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
+        .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
               'queryStringParameter=must-be-preserved&$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
+            done();
           });
-        });
+        }, done);
     });
 
-    it('should request numeric enums if passed as an unknown number', async () => {
+    it('should request numeric enums if passed as an unknown number', done => {
       const shelf = {
         name: 'shelf-name',
         theme: 'shelf-theme',
         type: 100,
       };
       const requestObject = {shelf: shelf};
-      const spy = sinon.spy();
+      const spy = sinon.spy(transcoding, 'transcode');
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(Buffer.from(JSON.stringify(shelf)));
-            },
-          });
-        },
-        '../src/transcoding.js': {transcode: spy},
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(shelf))),
+      );
 
-      const gaxGrpcNumericEnumsMock = new GrpcClient({
-        ...opts,
-        numericEnums: true,
-      });
-      gaxGrpcNumericEnumsMock
+      gaxGrpcNumericEnums
         .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
+        .then(libStub => {
           libStub.createShelf(requestObject, {}, {}, (err?: {}) => {
             assert.strictEqual(
               spy.getCall(0).returnValue?.queryString,
               '$alt=json%3Benum-encoding=int',
             );
             assert.strictEqual(err, null);
+            done();
           });
-        });
+        }, done);
     });
   });
 
   describe('should support long data type conversion in proto message', () => {
-    it('large number long data type conversion in proto message response', async () => {
+    it('large number long data type conversion in proto message response', done => {
       const requestObject = {name: 'shelves/shelf-name/books/book-name'};
       const responseObject = {
         name: 'book-name',
@@ -473,54 +392,44 @@ describe('REGAPIC', () => {
         bookId: 9007199254740992,
       };
 
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject)),
-              );
-            },
-          });
-        },
-      });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
 
-      const gaxGrpcMock = new GrpcClient();
-      gaxGrpcMock
-        .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
-          libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual(
-              'book-name',
-              (
-                result as {
-                  name: {};
-                  author: {};
-                  title: {};
-                  read: false;
-                  bookId: {};
-                }
-              ).name,
-            );
-            assert.strictEqual(
-              '9007199254740992',
-              (
-                result as {
-                  name: {};
-                  author: {};
-                  title: {};
-                  read: false;
-                  bookId: {};
-                }
-              ).bookId,
-            );
-          });
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name,
+          );
+          assert.strictEqual(
+            '9007199254740992',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId,
+          );
+          done();
         });
+      }, /* catch: */ done);
     });
 
-    it('small number long data type conversion in proto message response', async () => {
+    it('small number long data type conversion in proto message response', done => {
       const requestObject = {name: 'shelves/shelf-name/books/book-name'};
       const responseObject = {
         name: 'book-name',
@@ -529,55 +438,45 @@ describe('REGAPIC', () => {
         read: true,
         bookId: 42,
       };
-      // incomplete types for nodeFetch, so...
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject)),
-              );
-            },
-          });
-        },
-      });
 
-      const gaxGrpcMock = new GrpcClient();
-      gaxGrpcMock
-        .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
-          libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
-            assert.strictEqual(err, null);
-            assert.strictEqual(
-              'book-name',
-              (
-                result as {
-                  name: {};
-                  author: {};
-                  title: {};
-                  read: false;
-                  bookId: {};
-                }
-              ).name,
-            );
-            assert.strictEqual(
-              '42',
-              (
-                result as {
-                  name: {};
-                  author: {};
-                  title: {};
-                  read: false;
-                  bookId: {};
-                }
-              ).bookId,
-            );
-          });
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
+
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name,
+          );
+          assert.strictEqual(
+            '42',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId,
+          );
+          done();
         });
+      }, done);
     });
 
-    it('long data type conversion in proto message request', async () => {
+    it('long data type conversion in proto message request', done => {
       const bookId = 9007199254740992;
       const requestObject = {name: `shelves/shelf-name/book_id/${bookId}`};
       const responseObject = {
@@ -587,53 +486,122 @@ describe('REGAPIC', () => {
         read: true,
         bookId: bookId,
       };
-      // incomplete types for nodeFetch, so...
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const {GrpcClient} = await proxyquire('../../src/fallback.js', {
-        'node-fetch': () => {
-          return Promise.resolve({
-            ok: true,
-            arrayBuffer: () => {
-              return Promise.resolve(
-                Buffer.from(JSON.stringify(responseObject)),
-              );
-            },
-          });
-        },
-      });
 
-      const gaxGrpcMock = new GrpcClient();
-      gaxGrpcMock
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
+
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'book-name',
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).name,
+          );
+          assert.strictEqual(
+            bookId.toString(),
+            (
+              result as {
+                name: {};
+                author: {};
+                title: {};
+                read: false;
+                bookId: {};
+              }
+            ).bookId,
+          );
+          done();
+        });
+      }, done);
+    });
+  });
+
+  describe('should support json minification', () => {
+    it('should send prettyPrint=0 when json minification is requested', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 100, // unknown enum value
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
+
+      gaxGrpcMinifyJson
         .createStub(libraryService, stubOptions)
-        .then((libStub: any) => {
-          libStub.getBook(requestObject, {}, {}, (err?: {}, result?: {}) => {
+        .then(libStub => {
+          libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+            assert.strictEqual(
+              'string',
+              typeof spy.getCall(0).returnValue?.queryString,
+            );
+            assert.match(
+              <string>spy.getCall(0).returnValue?.queryString,
+              /\$prettyPrint=0(&.*)?$/,
+            );
             assert.strictEqual(err, null);
             assert.strictEqual(
-              'book-name',
-              (
-                result as {
-                  name: {};
-                  author: {};
-                  title: {};
-                  read: false;
-                  bookId: {};
-                }
-              ).name,
+              'shelf-name',
+              (result as {name: {}; theme: {}; type: {}}).name,
             );
             assert.strictEqual(
-              bookId.toString(),
-              (
-                result as {
-                  name: {};
-                  author: {};
-                  title: {};
-                  read: false;
-                  bookId: {};
-                }
-              ).bookId,
+              100,
+              (result as {name: {}; theme: {}; type: {}}).type,
             );
+            done();
           });
+        }, /* catch: */ done);
+    });
+
+    it('should not send prettyPrint setting when json minification is not requested', done => {
+      const requestObject = {name: 'shelves/shelf-name'};
+      const responseObject = {
+        name: 'shelf-name',
+        theme: 'shelf-theme',
+        type: 100, // unknown enum value
+      };
+      const spy = sinon.spy(transcoding, 'transcode');
+
+      setMockFallbackResponse(
+        gaxGrpc,
+        new Response(Buffer.from(JSON.stringify(responseObject))),
+      );
+
+      gaxGrpc.createStub(libraryService, stubOptions).then(libStub => {
+        libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
+          assert.strictEqual(
+            'string',
+            typeof spy.getCall(0).returnValue?.queryString,
+          );
+          assert.doesNotMatch(
+            <string>spy.getCall(0).returnValue?.queryString,
+            /prettyPrint/,
+          );
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            'shelf-name',
+            (result as {name: {}; theme: {}; type: {}}).name,
+          );
+          assert.strictEqual(
+            100,
+            (result as {name: {}; theme: {}; type: {}}).type,
+          );
+          done();
         });
+      }, /* catch: */ done);
     });
   });
 });

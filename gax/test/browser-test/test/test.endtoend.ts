@@ -19,6 +19,7 @@ import {describe, it, before} from 'mocha';
 import {GoogleAuth} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 import 'core-js/stable';
+import {PassThroughClient} from 'google-auth-library';
 
 function sleep(timeout: number) {
   return new Promise(resolve => {
@@ -26,26 +27,11 @@ function sleep(timeout: number) {
   });
 }
 
-describe('Run tests against gRPC server', async function () {
-  const authStub = {
-    getRequestHeaders: async () => {
-      return new Headers({
-        Authorization: 'Bearer zzzz',
-      });
-    },
-    getClient: async () => {
-      return {
-        getRequestHeaders: async () => {
-          return new Headers({
-            Authorization: 'Bearer zzzz',
-          });
-        },
-      };
-    },
-  };
+describe('Run tests against gRPC server', () => {
+  const authStub = new GoogleAuth({authClient: new PassThroughClient()});
 
   const opts = {
-    auth: authStub as unknown as GoogleAuth,
+    auth: authStub,
     protocol: 'http',
     port: 7469,
   };
@@ -81,7 +67,7 @@ describe('Run tests against gRPC server', async function () {
     }
   });
 
-  it('should be able to call simple RPC methods', async () => {
+  it('should be able to call simple RPC methods', async function () {
     this.timeout(80000);
     const request = {
       content: 'test',

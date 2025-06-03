@@ -156,7 +156,9 @@ describe('grpc', () => {
       stubAuth.getClient.resolves(dummyAuth);
       stubAuth.getUniverseDomain.resolves('googleapis.com');
       stubGrpc.credentials.createSsl.returns(dummySslCreds);
-      stubGrpc.credentials.createFromGoogleCredential.returns(dummyGrpcAuth);
+      stubGrpc.credentials.createFromGoogleCredential
+        .withArgs(dummyAuth)
+        .returns(dummyGrpcAuth);
       stubGrpc.credentials.combineChannelCredentials
         .withArgs(dummySslCreds, dummyGrpcAuth)
         .returns(dummyChannelCreds);
@@ -187,26 +189,22 @@ describe('grpc', () => {
         port: 443,
         universeDomain: 'example.com',
       };
-      assert
-        .rejects(
-          // @ts-ignore
-          grpcClient.createStub(DummyStub, opts),
-          /configured universe domain/,
-        )
-        .catch(console.error);
+      await assert.rejects(
+        // @ts-ignore
+        grpcClient.createStub(DummyStub, opts),
+        /configured universe domain/,
+      );
     });
 
     it('validates universe domain if unset', async () => {
       const opts = {servicePath: 'foo.example.com', port: 443};
       stubAuth.getUniverseDomain.reset();
       stubAuth.getUniverseDomain.resolves('example.com');
-      assert
-        .rejects(
-          // @ts-ignore
-          grpcClient.createStub(DummyStub, opts),
-          /configured universe domain/,
-        )
-        .catch(console.error);
+      await assert.rejects(
+        // @ts-ignore
+        grpcClient.createStub(DummyStub, opts),
+        /configured universe domain/,
+      );
     });
 
     it('supports optional parameters', () => {
@@ -683,17 +681,11 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
+      sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const {GrpcClient} = await proxyquire('../../src/grpc.js', {
-        os: {
-          homedir: () => {
-            return tmpFolder;
-          },
-        },
-      });
-      const clientMock = new GrpcClient();
-      const [cert, key] = await clientMock._detectClientCertificate();
+      const client = gaxGrpc();
+      const [cert, key] = await client._detectClientCertificate();
       assert.ok(cert.includes('qwerty'));
       assert.ok(key.includes('dvorak'));
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
@@ -706,24 +698,15 @@ dvorak
       mkdirSync(tmpdir, {recursive: true});
       const metadataFile = path.join(tmpdir, 'context_aware_metadata.json');
       writeFileSync(metadataFile, JSON.stringify(metadataFileContents), 'utf8');
-
-      process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const {GrpcClient} = await proxyquire('../../src/grpc.js', {
-        os: {
-          homedir: () => {
-            return tmpFolder;
-          },
-        },
-      });
+      sandbox.stub(os, 'homedir').returns(tmpFolder);
       // Create a client and test the certificate detection flow:
       process.env.GOOGLE_API_USE_CLIENT_CERTIFICATE = 'true';
-      const clientMock = new GrpcClient();
-      assert
-        .rejects(
-          clientMock.createStub(DummyStub, {universeDomain: 'example.com'}),
-          /configured universe domain/,
-        )
-        .catch(console.error);
+      const client = gaxGrpc();
+      await assert.rejects(
+        // @ts-ignore
+        client.createStub(DummyStub, {universeDomain: 'example.com'}),
+        /configured universe domain/,
+      );
       await fsp.rm(tmpFolder, {recursive: true, force: true}); // Cleanup.
     });
   });
