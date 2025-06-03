@@ -49,7 +49,7 @@ describe('REGAPIC', () => {
     libraryService: protobuf.Service,
     stubOptions: {};
 
-  before(() => {
+  beforeEach(() => {
     stubOptions = {
       servicePath: 'foo.example.com',
       port: 443,
@@ -263,7 +263,7 @@ describe('REGAPIC', () => {
       const spy = sinon.spy(transcoding, 'transcode');
 
       setMockFallbackResponse(
-        gaxGrpc,
+        gaxGrpcNumericEnums,
         new Response(Buffer.from(JSON.stringify(responseObject))),
       );
 
@@ -299,7 +299,7 @@ describe('REGAPIC', () => {
       const spy = sinon.spy(transcoding, 'transcode');
 
       setMockFallbackResponse(
-        gaxGrpc,
+        gaxGrpcNumericEnums,
         new Response(Buffer.from(JSON.stringify(shelf))),
       );
 
@@ -334,7 +334,7 @@ describe('REGAPIC', () => {
       const spy = sinon.spy(transcoding, 'transcode');
 
       setMockFallbackResponse(
-        gaxGrpc,
+        gaxGrpcNumericEnums,
         new Response(Buffer.from(JSON.stringify(shelf))),
       );
 
@@ -362,7 +362,7 @@ describe('REGAPIC', () => {
       const spy = sinon.spy(transcoding, 'transcode');
 
       setMockFallbackResponse(
-        gaxGrpc,
+        gaxGrpcNumericEnums,
         new Response(Buffer.from(JSON.stringify(shelf))),
       );
 
@@ -536,7 +536,7 @@ describe('REGAPIC', () => {
       const spy = sinon.spy(transcoding, 'transcode');
 
       setMockFallbackResponse(
-        gaxGrpc,
+        gaxGrpcMinifyJson,
         new Response(Buffer.from(JSON.stringify(responseObject))),
       );
 
