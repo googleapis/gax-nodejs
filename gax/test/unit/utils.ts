@@ -118,7 +118,7 @@ export function toProtobufJSON(protobufType: protobuf.Type, json: {}) {
 /**
  * Sets a response for a Fallback request
  *
- * @param gaxGrpc The GRPC Client to use
+ * @param gaxGrpc The gRPC Client to use
  * @param response The Response object to use
  * @returns the auth client
  */

@@ -22,7 +22,8 @@ import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {IamClient} from '../../src/iamService';
 import * as protobuf from 'protobufjs';
-import {GrpcClient} from '../../src/grpc';
+import {GrpcClient as OriginalGrpcClient} from '../../src/grpc';
+import {GoogleAuth, PassThroughClient} from 'google-auth-library';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (
@@ -46,6 +47,13 @@ function stubSimpleCallWithCallback<ResponseType>(
   return error
     ? sinon.stub().callsArgWith(2, error)
     : sinon.stub().callsArgWith(2, null, response);
+}
+
+/**
+ * The tests in this file do not require end-to-end auth functionality (including ADC)
+ */
+class GrpcClient extends OriginalGrpcClient {
+  auth = new GoogleAuth({authClient: new PassThroughClient()});
 }
 
 describe('IAM service', () => {
