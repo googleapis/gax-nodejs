@@ -16,7 +16,7 @@
 
 import * as assert from 'assert';
 import {describe, it, before} from 'mocha';
-import {GoogleAuth} from 'google-gax';
+import {GoogleAuth, googleAuthLibrary} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 import 'core-js/stable';
 
@@ -27,25 +27,11 @@ function sleep(timeout: number) {
 }
 
 describe('Run tests against gRPC server', () => {
-  const authStub = {
-    getRequestHeaders: async () => {
-      return new Headers({
-        Authorization: 'Bearer zzzz',
-      });
-    },
-    getClient: async () => {
-      return {
-        getRequestHeaders: async () => {
-          return new Headers({
-            Authorization: 'Bearer zzzz',
-          });
-        },
-      };
-    },
-  };
-
+  const auth = new GoogleAuth({
+    authClient: new googleAuthLibrary.PassThroughClient(),
+  });
   const opts = {
-    auth: authStub as unknown as GoogleAuth,
+    auth,
     protocol: 'http',
     port: 7469,
   };
