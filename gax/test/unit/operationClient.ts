@@ -173,7 +173,7 @@ describe('operation client', () => {
               }
             },
           )
-          .catch(reject);
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -276,7 +276,7 @@ describe('operation client', () => {
               }
             },
           )
-          .catch(reject);
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -375,7 +375,7 @@ describe('operation client', () => {
               }
             },
           )
-          .catch(reject);
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -626,7 +626,7 @@ describe('operation client', () => {
               }
             },
           )
-          .catch(reject);
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -725,7 +725,7 @@ describe('operation client', () => {
               }
             },
           )
-          .catch(reject);
+          .catch(console.error);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);

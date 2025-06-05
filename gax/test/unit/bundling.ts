@@ -869,27 +869,24 @@ describe('bundleable', () => {
     descriptor,
   };
 
-  it('bundles requests', done => {
+  it('bundles requests', async () => {
     const spy = sinon.spy(func);
     const callback = sinon.spy(obj => {
       assert(Array.isArray(obj));
       assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
       if (callback.callCount === 2) {
         assert.strictEqual(spy.callCount, 1);
-        done();
       }
     });
     const apiCall = createApiCall(spy, settings);
-    void apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined, (err, obj) => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback([obj]);
       }
     });
-    apiCall({field1: [1, 2, 3], field2: 'id'}, undefined)
-      .then(callback)
-      .catch(done);
+    await apiCall({field1: [1, 2, 3], field2: 'id'}, undefined).then(callback);
   });
 
   it('does not fail if bundle field is not set', done => {
@@ -978,7 +975,7 @@ describe('bundleable', () => {
     p.cancel();
   });
 
-  it('properly processes camel case fields', done => {
+  it('properly processes camel case fields', async () => {
     const descriptor = new BundleDescriptor(
       'data',
       ['log_name'],
@@ -993,34 +990,33 @@ describe('bundleable', () => {
     const callback = sinon.spy(() => {
       if (callback.callCount === 4) {
         assert.strictEqual(spy.callCount, 2); // we expect two requests, each has two items
-        done();
       }
     });
     const apiCall = createApiCall(spy, settings);
-    void apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
+    await apiCall({data: ['data1'], logName: 'log1'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
     });
-    void apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
+    await apiCall({data: ['data1'], logName: 'log2'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
     });
-    void apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
+    await apiCall({data: ['data2'], logName: 'log1'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
     });
-    void apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
+    await apiCall({data: ['data2'], logName: 'log2'}, undefined, err => {
       if (err) {
-        done(err);
+        throw err;
       } else {
         callback();
       }
