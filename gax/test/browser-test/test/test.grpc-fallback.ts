@@ -274,10 +274,14 @@ describe('grpc-fallback', () => {
     gaxGrpc
       .createStub(echoService, stubOptions)
       .then(echoStub => {
-        echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-          assert(err instanceof Error);
-          done();
-        });
+        try {
+          echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+            assert(err instanceof Error);
+            done();
+          });
+        } catch (e) {
+          done(e);
+        }
       })
       .catch(done);
   });

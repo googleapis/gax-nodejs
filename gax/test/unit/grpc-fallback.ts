@@ -334,14 +334,18 @@ describe('grpc-fallback', () => {
 
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof GoogleError);
-        assert.strictEqual(err.message, expectedMessage);
-        assert.strictEqual(err.code, expectedError.code);
-        assert.strictEqual(
-          JSON.stringify(err.statusDetails),
-          JSON.stringify(expectedError.details),
-        );
-        done();
+        try {
+          assert(err instanceof GoogleError);
+          assert.strictEqual(err.message, expectedMessage);
+          assert.strictEqual(err.code, expectedError.code);
+          assert.strictEqual(
+            JSON.stringify(err.statusDetails),
+            JSON.stringify(expectedError.details),
+          );
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
@@ -463,12 +467,7 @@ describe('grpc-fallback', () => {
   });
 
   it('should have close method', done => {
-    setMockFallbackResponse(
-      gaxGrpc,
-      new Response(JSON.stringify({}), {
-        status: 403,
-      }),
-    );
+    setMockFallbackResponse(gaxGrpc, new Response(JSON.stringify({})));
 
     void gaxGrpc.createStub(echoService, stubOptions).then(stub => {
       stub.close({}, {}, {}, () => {});
