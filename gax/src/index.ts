@@ -90,6 +90,8 @@ export * as protobufMinimal from 'protobufjs/minimal';
 import * as fallback from './fallback';
 export {fallback};
 
+export const protobufFromJSON = fallback.protobufFromJSON;
+
 export {
   APICallback,
   GRPCCallResult,
@@ -111,7 +113,7 @@ export {
   PaginationResponse,
 } from './clientInterface';
 
-export {makeUUID} from './util';
+export {makeUUID, decodeAnyProtosInArray, decodeProtobufAny} from './util';
 
 export {ServiceError, ChannelCredentials} from '@grpc/grpc-js';
 export {warn} from './warnings';

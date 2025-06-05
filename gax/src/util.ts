@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+const PROTO_TYPE_PREFIX = 'type.googleapis.com/';
+const NUM_OF_PARTS_IN_PROTO_TYPE_NAME = 2;
+
 const randomUUID = () =>
   globalThis.crypto?.randomUUID() || require('crypto').randomUUID();
 
@@ -113,3 +117,47 @@ export function toLowerCamelCase(str: string) {
 export function makeUUID() {
   return randomUUID();
 }
+
+// Get proto type name removing the prefix. For example full type name: type.googleapis.com/google.rpc.Help, the function returns google.rpc.Help.
+export const getProtoNameFromFullName = (fullTypeName: string): string => {
+  const parts = fullTypeName.split(PROTO_TYPE_PREFIX);
+  if (parts.length !== NUM_OF_PARTS_IN_PROTO_TYPE_NAME) {
+    throw Error("Can't get proto name");
+  }
+  return parts[1];
+};
+
+// Given a proto Any and a set of protos, decode using the set of protos.
+export const decodeProtobufAny = (
+  anyValue: any,
+  protobuf: protobuf.Type,
+): protobuf.Message<{}> => {
+  if (anyValue.type_url === '') {
+    throw new Error('Any type_url is not set');
+  }
+  const typeName: string = getProtoNameFromFullName(anyValue.type_url);
+  const type: protobuf.Type = protobuf.lookupType(typeName);
+  return type.decode(anyValue.value);
+};
+
+// Given list of protos, if any of them are Any proto try to decode them with protos in given protobuf.
+export const decodeAnyProtosInArray = (
+  protoList: Array<{}>,
+  protobuf: protobuf.Type,
+): Array<{}> => {
+  const protoListDecoded: Array<{}> = [];
+  for (const proto of protoList) {
+    if (proto.constructor.name === 'Any') {
+      try {
+        // Proto is Any we try to decode with protos in protobuf.
+        const decodedAnyProto = decodeProtobufAny(proto, protobuf);
+        protoListDecoded.push(decodedAnyProto);
+      } catch (e: any) {
+        // Skip we can't process it.
+      }
+      continue;
+    }
+    protoListDecoded.push(proto);
+  }
+  return protoListDecoded;
+};
