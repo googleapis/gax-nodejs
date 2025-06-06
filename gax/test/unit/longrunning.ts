@@ -529,7 +529,7 @@ describe('longrunning', () => {
                 assert.strictEqual(client.cancelGetOperationSpy.called, true);
                 done();
               })
-              .catch(console.error);
+              .catch(done);
             return p;
           })
           .then(() => {
