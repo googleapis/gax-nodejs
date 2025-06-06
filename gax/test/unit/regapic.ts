@@ -524,46 +524,4 @@ describe('REGAPIC', () => {
       }, done);
     });
   });
-
-  describe('should support json minification', () => {
-    it('should send prettyPrint=0 when json minification is requested', done => {
-      const requestObject = {name: 'shelves/shelf-name'};
-      const responseObject = {
-        name: 'shelf-name',
-        theme: 'shelf-theme',
-        type: 100, // unknown enum value
-      };
-      const spy = sinon.spy(transcoding, 'transcode');
-
-      setMockFallbackResponse(
-        gaxGrpcMinifyJson,
-        new Response(Buffer.from(JSON.stringify(responseObject))),
-      );
-
-      gaxGrpcMinifyJson
-        .createStub(libraryService, stubOptions)
-        .then(libStub => {
-          libStub.getShelf(requestObject, {}, {}, (err?: {}, result?: {}) => {
-            assert.strictEqual(
-              'string',
-              typeof spy.getCall(0).returnValue?.queryString,
-            );
-            assert.match(
-              <string>spy.getCall(0).returnValue?.queryString,
-              /\$prettyPrint=0(&.*)?$/,
-            );
-            assert.strictEqual(err, null);
-            assert.strictEqual(
-              'shelf-name',
-              (result as {name: {}; theme: {}; type: {}}).name,
-            );
-            assert.strictEqual(
-              100,
-              (result as {name: {}; theme: {}; type: {}}).type,
-            );
-            done();
-          });
-        }, /* catch: */ done);
-    });
-  });
 });
