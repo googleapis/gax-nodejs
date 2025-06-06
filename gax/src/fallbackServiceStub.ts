@@ -142,7 +142,7 @@ export function generateServiceStub(
         headers.set(key, options[key][0]);
       }
       const streamArrayParser = new StreamArrayParser(rpc);
-      let response204Ok = false;       
+      let response204Ok = false;
       const fetchRequest: gaxios.GaxiosOptions = {
         headers: headers,
         body: fetchParameters.body,
@@ -165,12 +165,12 @@ export function generateServiceStub(
           // There is a legacy Apiary configuration that some services
           // use which allows 204 empty responses on success instead of
           // a 200 OK. This most commonly is seen in delete RPCs,
-          // but does occasionally show up in other endpoints. We 
-          // need to allow this behavior so that these clients do not throw an error 
+          // but does occasionally show up in other endpoints. We
+          // need to allow this behavior so that these clients do not throw an error
           // when the call actually succeeded
           // See b/411675301 for more context
-          if(response.status === 204 && response.ok){
-            response204Ok = true; 
+          if (response.status === 204 && response.ok) {
+            response204Ok = true;
           }
           if (response.ok && rpc.responseStream) {
             pipeline(
@@ -207,23 +207,28 @@ export function generateServiceStub(
                     }
                     streamArrayParser.emit('error', err);
                   } else if (callback) {
-                    // This supports a legacy Apiary behavior that allows 
+                    // This supports a legacy Apiary behavior that allows
                     // empty 204 responses. If we do not intercept this potential error
                     // from decodeResponse in fallbackRest
                     // it will cause libraries to erroneously throw an
                     // error when the call succeeded. This error cannot be checked in
                     // fallbackRest.ts because decodeResponse does not have the necessary
                     // context about the response to validate the status code + ok-ness
-                    if(!response204Ok){
+                    if (!response204Ok) {
                       callback(err);
-                      return  // Explicitly return otherwise TS will ha
-                    }
-                    else{
+                      return; // Explicitly return otherwise TS will ha
+                    } else {
                       // format the empty response the same way we format non-empty responses in fallbackRest.ts
-                      const emptyMessage = serializer.fromProto3JSON(rpc.resolvedResponseType!, JSON.parse('{}'))
-                      const resp = rpc.resolvedResponseType!.toObject(emptyMessage!, defaultToObjectOptions)
-                      callback(null, resp)
-                      return // Explicitly return otherwise TS will have issues
+                      const emptyMessage = serializer.fromProto3JSON(
+                        rpc.resolvedResponseType!,
+                        JSON.parse('{}'),
+                      );
+                      const resp = rpc.resolvedResponseType!.toObject(
+                        emptyMessage!,
+                        defaultToObjectOptions,
+                      );
+                      callback(null, resp);
+                      return; // Explicitly return otherwise TS will have issues
                     }
                   } else {
                     // This supports a legacy Apiary behavior that allows
@@ -233,13 +238,19 @@ export function generateServiceStub(
                     // error when the call succeeded. This error cannot be checked in
                     // fallbackRest.ts because decodeResponse does not have the necessary
                     // context about the response to validate the status code + ok-ness
-                    if(!response204Ok){
-                      throw err
+                    if (!response204Ok) {
+                      throw err;
                     }
                     // format the empty response the same way we format non-empty responses in fallbackRest.ts
-                    const emptyMessage = serializer.fromProto3JSON(rpc.resolvedResponseType!, JSON.parse('{}'))
-                    const resp = rpc.resolvedResponseType!.toObject(emptyMessage!, defaultToObjectOptions)
-                    return resp
+                    const emptyMessage = serializer.fromProto3JSON(
+                      rpc.resolvedResponseType!,
+                      JSON.parse('{}'),
+                    );
+                    const resp = rpc.resolvedResponseType!.toObject(
+                      emptyMessage!,
+                      defaultToObjectOptions,
+                    );
+                    return resp;
                   }
                 }
                 // If we reach here, it's a cancelled AbortError

@@ -349,6 +349,30 @@ describe('grpc-fallback', () => {
       });
     });
   });
+
+  it('should handle a null response from the API with a 204 ', done => {
+    const requestObject = {content: 'test-content'};
+
+    const emptyResponse = {
+      content: '',
+    };
+    setMockFallbackResponse(gaxGrpc, new Response(null, {status: 204}));
+
+    void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
+      echoStub.echo(requestObject, {}, {}, (err?: Error, resp?: {}) => {
+        try {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            JSON.stringify(resp),
+            JSON.stringify(emptyResponse),
+          );
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
   it('should handle a null response from the API ', done => {
     const requestObject = {content: 'test-content'};
     const expectedMessage = 'Received null response from RPC Echo';
