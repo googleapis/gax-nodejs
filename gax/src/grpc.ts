@@ -120,6 +120,12 @@ export class GrpcClient {
   fallback: boolean | 'rest' | 'proto';
   private static protoCache = new Map<string, grpc.GrpcObject>();
   httpRules?: Array<google.api.IHttpRule>;
+  /**
+   * Base directory for resolving client certificates.
+   *
+   * @internal
+   */
+  baseDirectory?: string;
 
   /**
    * Key for proto cache map. We are doing our best to make sure we respect
@@ -499,7 +505,7 @@ export class GrpcClient {
       // If context aware metadata exists, run the cert provider command,
       // parse the output to extract cert and key, and use this cert/key.
       const metadataPath = join(
-        os.homedir(),
+        this.baseDirectory || os.homedir(),
         '.secureConnect',
         'context_aware_metadata.json',
       );

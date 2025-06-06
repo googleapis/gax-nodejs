@@ -19,19 +19,54 @@
 import * as assert from 'assert';
 import {after, afterEach, before, beforeEach, describe, it} from 'mocha';
 import * as sinon from 'sinon';
-import {protobuf, GoogleAuth, fallback} from 'google-gax';
+import {
+  protobuf,
+  GoogleAuth,
+  fallback,
+  googleAuthLibrary,
+  GrpcClientOptions,
+} from 'google-gax';
 import {EchoClient} from 'showcase-echo-client';
 import 'core-js/stable';
 
 import echoProtoJson = require('showcase-echo-client/build/protos/protos.json');
-import {PassThroughClient} from 'google-auth-library';
 
-const authClient = new PassThroughClient();
-const auth = new GoogleAuth({authClient});
-
-const opts = {
-  auth,
+let authClient = new googleAuthLibrary.PassThroughClient();
+let opts: GrpcClientOptions = {
+  auth: new GoogleAuth({authClient}),
 };
+
+beforeEach(() => {
+  authClient = new googleAuthLibrary.PassThroughClient();
+  opts = {
+    auth: new GoogleAuth({authClient}),
+  };
+});
+
+/**
+ * Sets a response for a Fallback request
+ *
+ * @param gaxGrpc The gRPC Client to use
+ * @param response The Response object to use
+ * @returns the auth client
+ */
+function setMockFallbackResponse(
+  authClient: googleAuthLibrary.AuthClient,
+  response: Response,
+  validation?: (
+    config: googleAuthLibrary.gaxios.GaxiosOptionsPrepared,
+  ) => {} | Promise<{}>,
+) {
+  async function adapter<T>(
+    config: googleAuthLibrary.gaxios.GaxiosOptionsPrepared,
+  ) {
+    await validation?.(config);
+
+    return Object.assign(response, {config, data: response.body as T});
+  }
+
+  authClient.transporter.defaults.adapter = adapter;
+}
 
 describe('loadProto', () => {
   it('should create a root object', () => {
@@ -120,10 +155,8 @@ describe('grpc-fallback', () => {
   // eslint-disable-next-line no-undef
   const savedAbortController = window.AbortController;
 
-  const authClient = new PassThroughClient();
-  const auth = new GoogleAuth({authClient});
-  const opts = {
-    auth,
+  let opts = {
+    auth: new GoogleAuth({authClient}),
     protocol: 'http',
     port: 1337,
   };
@@ -160,6 +193,12 @@ describe('grpc-fallback', () => {
 
   beforeEach(() => {
     createdAbortControllers.splice(0);
+
+    opts = {
+      auth: new GoogleAuth({authClient}),
+      protocol: 'http',
+      port: 1337,
+    };
   });
 
   afterEach(() => {
@@ -176,16 +215,9 @@ describe('grpc-fallback', () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     const response = requestObject; // response == request for Echo
-    const fakeFetch = sinon.fake.resolves({
-      ok: true,
-      arrayBuffer: () => {
-        return Promise.resolve(
-          new TextEncoder().encode(JSON.stringify(response)),
-        );
-      },
-    });
-    // eslint-disable-next-line no-undef
-    sinon.replace(window, 'fetch', fakeFetch);
+
+    setMockFallbackResponse(authClient, new Response(JSON.stringify(response)));
+
     const [result] = await client.echo(requestObject);
     assert.strictEqual(requestObject.content, result.content);
   });
@@ -214,26 +246,17 @@ describe('grpc-fallback', () => {
     options.otherArgs.headers = {};
     options.otherArgs.headers['x-test-header'] = 'value';
     const response = requestObject;
-    // eslint-disable-next-line no-undef
-    const savedFetch = window.fetch;
-    // @ts-ignore
-    // eslint-disable-next-line no-undef
-    window.fetch = (url, options) => {
-      // @ts-ignore
-      assert.strictEqual(options.headers.get('x-test-header'), 'value');
-      return Promise.resolve({
-        ok: true,
-        arrayBuffer: () => {
-          return Promise.resolve(
-            new TextEncoder().encode(JSON.stringify(response)),
-          );
-        },
-      });
-    };
+
+    setMockFallbackResponse(
+      authClient,
+      new Response(JSON.stringify(response)),
+      async config => {
+        assert.strictEqual(config.headers.get('x-test-header'), 'value');
+      },
+    );
+
     const [result] = await client.echo(requestObject, options);
     assert.strictEqual(requestObject.content, result.content);
-    // eslint-disable-next-line no-undef
-    window.fetch = savedFetch;
   });
 
   it('should handle an error', done => {
@@ -243,22 +266,23 @@ describe('grpc-fallback', () => {
       statusDetails: [],
     });
 
-    const fakeFetch = sinon.fake.resolves({
-      ok: false,
-      arrayBuffer: () => {
-        return Promise.resolve(
-          new TextEncoder().encode(JSON.stringify(expectedError)),
-        );
-      },
-    });
-    // eslint-disable-next-line no-undef
-    sinon.replace(window, 'fetch', fakeFetch);
+    setMockFallbackResponse(
+      authClient,
+      new Response(JSON.stringify(expectedError), {status: 400}),
+    );
 
-    gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
-      echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof Error);
-        done();
-      });
-    });
+    gaxGrpc
+      .createStub(echoService, stubOptions)
+      .then(echoStub => {
+        try {
+          echoStub.echo(requestObject, {}, {}, (err?: Error) => {
+            assert(err instanceof Error);
+            done();
+          });
+        } catch (e) {
+          done(e);
+        }
+      })
+      .catch(done);
   });
 });
