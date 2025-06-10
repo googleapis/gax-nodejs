@@ -19,7 +19,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 
 import assert from 'assert';
-import * as os from 'os';
 import * as path from 'path';
 import proxyquire from 'proxyquire';
 import * as sinon from 'sinon';
