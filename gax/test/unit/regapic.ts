@@ -15,7 +15,7 @@
  */
 
 import assert from 'assert';
-import {describe, it, afterEach, before} from 'mocha';
+import {describe, it, afterEach} from 'mocha';
 import * as protobuf from 'protobufjs';
 import * as path from 'path';
 import * as sinon from 'sinon';

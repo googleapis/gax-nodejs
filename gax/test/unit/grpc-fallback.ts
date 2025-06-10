@@ -350,7 +350,7 @@ describe('grpc-fallback', () => {
     });
   });
 
-  it('should handle a null response from the API with a 204 ', done => {
+  it('service stub should handle a null response from the API with a 204 ', done => {
     const requestObject = {content: 'test-content'};
 
     const emptyResponse = {
