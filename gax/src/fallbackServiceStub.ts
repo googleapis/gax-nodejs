@@ -241,9 +241,6 @@ export function generateServiceStub(
                     }
                   }
                 }
-                // If we reach here, it's a cancelled AbortError
-                // return to make sure TS doesn't get mad
-                return;
               });
           }
         })
