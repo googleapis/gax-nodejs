@@ -14,28 +14,18 @@
  * limitations under the License.
  */
 
-/* global window */
-/* global AbortController */
-
-import type {
-  Response as NodeFetchResponse,
-  RequestInit,
-} from 'node-fetch' with {'resolution-mode': 'import'};
+import type {Response as NodeFetchResponse} from 'node-fetch' with {'resolution-mode': 'import'};
 import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {AuthClient, GoogleAuth, gaxios} from 'google-auth-library';
+import * as serializer from 'proto3-json-serializer';
 
-import type nodeFetch from 'node-fetch' with {'resolution-mode': 'import'};
-import {hasWindowFetch, hasAbortController, isNodeJS} from './featureDetection';
+import {hasAbortController, isNodeJS} from './featureDetection';
 import {StreamArrayParser} from './streamArrayParser';
+import {defaultToObjectOptions} from './fallback';
 import {pipeline, PipelineSource} from 'stream';
 import type {Agent as HttpAgent} from 'http';
 import type {Agent as HttpsAgent} from 'https';
-const fetchNode = (...args: Parameters<typeof nodeFetch>) =>
-  import('node-fetch').then(({default: fetch}) => fetch(...args));
-interface NodeFetchType {
-  (url: RequestInfo, init?: RequestInit): Promise<Response>;
-}
 
 // Node.js before v19 does not enable keepalive by default.
 // We'll try to enable it very carefully to make sure we don't break possible non-Node use cases.
@@ -78,6 +68,21 @@ export interface FetchParameters {
   url: string;
 }
 
+// helper function used to properly format empty responses
+// when the response code is 204
+function _formatEmptyResponse(rpc: protobuf.Method) {
+  // format the empty response the same way we format non-empty responses in fallbackRest.ts
+  const emptyMessage = serializer.fromProto3JSON(
+    rpc.resolvedResponseType!,
+    JSON.parse('{}'),
+  );
+  const resp = rpc.resolvedResponseType!.toObject(
+    emptyMessage!,
+    defaultToObjectOptions,
+  );
+  return resp;
+}
+
 export function generateServiceStub(
   rpcs: {[name: string]: protobuf.Method},
   protocol: string,
@@ -101,10 +106,6 @@ export function generateServiceStub(
   numericEnums: boolean,
   minifyJson: boolean,
 ) {
-  const fetch = hasWindowFetch()
-    ? window.fetch
-    : (fetchNode as unknown as NodeFetchType);
-
   const serviceStub: FallbackServiceStub = {
     // close method should close all cancel controllers. If this feature request in the future, we can have a cancelControllerFactory that tracks created cancel controllers, and abort them all in close method.
     close: () => {
@@ -156,28 +157,36 @@ export function generateServiceStub(
         headers.set(key, options[key][0]);
       }
       const streamArrayParser = new StreamArrayParser(rpc);
+      let response204Ok = false;
+      const fetchRequest: gaxios.GaxiosOptions = {
+        headers: headers,
+        body: fetchParameters.body,
+        method: fetchParameters.method,
+        signal: cancelSignal,
+        responseType: 'stream', // ensure gaxios returns the data directly so that it handle data/streams itself
+        agent: agentOption || undefined,
+      };
+
+      if (
+        fetchParameters.method === 'GET' ||
+        fetchParameters.method === 'DELETE'
+      ) {
+        delete fetchRequest['body'];
+      }
 
       auth
-        .getRequestHeaders()
-        .then(authHeader => {
-          const fetchRequest: RequestInit = {
-            headers: gaxios.Gaxios.mergeHeaders(authHeader, headers) as {},
-            body: fetchParameters.body as string | Buffer | undefined,
-            method: fetchParameters.method,
-            signal: cancelSignal,
-          };
-          if (agentOption) {
-            fetchRequest.agent = agentOption;
-          }
-          if (
-            fetchParameters.method === 'GET' ||
-            fetchParameters.method === 'DELETE'
-          ) {
-            delete fetchRequest['body'];
-          }
-          return fetch(url, fetchRequest as {});
-        })
+        .fetch(url, fetchRequest)
         .then((response: Response | NodeFetchResponse) => {
+          // There is a legacy Apiary configuration that some services
+          // use which allows 204 empty responses on success instead of
+          // a 200 OK. This most commonly is seen in delete RPCs,
+          // but does occasionally show up in other endpoints. We
+          // need to allow this behavior so that these clients do not throw an error
+          // when the call actually succeeded
+          // See b/411675301 for more context
+          if (response.status === 204 && response.ok) {
+            response204Ok = true;
+          }
           if (response.ok && rpc.responseStream) {
             pipeline(
               response.body as PipelineSource<unknown>,
@@ -212,10 +221,24 @@ export function generateServiceStub(
                       callback(err);
                     }
                     streamArrayParser.emit('error', err);
-                  } else if (callback) {
-                    callback(err);
                   } else {
-                    throw err;
+                    // This supports a legacy Apiary behavior that allows
+                    // empty 204 responses. If we do not intercept this potential error
+                    // from decodeResponse in fallbackRest
+                    // it will cause libraries to erroneously throw an
+                    // error when the call succeeded. This error cannot be checked in
+                    // fallbackRest.ts because decodeResponse does not have the necessary
+                    // context about the response to validate the status code + ok-ness
+                    if (!response204Ok) {
+                      // by this point, we're guaranteed to have added a callback
+                      // it is added in the library before calling this.innerApiCalls
+                      callback!(err);
+                    } else {
+                      const resp = _formatEmptyResponse(rpc);
+                      // by this point, we're guaranteed to have added a callback
+                      // it is added in the library before calling this.innerApiCalls
+                      callback!(null, resp);
+                    }
                   }
                 }
               });
