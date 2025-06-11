@@ -47,9 +47,14 @@ describe('createApiCall', () => {
     }
     const apiCall = createApiCall(func);
     void apiCall(42, undefined, (err, resp) => {
-      assert.strictEqual(resp, 42);
-      assert.ok(deadlineArg);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        assert.strictEqual(resp, 42);
+        assert.ok(deadlineArg);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -67,9 +72,14 @@ describe('createApiCall', () => {
       const now = new Date();
       const originalDeadline = now.getTime() + 100;
       const expectedDeadline = now.getTime() + 200;
-      assert((resp as unknown as number)! > originalDeadline);
-      assert((resp as unknown as number)! <= expectedDeadline);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        assert((resp as unknown as number)! > originalDeadline);
+        assert((resp as unknown as number)! <= expectedDeadline);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -98,12 +108,17 @@ describe('createApiCall', () => {
 
     const start = new Date().getTime();
     void apiCall({}, undefined, (err, resp) => {
-      // The verifying value is slightly bigger than the expected number
-      // 2000 / 30000, because sometimes runtime can consume some time before
-      // the call starts.
-      assert(Number(resp) - start > 2100);
-      assert(Number(resp) - start <= 30100);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        // The verifying value is slightly bigger than the expected number
+        // 2000 / 30000, because sometimes runtime can consume some time before
+        // the call starts.
+        assert(Number(resp) - start > 2100);
+        assert(Number(resp) - start <= 30100);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -132,12 +147,17 @@ describe('createApiCall', () => {
 
     const start = new Date().getTime();
     void apiCall({}, undefined, (err, resp) => {
-      // The verifying value is slightly bigger than the expected number
-      // 2000 / 30000, because sometimes runtime can consume some time before
-      // the call starts.
-      assert(Number(resp) - start > 2100);
-      assert(Number(resp) - start <= 30100);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        // The verifying value is slightly bigger than the expected number
+        // 2000 / 30000, because sometimes runtime can consume some time before
+        // the call starts.
+        assert(Number(resp) - start > 2100);
+        assert(Number(resp) - start <= 30100);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
   it('override just custom retry.retryCodes with retry codes', done => {
@@ -228,13 +248,18 @@ describe('createApiCall', () => {
       1000,
       null,
       1.5,
-      3000,
+      3000, // added 2 zeroes
       4500,
     );
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sinon.stub(retries, 'retryable').callsFake((func, retry): any => {
-      assert.strictEqual(retry.backoffSettings, overriBackoffSettings);
-      return func;
+      try {
+        assert.strictEqual(retry.backoffSettings, overriBackoffSettings);
+
+        return func;
+      } catch (err) {
+        done(err);
+      }
     });
 
     function func() {
@@ -448,10 +473,15 @@ describe('retryable', () => {
     }
     const apiCall = createApiCall(func, settings);
     void apiCall({}, undefined, (err, resp) => {
-      assert.strictEqual(resp, 1729);
-      assert.strictEqual(toAttempt, 0);
-      assert(deadlineArg);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        assert.strictEqual(resp, 1729);
+        assert.strictEqual(toAttempt, 0);
+        assert(deadlineArg);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -521,20 +551,28 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
     void apiCall({}, undefined, err => {
-      assert.ok(err instanceof Error);
-      assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
-      assert.strictEqual(err!.note, undefined);
-      assert.strictEqual(spy.callCount, 1);
-      done();
+      try {
+        assert.ok(err instanceof Error);
+        assert.strictEqual(err!.code, FAKE_STATUS_CODE_1);
+        assert.strictEqual(err!.note, undefined);
+        assert.strictEqual(spy.callCount, 1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
   it('aborts retries', done => {
     const apiCall = createApiCall(fail, settings);
     void apiCall({}, undefined, err => {
-      assert(err instanceof GoogleError);
-      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-      done();
+      try {
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -570,14 +608,18 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
     void apiCall({}, undefined, err => {
-      assert.ok(err instanceof GoogleError);
-      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-      assert.strictEqual(spy.callCount, toAttempt);
-      assert.match(
-        err.message,
-        /Exceeded maximum number of retries retrying error Error before any response was received/,
-      );
-      done();
+      try {
+        assert.ok(err instanceof GoogleError);
+        assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+        assert.strictEqual(spy.callCount, toAttempt);
+        assert.match(
+          err.message,
+          /Exceeded maximum number of retries retrying error Error before any response was received/,
+        );
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -585,13 +627,17 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
     void apiCall({}, undefined, err => {
-      assert.ok(err instanceof GoogleError);
-      assert.match(
-        err.message,
-        /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error {2}before any response was received/,
-      );
-      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-      done();
+      try {
+        assert.ok(err instanceof GoogleError);
+        assert.match(
+          err.message,
+          /Total timeout of API TestApi exceeded 100 milliseconds retrying error Error {2}before any response was received/,
+        );
+        assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -599,10 +645,14 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, settings);
     void apiCall({}, undefined, err => {
-      assert.ok(err instanceof GoogleError);
-      assert.match(err.message, /Previous errors/);
-      assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
-      done();
+      try {
+        assert.ok(err instanceof GoogleError);
+        assert.match(err.message, /Previous errors/);
+        assert.strictEqual(err!.code, status.DEADLINE_EXCEEDED);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -627,10 +677,14 @@ describe('retryable', () => {
     const spy = sinon.spy(fail);
     const apiCall = createApiCall(spy, maxRetrySettings);
     void apiCall({}, undefined, err => {
-      assert(err instanceof GoogleError);
-      assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
-      assert.strictEqual(spy.callCount, 0);
-      done();
+      try {
+        assert(err instanceof GoogleError);
+        assert.strictEqual(err!.code, status.INVALID_ARGUMENT);
+        assert.strictEqual(spy.callCount, 0);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -643,11 +697,15 @@ describe('retryable', () => {
     const spy = sinon.spy(func);
     const apiCall = createApiCall(spy, settings);
     void apiCall({}, undefined, err => {
-      assert(err instanceof Error);
-      assert.strictEqual(err!.code, FAKE_STATUS_CODE_2);
-      assert(err!.note);
-      assert.strictEqual(spy.callCount, 1);
-      done();
+      try {
+        assert(err instanceof Error);
+        assert.strictEqual(err!.code, FAKE_STATUS_CODE_2);
+        assert(err!.note);
+        assert.strictEqual(spy.callCount, 1);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -657,9 +715,13 @@ describe('retryable', () => {
     }
     const apiCall = createApiCall(func, settings);
     void apiCall({}, undefined, (err, resp) => {
-      assert.strictEqual(err, null);
-      assert.strictEqual(resp, null);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        assert.strictEqual(resp, null);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -756,9 +818,13 @@ describe('retryable', () => {
       h2: 'val2',
     };
     void apiCall({}, {otherArgs: {headers}}).then(() => {
-      assert.strictEqual(gotHeaders.h1, 'val1');
-      assert.strictEqual(gotHeaders.h2, 'val2');
-      done();
+      try {
+        assert.strictEqual(gotHeaders.h1, 'val1');
+        assert.strictEqual(gotHeaders.h2, 'val2');
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 });
