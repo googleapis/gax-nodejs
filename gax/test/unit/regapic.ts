@@ -92,14 +92,14 @@ describe('REGAPIC', () => {
     );
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: {}, result?: {}) => {
-        try{
+        try {
           assert.strictEqual(err, null);
           assert.strictEqual(
             requestObject.content,
             (result as {content: string}).content,
           );
           done();
-        }catch(err){
+        } catch (err) {
           done(err);
         }
       });
@@ -119,7 +119,6 @@ describe('REGAPIC', () => {
       gaxGrpc,
       new Response(responseStream as unknown as BodyInit),
     );
-
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       const stream = echoStub.expand(
         requestObject,
@@ -133,10 +132,10 @@ describe('REGAPIC', () => {
       });
       stream.on('error', done);
       stream.on('end', () => {
-        try{
+        try {
           assert.deepStrictEqual(results, responseObject);
           done();
-        }catch(err){
+        } catch (err) {
           done(err);
         }
       });
@@ -154,10 +153,10 @@ describe('REGAPIC', () => {
     );
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: {}) => {
-        try{
+        try {
           assert.strictEqual((err as Error).message, 'Fetch error');
           done();
-        }catch(err){
+        } catch (err) {
           done(err);
         }
       });
@@ -176,13 +175,12 @@ describe('REGAPIC', () => {
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       const stream = echoStub.expand(requestObject) as StreamArrayParser;
       stream.on('error', err => {
-        try{
+        try {
           assert.strictEqual((err as Error).message, 'Fetch error');
           done();
-        }catch(err){
+        } catch (err) {
           done(err);
         }
-      
       });
     });
   });
