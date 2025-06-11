@@ -18,9 +18,10 @@ import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
 import {describe, it} from 'mocha';
 import {LocationsClient} from '../../src/locationService';
-import {GrpcClient} from '../../src/grpc';
+import {GrpcClient as OriginalGrpcClient} from '../../src/grpc';
 
 import * as protobuf from 'protobufjs';
+import {GoogleAuth, PassThroughClient} from 'google-auth-library';
 
 function generateSampleMessage<T extends object>(instance: T) {
   const filledObject = (
@@ -69,6 +70,13 @@ function stubAsyncIterationCall<ResponseType>(
   return sinon.stub().returns(asyncIterable);
 }
 
+/**
+ * The tests in this file do not require end-to-end auth functionality (including ADC)
+ */
+class GrpcClient extends OriginalGrpcClient {
+  auth = new GoogleAuth({authClient: new PassThroughClient()});
+}
+
 describe('LocationsClient', () => {
   describe('getLocation', () => {
     it('invokes getLocation without error', async () => {
@@ -77,7 +85,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.GetLocationRequest(),
       );
@@ -109,7 +117,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.GetLocationRequest(),
       );
@@ -142,7 +150,7 @@ describe('LocationsClient', () => {
               }
             },
           )
-          .catch(console.error);
+          .catch(reject);
       });
       const response = await promise;
       assert.deepStrictEqual(response, expectedResponse);
@@ -158,7 +166,7 @@ describe('LocationsClient', () => {
       const client = new LocationsClient(grpcClient, {
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.GetLocationRequest(),
       );
@@ -195,7 +203,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -229,7 +237,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -279,7 +287,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -314,7 +322,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
@@ -353,7 +361,7 @@ describe('LocationsClient', () => {
         credentials: {client_email: 'bogus', private_key: 'bogus'},
         projectId: 'bogus',
       });
-      client.initialize().catch(console.error);
+      await client.initialize();
       const request = generateSampleMessage(
         new protos.google.cloud.location.ListLocationsRequest(),
       );
