@@ -872,11 +872,15 @@ describe('bundleable', () => {
   it('bundles requests', done => {
     const spy = sinon.spy(func);
     const callback = sinon.spy(obj => {
-      assert(Array.isArray(obj));
-      assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
-      if (callback.callCount === 2) {
-        assert.strictEqual(spy.callCount, 1);
-        done();
+      try {
+        assert(Array.isArray(obj));
+        assert.deepStrictEqual(obj[0].field1, [1, 2, 3]);
+        if (callback.callCount === 2) {
+          assert.strictEqual(spy.callCount, 1);
+          done();
+        }
+      } catch (err) {
+        done(err);
       }
     });
     const apiCall = createApiCall(spy, settings);
@@ -991,9 +995,13 @@ describe('bundleable', () => {
     };
     const spy = sinon.spy(func);
     const callback = sinon.spy(() => {
-      if (callback.callCount === 4) {
-        assert.strictEqual(spy.callCount, 2); // we expect two requests, each has two items
-        done();
+      try {
+        if (callback.callCount === 4) {
+          assert.strictEqual(spy.callCount, 2); // we expect two requests, each has two items
+          done();
+        }
+      } catch (err) {
+        done(err);
       }
     });
     const apiCall = createApiCall(spy, settings);
