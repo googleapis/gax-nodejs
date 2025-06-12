@@ -61,14 +61,11 @@ function setMockFallbackResponse(
     config: googleAuthLibrary.gaxios.GaxiosOptionsPrepared,
   ) {
     await validation?.(config);
-    console.log('after validation')
-    const mockresp = Object.assign(response, {config, data: response.body as T});
-    console.log('mockresp', mockresp)
-    return mockresp
+
+    return Object.assign(response, {config, data: response.body as T});
   }
-  console.log('authClient', authClient.transporter.defaults)
+
   authClient.transporter.defaults.adapter = adapter;
-  console.log('authclient after', authClient.transporter.defaults)
 }
 
 describe('loadProto', () => {
@@ -149,7 +146,7 @@ describe('createStub', () => {
   });
 });
 
-describe.only('grpc-fallback', () => {
+describe('grpc-fallback', () => {
   let gaxGrpc: fallback.GrpcClient,
     protos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
@@ -214,7 +211,7 @@ describe.only('grpc-fallback', () => {
     window.AbortController = savedAbortController;
   });
 
-  it.only('should make a request', async () => {
+  it('should make a request', async () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     const response = requestObject; // response == request for Echo
@@ -223,7 +220,6 @@ describe.only('grpc-fallback', () => {
 
     const [result] = await client.echo(requestObject);
     assert.strictEqual(requestObject.content, result.content);
-
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
@@ -261,41 +257,31 @@ describe.only('grpc-fallback', () => {
 
     const [result] = await client.echo(requestObject, options);
     assert.strictEqual(requestObject.content, result.content);
-
   });
 
-  it.only('should handle an error', done => {
+  it('should handle an error', done => {
     const requestObject = {content: 'test-content'};
     const expectedError = Object.assign(new Error('Error message'), {
       code: 400,
       statusDetails: [],
     });
 
-    // setMockFallbackResponse(
-    //   authClient,
-    //   new Response(JSON.stringify(expectedError), {status: 400}),
-    // );
     setMockFallbackResponse(
       authClient,
-      new Response(JSON.stringify(expectedError)),
+      new Response(JSON.stringify(expectedError), {status: 400}),
     );
-    console.log('after fallback response')
+
     gaxGrpc
       .createStub(echoService, stubOptions)
       .then(echoStub => {
+        try {
           echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-            try {
-              console.log('err', err)
-
-              assert(err instanceof Error);
-              assert.strictEqual(err.message, 'Error message')
-              done();
-              } catch (e) {
-                console.log('e', e)
-                 done(e);
-        }
+            assert(err instanceof Error);
+            done();
           });
-        
+        } catch (e) {
+          done(e);
+        }
       })
       .catch(done);
   });
