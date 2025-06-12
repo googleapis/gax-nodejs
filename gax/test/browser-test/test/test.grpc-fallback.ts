@@ -62,11 +62,13 @@ function setMockFallbackResponse(
   ) {
     await validation?.(config);
     console.log('after validation')
-
-    return Object.assign(response, {config, data: response.body as T});
+    const mockresp = Object.assign(response, {config, data: response.body as T});
+    console.log('mockresp', mockresp)
+    return mockresp
   }
-
+  console.log('authClient', authClient.transporter.defaults)
   authClient.transporter.defaults.adapter = adapter;
+  console.log('authclient after', authClient.transporter.defaults)
 }
 
 describe('loadProto', () => {
@@ -212,7 +214,7 @@ describe.only('grpc-fallback', () => {
     window.AbortController = savedAbortController;
   });
 
-  it('should make a request', async () => {
+  it.only('should make a request', async () => {
     const client = new EchoClient(opts);
     const requestObject = {content: 'test-content'};
     const response = requestObject; // response == request for Echo
@@ -269,9 +271,13 @@ describe.only('grpc-fallback', () => {
       statusDetails: [],
     });
 
+    // setMockFallbackResponse(
+    //   authClient,
+    //   new Response(JSON.stringify(expectedError), {status: 400}),
+    // );
     setMockFallbackResponse(
       authClient,
-      new Response(JSON.stringify(expectedError), {status: 400}),
+      new Response(JSON.stringify(expectedError)),
     );
     console.log('after fallback response')
     gaxGrpc
