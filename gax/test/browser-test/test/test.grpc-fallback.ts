@@ -61,6 +61,7 @@ function setMockFallbackResponse(
     config: googleAuthLibrary.gaxios.GaxiosOptionsPrepared,
   ) {
     await validation?.(config);
+    console.log('after validation')
 
     return Object.assign(response, {config, data: response.body as T});
   }
@@ -146,7 +147,7 @@ describe('createStub', () => {
   });
 });
 
-describe('grpc-fallback', () => {
+describe.only('grpc-fallback', () => {
   let gaxGrpc: fallback.GrpcClient,
     protos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
@@ -220,6 +221,7 @@ describe('grpc-fallback', () => {
 
     const [result] = await client.echo(requestObject);
     assert.strictEqual(requestObject.content, result.content);
+
   });
 
   it('should be able to cancel an API call using AbortController', async () => {
@@ -257,9 +259,10 @@ describe('grpc-fallback', () => {
 
     const [result] = await client.echo(requestObject, options);
     assert.strictEqual(requestObject.content, result.content);
+
   });
 
-  it('should handle an error', done => {
+  it.only('should handle an error', done => {
     const requestObject = {content: 'test-content'};
     const expectedError = Object.assign(new Error('Error message'), {
       code: 400,
@@ -270,18 +273,23 @@ describe('grpc-fallback', () => {
       authClient,
       new Response(JSON.stringify(expectedError), {status: 400}),
     );
-
+    console.log('after fallback response')
     gaxGrpc
       .createStub(echoService, stubOptions)
       .then(echoStub => {
-        try {
           echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-            assert(err instanceof Error);
-            done();
-          });
-        } catch (e) {
-          done(e);
+            try {
+              console.log('err', err)
+
+              assert(err instanceof Error);
+              assert.strictEqual(err.message, 'Error message')
+              done();
+              } catch (e) {
+                console.log('e', e)
+                 done(e);
         }
+          });
+        
       })
       .catch(done);
   });
