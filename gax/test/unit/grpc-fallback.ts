@@ -283,12 +283,16 @@ describe('grpc-fallback', () => {
 
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error, result?: {}) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(
-          requestObject.content,
-          (result as {content: string}).content,
-        );
-        done();
+        try {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            requestObject.content,
+            (result as {content: string}).content,
+          );
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
@@ -381,9 +385,13 @@ describe('grpc-fallback', () => {
 
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof Error);
-        assert.strictEqual(err.message, expectedMessage);
-        done();
+        try {
+          assert(err instanceof Error);
+          assert.strictEqual(err.message, expectedMessage);
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
@@ -400,8 +408,12 @@ describe('grpc-fallback', () => {
 
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert.strictEqual(err?.message, 'fetch error');
-        done();
+        try {
+          assert.strictEqual(err?.message, 'fetch error');
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
@@ -454,20 +466,24 @@ describe('grpc-fallback', () => {
 
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: Error) => {
-        assert(err instanceof GoogleError);
-        assert.strictEqual(
-          JSON.stringify(err.statusDetails?.length),
-          JSON.stringify(serverError['error']['details'].length),
-        );
-        assert.strictEqual(err.code, 7);
-        assert.strictEqual(err.message, serverError['error']['message']);
-        assert.strictEqual(err.reason, errorInfo.reason);
-        assert.strictEqual(err.domain, errorInfo.domain);
-        assert.strictEqual(
-          JSON.stringify(err.errorInfoMetadata),
-          JSON.stringify(errorInfo.metadata),
-        );
-        done();
+        try {
+          assert(err instanceof GoogleError);
+          assert.strictEqual(
+            JSON.stringify(err.statusDetails?.length),
+            JSON.stringify(serverError['error']['details'].length),
+          );
+          assert.strictEqual(err.code, 7);
+          assert.strictEqual(err.message, serverError['error']['message']);
+          assert.strictEqual(err.reason, errorInfo.reason);
+          assert.strictEqual(err.domain, errorInfo.domain);
+          assert.strictEqual(
+            JSON.stringify(err.errorInfoMetadata),
+            JSON.stringify(errorInfo.metadata),
+          );
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });

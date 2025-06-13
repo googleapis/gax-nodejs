@@ -106,9 +106,13 @@ describe('paged iteration', () => {
       expected.push(i);
     }
     void apiCall({}, undefined, (err, results) => {
-      assert.strictEqual(err, null);
-      assert.deepStrictEqual(results, expected);
-      done();
+      try {
+        assert.strictEqual(err, null);
+        assert.deepStrictEqual(results, expected);
+        done();
+      } catch (err) {
+        done(err);
+      }
     });
   });
 
@@ -173,8 +177,12 @@ describe('paged iteration', () => {
           callback as unknown as APICallback,
         );
       } else {
-        assert.strictEqual(counter, pagesToStream + 1);
-        done();
+        try {
+          assert.strictEqual(counter, pagesToStream + 1);
+          done();
+        } catch (err) {
+          done(err);
+        }
       }
     }
     void apiCall({}, {autoPaginate: false}, callback as unknown as APICallback);
