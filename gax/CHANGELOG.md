@@ -5,6 +5,48 @@
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
 
+## [5.0.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.6.0...google-gax-v5.0.0) (2025-06-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* allow 204 responses in REST fallback mode ([#1736](https://github.com/googleapis/gax-nodejs/issues/1736))
+* correct wrong return type for listOperations in Operation Client ([#1729](https://github.com/googleapis/gax-nodejs/issues/1729))
+* Update `google-auth-library` to v10 ([#1702](https://github.com/googleapis/gax-nodejs/issues/1702))
+* migrate gax to Node 18 ([#1699](https://github.com/googleapis/gax-nodejs/issues/1699))
+* parse  from HTTP errors and prefer that as the cannonical error code when it is provided ([#1633](https://github.com/googleapis/gax-nodejs/issues/1633))
+
+### Features
+
+* Add errorsEncountered to the errors sent back ([#1740](https://github.com/googleapis/gax-nodejs/issues/1740)) ([14c75ef](https://github.com/googleapis/gax-nodejs/commit/14c75ef445053b8bb29c8885f44b8cc58de45541))
+* Add minifyJson param to request minified JSON responses when using the REST fallback ([#1632](https://github.com/googleapis/gax-nodejs/issues/1632)) ([a3fa7c7](https://github.com/googleapis/gax-nodejs/commit/a3fa7c762cb4d1cd91057fa2c01782a7d954b9f8))
+* correct wrong return type for listOperations in Operation Client ([#1729](https://github.com/googleapis/gax-nodejs/issues/1729)) ([c5af911](https://github.com/googleapis/gax-nodejs/commit/c5af911c5d4eb9caee8fbe6865d58ad904d2d626))
+* export utils functions in gax ([#1765](https://github.com/googleapis/gax-nodejs/issues/1765)) ([16cacaa](https://github.com/googleapis/gax-nodejs/commit/16cacaa7cedcf8b90476ce00d42bc017685cee70))
+* expose a static method for cached loading of protos from JSON and update protobuf.js to 7.5.2 ([#1753](https://github.com/googleapis/gax-nodejs/issues/1753)) ([d5acfd6](https://github.com/googleapis/gax-nodejs/commit/d5acfd6ef2ae23b3cf48e1a71185492e4712bf06))
+* support custom error types in grpc ([#1759](https://github.com/googleapis/gax-nodejs/issues/1759)) ([2198283](https://github.com/googleapis/gax-nodejs/commit/2198283f7558428c246cf1eba3de311e8febbc66))
+* support custom/unknown error types ([#1751](https://github.com/googleapis/gax-nodejs/issues/1751)) ([ddb9b5a](https://github.com/googleapis/gax-nodejs/commit/ddb9b5a5ad876e53452f3772992a37ed7804a3e9))
+* Update `google-auth-library` to v10 ([#1702](https://github.com/googleapis/gax-nodejs/issues/1702)) ([43a8cb8](https://github.com/googleapis/gax-nodejs/commit/43a8cb8e753a956398b49ed2c098502634651930))
+
+
+### Bug Fixes
+
+* add missing export path for generator ([#1734](https://github.com/googleapis/gax-nodejs/issues/1734)) ([1b440b0](https://github.com/googleapis/gax-nodejs/commit/1b440b0e15fc7f00225506230d98bf39281f8cc6))
+* allow 204 responses in REST fallback mode ([#1736](https://github.com/googleapis/gax-nodejs/issues/1736)) ([6829fc1](https://github.com/googleapis/gax-nodejs/commit/6829fc192db083dae81a05092df0c4b6182088f8))
+* Always save the error ([#1749](https://github.com/googleapis/gax-nodejs/issues/1749)) ([aa31605](https://github.com/googleapis/gax-nodejs/commit/aa316055cfd9d21e053513436bbecba0204f54dd))
+* **deps:** update dependency long to v5 ([#1680](https://github.com/googleapis/gax-nodejs/issues/1680)) ([9cd9902](https://github.com/googleapis/gax-nodejs/commit/9cd9902747180bfab4631fff6b7e06a72bb1eeed))
+* **deps:** update protobuf.js ([#1750](https://github.com/googleapis/gax-nodejs/issues/1750)) ([bb11949](https://github.com/googleapis/gax-nodejs/commit/bb11949f04ef70314c4b0d9b542e81822d59f352))
+* **deps:** update protobuf.js ([#1762](https://github.com/googleapis/gax-nodejs/issues/1762)) ([8bd391a](https://github.com/googleapis/gax-nodejs/commit/8bd391ab060bc2d0078375014ad9ac62e0e75795))
+* **docs:** update docstring for forwardEvents ([#1700](https://github.com/googleapis/gax-nodejs/issues/1700)) ([27c52a0](https://github.com/googleapis/gax-nodejs/commit/27c52a05f8210051326abb664094f26d193adec6))
+* enable keepAlive for HTTP requests ([#1534](https://github.com/googleapis/gax-nodejs/issues/1534)) ([a706d5a](https://github.com/googleapis/gax-nodejs/commit/a706d5a8cbe04bd93fbfd4552cab1eec5e823c83))
+* parse  from HTTP errors and prefer that as the cannonical error code when it is provided ([#1633](https://github.com/googleapis/gax-nodejs/issues/1633)) ([e9b47fc](https://github.com/googleapis/gax-nodejs/commit/e9b47fc203b422b7b89886c070f7ff7b5fe0a6d9))
+* passing gaxios fetch through auth ([e7c686a](https://github.com/googleapis/gax-nodejs/commit/e7c686a31e3be45ae142a17c9a0ce970d0c3132b))
+* re-export logging utils from gax ([#1718](https://github.com/googleapis/gax-nodejs/issues/1718)) ([363ae57](https://github.com/googleapis/gax-nodejs/commit/363ae572bcc788f728d1fefe4e186bbae7d1d13e))
+
+
+### Miscellaneous Chores
+
+* migrate gax to Node 18 ([#1699](https://github.com/googleapis/gax-nodejs/issues/1699)) ([fc3eeaa](https://github.com/googleapis/gax-nodejs/commit/fc3eeaa574e171c445e0768b06df4ed087bf1f67))
+
 ## [4.6.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.6.0...google-gax-v4.6.1) (2025-05-15)
 
 

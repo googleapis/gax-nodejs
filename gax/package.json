@@ -1,6 +1,6 @@
 {
   "name": "google-gax",
-  "version": "4.6.0",
+  "version": "5.0.0",
   "description": "Google API Extensions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
@@ -14,7 +14,7 @@
     "@grpc/proto-loader": "^0.7.13",
     "abort-controller": "^3.0.0",
     "duplexify": "^4.1.3",
-    "google-auth-library": "^10.0.0-rc.1",
+    "google-auth-library": "^10.1.0",
     "google-logging-utils": "^1.1.1",
     "node-fetch": "^3.3.2",
     "object-hash": "^3.0.0",
