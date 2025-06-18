@@ -90,15 +90,18 @@ describe('REGAPIC', () => {
       gaxGrpc,
       new Response(Buffer.from(JSON.stringify(requestObject))),
     );
-
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: {}, result?: {}) => {
-        assert.strictEqual(err, null);
-        assert.strictEqual(
-          requestObject.content,
-          (result as {content: string}).content,
-        );
-        done();
+        try {
+          assert.strictEqual(err, null);
+          assert.strictEqual(
+            requestObject.content,
+            (result as {content: string}).content,
+          );
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
@@ -116,7 +119,6 @@ describe('REGAPIC', () => {
       gaxGrpc,
       new Response(responseStream as unknown as BodyInit),
     );
-
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       const stream = echoStub.expand(
         requestObject,
@@ -130,8 +132,12 @@ describe('REGAPIC', () => {
       });
       stream.on('error', done);
       stream.on('end', () => {
-        assert.deepStrictEqual(results, responseObject);
-        done();
+        try {
+          assert.deepStrictEqual(results, responseObject);
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
@@ -145,11 +151,14 @@ describe('REGAPIC', () => {
         status: 500,
       }),
     );
-
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       echoStub.echo(requestObject, {}, {}, (err?: {}) => {
-        assert.strictEqual((err as Error).message, 'Fetch error');
-        done();
+        try {
+          assert.strictEqual((err as Error).message, 'Fetch error');
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
@@ -163,12 +172,15 @@ describe('REGAPIC', () => {
         status: 500,
       }),
     );
-
     void gaxGrpc.createStub(echoService, stubOptions).then(echoStub => {
       const stream = echoStub.expand(requestObject) as StreamArrayParser;
       stream.on('error', err => {
-        assert.strictEqual((err as Error).message, 'Fetch error');
-        done();
+        try {
+          assert.strictEqual((err as Error).message, 'Fetch error');
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
     });
   });
