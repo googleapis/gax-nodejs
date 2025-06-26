@@ -5,6 +5,14 @@
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
 
+## [5.0.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.0...google-gax-v5.0.1) (2025-06-25)
+
+
+### Bug Fixes
+
+* **deps:** Remove deprecated dependency @types/long ([#1738](https://github.com/googleapis/gax-nodejs/issues/1738)) ([7ff8181](https://github.com/googleapis/gax-nodejs/commit/7ff8181e5c06f37195f07cbda74e4c0720e41b39))
+* **deps:** update dependency google-proto-files to v5 ([#1764](https://github.com/googleapis/gax-nodejs/issues/1764)) ([191163f](https://github.com/googleapis/gax-nodejs/commit/191163f772150f99a772766fdcb98fa7d461e0ba))
+
 ## [5.0.0](https://github.com/googleapis/gax-nodejs/compare/google-gax-v4.6.0...google-gax-v5.0.0) (2025-06-12)
 
 
