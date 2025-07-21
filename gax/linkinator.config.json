@@ -7,5 +7,6 @@
     "docs/js/menu-wc_es5.js"
   ],
   "silent": true,
-  "concurrency": 10
+  "concurrency": 1,
+  "retry": true
 }
