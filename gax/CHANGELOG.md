@@ -5,6 +5,13 @@
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
 
+## [5.0.2](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.1...google-gax-v5.0.2) (2025-07-22)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @grpc/proto-loader to ^0.8.0 ([#1782](https://github.com/googleapis/gax-nodejs/issues/1782)) ([7dcec97](https://github.com/googleapis/gax-nodejs/commit/7dcec9740e462994820b51a16723c13e0b10f456))
+
 ## [5.0.1](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.0...google-gax-v5.0.1) (2025-06-25)
 
 
