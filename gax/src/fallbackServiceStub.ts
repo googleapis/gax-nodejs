@@ -15,12 +15,11 @@
  */
 
 import type {Response as NodeFetchResponse} from 'node-fetch' with {'resolution-mode': 'import'};
-import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {AuthClient, GoogleAuth, gaxios} from 'google-auth-library';
 import * as serializer from 'proto3-json-serializer';
 
-import {hasAbortController, isNodeJS} from './featureDetection';
+import {isNodeJS} from './featureDetection';
 import {StreamArrayParser} from './streamArrayParser';
 import {defaultToObjectOptions} from './fallback';
 import {pipeline, PipelineSource} from 'stream';
@@ -146,10 +145,7 @@ export function generateServiceStub(
         };
       }
 
-      const cancelController = hasAbortController()
-        ? new AbortController()
-        : new NodeAbortController();
-      const cancelSignal = cancelController.signal as AbortSignal;
+      const cancelController = new AbortController();
       let cancelRequested = false;
       const url = fetchParameters.url;
       const headers = new Headers(fetchParameters.headers);
@@ -162,7 +158,7 @@ export function generateServiceStub(
         headers: headers,
         body: fetchParameters.body,
         method: fetchParameters.method,
-        signal: cancelSignal,
+        signal: cancelController.signal,
         responseType: 'stream', // ensure gaxios returns the data directly so that it handle data/streams itself
         agent: agentOption || undefined,
       };
