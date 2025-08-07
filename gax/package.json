@@ -55,7 +55,7 @@
     "sinon": "^21.0.0",
     "stream-events": "^1.0.5",
     "ts-loader": "^8.0.0",
-    "typescript": "^5.7.3",
+    "typescript": "5.7.3",
     "uglify-js": "^3.19.3",
     "walkdir": "^0.4.1",
     "webpack": "^5.97.1",
