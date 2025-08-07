@@ -5,6 +5,13 @@
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
 
+## [5.0.3](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.2...google-gax-v5.0.3) (2025-08-07)
+
+
+### Bug Fixes
+
+* pin Typescript to republish gax ([#1789](https://github.com/googleapis/gax-nodejs/issues/1789)) ([0501494](https://github.com/googleapis/gax-nodejs/commit/050149450429d2adabc5f6f9879be2ace97c221b))
+
 ## [5.0.2](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.1...google-gax-v5.0.2) (2025-07-22)
 
 
