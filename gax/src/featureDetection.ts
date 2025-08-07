@@ -26,7 +26,6 @@ const features = {
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   textDecoder: typeof TextDecoder !== 'undefined',
   nodeJS: typeof process !== 'undefined' && process?.versions?.node,
-  abortController: typeof AbortController !== 'undefined',
 };
 
 export function hasWindowFetch() {
@@ -35,8 +34,4 @@ export function hasWindowFetch() {
 
 export function isNodeJS() {
   return features.nodeJS;
-}
-
-export function hasAbortController() {
-  return features.abortController;
 }
