@@ -11,7 +11,7 @@ jobs:
       matrix:
         node: [18, 20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -32,7 +32,7 @@ jobs:
       matrix:
         node: [16, 18, 20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -53,7 +53,7 @@ jobs:
       matrix:
         node: [18, 20]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -74,7 +74,7 @@ jobs:
       matrix:
         node: [18, 20]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
@@ -92,10 +92,10 @@ jobs:
   windows-gax:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd gax; npm install
       - run: cd gax; npm test
         env:
@@ -103,10 +103,10 @@ jobs:
   windows-tools:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd tools; npm install
       - run: cd tools; npm test
         env:
@@ -114,10 +114,10 @@ jobs:
   windows-logging-utils:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd logging-utils; npm install
       - run: cd logging-utils; npm test
         env:
@@ -125,37 +125,37 @@ jobs:
   lint-gax:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd gax; npm install
       - run: cd gax; npm run lint
   lint-tools:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd tools; npm install
       - run: cd tools; npm run lint
   lint-logging-utils:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd logging-utils; npm install
       - run: cd logging-utils; npm run lint
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
       - run: cd gax; npm install
       - run: cd gax; npm run docs
       - uses: JustinBeckwith/linkinator-action@v1
