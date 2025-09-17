@@ -15,12 +15,11 @@
  */
 
 import type {Response as NodeFetchResponse} from 'node-fetch' with {'resolution-mode': 'import'};
-import {AbortController as NodeAbortController} from 'abort-controller';
 
 import {AuthClient, GoogleAuth, gaxios} from 'google-auth-library';
 import * as serializer from 'proto3-json-serializer';
 
-import {hasAbortController, isNodeJS} from './featureDetection';
+import {isNodeJS} from './featureDetection';
 import {StreamArrayParser} from './streamArrayParser';
 import {defaultToObjectOptions} from './fallback';
 import {pipeline, PipelineSource} from 'stream';
@@ -146,9 +145,7 @@ export function generateServiceStub(
         };
       }
 
-      const cancelController = hasAbortController()
-        ? new AbortController()
-        : new NodeAbortController();
+      const cancelController = new AbortController();
       const cancelSignal = cancelController.signal as AbortSignal;
       let cancelRequested = false;
       const url = fetchParameters.url;
