@@ -57,7 +57,7 @@ export class StreamArrayParser extends Transform {
     this._isSkipped = false;
     this._level = 0;
     this.rpc = rpc;
-    this.cancelController = new AbortController()
+    this.cancelController = new AbortController();
     this.cancelSignal = this.cancelController.signal as AbortSignal;
     this.cancelRequested = false;
   }

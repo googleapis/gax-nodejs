@@ -185,7 +185,7 @@ describe('grpc-fallback', () => {
     };
 
     class FakeAbortController extends savedAbortController {
-      abortCalled: boolean = false;
+      abortCalled = false;
 
       constructor() {
         super();
