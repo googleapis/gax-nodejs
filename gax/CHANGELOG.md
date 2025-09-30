@@ -5,6 +5,13 @@
 [1]: https://www.npmjs.com/package/gax-nodejs?activeTab=versions
 
 
+## [5.0.4](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.3...google-gax-v5.0.4) (2025-09-30)
+
+
+### Performance Improvements
+
+* remove abort controller polyfill ([#1802](https://github.com/googleapis/gax-nodejs/issues/1802)) ([b2a8cec](https://github.com/googleapis/gax-nodejs/commit/b2a8cec81919a2c2010f32053598c3c1776ca7dc))
+
 ## [5.0.3](https://github.com/googleapis/gax-nodejs/compare/google-gax-v5.0.2...google-gax-v5.0.3) (2025-08-07)
 
 
