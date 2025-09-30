@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-import {AbortController as NodeAbortController} from 'abort-controller';
 import {Transform} from 'stream';
 
 import {decodeResponse} from './fallbackRest';
-import {hasAbortController} from './featureDetection';
 
 export class StreamArrayParser extends Transform {
   private _done: boolean;
@@ -27,7 +25,7 @@ export class StreamArrayParser extends Transform {
   private _isSkipped: boolean;
   private _level: number;
   rpc: protobuf.Method;
-  cancelController: AbortController | NodeAbortController;
+  cancelController: AbortController;
   cancelSignal: AbortSignal;
   cancelRequested: boolean;
   /**
@@ -59,9 +57,7 @@ export class StreamArrayParser extends Transform {
     this._isSkipped = false;
     this._level = 0;
     this.rpc = rpc;
-    this.cancelController = hasAbortController()
-      ? new AbortController()
-      : new NodeAbortController();
+    this.cancelController = new AbortController();
     this.cancelSignal = this.cancelController.signal as AbortSignal;
     this.cancelRequested = false;
   }

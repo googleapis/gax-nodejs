@@ -19,7 +19,6 @@
 
 import assert from 'assert';
 import {describe, it, beforeEach, afterEach, after} from 'mocha';
-import * as abortController from 'abort-controller';
 import * as protobuf from 'protobufjs';
 import * as sinon from 'sinon';
 import echoProtoJson = require('../fixtures/echo.json');
@@ -27,9 +26,6 @@ import {GrpcClient} from '../../src/fallback';
 import {ClientStubOptions, GoogleAuth, GoogleError} from '../../src';
 import {PassThroughClient} from 'google-auth-library';
 import {setMockFallbackResponse} from './utils';
-
-// @ts-ignore
-const hasAbortController = typeof AbortController !== 'undefined';
 
 let authClient = new PassThroughClient();
 let opts = {
@@ -171,11 +167,8 @@ describe('grpc-fallback', () => {
     protos: protobuf.NamespaceBase,
     echoService: protobuf.Service,
     stubOptions: ClientStubOptions;
-  const createdAbortControllers: string[] = [];
-  // @ts-ignore
-  const savedAbortController = hasAbortController
-    ? AbortController
-    : abortController.AbortController;
+  const createdAbortControllers: AbortController[] = [];
+  const savedAbortController = AbortController;
 
   beforeEach(() => {
     stubOptions = {
@@ -191,24 +184,21 @@ describe('grpc-fallback', () => {
       port: 443,
     };
 
-    const FakeAbortController = function () {
-      // @ts-ignore
-      this.abort = function () {
-        // @ts-ignore
-        this.abortCalled = true;
-      };
-      // @ts-ignore
-      createdAbortControllers.push(this);
-    };
+    class FakeAbortController extends savedAbortController {
+      abortCalled = false;
 
-    if (hasAbortController) {
-      // @ts-ignore
-      // eslint-disable-next-line no-global-assign
-      AbortController = FakeAbortController;
-    } else {
-      // @ts-ignore
-      abortController.AbortController = FakeAbortController;
+      constructor() {
+        super();
+        createdAbortControllers.push(this);
+      }
+      abort(reason?: unknown) {
+        super.abort(reason);
+        this.abortCalled = true;
+      }
     }
+
+    // eslint-disable-next-line no-global-assign
+    AbortController = FakeAbortController;
   });
 
   beforeEach(() => {
@@ -220,14 +210,8 @@ describe('grpc-fallback', () => {
   });
 
   after(() => {
-    if (hasAbortController) {
-      // @ts-ignore
-      // eslint-disable-next-line no-global-assign
-      AbortController = savedAbortController;
-    } else {
-      // @ts-ignore
-      abortController.AbortController = savedAbortController;
-    }
+    // eslint-disable-next-line no-global-assign
+    AbortController = savedAbortController;
   });
 
   it('should send grpc-web version in the header', () => {
