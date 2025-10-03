@@ -40,7 +40,7 @@
     "jackspeak": "^3.0.2",
     "jsdoc": "^4.0.4",
     "jsdoc-fresh": "^5.0.0",
-    "jsdoc-region-tag": "^3.0.0",
+    "jsdoc-region-tag": "^4.0.0",
     "linkinator": "^6.1.2",
     "long": "^5.2.4",
     "lru-cache": "^10.0.0",
